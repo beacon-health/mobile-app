@@ -5,6 +5,7 @@ android/app/google-services.json
 ios/GoogleService-Info.plist
 ios/Runner/GoogleService-Info.plist
 ios/Flutter/Secrets.xcconfig
+config/dart_defines.json
 
 # AI agent configuration
 .windsurf/
