@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'dart:developer' as developer;
-
-import 'package:flutter/services.dart' show rootBundle;
+import 'dart:math' as math;
 
 import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
-
-import 'facility_repository.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Facility repository that loads mock data from a local JSON asset.
 ///
@@ -145,10 +143,12 @@ class DemoFacilityRepository implements FacilityRepositoryBase {
 
     final queryLower = query.toLowerCase();
     return all
-        .where((f) =>
-            f.name.toLowerCase().contains(queryLower) ||
-            f.description.toLowerCase().contains(queryLower) ||
-            f.services.any((s) => s.toLowerCase().contains(queryLower)))
+        .where(
+          (f) =>
+              f.name.toLowerCase().contains(queryLower) ||
+              f.description.toLowerCase().contains(queryLower) ||
+              f.services.any((s) => s.toLowerCase().contains(queryLower)),
+        )
         .toList();
   }
 

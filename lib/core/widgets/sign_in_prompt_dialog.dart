@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:flutter/material.dart';
 
 /// Shows a centered modal dialog prompting guest users to sign in.
 ///

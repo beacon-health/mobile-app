@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:flutter/material.dart';
 
 class FacilityCard extends StatefulWidget {
   final Facility facility;
@@ -77,7 +76,9 @@ class _FacilityCardState extends State<FacilityCard> {
                     title: Text(
                       widget.facility.name,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w500, fontSize: 14),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
                       maxLines: widget.isExpanded ? null : 1,
                       overflow: widget.isExpanded
                           ? TextOverflow.visible
@@ -174,7 +175,7 @@ class _FacilityCardState extends State<FacilityCard> {
   Widget _buildFacilityDetails(Facility facility) {
     final is24_7 = _isOpen24_7(facility);
 
-    Widget content = Padding(
+    final Widget content = Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +226,8 @@ class _FacilityCardState extends State<FacilityCard> {
                         icon: Icons.phone,
                         value: facility.primaryPhone,
                         onTap: () => widget.onLaunchUrl(
-                            'tel:${facility.primaryPhone.replaceAll(RegExp(r'[^0-9+]'), '')}'),
+                          'tel:${facility.primaryPhone.replaceAll(RegExp('[^0-9+]'), '')}',
+                        ),
                       ),
                     _buildNextStepItem(
                       icon: Icons.directions,
@@ -245,12 +247,14 @@ class _FacilityCardState extends State<FacilityCard> {
                           final encodedAddress =
                               Uri.encodeComponent(fullAddress);
                           widget.onLaunchUrl(
-                              'https://maps.apple.com/?q=$encodedAddress');
+                            'https://maps.apple.com/?q=$encodedAddress',
+                          );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  'Address information not available for this facility'),
+                                'Address information not available for this facility',
+                              ),
                               duration: Duration(seconds: 3),
                             ),
                           );
@@ -378,7 +382,7 @@ class _FacilityCardState extends State<FacilityCard> {
                 ),
                 child: Text(
                   service,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppTheme.bittersweet,
                     fontWeight: FontWeight.w500,

@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:flutter/foundation.dart';
 
 class FacilityProvider extends ChangeNotifier {
   List<Facility> _facilities = [];

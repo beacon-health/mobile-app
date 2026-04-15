@@ -40,7 +40,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
       ),

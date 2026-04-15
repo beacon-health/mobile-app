@@ -1,12 +1,12 @@
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationService {
   // TODO: Make default zipcode configurable in app settings
   // Zipcode 60613 coordinates (Chicago, IL - Lakeview area)
   static const double _defaultLatitude = 41.9542;
   static const double _defaultLongitude = -87.6668;
-  static const String _defaultLocationName = "Current Location";
+  static const String _defaultLocationName = 'Current Location';
 
   static Future<LocationResult> getCurrentLocation() async {
     try {
@@ -22,7 +22,8 @@ class LocationService {
 
       if (permission == LocationPermission.deniedForever) {
         debugPrint(
-            'Location permission permanently denied, using default location');
+          'Location permission permanently denied, using default location',
+        );
         return LocationResult.defaultLocation();
       }
 
@@ -43,7 +44,11 @@ class LocationService {
   }
 
   static bool hasLocationChanged(
-      double currentLat, double currentLng, double newLat, double newLng) {
+    double currentLat,
+    double currentLng,
+    double newLat,
+    double newLng,
+  ) {
     const double threshold = 0.001;
     return (currentLat - newLat).abs() > threshold ||
         (currentLng - newLng).abs() > threshold;
@@ -67,13 +72,16 @@ class LocationResult {
     return LocationResult(
       latitude: LocationService._defaultLatitude,
       longitude: LocationService._defaultLongitude,
-      locationName: "Chicago, IL 60613",
+      locationName: 'Chicago, IL 60613',
       isCurrentLocation: false,
     );
   }
 
   factory LocationResult.fromCoordinates(
-      double latitude, double longitude, String locationName) {
+    double latitude,
+    double longitude,
+    String locationName,
+  ) {
     return LocationResult(
       latitude: latitude,
       longitude: longitude,

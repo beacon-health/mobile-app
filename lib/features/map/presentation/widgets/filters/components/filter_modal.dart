@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/constants/map_constants.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
 import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
-import 'selection_chip_builder.dart';
+import 'package:flutter/material.dart';
 
 enum FilterSection {
   distance,
@@ -21,7 +21,7 @@ class FilterModal extends StatefulWidget {
   final FilterSection? expandedSection;
 
   const FilterModal({
-    Key? key,
+    super.key,
     required this.selectedDistance,
     required this.selectedCategories,
     required this.availableCategories,
@@ -29,7 +29,7 @@ class FilterModal extends StatefulWidget {
     required this.showFavoritesOnly,
     required this.showOpenNowOnly,
     this.expandedSection,
-  }) : super(key: key);
+  });
 
   @override
   State<FilterModal> createState() => _FilterModalState();
@@ -213,11 +213,13 @@ class _FilterModalState extends State<FilterModal> {
                     onPressed: _clearAll,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          vertical: FilterDesignTokens.paddingButton),
-                      side: BorderSide(color: AppTheme.resedaGreen),
+                        vertical: FilterDesignTokens.paddingButton,
+                      ),
+                      side: const BorderSide(color: AppTheme.resedaGreen),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            FilterDesignTokens.borderRadiusSmall),
+                          FilterDesignTokens.borderRadiusSmall,
+                        ),
                       ),
                     ),
                     child: const Text(
@@ -237,11 +239,13 @@ class _FilterModalState extends State<FilterModal> {
                     onPressed: _apply,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          vertical: FilterDesignTokens.paddingButton),
+                        vertical: FilterDesignTokens.paddingButton,
+                      ),
                       backgroundColor: AppTheme.resedaGreen,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            FilterDesignTokens.borderRadiusSmall),
+                          FilterDesignTokens.borderRadiusSmall,
+                        ),
                       ),
                     ),
                     child: const Text(
@@ -263,7 +267,10 @@ class _FilterModalState extends State<FilterModal> {
   }
 
   Widget _buildToggleSection(
-      String title, bool value, Function(bool) onChanged) {
+    String title,
+    bool value,
+    Function(bool) onChanged,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -284,7 +291,10 @@ class _FilterModalState extends State<FilterModal> {
   }
 
   Widget _buildExpandableSection(
-      FilterSection section, String title, Widget content) {
+    FilterSection section,
+    String title,
+    Widget content,
+  ) {
     final isExpanded = _expandedSection == section;
 
     return Container(
@@ -300,7 +310,8 @@ class _FilterModalState extends State<FilterModal> {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                  vertical: FilterDesignTokens.spacingSmall),
+                vertical: FilterDesignTokens.spacingSmall,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -362,8 +373,7 @@ class _FilterModalState extends State<FilterModal> {
           }
         });
       },
-      getLabel: (category) =>
-          FacilityCategoryIcons.getCategoryDisplayName(category),
+      getLabel: FacilityCategoryIcons.getCategoryDisplayName,
     );
   }
 
@@ -404,8 +414,9 @@ class _FilterModalState extends State<FilterModal> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            vertical: FilterDesignTokens
-                                .eligibilityOptionPaddingVertical),
+                          vertical: FilterDesignTokens
+                              .eligibilityOptionPaddingVertical,
+                        ),
                         decoration: BoxDecoration(
                           color:
                               _tempEligibilityRequirements[requirement] == true
@@ -422,7 +433,8 @@ class _FilterModalState extends State<FilterModal> {
                                 : FilterDesignTokens.borderWidthNormal,
                           ),
                           borderRadius: BorderRadius.circular(
-                              FilterDesignTokens.borderRadiusSmall),
+                            FilterDesignTokens.borderRadiusSmall,
+                          ),
                         ),
                         child: Center(
                           child: Text(
@@ -459,8 +471,9 @@ class _FilterModalState extends State<FilterModal> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            vertical: FilterDesignTokens
-                                .eligibilityOptionPaddingVertical),
+                          vertical: FilterDesignTokens
+                              .eligibilityOptionPaddingVertical,
+                        ),
                         decoration: BoxDecoration(
                           color:
                               _tempEligibilityRequirements[requirement] == false
@@ -477,7 +490,8 @@ class _FilterModalState extends State<FilterModal> {
                                 : FilterDesignTokens.borderWidthNormal,
                           ),
                           borderRadius: BorderRadius.circular(
-                              FilterDesignTokens.borderRadiusSmall),
+                            FilterDesignTokens.borderRadiusSmall,
+                          ),
                         ),
                         child: Center(
                           child: Text(

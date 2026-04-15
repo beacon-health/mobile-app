@@ -1,0 +1,8 @@
+app_identifier("org.beaconhealth.app")
+apple_id("hq@beacon-health.com")
+team_id("3VY6L9SG6K")
+
+itc_team_id("3VY6L9SG6K") # App Store Connect team — same as team_id for individual/single-team accounts
+
+# App Store Connect API key — preferred for CI (avoids 2FA)
+# Key file is NOT stored in repo; base64-encoded in CI secrets.

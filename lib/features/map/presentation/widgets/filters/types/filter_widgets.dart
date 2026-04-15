@@ -1,5 +1,5 @@
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
 import 'package:flutter/material.dart';
-import '../components/filter_chip.dart';
 
 class ToggleFilter extends StatelessWidget {
   final String label;

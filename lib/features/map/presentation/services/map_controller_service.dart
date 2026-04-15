@@ -1,8 +1,8 @@
+import 'package:beacon_app/features/map/constants/map_constants.dart';
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../domain/models/facility_model.dart';
-import '../widgets/markers/marker_utils.dart';
-import '../../constants/map_constants.dart';
 
 class MapControllerService {
   GoogleMapController? _controller;
@@ -17,8 +17,11 @@ class MapControllerService {
     _controller = controller;
   }
 
-  Future<void> animateToLocation(double latitude, double longitude,
-      {double? zoom}) async {
+  Future<void> animateToLocation(
+    double latitude,
+    double longitude, {
+    double? zoom,
+  }) async {
     if (_controller == null) return;
 
     await _controller!.animateCamera(
@@ -30,7 +33,10 @@ class MapControllerService {
   }
 
   Future<void> animateToLocationWithDistance(
-      double latitude, double longitude, double distance) async {
+    double latitude,
+    double longitude,
+    double distance,
+  ) async {
     final zoom = getZoomLevelForDistance(distance);
     await animateToLocation(latitude, longitude, zoom: zoom);
   }

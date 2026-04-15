@@ -1,8 +1,8 @@
+import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
+import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
+import 'package:beacon_app/features/map/presentation/widgets/search/location_search.dart';
 import 'package:flutter/material.dart';
-import '../../../constants/filter_constants.dart';
-import '../filters/components/filter_bar.dart';
-import 'location_search.dart';
-import 'facility_search.dart';
 
 class SearchFilterSection extends StatelessWidget {
   final TextEditingController searchController;

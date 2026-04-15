@@ -1,10 +1,10 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:flutter/material.dart';
-import 'package:beacon_app/features/map/presentation/pages/map_page.dart';
 import 'package:beacon_app/features/home/presentation/pages/home_page.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/presentation/pages/map_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 
 class MainNavBar extends StatefulWidget {
   final bool isGuest;

@@ -1,0 +1,37 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/l10n/**"
+  language:
+    strict-inference: false
+    strict-raw-types: false
+
+linter:
+  rules:
+    # Relaxed for MVP — tighten post-launch
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    flutter_style_todos: false
+    comment_references: false
+    prefer_int_literals: false
+    always_put_required_named_parameters_first: false
+    avoid_catches_without_on_clauses: false
+    avoid_types_on_closure_parameters: false
+    omit_local_variable_types: false
+    cascade_invocations: false
+    avoid_redundant_argument_values: false
+    avoid_positional_boolean_parameters: false
+    discarded_futures: false
+    unawaited_futures: false
+    only_throw_errors: false
+    prefer_null_aware_method_calls: false
+    use_setters_to_change_properties: false
+    use_named_constants: false
+
+    # Enforced from day one
+    avoid_print: true
+    prefer_single_quotes: true
+    sort_constructors_first: false

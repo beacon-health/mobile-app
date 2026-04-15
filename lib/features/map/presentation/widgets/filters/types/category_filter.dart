@@ -1,7 +1,6 @@
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
+import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../utils/facility_display_utils.dart';
-import '../components/filter_chip.dart';
 
 class CategoryFilter extends StatelessWidget {
   final Set<String> selectedCategories;
@@ -20,7 +19,8 @@ class CategoryFilter extends StatelessWidget {
       label = 'Category';
     } else if (selectedCategories.length == 1) {
       label = FacilityCategoryIcons.getCategoryDisplayName(
-          selectedCategories.first);
+        selectedCategories.first,
+      );
     } else {
       label = '${selectedCategories.length} selected';
     }

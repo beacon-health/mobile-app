@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import '../../domain/models/facility_model.dart';
-import '../widgets/markers/marker_utils.dart';
 
 /// Service for creating and managing map markers for facilities.
 ///

@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
+import 'package:beacon_app/core/constants/app_routes.dart';
 import 'package:beacon_app/core/models/demo_user.dart';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/constants/app_routes.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 /// Settings page with account info, language selector, eligibility
 /// preferences, about section, and a hidden developer toggle for demo mode.
@@ -64,8 +63,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildAppSection(l10n),
             _buildEligibilitySection(l10n),
             _buildAboutSection(l10n),
-            if (_showDeveloperSection)
-              _buildDeveloperSection(l10n, demoMode),
+            if (_showDeveloperSection) _buildDeveloperSection(l10n, demoMode),
             _buildSignOutButton(l10n),
             const SizedBox(height: 32),
           ],
@@ -118,17 +116,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         DemoUser.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
+                      const Text(
                         DemoUser.email,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.paynesGray,
                         ),
@@ -208,8 +206,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   value: themeModeProvider.themeMode,
                   underline: const SizedBox.shrink(),
                   items: ThemeModeProvider.themeModeNames.entries
-                      .map((e) =>
-                          DropdownMenuItem(value: e.key, child: Text(e.value)))
+                      .map(
+                        (e) => DropdownMenuItem(
+                          value: e.key,
+                          child: Text(e.value),
+                        ),
+                      )
                       .toList(),
                   onChanged: (mode) {
                     if (mode != null) {
@@ -432,8 +434,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   style:
                       const TextStyle(fontSize: 12, color: AppTheme.paynesGray),
                 ),
-                secondary: const Icon(Icons.science_outlined,
-                    color: AppTheme.resedaGreen),
+                secondary: const Icon(
+                  Icons.science_outlined,
+                  color: AppTheme.resedaGreen,
+                ),
                 activeThumbColor: AppTheme.resedaGreen,
                 value: demoMode.isDemoMode,
                 onChanged: (value) => _confirmDemoToggle(l10n, value),

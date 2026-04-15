@@ -7,12 +7,12 @@ class FacilitySearch extends StatefulWidget {
   final VoidCallback onClear;
 
   const FacilitySearch({
-    Key? key,
+    super.key,
     required this.controller,
     required this.focusNode,
     required this.onChanged,
     required this.onClear,
-  }) : super(key: key);
+  });
 
   @override
   State<FacilitySearch> createState() => _FacilitySearchState();

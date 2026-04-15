@@ -1,12 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
-
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -17,6 +12,10 @@ import 'package:beacon_app/features/map/presentation/services/map_style_service.
 import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
 import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int, Facility?, {String? categoryFilter})? onNavigateToMap;
@@ -76,7 +75,9 @@ class _HomePageState extends State<HomePage>
         );
         latitude = locationResult.latitude;
         longitude = locationResult.longitude;
-      } catch (e) {}
+      } catch (_) {
+        // Location unavailable — use defaults above.
+      }
 
       final facilities = await _facilityRepository
           .loadFacilitiesWithDistance(
@@ -139,7 +140,9 @@ class _HomePageState extends State<HomePage>
           await _mapController!.animateCamera(
             CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
           );
-        } catch (e) {}
+        } catch (_) {
+          // Camera animation failure is non-critical.
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -175,7 +178,9 @@ class _HomePageState extends State<HomePage>
         await controller.animateCamera(
           CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
         );
-      } catch (e) {}
+      } catch (_) {
+        // Camera animation failure is non-critical.
+      }
     }
   }
 
@@ -383,8 +388,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  bool get _isGuest =>
-      Supabase.instance.client.auth.currentUser == null;
+  bool get _isGuest => Supabase.instance.client.auth.currentUser == null;
 
   Widget _buildFavoritesSection(AppLocalizations l10n) {
     if (_isGuest) {

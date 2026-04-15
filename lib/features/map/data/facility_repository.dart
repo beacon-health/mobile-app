@@ -44,6 +44,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   final SupabaseFacilityService _service;
 
   /// Loads all healthcare facilities.
+  @override
   Future<List<Facility>> loadFacilities() async {
     try {
       return await _service.getAllFacilities();
@@ -61,6 +62,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   /// Loads facilities within the specified distance from the given location.
   ///
   /// Uses efficient bounding box queries to filter facilities by proximity.
+  @override
   Future<List<Facility>> loadFacilitiesWithDistance({
     required double latitude,
     required double longitude,
@@ -87,6 +89,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   }
 
   /// Loads facilities near a specific location within the given radius.
+  @override
   Future<List<Facility>> loadFacilitiesNearLocation({
     required double latitude,
     required double longitude,
@@ -112,6 +115,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   /// Returns a stream of all facilities.
   ///
   /// Currently implemented as a single-shot stream since we have a small dataset.
+  @override
   Stream<List<Facility>> getFacilitiesStream() {
     return Stream.fromFuture(loadFacilities());
   }
@@ -120,6 +124,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   ///
   /// If [latitude], [longitude], and [radiusMiles] are provided, searches only
   /// within that radius. Otherwise searches all facilities.
+  @override
   Future<List<Facility>> searchFacilities(
     String query, {
     double? latitude,
@@ -147,6 +152,7 @@ class FacilityRepository implements FacilityRepositoryBase {
   }
 
   /// Gets a single facility by ID.
+  @override
   Future<Facility?> getFacilityById(String id) async {
     try {
       return await _service.getFacilityById(id);

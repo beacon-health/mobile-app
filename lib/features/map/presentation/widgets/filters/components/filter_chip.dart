@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:flutter/material.dart';
 
 class CustomFilterChip extends StatelessWidget {
   final String label;

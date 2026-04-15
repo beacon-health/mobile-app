@@ -1,7 +1,7 @@
+import 'package:beacon_app/features/map/constants/map_constants.dart';
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
 import 'package:flutter/material.dart';
-import '../../../domain/models/facility_model.dart';
-import '../facility/facility_card.dart';
-import '../../../constants/map_constants.dart';
 
 class FacilityListPanel extends StatelessWidget {
   final List<Facility> facilities;
@@ -18,7 +18,7 @@ class FacilityListPanel extends StatelessWidget {
   final Function(bool isPanelOpen, bool isFullyExpanded)? onPanelStateChange;
 
   const FacilityListPanel({
-    Key? key,
+    super.key,
     required this.facilities,
     required this.scrollController,
     required this.isLoading,
@@ -31,7 +31,7 @@ class FacilityListPanel extends StatelessWidget {
     required this.onLaunchUrl,
     required this.buildCategoryIcon,
     this.onPanelStateChange,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class FacilityListPanel extends StatelessWidget {
             topLeft: Radius.circular(MapConstants.panelBorderRadius),
             topRight: Radius.circular(MapConstants.panelBorderRadius),
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 10.0,

@@ -27,7 +27,7 @@ class UrlLauncherService {
         debugPrint('Error launching URL: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not launch: ${uri.toString()}')),
+            SnackBar(content: Text('Could not launch: $uri')),
           );
         }
       }

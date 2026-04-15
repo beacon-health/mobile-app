@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-
 import 'package:beacon_app/core/models/demo_user.dart';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool isGuest;
@@ -30,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
     'Spanish',
     'Chinese',
     'Tagalog',
-    'Vietnamese'
+    'Vietnamese',
   ];
 
   @override
@@ -244,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }).toList(),
               onChanged: (String? newValue) {
                 setState(() {
-                  _selectedLanguage = newValue!;
+                  _selectedLanguage = newValue;
                 });
               },
               validator: (value) {
@@ -280,7 +279,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }).toList(),
               onChanged: (String? newValue) {
                 setState(() {
-                  _gender = newValue!;
+                  _gender = newValue;
                 });
               },
             ),
@@ -301,7 +300,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }).toList(),
               onChanged: (String? newValue) {
                 setState(() {
-                  _householdSize = newValue!;
+                  _householdSize = newValue;
                 });
               },
             ),
@@ -312,7 +311,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                   l10n?.profileAnnualIncome ?? 'Annual Income',
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Slider(

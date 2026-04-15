@@ -12,7 +12,7 @@ class MapStyleService {
     try {
       final String jsonString =
           await rootBundle.loadString('assets/map_styles/minimal_style.json');
-      final List<dynamic> styleArray = json.decode(jsonString);
+      final styleArray = json.decode(jsonString) as List<dynamic>;
       _cachedStyle = json.encode(styleArray);
       return _cachedStyle!;
     } catch (e) {

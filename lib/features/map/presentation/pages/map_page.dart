@@ -2,31 +2,30 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
+import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/constants/map_constants.dart';
+import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
+import 'package:beacon_app/features/map/data/facility_repository.dart';
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
+import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
+import 'package:beacon_app/features/map/presentation/services/location_service.dart';
+import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
+import 'package:beacon_app/features/map/presentation/services/marker_management_service.dart';
+import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
+import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
+import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
+import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
+import 'package:beacon_app/features/map/presentation/widgets/search/location_search.dart';
+import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-
-import 'package:beacon_app/core/services/demo_mode_service.dart';
-import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../constants/filter_constants.dart';
-import '../../constants/map_constants.dart';
-import '../../data/demo_facility_repository.dart';
-import '../../data/facility_repository.dart';
-import '../../domain/models/facility_model.dart';
-import '../../utils/facility_display_utils.dart';
-import '../providers/facility_provider.dart';
-import '../services/facility_filter_service.dart';
-import '../services/location_service.dart';
-import '../services/map_style_service.dart';
-import '../services/marker_management_service.dart';
-import '../services/url_launcher_service.dart';
-import '../widgets/facility/facility_card.dart';
-import '../widgets/facility/facility_list_panel.dart';
-import '../widgets/filters/components/filter_bar.dart';
-import '../widgets/filters/components/filter_modal.dart';
-import '../widgets/search/facility_search.dart';
-import '../widgets/search/location_search.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -72,10 +71,9 @@ class MapPageState extends State<MapPage>
   bool _isUpdatingMarkers = false;
 
   double _selectedDistance = MapConstants.distanceOptions.first;
-  String _currentLocation = "Current Location";
+  String _currentLocation = 'Current Location';
 
-  bool get _isGuest =>
-      Supabase.instance.client.auth.currentUser == null;
+  bool get _isGuest => Supabase.instance.client.auth.currentUser == null;
 
   double _currentLatitude = MapConstants.defaultLatitude;
   double _currentLongitude = MapConstants.defaultLongitude;
@@ -205,7 +203,7 @@ class MapPageState extends State<MapPage>
         await controller.moveCamera(CameraUpdate.zoomTo(currentZoom));
         _updateMarkers();
 
-        if (_currentLocation == "Current Location" &&
+        if (_currentLocation == 'Current Location' &&
             _currentLatitude != MapConstants.defaultLatitude &&
             _currentLongitude != MapConstants.defaultLongitude) {
           controller.animateCamera(
@@ -253,7 +251,8 @@ class MapPageState extends State<MapPage>
 
     try {
       debugPrint(
-          '📍 Loading facilities near ($_currentLatitude, $_currentLongitude) within $_selectedDistance mi');
+        '📍 Loading facilities near ($_currentLatitude, $_currentLongitude) within $_selectedDistance mi',
+      );
 
       final facilities = await _facilityRepository
           .loadFacilitiesWithDistance(
@@ -292,11 +291,18 @@ class MapPageState extends State<MapPage>
   }
 
   void _onLocationChanged(
-      String location, double? latitude, double? longitude) {
+    String location,
+    double? latitude,
+    double? longitude,
+  ) {
     final bool locationActuallyChanged = latitude != null &&
         longitude != null &&
         LocationService.hasLocationChanged(
-            _currentLatitude, _currentLongitude, latitude, longitude);
+          _currentLatitude,
+          _currentLongitude,
+          latitude,
+          longitude,
+        );
 
     setState(() {
       _currentLocation = location;
@@ -400,6 +406,8 @@ class MapPageState extends State<MapPage>
           _currentZoom = zoom;
         });
 
+        if (!mounted) return;
+
         final newMarkers =
             await MarkerManagementService.createMarkersForFacilities(
           _filteredFacilities,
@@ -452,11 +460,11 @@ class MapPageState extends State<MapPage>
     try {
       final screenHeight = MediaQuery.of(context).size.height;
       final cardHeight = screenHeight * 0.6;
-      final searchBarHeight = MapConstants.searchBarAreaHeight;
-      final filterBarHeight = 60.0;
+      const searchBarHeight = MapConstants.searchBarAreaHeight;
+      const filterBarHeight = 60.0;
       final visibleMapHeight =
           screenHeight - cardHeight - searchBarHeight - filterBarHeight;
-      final targetY = searchBarHeight + filterBarHeight + (visibleMapHeight);
+      final targetY = searchBarHeight + filterBarHeight + visibleMapHeight;
 
       final currentZoom = await _googleMapController!.getZoomLevel();
       final targetZoom = currentZoom < MapConstants.markerZoom
@@ -721,7 +729,7 @@ class MapPageState extends State<MapPage>
           GoogleMap(
             onMapCreated: _onMapCreated,
             style: _mapStyle,
-            initialCameraPosition: CameraPosition(
+            initialCameraPosition: const CameraPosition(
               target: LatLng(
                 MapConstants.defaultLatitude,
                 MapConstants.defaultLongitude,
@@ -754,9 +762,13 @@ class MapPageState extends State<MapPage>
                 children: [
                   Container(
                     margin: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 4.0),
+                      horizontal: 8.0,
+                      vertical: 4.0,
+                    ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 4.0),
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(25.0),
@@ -777,9 +789,13 @@ class MapPageState extends State<MapPage>
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 8.0),
+                      horizontal: 8.0,
+                      vertical: 8.0,
+                    ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 4.0),
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(25.0),

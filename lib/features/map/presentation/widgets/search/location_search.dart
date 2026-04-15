@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationSearch extends StatefulWidget {
   final String currentLocation;
@@ -10,11 +10,11 @@ class LocationSearch extends StatefulWidget {
   final Function(bool)? onFocusChanged;
 
   const LocationSearch({
-    Key? key,
+    super.key,
     required this.currentLocation,
     required this.onLocationChanged,
     this.onFocusChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<LocationSearch> createState() => _LocationSearchState();
@@ -78,13 +78,16 @@ class _LocationSearchState extends State<LocationSearch> {
         throw Exception('Location permissions are permanently denied');
       }
 
-      Position position = await Geolocator.getCurrentPosition(
+      final Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
       _controller.text = 'Current Location';
       widget.onLocationChanged(
-          'Current Location', position.latitude, position.longitude);
+        'Current Location',
+        position.latitude,
+        position.longitude,
+      );
     } catch (e) {
       log('Error getting current location: $e', name: 'LocationSearch');
       _controller.text = '60613';
@@ -92,7 +95,7 @@ class _LocationSearchState extends State<LocationSearch> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content:
                 Text('Unable to get current location. Using Chicago 60613.'),
             backgroundColor: Colors.orange,
@@ -139,12 +142,16 @@ class _LocationSearchState extends State<LocationSearch> {
 
   Future<void> _geocodeZipCode(String zipCode) async {
     try {
-      List<Location> locations = await locationFromAddress('$zipCode, USA');
+      final List<Location> locations =
+          await locationFromAddress('$zipCode, USA');
 
       if (locations.isNotEmpty) {
         final location = locations.first;
         widget.onLocationChanged(
-            zipCode, location.latitude, location.longitude);
+          zipCode,
+          location.latitude,
+          location.longitude,
+        );
       } else {
         _handleGeocodingFailure(zipCode);
       }
@@ -160,7 +167,8 @@ class _LocationSearchState extends State<LocationSearch> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Could not find location for zip code $zipCode. Using Chicago as default.'),
+            'Could not find location for zip code $zipCode. Using Chicago as default.',
+          ),
           backgroundColor: Colors.orange,
         ),
       );

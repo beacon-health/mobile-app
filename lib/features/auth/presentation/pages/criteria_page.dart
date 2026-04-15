@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:flutter/material.dart';
 
 class CriteriaPage extends StatefulWidget {
   const CriteriaPage({super.key});
@@ -11,7 +11,7 @@ class CriteriaPage extends StatefulWidget {
 class _CriteriaPageState extends State<CriteriaPage> {
   int? _selectedMonth;
   int? _selectedYear;
-  TextEditingController _zipCodeController = TextEditingController();
+  final TextEditingController _zipCodeController = TextEditingController();
   String? _selectedEmployment;
   double _income = 0;
   String? _selectedGender;
@@ -76,7 +76,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 16.0),
+                        horizontal: 12.0,
+                        vertical: 16.0,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -90,8 +92,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             style: const TextStyle(color: Colors.black87),
                           ),
                         ),
-                        const Icon(Icons.arrow_drop_down,
-                            color: Colors.black54),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black54,
+                        ),
                       ],
                     ),
                   ),
@@ -130,7 +134,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 16.0),
+                        horizontal: 12.0,
+                        vertical: 16.0,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -144,8 +150,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             style: const TextStyle(color: Colors.black87),
                           ),
                         ),
-                        const Icon(Icons.arrow_drop_down,
-                            color: Colors.black54),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black54,
+                        ),
                       ],
                     ),
                   ),
@@ -153,8 +161,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ],
             ),
             const SizedBox(height: 16.0),
-            const Text('Zip Code',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Zip Code',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             Container(
               decoration: BoxDecoration(
@@ -174,8 +184,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
                     color: Colors.black87,
                     fontSize: 14.0,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 16.0),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 16.0,
+                  ),
                   border: InputBorder.none,
                   isDense: true,
                   filled: true,
@@ -188,8 +200,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('Employment Status',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Employment Status',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             OutlinedButton(
               onPressed: () {
@@ -206,17 +220,19 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             'Student',
                             'Retired',
                             'Disabled',
-                            'Other'
+                            'Other',
                           ]
-                              .map((status) => ListTile(
-                                    title: Text(status),
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedEmployment = status;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                  ))
+                              .map(
+                                (status) => ListTile(
+                                  title: Text(status),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedEmployment = status;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -226,7 +242,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -245,8 +263,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('Annual Income',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Annual Income',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             Container(
               padding:
@@ -296,17 +316,19 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             'Female',
                             'Non-binary',
                             'Prefer not to say',
-                            'Other'
+                            'Other',
                           ]
-                              .map((gender) => ListTile(
-                                    title: Text(gender),
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedGender = gender;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                  ))
+                              .map(
+                                (gender) => ListTile(
+                                  title: Text(gender),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedGender = gender;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -316,7 +338,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -335,8 +359,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('Household Size',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Household Size',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             OutlinedButton(
               onPressed: () {
@@ -351,7 +377,8 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             final size = (index + 1).toString();
                             return ListTile(
                               title: Text(
-                                  '$size ${int.parse(size) == 1 ? 'person' : 'people'}'),
+                                '$size ${int.parse(size) == 1 ? 'person' : 'people'}',
+                              ),
                               onTap: () {
                                 setState(() {
                                   _selectedHouseholdSize = size;
@@ -368,7 +395,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -389,8 +418,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('Citizenship Status',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Citizenship Status',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             OutlinedButton(
               onPressed: () {
@@ -406,17 +437,19 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             'Permanent Resident',
                             'Visa Holder',
                             'Undocumented',
-                            'Prefer not to say'
+                            'Prefer not to say',
                           ]
-                              .map((status) => ListTile(
-                                    title: Text(status),
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedCitizenship = status;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                  ))
+                              .map(
+                                (status) => ListTile(
+                                  title: Text(status),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedCitizenship = status;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -426,7 +459,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -445,8 +480,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('Student Status',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Student Status',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             OutlinedButton(
               onPressed: () {
@@ -461,17 +498,19 @@ class _CriteriaPageState extends State<CriteriaPage> {
                             'Yes, full-time student',
                             'Yes, part-time student',
                             'No, not a student',
-                            'Prefer not to say'
+                            'Prefer not to say',
                           ]
-                              .map((status) => ListTile(
-                                    title: Text(status),
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedStudent = status;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                  ))
+                              .map(
+                                (status) => ListTile(
+                                  title: Text(status),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedStudent = status;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -481,7 +520,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -500,8 +541,10 @@ class _CriteriaPageState extends State<CriteriaPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text('LGBTQ+ Community Member',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'LGBTQ+ Community Member',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8.0),
             OutlinedButton(
               onPressed: () {
@@ -513,15 +556,17 @@ class _CriteriaPageState extends State<CriteriaPage> {
                       content: SingleChildScrollView(
                         child: Column(
                           children: ['Yes', 'No', 'Prefer not to say']
-                              .map((status) => ListTile(
-                                    title: Text(status),
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedLGBTQ = status;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                  ))
+                              .map(
+                                (status) => ListTile(
+                                  title: Text(status),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedLGBTQ = status;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -531,7 +576,9 @@ class _CriteriaPageState extends State<CriteriaPage> {
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 16.0),
+                  horizontal: 12.0,
+                  vertical: 16.0,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),

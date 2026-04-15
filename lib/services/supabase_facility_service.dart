@@ -1,9 +1,8 @@
 import 'dart:developer' as developer;
 import 'dart:math' as math;
 
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../features/map/domain/models/facility_model.dart';
 
 /// Service for querying Illinois healthcare facilities from Supabase.
 ///
@@ -36,7 +35,7 @@ class SupabaseFacilityService {
       for (final json in response as List) {
         try {
           facilities.add(
-            Facility.fromSupabase(Map<String, dynamic>.from(json)),
+            Facility.fromSupabase(json as Map<String, dynamic>),
           );
         } catch (e) {
           developer.log(
@@ -136,9 +135,11 @@ class SupabaseFacilityService {
 
     final q = query.toLowerCase();
     return pool
-        .where((f) =>
-            f.name.toLowerCase().contains(q) ||
-            f.description.toLowerCase().contains(q))
+        .where(
+          (f) =>
+              f.name.toLowerCase().contains(q) ||
+              f.description.toLowerCase().contains(q),
+        )
         .toList();
   }
 

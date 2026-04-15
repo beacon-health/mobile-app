@@ -1,9 +1,9 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String? _errorMessage;
-  final _supabase = Supabase.instance.client;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   @override
   void dispose() {
@@ -87,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             child: SignInButton(
                               Buttons.Google,
-                              text: "Continue with Google",
+                              text: 'Continue with Google',
                               onPressed: _isLoading
                                   ? () {}
                                   : () {
@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             child: SignInButton(
                               Buttons.Apple,
-                              text: "Continue with Apple",
+                              text: 'Continue with Apple',
                               onPressed: _isLoading
                                   ? () {}
                                   : () {
@@ -123,7 +123,8 @@ class _LoginPageState extends State<LoginPage> {
                           Row(
                             children: [
                               const Expanded(
-                                  child: Divider(color: Colors.black26)),
+                                child: Divider(color: Colors.black26),
+                              ),
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
@@ -136,7 +137,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               const Expanded(
-                                  child: Divider(color: Colors.black26)),
+                                child: Divider(color: Colors.black26),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -149,9 +151,11 @@ class _LoginPageState extends State<LoginPage> {
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) =>
-                                                const MainNavBar(
-                                                    isGuest: true)),
+                                          builder: (context) =>
+                                              const MainNavBar(
+                                            isGuest: true,
+                                          ),
+                                        ),
                                       );
                                     },
                               style: ElevatedButton.styleFrom(
@@ -160,9 +164,11 @@ class _LoginPageState extends State<LoginPage> {
                                 backgroundColor: AppTheme.paynesGray,
                                 foregroundColor: Colors.white,
                                 textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 14),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
                               ),
-                              child: const Text("Continue as Guest"),
+                              child: const Text('Continue as Guest'),
                             ),
                           ),
                         ],
@@ -172,22 +178,26 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 16),
                           const Text.rich(
                             TextSpan(
-                              text: "By clicking continue, you agree to our ",
+                              text: 'By clicking continue, you agree to our ',
                               style: TextStyle(
-                                  color: Colors.black54, fontSize: 12),
+                                color: Colors.black54,
+                                fontSize: 12,
+                              ),
                               children: [
                                 TextSpan(
-                                  text: "Terms of Service",
+                                  text: 'Terms of Service',
                                   style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      fontWeight: FontWeight.bold),
+                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                TextSpan(text: " and "),
+                                TextSpan(text: ' and '),
                                 TextSpan(
-                                  text: "Privacy Policy",
+                                  text: 'Privacy Policy',
                                   style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      fontWeight: FontWeight.bold),
+                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -197,10 +207,11 @@ class _LoginPageState extends State<LoginPage> {
                           TextButton(
                             onPressed: _isLoading ? null : () {},
                             child: const Text(
-                              "Select a language 🌐",
+                              'Select a language 🌐',
                               style: TextStyle(
-                                  color: Colors.teal,
-                                  fontWeight: FontWeight.w500),
+                                color: Colors.teal,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),

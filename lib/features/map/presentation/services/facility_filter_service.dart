@@ -1,5 +1,5 @@
-import '../../constants/filter_constants.dart';
-import '../../domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 
 /// Service for filtering facilities based on various criteria.
 class FacilityFilterService {

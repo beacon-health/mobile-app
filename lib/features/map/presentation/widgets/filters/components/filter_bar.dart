@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:beacon_app/features/map/constants/filter_constants.dart';
-import '../types/filter_widgets.dart';
-import '../types/category_filter.dart';
-import '../types/eligibility_filter.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/types/category_filter.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/types/eligibility_filter.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/types/filter_widgets.dart';
+import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
   final double selectedDistance;
@@ -55,7 +55,8 @@ class FilterBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.resedaGreen,
                     borderRadius: BorderRadius.circular(
-                        FilterDesignTokens.borderRadiusMedium),
+                      FilterDesignTokens.borderRadiusMedium,
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -71,7 +72,8 @@ class FilterBar extends StatelessWidget {
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               ValueFilter(
-                label: '${selectedDistance.toStringAsFixed(selectedDistance == selectedDistance.roundToDouble() ? 0 : 1)} mi',
+                label:
+                    '${selectedDistance.toStringAsFixed(selectedDistance == selectedDistance.roundToDouble() ? 0 : 1)} mi',
                 onTap: onDistanceTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),

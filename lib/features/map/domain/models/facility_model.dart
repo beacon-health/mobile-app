@@ -1,6 +1,5 @@
+import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import 'eligibility_model.dart';
 
 /// Represents a phone contact with its type (e.g., "Business Line", "Contact").
 class PhoneContact {
@@ -305,7 +304,8 @@ class Facility {
                     !seenNumbers.contains(number)) {
                   seenNumbers.add(number);
                   phones.add(
-                      PhoneContact.fromJson(Map<String, dynamic>.from(phone)));
+                    PhoneContact.fromJson(Map<String, dynamic>.from(phone)),
+                  );
                 }
               }
             }
@@ -387,11 +387,13 @@ class Facility {
 
       final times = timePart.split('-').map((t) => t.trim()).toList();
       if (times.length == 2) {
-        result.add(OperatingHours(
-          day: dayKey,
-          opensAt: _convertTo24h(times[0]),
-          closesAt: _convertTo24h(times[1]),
-        ));
+        result.add(
+          OperatingHours(
+            day: dayKey,
+            opensAt: _convertTo24h(times[0]),
+            closesAt: _convertTo24h(times[1]),
+          ),
+        );
       }
     }
     return result;

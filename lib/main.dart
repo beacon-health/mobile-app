@@ -1,12 +1,11 @@
+import 'package:beacon_app/app.dart';
+import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'app.dart';
-import 'core/services/demo_mode_service.dart';
-import 'core/services/locale_provider.dart';
-import 'core/services/theme_mode_provider.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');

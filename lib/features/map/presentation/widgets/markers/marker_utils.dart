@@ -1,10 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui show ImageByteFormat, PictureRecorder;
 
+import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import 'package:beacon_app/core/theme/app_theme.dart';
 
 /// Utility class for creating custom map markers.
 ///
@@ -37,9 +36,11 @@ class MarkerUtils {
       return _markerCache[cacheKey]!;
     }
 
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
     final double canvasWidth =
         math.max(_markerSize, 200.0 + _horizontalPadding * 2);
-    final double totalHeight = _markerSize + _nameAreaHeight;
+    const double totalHeight = _markerSize + _nameAreaHeight;
 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
@@ -62,18 +63,23 @@ class MarkerUtils {
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
-      imagePixelRatio: MediaQuery.of(context).devicePixelRatio,
+      imagePixelRatio: devicePixelRatio,
     );
 
     _markerCache[cacheKey] = descriptor;
     return descriptor;
   }
 
-  static void _drawName(Canvas canvas, String text, double canvasWidth,
-      double markerX, double markerWidth) {
+  static void _drawName(
+    Canvas canvas,
+    String text,
+    double canvasWidth,
+    double markerX,
+    double markerWidth,
+  ) {
     if (text.isEmpty) return;
 
-    final textStyle = TextStyle(
+    const textStyle = TextStyle(
       color: Colors.black,
       fontSize: _baseFontSize,
       fontWeight: FontWeight.bold,
@@ -81,27 +87,27 @@ class MarkerUtils {
       shadows: [
         Shadow(
           color: Colors.white,
-          offset: const Offset(1, 1),
+          offset: Offset(1, 1),
           blurRadius: 3,
         ),
         Shadow(
           color: Colors.white,
-          offset: const Offset(-1, -1),
+          offset: Offset(-1, -1),
           blurRadius: 3,
         ),
         Shadow(
           color: Colors.white,
-          offset: const Offset(1, -1),
+          offset: Offset(1, -1),
           blurRadius: 3,
         ),
         Shadow(
           color: Colors.white,
-          offset: const Offset(-1, 1),
+          offset: Offset(-1, 1),
           blurRadius: 3,
         ),
         Shadow(
           color: Colors.white,
-          offset: const Offset(0, 0),
+          offset: Offset(0, 0),
           blurRadius: 6,
         ),
       ],
@@ -119,14 +125,14 @@ class MarkerUtils {
     textPainter.layout(maxWidth: maxTextWidth);
 
     final textX = (canvasWidth - textPainter.width) / 2;
-    final textY = _markerSize + _textPadding;
+    const textY = _markerSize + _textPadding;
 
     textPainter.paint(canvas, Offset(textX, textY));
   }
 
   static void _drawFacilityMarker(Canvas canvas, String? category) {
-    final center = Offset(_markerSize / 2, _markerSize / 2);
-    final radius = _markerSize * 0.4;
+    const center = Offset(_markerSize / 2, _markerSize / 2);
+    const radius = _markerSize * 0.4;
 
     // Shadow
     canvas.drawCircle(
