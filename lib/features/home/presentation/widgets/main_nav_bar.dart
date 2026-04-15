@@ -7,9 +7,7 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class MainNavBar extends StatefulWidget {
-  final bool isGuest;
-
-  const MainNavBar({super.key, this.isGuest = false});
+  const MainNavBar({super.key});
 
   @override
   State<MainNavBar> createState() => _MainNavBarState();

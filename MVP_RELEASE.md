@@ -12,7 +12,7 @@
 |--------|------|-------------|-----------|-------|
 | **MVP feature work** (§2.1–§2.5) | 4 / 32 | 0 | 28 | Confirmed done: Continue-as-Guest button (§2.1), 4 category buttons (§2.3), 1 mi distance default (§2.4), zip in eligibility section of Settings (§2.5). |
 | **Critical security fixes** (§4) | 3 / 3 | 0 | 0 | ✅ `.env` removed from assets; anon key migration done; `debug: kDebugMode`. `PrivacyInfo.xcprivacy` still needed (Tranche 7). |
-| **Dev infrastructure** | 0 / 5 | 0 | 5 | No `analysis_options.yaml`, no CI, no Fastlane, no test scaffolding, no secrets-on-CI plumbing. |
+| **Dev infrastructure** | 5 / 5 | 0 | 0 | ✅ `analysis_options.yaml` + `very_good_analysis`; GitHub Actions CI + iOS build workflow; Fastlane skeleton; CI secret injection; 18 unit tests. |
 | **iOS compliance** | 0 / 4 | 0 | 4 | Bundle ID still old; deployment-target mismatch unresolved; no `PrivacyInfo.xcprivacy`; orientations mismatch. |
 | **Repo hygiene** | 3 / 3 | 0 | 0 | ✅ All clean. New repo: `github.com/beacon-health/mobile-app`. Data pipeline: `github.com/beacon-health/beacon-data`. Old repo pending archive. |
 
@@ -97,11 +97,11 @@ The MVP scopes "Favorites", "Eligibility", and "Preferences" filters as **accoun
 
 | Task | Priority | Status |
 |------|----------|--------|
-| Create `GuestModeService` (or `AppAuthState`) `ChangeNotifier` exposing `isGuest`, `isAuthed`, `requireAuth(VoidCallback)` — model on existing [demo_mode_service.dart](lib/core/services/demo_mode_service.dart) singleton + SharedPreferences pattern | **High** | ⬜ TODO |
-| Create reusable `LockedFeatureGate` widget that wraps a child with a lock overlay + tap handler when guest | **High** | ⬜ TODO |
-| Decide and document UX for "locked feature tapped as guest" — modal? bottom sheet? inline message? | **High** | ⬜ TODO |
-| Refactor existing `isGuest` parameter on `MainNavBar` and `ProfilePage` to read from the new provider rather than being passed by hand | **Medium** | ⬜ TODO |
-| Wire central `ErrorReporter` stub (prints in dev, no-op in release; swappable for Sentry/Crashlytics post-MVP) — fixes the empty `catch` blocks in [home_page.dart:77,140,176](lib/features/home/presentation/pages/home_page.dart:77) | **Medium** | ⬜ TODO |
+| Create `GuestModeService` (or `AppAuthState`) `ChangeNotifier` exposing `isGuest`, `isAuthed`, `requireAuth(VoidCallback)` — model on existing [demo_mode_service.dart](lib/core/services/demo_mode_service.dart) singleton + SharedPreferences pattern | **High** | ✅ Done | [guest_mode_service.dart](lib/core/services/guest_mode_service.dart) — subscribes to Supabase auth state changes; handles demo mode + uninitialized Supabase. |
+| Create reusable `LockedFeatureGate` widget that wraps a child with a lock overlay + tap handler when guest | **High** | ✅ Done | [locked_feature_gate.dart](lib/core/widgets/locked_feature_gate.dart) — `Stack` + `IgnorePointer` + `GestureDetector → showSignInPromptDialog`. |
+| Decide and document UX for "locked feature tapped as guest" — modal? bottom sheet? inline message? | **High** | ✅ Done | **Decision: modal dialog** — keeps the existing `showSignInPromptDialog` pattern used throughout the app. `LockedFeatureGate` calls the same dialog. |
+| Refactor existing `isGuest` parameter on `MainNavBar` and `ProfilePage` to read from the new provider rather than being passed by hand | **Medium** | ✅ Done | `isGuest` param removed from `MainNavBar`; `login_page.dart` no longer passes it. `home_page.dart` now reads `context.watch<GuestModeService>().isGuest`. |
+| Wire central `ErrorReporter` stub (prints in dev, no-op in release; swappable for Sentry/Crashlytics post-MVP) — fixes the empty `catch` blocks in [home_page.dart](lib/features/home/presentation/pages/home_page.dart) | **Medium** | ✅ Done | [error_reporter.dart](lib/core/services/error_reporter.dart) — all 4 previously-silent catches now log via `ErrorReporter`; outer `_loadData` catch also shows a user-facing snackbar. |
 
 > **Why this is §2.0 and not §16:** Without `GuestModeService` + `LockedFeatureGate`, the §2.3 / §2.4 / §2.5 lock-state items are **blocked** — implementing them ad-hoc creates refactor debt the moment auth lands post-MVP.
 
@@ -840,7 +840,7 @@ flutter test integration_test/
 - [x] ✅ `SUPABASE_ANON_KEY` replaces service role key in `main.dart`; **still need to plug in actual anon key value** (§4, §8)
 - [x] ✅ `debug: kDebugMode` in Supabase init (§4)
 - [ ] 🚫 **blocks TestFlight:** Author [ios/Runner/PrivacyInfo.xcprivacy](ios/Runner/PrivacyInfo.xcprivacy) — required by Apple; triggers automated ITMS rejection (§4.5, Tranche 7)
-- [ ] `analysis_options.yaml` created, `flutter analyze` passes with no errors (§5.1, Tranche 4)
+- [x] ✅ `analysis_options.yaml` created, `flutter analyze --fatal-infos` passes with no issues (§5.1, Tranche 4)
 - [ ] All MVP features (§2) implemented and manually tested on iOS simulator + physical device
 - [ ] Minimum tests pass (`flutter test`)
 - [x] App icon meets Apple specs ✅ (`app_icon_final.jpg`; 23 icon sizes in `AppIcon.appiconset/`)
@@ -925,25 +925,26 @@ Clean repo live at `github.com/beacon-health/mobile-app`. Data pipeline at `gith
 
 ---
 
-#### Tranche 4 — Dev infrastructure (~3–5 days)
+#### Tranche 4 — Dev infrastructure ✅
 Builds on clean repo; confidence for bulk feature editing.
 
-1. `analysis_options.yaml` with `very_good_analysis` (see §5.1). Run `flutter analyze` and fix all surfaced warnings — expect ~1 day of lint fixes.
-2. GitHub Actions: `flutter analyze` + `flutter test` on every PR, `gitleaks` secrets scan, Dependabot alerts.
-3. Fastlane skeleton: `Appfile` (bundle ID, Apple ID), `Fastfile` with `beta` lane (build + TestFlight upload) and `release` lane.
-4. CI secret-injection: render `Secrets.xcconfig` from `GOOGLE_MAPS_API_KEY` secret (§10); pass `SUPABASE_URL` + `SUPABASE_ANON_KEY` via `--dart-define`.
-5. Fix broken [test/widget_test.dart](test/widget_test.dart) (stale text "Welcome to Beacon!"). Add unit-test stubs for `FacilityFilterService`, `Facility.fromSupabase`, `GuestModeService` (§13).
+1. ✅ `analysis_options.yaml` with `very_good_analysis` (631 → 0 lint issues).
+2. ✅ GitHub Actions CI (`flutter analyze` + `dart format` + `flutter test` on push/PR); iOS build workflow (manual trigger → Fastlane TestFlight). `gitleaks` staged but commented out — requires GitHub Advanced Security or public repo to enable.
+3. ✅ Fastlane skeleton: `Appfile` (bundle ID, Apple ID, Team ID), `Fastfile` with `beta` + `release` lanes.
+4. ✅ CI secret-injection: `Secrets.xcconfig` rendered from `GOOGLE_MAPS_API_KEY`; `SUPABASE_URL` + `SUPABASE_ANON_KEY` via `--dart-define`.
+5. ✅ Fixed broken `test/widget_test.dart`. 18 unit tests across `FacilityFilterService`, `Facility.fromSupabase`, `DemoModeService`, `GuestModeService`.
+6. ✅ `.github/dependabot.yml` for weekly pub + GitHub Actions updates.
 
 ---
 
-#### Tranche 5 — Architectural prerequisites (~2 days)
+#### Tranche 5 — Architectural prerequisites ✅
 Required before §2.3 / §2.4 / §2.5 lock-state UI work can start.
 
-1. `GuestModeService` + `AppAuthState` provider — model on [demo_mode_service.dart](lib/core/services/demo_mode_service.dart) (§2.0).
-2. `LockedFeatureGate` widget — lock overlay + tap handler for guest mode (§2.0).
-3. Decide "locked feature tapped as guest" UX — modal, bottom sheet, or inline message — document in Decision Log.
-4. `ErrorReporter` stub — one-method facade, printable in dev, no-op in release; replace empty `catch` blocks in [home_page.dart:77,140,176](lib/features/home/presentation/pages/home_page.dart:77) (§4.6).
-5. Refactor dangling `isGuest` on `MainNavBar` to use `GuestModeService` (§3.1).
+1. ✅ [GuestModeService](lib/core/services/guest_mode_service.dart) — singleton `ChangeNotifier`; subscribes to Supabase auth state changes; handles demo mode + uninitialized Supabase; provided at app root; tested.
+2. ✅ [LockedFeatureGate](lib/core/widgets/locked_feature_gate.dart) — wraps any child with a `GestureDetector` + `IgnorePointer`; shows `showSignInPromptDialog` on tap when guest.
+3. ✅ UX decision documented: **modal dialog** (`showSignInPromptDialog`) — consistent with existing locked Favorites/Eligibility pattern throughout the app.
+4. ✅ [ErrorReporter](lib/core/services/error_reporter.dart) — single-method facade; `developer.log` in debug, no-op in release; all 4 previously-silent `catch` blocks in `home_page.dart` now report via `ErrorReporter`; outer `_loadData` failure also shows a user snackbar.
+5. ✅ `isGuest` param removed from `MainNavBar`; `login_page.dart` updated; `home_page.dart` reads `context.watch<GuestModeService>().isGuest` for reactive rebuilds on auth state changes.
 
 ---
 

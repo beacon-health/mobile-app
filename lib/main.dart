@@ -1,5 +1,6 @@
 import 'package:beacon_app/app.dart';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -39,6 +40,8 @@ void main() async {
       );
     }
   }
+
+  await GuestModeService().init();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
