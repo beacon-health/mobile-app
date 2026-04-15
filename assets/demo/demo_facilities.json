@@ -1,0 +1,3439 @@
+[
+  {
+    "id": "demo-001",
+    "data_owner": "demo",
+    "facility_name": "Lakeview Community Health Center",
+    "facility_description": "Comprehensive primary care services including preventive care, chronic disease management, and wellness programs for the Lakeview community.",
+    "facility_description_es": "Servicios integrales de atenci\u00f3n primaria incluyendo atenci\u00f3n preventiva y manejo de enfermedades cr\u00f3nicas.",
+    "facility_description_zh": "\u5168\u9762\u7684\u521d\u7ea7\u4fdd\u5065\u670d\u52a1\uff0c\u5305\u62ec\u9884\u9632\u62a4\u7406\u548c\u6162\u6027\u75c5\u7ba1\u7406\u3002",
+    "website_url": "https://example.com/lakeview-health",
+    "contact_email": "info@lakeviewhealth.org",
+    "contact_phones": "(773) 555-0101",
+    "street_address": "3100 N Sheffield Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.9385,
+    "longitude": -87.6536,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "16:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Primary Care"
+      },
+      {
+        "name": "Preventive Screenings"
+      },
+      {
+        "name": "Chronic Disease Management"
+      },
+      {
+        "name": "Immunizations"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Primary Care",
+    "is_favorite": true,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-002",
+    "data_owner": "demo",
+    "facility_name": "Lincoln Park Behavioral Health",
+    "facility_description": "Outpatient mental health services including individual therapy, group counseling, and psychiatric medication management.",
+    "facility_description_es": "Servicios ambulatorios de salud mental incluyendo terapia individual y consejer\u00eda grupal.",
+    "facility_description_zh": "\u95e8\u8bca\u5fc3\u7406\u5065\u5eb7\u670d\u52a1\uff0c\u5305\u62ec\u4e2a\u4eba\u6cbb\u7597\u548c\u56e2\u4f53\u54a8\u8be2\u3002",
+    "website_url": "https://example.com/lp-behavioral",
+    "contact_email": "intake@lpbehavioral.org",
+    "contact_phones": "(773) 555-0102",
+    "street_address": "2450 N Clark St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60614",
+    "country": "US",
+    "latitude": 41.927,
+    "longitude": -87.6437,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Individual Therapy"
+      },
+      {
+        "name": "Group Counseling"
+      },
+      {
+        "name": "Psychiatric Evaluation"
+      },
+      {
+        "name": "Medication Management"
+      }
+    ],
+    "category_level_1": "Mental Health and Substance Use Disorder Services",
+    "category_level_2": "Outpatient Mental Health",
+    "is_favorite": true,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Mental Health"
+  },
+  {
+    "id": "demo-003",
+    "data_owner": "demo",
+    "facility_name": "Wrigleyville Food Pantry",
+    "facility_description": "Free food distribution for families and individuals in need. No proof of income required. Walk-ins welcome.",
+    "facility_description_es": "Distribuci\u00f3n gratuita de alimentos para familias necesitadas. No se requiere comprobante de ingresos.",
+    "facility_description_zh": "\u4e3a\u6709\u9700\u8981\u7684\u5bb6\u5ead\u514d\u8d39\u5206\u53d1\u98df\u7269\u3002\u65e0\u9700\u6536\u5165\u8bc1\u660e\u3002",
+    "website_url": "https://example.com/wrigley-pantry",
+    "contact_email": "help@wrigleyvillepantry.org",
+    "contact_phones": "(773) 555-0103",
+    "street_address": "1027 W Addison St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.947,
+    "longitude": -87.656,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "13:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Food Distribution"
+      },
+      {
+        "name": "Emergency Food Boxes"
+      },
+      {
+        "name": "Baby Formula & Diapers"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Food Assistance",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-004",
+    "data_owner": "demo",
+    "facility_name": "Loop Youth Education Center",
+    "facility_description": "After-school tutoring, GED preparation, ESL classes, and career readiness programs for youth and young adults ages 14-24.",
+    "facility_description_es": "Tutor\u00eda, preparaci\u00f3n para GED y clases de ingl\u00e9s para j\u00f3venes de 14 a 24 a\u00f1os.",
+    "facility_description_zh": "\u4e3a14-24\u5c81\u9752\u5c11\u5e74\u63d0\u4f9b\u8bfe\u540e\u8f85\u5bfc\u548cGED\u51c6\u5907\u8bfe\u7a0b\u3002",
+    "website_url": "https://example.com/uptown-education",
+    "contact_email": "enroll@uptownyouth.org",
+    "contact_phones": "(773) 555-0104",
+    "street_address": "200 E Randolph St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60601",
+    "country": "US",
+    "latitude": 41.8827,
+    "longitude": -87.6233,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "14:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "14:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "14:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "14:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "16:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "GED Preparation"
+      },
+      {
+        "name": "ESL Classes"
+      },
+      {
+        "name": "After-School Tutoring"
+      },
+      {
+        "name": "Career Readiness"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Community Health Education",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-005",
+    "data_owner": "demo",
+    "facility_name": "West Loop Family Services",
+    "facility_description": "Support services for families including parenting classes, family counseling, domestic violence support, and childcare referrals.",
+    "facility_description_es": "Servicios de apoyo familiar incluyendo clases de crianza y consejer\u00eda familiar.",
+    "facility_description_zh": "\u5bb6\u5ead\u652f\u6301\u670d\u52a1\uff0c\u5305\u62ec\u80b2\u513f\u8bfe\u7a0b\u548c\u5bb6\u5ead\u54a8\u8be2\u3002",
+    "website_url": "https://example.com/lv-family",
+    "contact_email": "support@lvfamily.org",
+    "contact_phones": "(773) 555-0105",
+    "street_address": "500 W Madison St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60661",
+    "country": "US",
+    "latitude": 41.8861,
+    "longitude": -87.6488,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:30",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:30",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Parenting Classes"
+      },
+      {
+        "name": "Family Counseling"
+      },
+      {
+        "name": "Domestic Violence Support"
+      },
+      {
+        "name": "Childcare Referrals"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Family Support",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "N",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-006",
+    "data_owner": "demo",
+    "facility_name": "Streeterville Legal Aid Clinic",
+    "facility_description": "Free legal assistance for low-income residents including immigration, housing, family law, and expungement services.",
+    "website_url": "https://example.com/ns-legal",
+    "contact_email": "intake@nslegalaid.org",
+    "contact_phones": "(773) 555-0106",
+    "street_address": "401 N Michigan Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60611",
+    "country": "US",
+    "latitude": 41.895,
+    "longitude": -87.6178,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Immigration Law"
+      },
+      {
+        "name": "Housing Legal Aid"
+      },
+      {
+        "name": "Family Law"
+      },
+      {
+        "name": "Record Expungement"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Patient Advocacy",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "Y",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-007",
+    "data_owner": "demo",
+    "facility_name": "River North Resource Hub",
+    "facility_description": "Community organization providing resource navigation, volunteer coordination, and neighborhood advocacy programs.",
+    "website_url": "https://example.com/lv-hub",
+    "contact_email": "info@lvresourcehub.org",
+    "contact_phones": "(773) 555-0107",
+    "street_address": "750 N Clark St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60654",
+    "country": "US",
+    "latitude": 41.8916,
+    "longitude": -87.632,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Resource Navigation"
+      },
+      {
+        "name": "Volunteer Coordination"
+      },
+      {
+        "name": "Community Advocacy"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Community Organizations",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-008",
+    "data_owner": "demo",
+    "facility_name": "Pilsen Transitional Housing",
+    "facility_description": "Transitional housing program providing safe shelter, case management, and life skills training for individuals experiencing homelessness.",
+    "website_url": "https://example.com/uptown-housing",
+    "contact_email": "referrals@uptownhousing.org",
+    "contact_phones": "(773) 555-0108",
+    "street_address": "1400 S Halsted St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60607",
+    "country": "US",
+    "latitude": 41.857,
+    "longitude": -87.6555,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "tue",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "wed",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "thu",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "fri",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sat",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sun",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Emergency Shelter"
+      },
+      {
+        "name": "Transitional Housing"
+      },
+      {
+        "name": "Case Management"
+      },
+      {
+        "name": "Life Skills Training"
+      }
+    ],
+    "category_level_1": "Housing & Shelter",
+    "category_level_2": "Transitional Housing",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Housing & Shelter"
+  },
+  {
+    "id": "demo-009",
+    "data_owner": "demo",
+    "facility_name": "South Loop Womens Health Clinic",
+    "facility_description": "Women's health services including prenatal care, gynecology, family planning, and breast cancer screening.",
+    "website_url": "https://example.com/ravenswood-womens",
+    "contact_email": "appointments@ravenswoodwomens.org",
+    "contact_phones": "(773) 555-0109",
+    "street_address": "1200 S Michigan Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60605",
+    "country": "US",
+    "latitude": 41.8675,
+    "longitude": -87.627,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "07:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "07:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "07:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "07:30",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "07:30",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Prenatal Care"
+      },
+      {
+        "name": "Gynecology"
+      },
+      {
+        "name": "Family Planning"
+      },
+      {
+        "name": "Cancer Screening"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Women's Health",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-010",
+    "data_owner": "demo",
+    "facility_name": "South Shore Substance Recovery",
+    "facility_description": "Substance use disorder treatment including detox referrals, outpatient programs, AA/NA meetings, and relapse prevention.",
+    "website_url": "https://example.com/nc-recovery",
+    "contact_email": "help@ncrecovery.org",
+    "contact_phones": "(773) 555-0110",
+    "street_address": "7200 S Stony Island Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60649",
+    "country": "US",
+    "latitude": 41.7943,
+    "longitude": -87.5907,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Outpatient Treatment"
+      },
+      {
+        "name": "Detox Referrals"
+      },
+      {
+        "name": "Support Groups"
+      },
+      {
+        "name": "Relapse Prevention"
+      }
+    ],
+    "category_level_1": "Mental Health and Substance Use Disorder Services",
+    "category_level_2": "Substance Use Treatment",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Mental Health"
+  },
+  {
+    "id": "demo-011",
+    "data_owner": "demo",
+    "facility_name": "Boystown Free Clinic",
+    "facility_description": "Free healthcare clinic providing STI testing, HIV prevention (PrEP), primary care, and LGBTQ+ affirming services.",
+    "website_url": "https://example.com/boystown-clinic",
+    "contact_email": "care@boystownclinic.org",
+    "contact_phones": "(773) 555-0111",
+    "street_address": "3300 N Halsted St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60657",
+    "country": "US",
+    "latitude": 41.942,
+    "longitude": -87.649,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "10:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "10:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "STI Testing"
+      },
+      {
+        "name": "HIV Prevention (PrEP)"
+      },
+      {
+        "name": "Primary Care"
+      },
+      {
+        "name": "LGBTQ+ Health Services"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Community Health Center",
+    "is_favorite": true,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-012",
+    "data_owner": "demo",
+    "facility_name": "Bronzeville Senior Services",
+    "facility_description": "Programs for older adults including meals, transportation assistance, social activities, and benefits counseling.",
+    "website_url": "https://example.com/andersonville-seniors",
+    "contact_email": "seniors@andersonvilleservices.org",
+    "contact_phones": "(773) 555-0112",
+    "street_address": "4700 S King Dr",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60615",
+    "country": "US",
+    "latitude": 41.8119,
+    "longitude": -87.6155,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Congregate Meals"
+      },
+      {
+        "name": "Transportation Assistance"
+      },
+      {
+        "name": "Social Activities"
+      },
+      {
+        "name": "Benefits Counseling"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Senior Services",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-013",
+    "data_owner": "demo",
+    "facility_name": "Little Village Emergency Shelter",
+    "facility_description": "Overnight emergency shelter with meals, showers, and connection to permanent housing programs. Open year-round.",
+    "website_url": "https://example.com/ls-shelter",
+    "contact_email": "intake@lsshelter.org",
+    "contact_phones": "(773) 555-0113",
+    "street_address": "4000 W 26th St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60623",
+    "country": "US",
+    "latitude": 41.8448,
+    "longitude": -87.7149,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      },
+      {
+        "day": "sun",
+        "opens_at": "17:00",
+        "closes_at": "08:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Overnight Shelter"
+      },
+      {
+        "name": "Meals"
+      },
+      {
+        "name": "Showers"
+      },
+      {
+        "name": "Housing Referrals"
+      }
+    ],
+    "category_level_1": "Housing & Shelter",
+    "category_level_2": "Emergency Shelter",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Housing & Shelter"
+  },
+  {
+    "id": "demo-014",
+    "data_owner": "demo",
+    "facility_name": "Chinatown Dental Clinic",
+    "facility_description": "Affordable dental care on a sliding fee scale. Services include cleanings, fillings, extractions, and emergency dental care.",
+    "website_url": "https://example.com/ravenswood-dental",
+    "contact_email": "appointments@ravenswooddental.org",
+    "contact_phones": "(773) 555-0114",
+    "street_address": "1800 S State St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60616",
+    "country": "US",
+    "latitude": 41.8525,
+    "longitude": -87.6315,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Dental Cleanings"
+      },
+      {
+        "name": "Fillings & Extractions"
+      },
+      {
+        "name": "Emergency Dental Care"
+      },
+      {
+        "name": "Pediatric Dentistry"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Dental Care",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-015",
+    "data_owner": "demo",
+    "facility_name": "North Side Crisis Hotline Center",
+    "facility_description": "24/7 crisis intervention services including suicide prevention, de-escalation, and connections to emergency psychiatric services.",
+    "website_url": "https://example.com/ns-crisis",
+    "contact_email": "crisis@nscrisis.org",
+    "contact_phones": "(773) 555-0115",
+    "street_address": "3800 N Ashland Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.951,
+    "longitude": -87.6693,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "tue",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "wed",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "thu",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "fri",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sat",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sun",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Crisis Hotline"
+      },
+      {
+        "name": "Suicide Prevention"
+      },
+      {
+        "name": "Emergency Psychiatric Referrals"
+      },
+      {
+        "name": "De-escalation Support"
+      }
+    ],
+    "category_level_1": "Mental Health and Substance Use Disorder Services",
+    "category_level_2": "Crisis Services",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Mental Health"
+  },
+  {
+    "id": "demo-016",
+    "data_owner": "demo",
+    "facility_name": "West Loop Adult Literacy Center",
+    "facility_description": "Free adult education including literacy classes, computer skills, financial literacy, and citizenship preparation.",
+    "website_url": "https://example.com/lv-literacy",
+    "contact_email": "classes@lvliteracy.org",
+    "contact_phones": "(773) 555-0116",
+    "street_address": "130 S Canal St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60606",
+    "country": "US",
+    "latitude": 41.8712,
+    "longitude": -87.6503,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Adult Literacy"
+      },
+      {
+        "name": "Computer Skills"
+      },
+      {
+        "name": "Financial Literacy"
+      },
+      {
+        "name": "Citizenship Preparation"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Health Literacy Programs",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "N",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-017",
+    "data_owner": "demo",
+    "facility_name": "Roscoe Village Clothing Bank",
+    "facility_description": "Free clothing and household items for families in need. Seasonal coat drives and school supply distribution.",
+    "website_url": "https://example.com/rv-clothing",
+    "contact_email": "donate@rvclothing.org",
+    "contact_phones": "(773) 555-0117",
+    "street_address": "2100 W Roscoe St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60618",
+    "country": "US",
+    "latitude": 41.9433,
+    "longitude": -87.6802,
+    "locations": null,
+    "hours": [
+      {
+        "day": "tue",
+        "opens_at": "10:00",
+        "closes_at": "15:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "10:00",
+        "closes_at": "15:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "13:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Free Clothing"
+      },
+      {
+        "name": "Household Items"
+      },
+      {
+        "name": "School Supplies"
+      },
+      {
+        "name": "Seasonal Coat Drives"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Clothing & Household",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-018",
+    "data_owner": "demo",
+    "facility_name": "Auburn Gresham Immigration Svcs",
+    "facility_description": "Immigration legal assistance, DACA renewals, naturalization support, and Know Your Rights workshops.",
+    "website_url": "https://example.com/edgewater-immigration",
+    "contact_email": "help@edgewaterimmigration.org",
+    "contact_phones": "(773) 555-0118",
+    "street_address": "7900 S Halsted St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60620",
+    "country": "US",
+    "latitude": 41.775,
+    "longitude": -87.65,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Immigration Legal Aid"
+      },
+      {
+        "name": "DACA Renewals"
+      },
+      {
+        "name": "Naturalization Support"
+      },
+      {
+        "name": "Know Your Rights Workshops"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Community Health Navigation",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-019",
+    "data_owner": "demo",
+    "facility_name": "Downtown Community Action Network",
+    "facility_description": "Grassroots community organizing, civic engagement programs, and neighborhood improvement initiatives.",
+    "website_url": "https://example.com/nscan",
+    "contact_email": "join@nscan.org",
+    "contact_phones": "(773) 555-0119",
+    "street_address": "111 E Wacker Dr",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60601",
+    "country": "US",
+    "latitude": 41.8802,
+    "longitude": -87.6297,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "10:00",
+        "closes_at": "20:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Community Organizing"
+      },
+      {
+        "name": "Civic Engagement"
+      },
+      {
+        "name": "Neighborhood Improvement"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Community Action",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-020",
+    "data_owner": "demo",
+    "facility_name": "Wrigleyville Pediatric Clinic",
+    "facility_description": "Pediatric primary care, well-child visits, immunizations, developmental screenings, and behavioral health for children.",
+    "website_url": "https://example.com/wrigley-peds",
+    "contact_email": "kids@wrigleyvillepeds.org",
+    "contact_phones": "(773) 555-0120",
+    "street_address": "3700 N Clark St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.9498,
+    "longitude": -87.6437,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "15:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "12:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Pediatric Primary Care"
+      },
+      {
+        "name": "Well-Child Visits"
+      },
+      {
+        "name": "Immunizations"
+      },
+      {
+        "name": "Developmental Screenings"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Pediatrics",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-021",
+    "data_owner": "demo",
+    "facility_name": "West Loop Rent Assistance",
+    "facility_description": "Emergency rent and utility assistance for residents facing eviction. Financial counseling and budgeting workshops available.",
+    "website_url": "https://example.com/lp-rent",
+    "contact_email": "apply@lprent.org",
+    "contact_phones": "(773) 555-0121",
+    "street_address": "400 S Green St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60607",
+    "country": "US",
+    "latitude": 41.884,
+    "longitude": -87.657,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Emergency Rent Assistance"
+      },
+      {
+        "name": "Utility Assistance"
+      },
+      {
+        "name": "Financial Counseling"
+      },
+      {
+        "name": "Budgeting Workshops"
+      }
+    ],
+    "category_level_1": "Housing & Shelter",
+    "category_level_2": "Rent Assistance",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Housing & Shelter"
+  },
+  {
+    "id": "demo-022",
+    "data_owner": "demo",
+    "facility_name": "Bridgeport Refugee Resettlement",
+    "facility_description": "Resettlement services for refugees including housing placement, job training, cultural orientation, and language classes.",
+    "website_url": "https://example.com/ap-refugee",
+    "contact_email": "welcome@aprefugee.org",
+    "contact_phones": "(773) 555-0122",
+    "street_address": "3500 S Archer Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60608",
+    "country": "US",
+    "latitude": 41.829,
+    "longitude": -87.664,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:30",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:30",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Housing Placement"
+      },
+      {
+        "name": "Job Training"
+      },
+      {
+        "name": "Cultural Orientation"
+      },
+      {
+        "name": "Language Classes"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Refugee Services",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-023",
+    "data_owner": "demo",
+    "facility_name": "Hermosa Child Development Center",
+    "facility_description": "Early childhood education, developmental therapy, speech-language pathology, and occupational therapy for children 0-5.",
+    "website_url": "https://example.com/bucktown-child",
+    "contact_email": "enroll@bucktownchild.org",
+    "contact_phones": "(773) 555-0123",
+    "street_address": "2500 N Pulaski Rd",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60639",
+    "country": "US",
+    "latitude": 41.92,
+    "longitude": -87.705,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "07:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "07:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "07:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "07:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "07:00",
+        "closes_at": "17:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Early Childhood Education"
+      },
+      {
+        "name": "Developmental Therapy"
+      },
+      {
+        "name": "Speech-Language Pathology"
+      },
+      {
+        "name": "Occupational Therapy"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Pediatric Development",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-024",
+    "data_owner": "demo",
+    "facility_name": "North Side Veterans Resource Center",
+    "facility_description": "Services for veterans including benefits assistance, employment support, mental health counseling, and peer support groups.",
+    "website_url": "https://example.com/ns-veterans",
+    "contact_email": "vets@nsveterans.org",
+    "contact_phones": "(773) 555-0124",
+    "street_address": "3900 N Sheridan Rd",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.953,
+    "longitude": -87.6533,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Veterans Benefits Assistance"
+      },
+      {
+        "name": "Employment Support"
+      },
+      {
+        "name": "Mental Health Counseling"
+      },
+      {
+        "name": "Peer Support Groups"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Veterans Services",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-025",
+    "data_owner": "demo",
+    "facility_name": "South Side Harm Reduction Center",
+    "facility_description": "Harm reduction services including naloxone distribution, syringe exchange, HIV/HCV testing, and wound care.",
+    "website_url": "https://example.com/uptown-harm",
+    "contact_email": "outreach@uptownharm.org",
+    "contact_phones": "(773) 555-0125",
+    "street_address": "8300 S Ashland Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60620",
+    "country": "US",
+    "latitude": 41.768,
+    "longitude": -87.659,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "10:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "10:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "10:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Naloxone Distribution"
+      },
+      {
+        "name": "Syringe Exchange"
+      },
+      {
+        "name": "HIV/HCV Testing"
+      },
+      {
+        "name": "Wound Care"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Harm Reduction",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-026",
+    "data_owner": "demo",
+    "facility_name": "Lakeview Telehealth Connect",
+    "facility_description": "Virtual healthcare services including primary care, mental health, and chronic disease follow-up via secure video visits.",
+    "website_url": "https://example.com/lv-telehealth",
+    "contact_email": "virtual@lvtelehealth.org",
+    "contact_phones": "(773) 555-0126",
+    "street_address": "3400 N Ashland Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60657",
+    "country": "US",
+    "latitude": 41.9438,
+    "longitude": -87.6693,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "07:00",
+        "closes_at": "21:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "07:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "08:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Virtual Primary Care"
+      },
+      {
+        "name": "Virtual Mental Health"
+      },
+      {
+        "name": "Chronic Disease Follow-up"
+      },
+      {
+        "name": "Prescription Management"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Telehealth",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-027",
+    "data_owner": "demo",
+    "facility_name": "Roseland Soup Kitchen",
+    "facility_description": "Hot meals served daily. No ID or documentation required. Grocery bag distribution on Saturdays.",
+    "website_url": "https://example.com/rp-soup",
+    "contact_email": "volunteer@rpsoupkitchen.org",
+    "contact_phones": "(773) 555-0127",
+    "street_address": "9500 S Cottage Grove Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60628",
+    "country": "US",
+    "latitude": 41.75,
+    "longitude": -87.624,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "11:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "11:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "11:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "11:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "11:00",
+        "closes_at": "14:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Hot Meals"
+      },
+      {
+        "name": "Grocery Distribution"
+      },
+      {
+        "name": "Snack Packs"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Meal Programs",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-028",
+    "data_owner": "demo",
+    "facility_name": "Wicker Park Youth Mentoring Program",
+    "facility_description": "One-on-one mentoring, leadership development, and college readiness programs for at-risk youth ages 12-18.",
+    "website_url": "https://example.com/wp-mentoring",
+    "contact_email": "mentors@wpyouth.org",
+    "contact_phones": "(773) 555-0128",
+    "street_address": "1600 N Milwaukee Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60622",
+    "country": "US",
+    "latitude": 41.9108,
+    "longitude": -87.6718,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "15:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "15:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "15:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "15:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "One-on-One Mentoring"
+      },
+      {
+        "name": "Leadership Development"
+      },
+      {
+        "name": "College Readiness"
+      },
+      {
+        "name": "Life Skills"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Youth Wellness Programs",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-029",
+    "data_owner": "demo",
+    "facility_name": "Pilsen DV Safe House",
+    "facility_description": "Confidential emergency shelter for domestic violence survivors and their children. 24/7 crisis hotline and safety planning.",
+    "website_url": "https://example.com/ns-safehouse",
+    "contact_email": "crisis@nssafehouse.org",
+    "contact_phones": "(773) 555-0129",
+    "street_address": "Confidential Location",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60608",
+    "country": "US",
+    "latitude": 41.85,
+    "longitude": -87.685,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "tue",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "wed",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "thu",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "fri",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sat",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      },
+      {
+        "day": "sun",
+        "opens_at": "00:00",
+        "closes_at": "23:59"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Emergency Shelter"
+      },
+      {
+        "name": "24/7 Crisis Hotline"
+      },
+      {
+        "name": "Safety Planning"
+      },
+      {
+        "name": "Legal Advocacy"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Domestic Violence",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-030",
+    "data_owner": "demo",
+    "facility_name": "Ravenswood Pharmacy Assistance",
+    "facility_description": "Prescription assistance programs, medication counseling, and connections to manufacturer discount programs.",
+    "website_url": "https://example.com/ravenswood-rx",
+    "contact_email": "rx@ravenswoodrx.org",
+    "contact_phones": "(773) 555-0130",
+    "street_address": "1850 W Irving Park Rd",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.9538,
+    "longitude": -87.6762,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Prescription Assistance"
+      },
+      {
+        "name": "Medication Counseling"
+      },
+      {
+        "name": "Discount Program Enrollment"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Pharmacy",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-031",
+    "data_owner": "demo",
+    "facility_name": "Near West Job Training Center",
+    "facility_description": "Workforce development programs including resume building, interview prep, vocational training, and job placement services.",
+    "website_url": "https://example.com/andersonville-jobs",
+    "contact_email": "jobs@andersonvillejobs.org",
+    "contact_phones": "(773) 555-0131",
+    "street_address": "1200 W Jackson Blvd",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60607",
+    "country": "US",
+    "latitude": 41.867,
+    "longitude": -87.669,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Resume Building"
+      },
+      {
+        "name": "Interview Preparation"
+      },
+      {
+        "name": "Vocational Training"
+      },
+      {
+        "name": "Job Placement"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Healthcare Workforce Training",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "N",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-032",
+    "data_owner": "demo",
+    "facility_name": "Ukrainian Village Food Co-op",
+    "facility_description": "Community garden plots, fresh produce distribution, nutrition classes, and cooking workshops for local residents.",
+    "website_url": "https://example.com/ls-garden",
+    "contact_email": "grow@lsgarden.org",
+    "contact_phones": "(773) 555-0132",
+    "street_address": "1000 N Ashland Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60622",
+    "country": "US",
+    "latitude": 41.899,
+    "longitude": -87.677,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "18:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "08:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Community Garden"
+      },
+      {
+        "name": "Fresh Produce Distribution"
+      },
+      {
+        "name": "Nutrition Classes"
+      },
+      {
+        "name": "Cooking Workshops"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Food Access",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "N",
+    "insurance_required": "Y",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-033",
+    "data_owner": "demo",
+    "facility_name": "Humboldt Park Reentry Services",
+    "facility_description": "Support for formerly incarcerated individuals including housing assistance, employment, and connections to social services.",
+    "website_url": "https://example.com/hp-reentry",
+    "contact_email": "support@hpreentry.org",
+    "contact_phones": "(773) 555-0133",
+    "street_address": "2800 W Chicago Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60622",
+    "country": "US",
+    "latitude": 41.902,
+    "longitude": -87.697,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Housing Assistance"
+      },
+      {
+        "name": "Employment Support"
+      },
+      {
+        "name": "Case Management"
+      },
+      {
+        "name": "Social Service Referrals"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Behavioral Health Support",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "N",
+    "other_languages": "N",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-034",
+    "data_owner": "demo",
+    "facility_name": "North Shore Vision Care",
+    "facility_description": "Low-cost eye exams, prescription glasses, and vision screening. Accepts Medicaid and offers sliding scale fees.",
+    "website_url": "https://example.com/ns-vision",
+    "contact_email": "eyes@nsvision.org",
+    "contact_phones": "(773) 555-0134",
+    "street_address": "4000 N Sheridan Rd",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.9545,
+    "longitude": -87.654,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "13:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Eye Exams"
+      },
+      {
+        "name": "Prescription Glasses"
+      },
+      {
+        "name": "Vision Screening"
+      },
+      {
+        "name": "Pediatric Eye Care"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Vision Care",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "Y",
+    "sliding_scale_available": "Y",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-035",
+    "data_owner": "demo",
+    "facility_name": "Loop Housing Authority",
+    "facility_description": "Affordable housing applications, Section 8 voucher assistance, tenant rights advocacy, and landlord mediation.",
+    "website_url": "https://example.com/lv-housing",
+    "contact_email": "housing@lvhousing.org",
+    "contact_phones": "(773) 555-0135",
+    "street_address": "100 E Lake St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60601",
+    "country": "US",
+    "latitude": 41.88,
+    "longitude": -87.617,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:30",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Section 8 Assistance"
+      },
+      {
+        "name": "Affordable Housing Applications"
+      },
+      {
+        "name": "Tenant Rights Advocacy"
+      },
+      {
+        "name": "Landlord Mediation"
+      }
+    ],
+    "category_level_1": "Housing & Shelter",
+    "category_level_2": "Affordable Housing",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "N",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Housing & Shelter"
+  },
+  {
+    "id": "demo-036",
+    "data_owner": "demo",
+    "facility_name": "South Loop Community Acupuncture",
+    "facility_description": "Affordable community acupuncture clinic offering pain management, stress reduction, and addiction recovery support.",
+    "website_url": "https://example.com/edge-acu",
+    "contact_email": "book@edgeacu.org",
+    "contact_phones": "(773) 555-0136",
+    "street_address": "2100 S Indiana Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60616",
+    "country": "US",
+    "latitude": 41.842,
+    "longitude": -87.62,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "10:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "10:00",
+        "closes_at": "19:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "10:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "10:00",
+        "closes_at": "15:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Community Acupuncture"
+      },
+      {
+        "name": "Pain Management"
+      },
+      {
+        "name": "Stress Reduction"
+      },
+      {
+        "name": "Addiction Recovery Support"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Alternative Medicine",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "Y",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "Y",
+    "other_languages": "Y",
+    "telehealth_available": "Y",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  },
+  {
+    "id": "demo-037",
+    "data_owner": "demo",
+    "facility_name": "Marquette Park Utility Assistance",
+    "facility_description": "LIHEAP applications, utility bill assistance, weatherization programs, and energy efficiency education.",
+    "website_url": "https://example.com/ip-utility",
+    "contact_email": "apply@iputility.org",
+    "contact_phones": "(773) 555-0137",
+    "street_address": "6300 S Kedzie Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60629",
+    "country": "US",
+    "latitude": 41.785,
+    "longitude": -87.72,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "16:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "LIHEAP Applications"
+      },
+      {
+        "name": "Utility Bill Assistance"
+      },
+      {
+        "name": "Weatherization"
+      },
+      {
+        "name": "Energy Efficiency Education"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Utility Assistance",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "Y",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "N",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-038",
+    "data_owner": "demo",
+    "facility_name": "River North Family Therapy",
+    "facility_description": "Outpatient family and couples therapy, play therapy for children, and trauma-informed therapeutic services.",
+    "website_url": "https://example.com/nc-therapy",
+    "contact_email": "therapy@ncfti.org",
+    "contact_phones": "(773) 555-0138",
+    "street_address": "600 N State St",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60654",
+    "country": "US",
+    "latitude": 41.895,
+    "longitude": -87.64,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "09:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Family Therapy"
+      },
+      {
+        "name": "Couples Therapy"
+      },
+      {
+        "name": "Play Therapy"
+      },
+      {
+        "name": "Trauma-Informed Care"
+      }
+    ],
+    "category_level_1": "Mental Health and Substance Use Disorder Services",
+    "category_level_2": "Family Therapy",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "N",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "N",
+    "accepts_walkins": "Y",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "U",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "Y",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Mental Health"
+  },
+  {
+    "id": "demo-039",
+    "data_owner": "demo",
+    "facility_name": "Near South SNAP Benefits Office",
+    "facility_description": "SNAP enrollment assistance, WIC registration, and connections to additional food assistance programs.",
+    "website_url": "https://example.com/lp-snap",
+    "contact_email": "enroll@lpsnap.org",
+    "contact_phones": "(773) 555-0139",
+    "street_address": "2000 S Prairie Ave",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60616",
+    "country": "US",
+    "latitude": 41.853,
+    "longitude": -87.617,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:30",
+        "closes_at": "16:30"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:30",
+        "closes_at": "14:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "SNAP Enrollment"
+      },
+      {
+        "name": "WIC Registration"
+      },
+      {
+        "name": "Food Assistance Referrals"
+      }
+    ],
+    "category_level_1": "Basic Needs",
+    "category_level_2": "Benefits Enrollment",
+    "is_favorite": false,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "Y",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "Y",
+    "open_to_immigrants": "N",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "N",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Basic Needs"
+  },
+  {
+    "id": "demo-040",
+    "data_owner": "demo",
+    "facility_name": "Wrigleyville Walk-In Urgent Care",
+    "facility_description": "Walk-in urgent care for non-emergency medical issues. No appointment needed. X-ray and lab services on-site.",
+    "website_url": "https://example.com/wrigley-urgent",
+    "contact_email": "care@wrigleyurgent.org",
+    "contact_phones": "(773) 555-0140",
+    "street_address": "3800 N Broadway",
+    "city": "Chicago",
+    "state": "IL",
+    "postal_code": "60613",
+    "country": "US",
+    "latitude": 41.951,
+    "longitude": -87.6445,
+    "locations": null,
+    "hours": [
+      {
+        "day": "mon",
+        "opens_at": "08:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "tue",
+        "opens_at": "08:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "wed",
+        "opens_at": "08:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "thu",
+        "opens_at": "08:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "fri",
+        "opens_at": "08:00",
+        "closes_at": "20:00"
+      },
+      {
+        "day": "sat",
+        "opens_at": "09:00",
+        "closes_at": "17:00"
+      },
+      {
+        "day": "sun",
+        "opens_at": "10:00",
+        "closes_at": "16:00"
+      }
+    ],
+    "service_areas": null,
+    "services": [
+      {
+        "name": "Urgent Care"
+      },
+      {
+        "name": "X-Ray"
+      },
+      {
+        "name": "Lab Services"
+      },
+      {
+        "name": "Minor Injury Treatment"
+      }
+    ],
+    "category_level_1": "Health Care",
+    "category_level_2": "Urgent Care",
+    "is_favorite": true,
+    "operational": "Y",
+    "proof_of_income": "Y",
+    "proof_of_residency": "N",
+    "insurance_required": "N",
+    "referral_required": "Y",
+    "accepts_walkins": "N",
+    "appointment_only": "N",
+    "open_to_immigrants": "Y",
+    "age_restriction": "N",
+    "restricted_groups": "N",
+    "free_services_available": "N",
+    "sliding_scale_available": "N",
+    "other_languages": "N",
+    "telehealth_available": "N",
+    "wheelchair_accessible": "N",
+    "serves_outside_area": "Y",
+    "direct_services": "Y",
+    "hours_listed": "Y",
+    "operating_hours": null,
+    "other_eligibility_summary": null,
+    "services_summary": null,
+    "facility_category": null,
+    "app_category": "Health Care"
+  }
+]

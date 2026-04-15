@@ -1,0 +1,2 @@
+/Users/rohan/Documents/Beacon/beacon-app/android/app/.cxx/Debug/w1a17406/x86/CMakeFiles/edit_cache.dir
+/Users/rohan/Documents/Beacon/beacon-app/android/app/.cxx/Debug/w1a17406/x86/CMakeFiles/rebuild_cache.dir
