@@ -13,8 +13,8 @@ A Flutter iOS app helping users find free and low-cost healthcare facilities in 
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/beacon-health/beacon-app.git
-   cd beacon-app
+   git clone https://github.com/beacon-health/mobile-app.git
+   cd mobile-app
    ```
 
 2. **Install dependencies:**

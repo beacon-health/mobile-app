@@ -14,7 +14,7 @@
 | **Critical security fixes** (§4) | 3 / 3 | 0 | 0 | ✅ `.env` removed from assets; anon key migration done; `debug: kDebugMode`. `PrivacyInfo.xcprivacy` still needed (Tranche 7). |
 | **Dev infrastructure** | 0 / 5 | 0 | 5 | No `analysis_options.yaml`, no CI, no Fastlane, no test scaffolding, no secrets-on-CI plumbing. |
 | **iOS compliance** | 0 / 4 | 0 | 4 | Bundle ID still old; deployment-target mismatch unresolved; no `PrivacyInfo.xcprivacy`; orientations mismatch. |
-| **Repo hygiene** | 2 / 3 | 0 | 1 | ✅ `.DS_Store` untracked; ✅ `pubspec.lock` staged; ✅ `GoogleService-Info.plist` ×2 untracked; ✅ `.windsurf/` untracked. `database/` split = Tranche 3. |
+| **Repo hygiene** | 3 / 3 | 0 | 0 | ✅ All clean. New repo: `github.com/beacon-health/mobile-app`. Data pipeline: `github.com/beacon-health/beacon-data`. Old repo pending archive. |
 
 > See [§15.5 Work Sequencing Tranches](#155-work-sequencing-tranches) for the dependency-ordered plan to close the rest.
 
@@ -894,8 +894,8 @@ This iteration of `MVP_RELEASE.md`. Establishes ground truth before anything els
 
 ---
 
-#### Tranche 3 — Repository migration (~1 day)
-Do before feature commits so all new work lands in the clean repo.
+#### Tranche 3 — Repository migration ✅
+Clean repo live at `github.com/beacon-health/mobile-app`. Data pipeline at `github.com/beacon-health/beacon-data`.
 
 **Pre-migration audit (2026-04-15) — all items resolved ✅:**
 
@@ -914,20 +914,14 @@ Do before feature commits so all new work lands in the clean repo.
 | `test/widget_test.dart` broken (stale text) | ⚠️ Known — fix in Tranche 4 |
 | Git history tainted with secrets | ⚠️ Known — clean `--orphan` migration resolves this |
 
-**Migration steps:**
+**Outcome:**
 
-1. Create new private GitHub repo (`beacon-health/beacon-app` or similar).
-2. In current repo: `git checkout --orphan clean-main && git add -A && git commit -m "Initial MVP release"`.
-3. **Exclude from new repo** (do NOT `git add`):
-   - `database/` — stays in current repo as data pipeline
-   - `web/` — vestigial; iOS-only target
-   - `.windsurf/` — agent config (already gitignored)
-   - `.claude/` — agent config (already gitignored)
-   - `AuthKey_99WRH2CRMQ.p8` — already gitignored; move outside repo dir
-   - `.env` — already gitignored; no longer read by app
-4. Push to new remote; set as origin.
-5. Old repo retains only the `database/` folder (data pipeline).
-6. Update local clone, CI references, any README links.
+- ✅ Clean orphan commit pushed to `github.com/beacon-health/mobile-app` (SSH)
+- ✅ `database/` moved to `github.com/beacon-health/beacon-data`
+- ✅ `web/` excluded from new repo
+- ✅ `AuthKey_99WRH2CRMQ.p8` moved to `~/keys/` (outside repo)
+- ✅ `README.md` clone URL updated to `mobile-app`
+- ⚠️ Archive `github.com/beacon-health/beacon-app` (old repo) via GitHub web UI — Settings → Danger Zone → Archive
 
 ---
 
