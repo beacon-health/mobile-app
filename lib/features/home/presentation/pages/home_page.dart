@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
@@ -15,7 +17,6 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int, Facility?, {String? categoryFilter})? onNavigateToMap;
@@ -75,8 +76,13 @@ class _HomePageState extends State<HomePage>
         );
         latitude = locationResult.latitude;
         longitude = locationResult.longitude;
-      } catch (_) {
+      } catch (e, stackTrace) {
         // Location unavailable — use defaults above.
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'HomePage._loadData.location',
+        );
       }
 
       final facilities = await _facilityRepository
@@ -140,13 +146,22 @@ class _HomePageState extends State<HomePage>
           await _mapController!.animateCamera(
             CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
           );
-        } catch (_) {
+        } catch (e, stackTrace) {
           // Camera animation failure is non-critical.
+          ErrorReporter.instance.report(
+            e,
+            stackTrace,
+            context: 'HomePage.cameraAnimate',
+          );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(e, stackTrace, context: 'HomePage._loadData');
       if (mounted) {
         facilityProvider.setLoading(false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Couldn't load facilities — try again")),
+        );
       }
     }
   }
@@ -207,6 +222,7 @@ class _HomePageState extends State<HomePage>
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final isGuest = context.watch<GuestModeService>().isGuest;
 
     return Scaffold(
       body: Padding(
@@ -240,7 +256,7 @@ class _HomePageState extends State<HomePage>
               ),
             ),
             const SizedBox(height: 8),
-            Expanded(child: _buildFavoritesSection(l10n)),
+            Expanded(child: _buildFavoritesSection(l10n, isGuest: isGuest)),
             const SizedBox(height: 12),
           ],
         ),
@@ -388,10 +404,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  bool get _isGuest => Supabase.instance.client.auth.currentUser == null;
-
-  Widget _buildFavoritesSection(AppLocalizations l10n) {
-    if (_isGuest) {
+  Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
+    if (isGuest) {
       return GestureDetector(
         onTap: () => showSignInPromptDialog(context),
         child: Center(

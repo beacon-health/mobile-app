@@ -152,9 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              const MainNavBar(
-                                            isGuest: true,
-                                          ),
+                                              const MainNavBar(),
                                         ),
                                       );
                                     },

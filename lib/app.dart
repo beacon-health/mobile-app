@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/constants/app_routes.dart';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
@@ -25,6 +26,9 @@ class BeaconApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<DemoModeService>.value(
           value: DemoModeService(),
+        ),
+        ChangeNotifierProvider<GuestModeService>.value(
+          value: GuestModeService(),
         ),
         ChangeNotifierProvider<LocaleProvider>.value(
           value: LocaleProvider(),
