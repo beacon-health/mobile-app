@@ -3,6 +3,7 @@ import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,6 +43,7 @@ void main() async {
   }
 
   await GuestModeService().init();
+  await ZipCodeService().init();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

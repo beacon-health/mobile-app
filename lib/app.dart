@@ -3,8 +3,8 @@ import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/auth/presentation/pages/criteria_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
@@ -29,6 +29,9 @@ class BeaconApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<GuestModeService>.value(
           value: GuestModeService(),
+        ),
+        ChangeNotifierProvider<ZipCodeService>.value(
+          value: ZipCodeService(),
         ),
         ChangeNotifierProvider<LocaleProvider>.value(
           value: LocaleProvider(),
@@ -56,7 +59,6 @@ class BeaconApp extends StatelessWidget {
             home: const AuthGate(),
             routes: {
               AppRoutes.login: (context) => const LoginPage(),
-              AppRoutes.criteria: (context) => const CriteriaPage(),
               AppRoutes.main: (context) => const MainNavBar(),
             },
           );

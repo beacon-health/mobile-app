@@ -23,7 +23,7 @@ class _FacilitySearchState extends State<FacilitySearch> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.search, color: Colors.grey),
+        Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         const SizedBox(width: 12),
         Expanded(
           child: TextField(
@@ -36,14 +36,14 @@ class _FacilitySearchState extends State<FacilitySearch> {
               filled: false,
               fillColor: Colors.transparent,
             ),
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             textAlignVertical: TextAlignVertical.center,
             onChanged: (_) => widget.onChanged(),
           ),
         ),
         if (widget.controller.text.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.clear, color: Colors.grey),
+            icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
             onPressed: () {
               widget.controller.clear();
               widget.onClear();

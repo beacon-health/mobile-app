@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
@@ -11,7 +12,6 @@ import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
-import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
 import 'package:beacon_app/features/map/presentation/services/marker_management_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -20,12 +20,10 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_l
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
-import 'package:beacon_app/features/map/presentation/widgets/search/location_search.dart';
 import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -64,6 +62,7 @@ class MapPageState extends State<MapPage>
   bool get _showFacilityNames => _currentZoom >= MapConstants.detailZoom;
   final Set<String> _selectedCategories = {};
   Map<EligibilityRequirement, bool?> _selectedEligibilityRequirements = {};
+  Map<PreferenceRequirement, bool?> _selectedPreferenceRequirements = {};
   bool _showFavoritesOnly = false;
   bool _showOpenNowOnly = false;
   final Map<String, BitmapDescriptor> _markerIconCache = {};
@@ -71,9 +70,8 @@ class MapPageState extends State<MapPage>
   bool _isUpdatingMarkers = false;
 
   double _selectedDistance = MapConstants.distanceOptions.first;
-  String _currentLocation = 'Current Location';
-
-  bool get _isGuest => Supabase.instance.client.auth.currentUser == null;
+  late String _currentLocation;
+  Brightness? _lastBrightness;
 
   double _currentLatitude = MapConstants.defaultLatitude;
   double _currentLongitude = MapConstants.defaultLongitude;
@@ -84,14 +82,33 @@ class MapPageState extends State<MapPage>
     final isDemoMode = DemoModeService().isDemoMode;
     _facilityRepository =
         isDemoMode ? DemoFacilityRepository() : FacilityRepository();
+
+    // Initialise location from ZipCodeService (set during onboarding).
+    final zipService = ZipCodeService();
+    _currentLatitude = zipService.latitude;
+    _currentLongitude = zipService.longitude;
+    _currentLocation = zipService.zipCode?.isNotEmpty == true
+        ? zipService.zipCode!
+        : 'Current Location';
+
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleKeyboardMetrics();
+      _loadFacilities();
     });
-    _tryGetCurrentLocationOnStartup();
     _isPanelOpen = true;
     _searchFocusNode.addListener(_onSearchFocusChange);
-    _loadMapStyle();
+    // Map style is loaded in didChangeDependencies so it reacts to theme changes.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (brightness != _lastBrightness) {
+      _lastBrightness = brightness;
+      _loadMapStyle();
+    }
   }
 
   @override
@@ -179,9 +196,10 @@ class MapPageState extends State<MapPage>
   String? _mapStyle;
 
   Future<void> _loadMapStyle() async {
-    _mapStyle ??= await MapStyleService.loadMapStyle();
+    final brightness = _lastBrightness ?? Brightness.light;
+    final style = await MapStyleService.loadMapStyle(brightness: brightness);
     if (mounted) {
-      setState(() {});
+      setState(() => _mapStyle = style);
     }
   }
 
@@ -290,92 +308,12 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  void _onLocationChanged(
-    String location,
-    double? latitude,
-    double? longitude,
-  ) {
-    final bool locationActuallyChanged = latitude != null &&
-        longitude != null &&
-        LocationService.hasLocationChanged(
-          _currentLatitude,
-          _currentLongitude,
-          latitude,
-          longitude,
-        );
-
-    setState(() {
-      _currentLocation = location;
-      if (latitude != null && longitude != null) {
-        _currentLatitude = latitude;
-        _currentLongitude = longitude;
-      }
-    });
-
-    if (locationActuallyChanged) {
-      _loadFacilities();
-      _centerMapOnCurrentLocation();
-    } else {
-      _centerMapOnCurrentLocation();
-    }
-  }
-
-  void _onLocationSearchFocusChange(bool hasFocus) {
-    setState(() {
-      if (hasFocus && !_isPanelOpen) {
-        _isPanelOpen = true;
-        _isFullyExpanded = false;
-      }
-      _isSearchActive = hasFocus || _searchFocusNode.hasFocus;
-    });
-  }
+  // TODO(post-MVP): restore _onLocationChanged, _onLocationSearchFocusChange,
+  // and _centerMapOnCurrentLocation when location search is re-enabled.
 
   double _getZoomLevelForDistance(double distanceMiles) {
     return MapConstants.distanceToZoom[distanceMiles] ??
         MapConstants.detailZoom;
-  }
-
-  Future<void> _centerMapOnCurrentLocation() async {
-    if (_googleMapController != null) {
-      await _googleMapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(_currentLatitude, _currentLongitude),
-          _getZoomLevelForDistance(_selectedDistance),
-        ),
-      );
-    } else {
-      log('Google map controller is null, cannot center map', name: 'MapPage');
-    }
-  }
-
-  Future<void> _tryGetCurrentLocationOnStartup() async {
-    try {
-      final locationResult = await LocationService.getCurrentLocation().timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception('Location timeout');
-        },
-      );
-
-      setState(() {
-        _currentLocation = locationResult.locationName;
-        _currentLatitude = locationResult.latitude;
-        _currentLongitude = locationResult.longitude;
-      });
-
-      if (_googleMapController != null && locationResult.isCurrentLocation) {
-        await _googleMapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(locationResult.latitude, locationResult.longitude),
-            MapConstants.detailZoom,
-          ),
-        );
-      }
-
-      _loadFacilities();
-    } catch (e) {
-      _loadFacilities();
-    }
   }
 
   void _filterFacilities() {
@@ -385,6 +323,7 @@ class MapPageState extends State<MapPage>
         searchText: _searchController.text,
         selectedCategories: _selectedCategories,
         selectedEligibilityRequirements: _selectedEligibilityRequirements,
+        selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
       );
@@ -534,13 +473,16 @@ class MapPageState extends State<MapPage>
   }
 
   Widget _buildFilterBar() {
+    final isGuest = context.read<GuestModeService>().isGuest;
     return FilterBar(
       selectedDistance: _selectedDistance,
       selectedCategories: _selectedCategories,
       selectedEligibilityRequirements: _selectedEligibilityRequirements,
+      selectedPreferenceRequirements: _selectedPreferenceRequirements,
       showFavoritesOnly: _showFavoritesOnly,
       showOpenNowOnly: _showOpenNowOnly,
-      onFavoritesTap: _isGuest
+      isGuestMode: isGuest,
+      onFavoritesTap: isGuest
           ? () => showSignInPromptDialog(context)
           : _toggleFavoritesFilter,
       onOpenNowTap: _toggleOpenNowFilter,
@@ -549,9 +491,12 @@ class MapPageState extends State<MapPage>
           _showFilterModal(expandedSection: FilterSection.distance),
       onCategoryTap: () =>
           _showFilterModal(expandedSection: FilterSection.category),
-      onEligibilityTap: _isGuest
+      onEligibilityTap: isGuest
           ? () => showSignInPromptDialog(context)
           : () => _showFilterModal(expandedSection: FilterSection.eligibility),
+      onPreferencesTap: isGuest
+          ? () => showSignInPromptDialog(context)
+          : () => _showFilterModal(expandedSection: FilterSection.preferences),
     );
   }
 
@@ -583,6 +528,7 @@ class MapPageState extends State<MapPage>
             FacilityFilterService.getAvailableCategories(_allFacilities)
                 .toList(),
         selectedEligibilityRequirements: _selectedEligibilityRequirements,
+        selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
         expandedSection: expandedSection,
@@ -606,6 +552,8 @@ class MapPageState extends State<MapPage>
         _selectedCategories.addAll(result['categories'] as Set<String>);
         _selectedEligibilityRequirements = result['eligibilityRequirements']
             as Map<EligibilityRequirement, bool?>;
+        _selectedPreferenceRequirements = result['preferenceRequirements']
+            as Map<PreferenceRequirement, bool?>;
         _showFavoritesOnly = result['showFavoritesOnly'] as bool;
         _showOpenNowOnly = result['showOpenNowOnly'] as bool;
       });
@@ -770,7 +718,9 @@ class MapPageState extends State<MapPage>
                       vertical: 4.0,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF222240)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(25.0),
                       boxShadow: [
                         BoxShadow(
@@ -787,33 +737,36 @@ class MapPageState extends State<MapPage>
                       onClear: _filterFacilities,
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 8.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 4.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(25.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: LocationSearch(
-                      currentLocation: _currentLocation,
-                      onLocationChanged: _onLocationChanged,
-                      onFocusChanged: _onLocationSearchFocusChange,
-                    ),
-                  ),
+                  // TODO(post-MVP): re-enable location search once location
+                  // permissions and geocoding UX are finalized.
+                  // Container(
+                  //   margin: const EdgeInsets.symmetric(
+                  //     horizontal: 8.0,
+                  //     vertical: 8.0,
+                  //   ),
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 16.0,
+                  //     vertical: 4.0,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white,
+                  //     borderRadius: BorderRadius.circular(25.0),
+                  //     boxShadow: [
+                  //       BoxShadow(
+                  //         color: Colors.black.withValues(alpha: 0.1),
+                  //         spreadRadius: 1,
+                  //         blurRadius: 3,
+                  //         offset: const Offset(0, 1),
+                  //       ),
+                  //     ],
+                  //   ),
+                  //   child: LocationSearch(
+                  //     currentLocation: _currentLocation,
+                  //     onLocationChanged: _onLocationChanged,
+                  //     onFocusChanged: _onLocationSearchFocusChange,
+                  //   ),
+                  // ),
+                  const SizedBox(height: 6),
                   _buildFilterBar(),
                 ],
               ),

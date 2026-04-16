@@ -2,12 +2,12 @@ import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
 import 'package:flutter/material.dart';
 
-class EligibilityFilter extends StatelessWidget {
-  final Map<EligibilityRequirement, bool?> selectedRequirements;
+class PreferencesFilter extends StatelessWidget {
+  final Map<PreferenceRequirement, bool?> selectedRequirements;
   final bool isLocked;
   final VoidCallback onTap;
 
-  const EligibilityFilter({
+  const PreferencesFilter({
     super.key,
     required this.selectedRequirements,
     required this.onTap,
@@ -20,7 +20,7 @@ class EligibilityFilter extends StatelessWidget {
         selectedRequirements.values.any((value) => value != null);
 
     return CustomFilterChip(
-      label: 'Eligibility',
+      label: 'Preferences',
       isSelected: hasActiveFilters,
       hasDropdown: true,
       isLocked: isLocked,

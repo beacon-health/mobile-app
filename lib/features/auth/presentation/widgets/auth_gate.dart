@@ -1,10 +1,10 @@
 import 'package:beacon_app/core/services/demo_mode_service.dart';
-import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -40,30 +40,13 @@ class _AuthGateState extends State<AuthGate> {
       return const MainNavBar();
     }
 
-    // Normal Supabase auth flow
-    final supabase = Supabase.instance.client;
-    final session = supabase.auth.currentSession;
-    if (session != null) {
+    // Onboarding gate: show main app only after onboarding is complete.
+    final zipService = context.watch<ZipCodeService>();
+    if (zipService.hasCompletedOnboarding) {
       return const MainNavBar();
     }
 
-    return StreamBuilder<AuthState>(
-      stream: supabase.auth.onAuthStateChange,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const LoginPage();
-        }
-
-        final event = snapshot.data!.event;
-        final session = snapshot.data!.session;
-
-        if (event == AuthChangeEvent.signedIn && session != null) {
-          return const MainNavBar();
-        }
-
-        return const LoginPage();
-      },
-    );
+    return const OnboardingPage();
   }
 
   Widget _buildDemoLoadingScreen(BuildContext context) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class ToggleFilter extends StatelessWidget {
   final String label;
   final bool isActive;
+  final bool isLocked;
   final VoidCallback onTap;
 
   const ToggleFilter({
@@ -11,6 +12,7 @@ class ToggleFilter extends StatelessWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
+    this.isLocked = false,
   });
 
   @override
@@ -19,6 +21,7 @@ class ToggleFilter extends StatelessWidget {
       label: label,
       isSelected: isActive,
       hasDropdown: false,
+      isLocked: isLocked,
       onTap: onTap,
     );
   }
