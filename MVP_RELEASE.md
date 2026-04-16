@@ -15,6 +15,7 @@
 | **Dev infrastructure** | 5 / 5 | 0 | 0 | ✅ `analysis_options.yaml` + `very_good_analysis`; GitHub Actions CI + iOS build workflow; Fastlane skeleton; CI secret injection; 18 unit tests. |
 | **iOS compliance** | 4 / 4 | 0 | 0 | ✅ Bundle ID updated to `org.beaconhealth.app`; deployment targets aligned to 15.0; `PrivacyInfo.xcprivacy` created; portrait-only orientation locked. |
 | **Repo hygiene** | 3 / 3 | 0 | 0 | ✅ All clean. New repo: `github.com/beacon-health/mobile-app`. Data pipeline: `github.com/beacon-health/beacon-data`. Old repo pending archive. |
+| **Phase 6.5 — cleanup audit** | 0 / 13 | 0 | 13 | New (2026-04-16): comprehensive post-Phase-7 audit surfaced 13 cleanup items (dead code, dedup, best practices, 1 TestFlight-signing blocker). See [§3.4](#34-post-phase-7-comprehensive-audit-2026-04-16). |
 
 > See [§15.5 Work Sequencing Phases](#155-work-sequencing-phases) for the dependency-ordered plan to close the rest.
 
@@ -204,6 +205,92 @@ The following files/functions were identified as unused or out-of-date in the cu
 | **Medium** | Remove or comment out `SearchFilterSection`, `MapControllerService` |
 | **Medium** | Remove unused `isGuest` parameter from `MainNavBar` or wire to `GuestModeService` (§2.0) |
 | **Low** | Remove `flutter_signin_button` dependency after commenting out OAuth buttons |
+
+### 3.4 Post-Phase-7 Comprehensive Audit (2026-04-16)
+
+Performed after the feature build-out + iOS compliance work landed. Four parallel audit streams covered: dead code, file structure / reuse, Flutter & Dart best practices, and iOS project readiness.
+
+#### 3.4.1 Dead code — safe to delete
+
+| Item | Location | Rationale |
+|------|----------|-----------|
+| `MapControllerService` | [map_controller_service.dart](lib/features/map/presentation/services/map_controller_service.dart) (103 lines) | Defined but never instantiated; map state lives in `MapPageState` directly. |
+| `SearchFilterSection` | [search_filter_section.dart](lib/features/map/presentation/widgets/search/search_filter_section.dart) (115 lines) | Never imported; current UI composes `FacilitySearch` + `LocationSearch` + `FilterBar` directly. |
+| `CriteriaPage` | [criteria_page.dart](lib/features/auth/presentation/pages/criteria_page.dart) (630 lines) | Never routed; 19-field PII form abandoned when MVP went guest-only. |
+| Orphan asset `app_icon.png` | `assets/app_icon.png` | Not declared in `pubspec.yaml`; only `app_icon_final.jpg` and `tiny_icon.png` are used. |
+
+#### 3.4.2 Dead code — conditionally dead (keep, post-MVP)
+
+| Item | Reason |
+|------|--------|
+| `LocationService` | GPS deferred post-MVP per §2.2. `ZipCodeService` replaces it in the guest flow. |
+| `geolocator` package | Only referenced from `LocationService` (dead now, live post-MVP). |
+| `geocoding` package | Actively used by `ZipCodeService.setZipCode()`. **Keep.** |
+| `flutter_signin_button` | Used only in `LoginPage` which is unreachable in guest-only flow. Candidate for removal after confirming no hidden entry points. |
+| `WidgetsBindingObserver` on `MapPage` | Previously flagged; `didChangeMetrics()` **is** implemented for keyboard visibility. **Not dead** — earlier audit finding stale. |
+
+#### 3.4.3 High-value reuse / deduplication wins
+
+| Pattern | Duplicated at | Proposed extraction |
+|---------|---------------|---------------------|
+| Frosted-glass lock overlay | [settings_page.dart](lib/features/settings/presentation/pages/settings_page.dart) lines ~405–459 **and** ~543–597 (verbatim) | New `lib/core/widgets/locked_section_overlay.dart` — saves ~50 LOC and removes a drift risk. |
+| Theme-aware onboarding gradient | [onboarding_page.dart](lib/features/auth/presentation/pages/onboarding_page.dart), [zip_entry_page.dart](lib/features/auth/presentation/pages/zip_entry_page.dart), [login_page.dart](lib/features/auth/presentation/pages/login_page.dart) (the last is light-mode-only — missed dark support) | New `lib/core/theme/app_gradients.dart` with `AppGradients.onboarding(context)`. Incidentally fixes the login dark-mode gradient bug. |
+| `Theme.of(context).colorScheme.onSurface.withValues(alpha: X)` | 36 occurrences across 11 files | Extension on `ColorScheme` in `lib/core/theme/app_colors.dart` — e.g. `context.colors.onSurfaceMuted` / `onSurfaceDisabled`. |
+
+#### 3.4.4 Structure / naming issues (lower priority)
+
+- **Misplaced service:** `lib/services/supabase_facility_service.dart` lives outside the feature tree; should move to `lib/features/map/data/`. Only `map/` feature has the full `presentation/domain/data` split; other features skip domain/data. Decide on a consistent convention and document it.
+- **Vague util filenames:** `lib/features/map/utils/facility_display_utils.dart` and `marker_utils.dart` — rename to describe the domain (`facility_formatting.dart`, `marker_icon_factory.dart`).
+- **`settings_page.dart` has 19 `_buildXSection` methods** in one class. Consider breaking each section into its own `StatelessWidget` — improves rebuild granularity and readability.
+
+#### 3.4.5 Flutter / Dart best-practice fixes
+
+| Issue | Where | Fix |
+|-------|-------|-----|
+| Silent `catch (_) {}` in camera animation | [home_page.dart:192](lib/features/home/presentation/pages/home_page.dart) | Route through `ErrorReporter` (already wired in `_loadData`). |
+| `try-catch` around `firstWhere` for null | [facility_provider.dart:37](lib/features/map/presentation/providers/facility_provider.dart) | Replace with `.firstWhereOrNull` from `collection`. |
+| `Provider.of(context, listen: false)` | [map_page.dart](lib/features/map/presentation/pages/map_page.dart):252, 476, 619 | Use `context.read<T>()` — same semantics, clearer intent. |
+| Multiple `setState` in `_loadData` | [home_page.dart](lib/features/home/presentation/pages/home_page.dart):128, 133 | Batch into one `setState`. |
+| Missing `const` everywhere | `home_page.dart` has only 36 `const` in 556 lines; should be 100+ | Lint is configured (`very_good_analysis`) — enforce `prefer_const_constructors` and fix. |
+| No `RepaintBoundary` around `GoogleMap` | [map_page.dart:677](lib/features/map/presentation/pages/map_page.dart) | Wrap — stops unrelated Stack repaints from invalidating map tiles. |
+| Redundant map-controller state | [map_page.dart:40](lib/features/map/presentation/pages/map_page.dart) | `Completer<GoogleMapController>` **and** `_googleMapController` field — pick one. |
+| Setstate inside expensive debounced marker compute | [map_page.dart:179–181](lib/features/map/presentation/pages/map_page.dart) | Split compute + setState (compute off-frame, setState with result). |
+
+#### 3.4.6 iOS readiness — status after Phase 7
+
+Result: **TestFlight-ready with one blocker and one polish item.**
+
+- ✅ `Info.plist` clean, portrait-only, GPS correctly commented out.
+- ✅ `PrivacyInfo.xcprivacy` valid, wired into `project.pbxproj` Resources phase, required-reason codes accurate (CA92.1, C617.1, 35F9.1, E174.1).
+- ✅ `AppDelegate.swift` gracefully handles missing Google Maps key.
+- ✅ Bundle ID `org.beaconhealth.app` set consistently across Debug / Release / Profile.
+- ✅ `IPHONEOS_DEPLOYMENT_TARGET = 15.0` across Podfile + all Xcode configs.
+- ✅ App icon present at all required sizes (1x/2x/3x, 1024 App Store).
+- ⚠️ **Blocker:** inconsistent `DEVELOPMENT_TEAM` — Debug uses `DWDZ94L8RD`, Release/Profile use `3VY6L9SG6K`. Pick one and align across all three configs before TestFlight upload.
+- ⚠️ **Polish:** `LaunchImage.imageset/*.png` are 68-byte placeholder PNGs. Either replace with a branded splash or (preferred) delete the image set and rely on `LaunchScreen.storyboard` which is already referenced.
+- ⬜ `Runner.entitlements` does not exist — not needed for MVP guest-only; add when Sign in with Apple lands post-MVP.
+
+#### 3.4.7 Consolidated action list
+
+Priority-ordered for a single follow-up pass ("Phase 6.5 — cleanup"):
+
+| # | Priority | Task | Effort |
+|---|----------|------|--------|
+| 1 | **High** | Resolve `DEVELOPMENT_TEAM` mismatch in `project.pbxproj` (pick one team, apply to all configs) | 5 min |
+| 2 | **High** | Delete `MapControllerService`, `SearchFilterSection`, `CriteriaPage`, orphan `app_icon.png` | 30 min |
+| 3 | **High** | Extract `LockedSectionOverlay` widget; replace both copies in `settings_page.dart` | 30 min |
+| 4 | **Medium** | Extract `AppGradients` helper; update `onboarding_page.dart`, `zip_entry_page.dart`, fix `login_page.dart` dark-mode gap | 20 min |
+| 5 | **Medium** | Replace `catch (_) {}` in `home_page.dart:192` and `facility_provider.dart:37` with `ErrorReporter` + `.firstWhereOrNull` | 15 min |
+| 6 | **Medium** | Swap `Provider.of(context, listen: false)` → `context.read<T>()` (3 sites in `map_page.dart`) | 10 min |
+| 7 | **Medium** | Wrap `GoogleMap` in `RepaintBoundary` (both `map_page.dart` and `home_page.dart`) | 5 min |
+| 8 | **Medium** | Delete placeholder `LaunchImage.imageset/*.png` or replace with branded assets | 15 min |
+| 9 | **Low** | Move `supabase_facility_service.dart` into `lib/features/map/data/`; document feature-layer convention in `README.md` | 45 min |
+| 10 | **Low** | Rename `facility_display_utils.dart` → `facility_formatting.dart`; `marker_utils.dart` → `marker_icon_factory.dart` | 15 min |
+| 11 | **Low** | Extension `ColorSchemeExt` on `ColorScheme` to replace 36 inline `withValues(alpha:)` calls | 45 min |
+| 12 | **Low** | Consolidate `Completer<GoogleMapController>` / `_googleMapController` duplicate state in `map_page.dart` | 15 min |
+| 13 | **Low** | Run `dart fix --apply` + `prefer_const_constructors` across `home_page.dart` and other large files | 30 min |
+
+Total: ~4 hours of low-risk cleanup. None of these block TestFlight; item #1 is a blocker for signed upload but not for the build itself.
 
 ---
 
@@ -956,6 +1043,19 @@ Depends on Phase 5 (`GuestModeService` + `LockedFeatureGate`).
 3. **§2.3 Home page** — Zip-centered map; `LockedFeatureGate` on Favorites section; disable `myLocationEnabled` for guest.
 4. **§2.4 Map page** — Reorder filter bar; split `EligibilityRequirement` → separate `Eligibility` and `Preferences` enums + filter widgets; `LockedFeatureGate` on Favorites/Eligibility/Preferences; disable `myLocationEnabled` for guest.
 5. **§2.5 Settings** — Guest account state; eligibility/preferences section split; wire `url_launcher` to legal URLs; comment out Sign Out; `package_info_plus` for version; gate demo-mode toggle behind `kDebugMode`.
+
+---
+
+#### Phase 6.5 — Post-Phase-7 cleanup audit (new, 2026-04-16)
+
+Surfaced by the comprehensive audit after Phase 7 landed. Detailed findings in [§3.4](#34-post-phase-7-comprehensive-audit-2026-04-16). Net ~4 hours of low-risk work.
+
+1. **Blocker (signing):** resolve `DEVELOPMENT_TEAM` mismatch in `project.pbxproj` (Debug `DWDZ94L8RD` vs Release/Profile `3VY6L9SG6K`).
+2. **Dead code removal:** delete `MapControllerService`, `SearchFilterSection`, `CriteriaPage`, orphan `app_icon.png`.
+3. **Deduplicate:** extract `LockedSectionOverlay` (used 2× in `settings_page.dart`); extract `AppGradients` (used 3×, incidentally fixes `login_page.dart` dark-mode gap).
+4. **Error handling:** replace silent `catch (_) {}` in `home_page.dart:192` and `facility_provider.dart:37` with `ErrorReporter` + `.firstWhereOrNull`.
+5. **Best practices:** swap `Provider.of(...listen:false)` → `context.read<T>()` (3 sites); wrap `GoogleMap` in `RepaintBoundary`; batch `setState` in `home_page.dart._loadData`; `dart fix --apply` for missing `const`.
+6. **Polish:** replace 68-byte placeholder `LaunchImage` PNGs (or delete the image set and rely on `LaunchScreen.storyboard`).
 
 ---
 
