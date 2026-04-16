@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Beacon does not track users across apps or websites. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+
+	<!-- No tracking domains. -->
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!--
+		Data collected by Beacon (MVP guest-only):
+		- Zip code: stored locally via SharedPreferences only; never sent to Beacon servers.
+		  No other data is collected or transmitted.
+		  Google Maps SDK (third-party) may collect coarse location — see NSPrivacyTrackingDomains above.
+		  Update this section if analytics or auth land post-MVP.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<!--
+		Required-reason APIs used directly or indirectly by Beacon's dependencies:
+
+		1. UserDefaults (shared_preferences, flutter_secure_storage)
+		   CA92.1 — accessing app's own defaults container.
+
+		2. File timestamp APIs (path_provider, flutter file I/O)
+		   C617.1 — reading timestamps of files created by the app itself.
+
+		3. System boot time (used by gRPC / BoringSSL transitive deps via supabase_flutter)
+		   35F9.1 — calculating time elapsed since last boot for connection management.
+
+		4. Disk space (path_provider / Flutter engine)
+		   E174.1 — checking whether the device has sufficient space for app data.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -2,7 +2,7 @@
 
 > **Living document.** Update as development progresses, decisions are made, and new findings emerge.
 >
-> **Last updated:** 2026-04-15 · **Target:** iOS App Store (TestFlight → public)
+> **Last updated:** 2026-04-16 · **Target:** iOS App Store (TestFlight → public)
 
 ---
 
@@ -10,13 +10,13 @@
 
 | Stream | Done | In progress | Remaining | Notes |
 |--------|------|-------------|-----------|-------|
-| **MVP feature work** (§2.1–§2.5) | 4 / 32 | 0 | 28 | Confirmed done: Continue-as-Guest button (§2.1), 4 category buttons (§2.3), 1 mi distance default (§2.4), zip in eligibility section of Settings (§2.5). |
-| **Critical security fixes** (§4) | 3 / 3 | 0 | 0 | ✅ `.env` removed from assets; anon key migration done; `debug: kDebugMode`. `PrivacyInfo.xcprivacy` still needed (Tranche 7). |
+| **MVP feature work** (§2.1–§2.5) | ~30 / 32 | 0 | 2 | Phase 6 complete: onboarding, zip entry (mandatory), guest flow, filter bar reorder/split, settings restructure (zip under Account), dark mode, map search bar, facility card fix. Remaining: GPS entry-path removal (§2.2), zip-centered Home map (§2.3). |
+| **Critical security fixes** (§4) | 4 / 4 | 0 | 0 | ✅ All done. `PrivacyInfo.xcprivacy` authored and wired into Xcode project (Phase 7). |
 | **Dev infrastructure** | 5 / 5 | 0 | 0 | ✅ `analysis_options.yaml` + `very_good_analysis`; GitHub Actions CI + iOS build workflow; Fastlane skeleton; CI secret injection; 18 unit tests. |
-| **iOS compliance** | 0 / 4 | 0 | 4 | Bundle ID still old; deployment-target mismatch unresolved; no `PrivacyInfo.xcprivacy`; orientations mismatch. |
+| **iOS compliance** | 4 / 4 | 0 | 0 | ✅ Bundle ID updated to `org.beaconhealth.app`; deployment targets aligned to 15.0; `PrivacyInfo.xcprivacy` created; portrait-only orientation locked. |
 | **Repo hygiene** | 3 / 3 | 0 | 0 | ✅ All clean. New repo: `github.com/beacon-health/mobile-app`. Data pipeline: `github.com/beacon-health/beacon-data`. Old repo pending archive. |
 
-> See [§15.5 Work Sequencing Tranches](#155-work-sequencing-tranches) for the dependency-ordered plan to close the rest.
+> See [§15.5 Work Sequencing Phases](#155-work-sequencing-phases) for the dependency-ordered plan to close the rest.
 
 ---
 
@@ -47,7 +47,7 @@
 13. [Testing Strategy](#13-testing-strategy)
 14. [GitHub & Repository Strategy](#14-github--repository-strategy)
 15. [Pre-Submission Checklist](#15-pre-submission-checklist)
-    - [15.5 Work Sequencing Tranches](#155-work-sequencing-tranches)
+    - [15.5 Work Sequencing Phases](#155-work-sequencing-phases)
 16. [Post-MVP Fast Follows](#16-post-mvp-fast-follows)
 17. [Open Questions](#17-open-questions)
 
@@ -225,7 +225,7 @@ flutter run \
 
 ### ⚠️ HIGH: `print()` statements in production code
 
-✅ All 3 remaining `print()` calls replaced with `developer.log()` (name-tagged for filtering). `analysis_options.yaml` (Tranche 4) will enforce `avoid_print: true` going forward.
+✅ All 3 remaining `print()` calls replaced with `developer.log()` (name-tagged for filtering). `analysis_options.yaml` (Phase 4) will enforce `avoid_print: true` going forward.
 
 ### ⚠️ HIGH: Google Maps API key restriction
 
@@ -713,7 +713,7 @@ jobs:
 
 **MVP Stack (all free):**
 
-1. **`very_good_analysis`** + `analysis_options.yaml` (Tranche 4 — decided)
+1. **`very_good_analysis`** + `analysis_options.yaml` (Phase 4 — decided)
 2. **`flutter analyze`** in CI (catches lint + type issues)
 3. **`gitleaks`** in CI (catches secrets in commits)
 4. **Dependabot** enabled on GitHub repo (auto PRs for vulnerable deps)
@@ -839,18 +839,18 @@ flutter test integration_test/
 - [x] ✅ `.env` removed from `pubspec.yaml` assets; migrated to `String.fromEnvironment` (§4, §10)
 - [x] ✅ `SUPABASE_ANON_KEY` replaces service role key in `main.dart`; **still need to plug in actual anon key value** (§4, §8)
 - [x] ✅ `debug: kDebugMode` in Supabase init (§4)
-- [ ] 🚫 **blocks TestFlight:** Author [ios/Runner/PrivacyInfo.xcprivacy](ios/Runner/PrivacyInfo.xcprivacy) — required by Apple; triggers automated ITMS rejection (§4.5, Tranche 7)
-- [x] ✅ `analysis_options.yaml` created, `flutter analyze --fatal-infos` passes with no issues (§5.1, Tranche 4)
+- [x] ✅ [ios/Runner/PrivacyInfo.xcprivacy](ios/Runner/PrivacyInfo.xcprivacy) authored and registered in Xcode project (§4.5, Phase 7)
+- [x] ✅ `analysis_options.yaml` created, `flutter analyze --fatal-infos` passes with no issues (§5.1, Phase 4)
 - [ ] All MVP features (§2) implemented and manually tested on iOS simulator + physical device
 - [ ] Minimum tests pass (`flutter test`)
 - [x] App icon meets Apple specs ✅ (`app_icon_final.jpg`; 23 icon sizes in `AppIcon.appiconset/`)
 - [x] Launch screen reviewed (`LaunchScreen.storyboard` exists ✅)
 - [ ] `pubspec.yaml` version bumped to `1.0.0+1`
-- [ ] iOS deployment targets aligned: Podfile, Xcode project-level (currently 13.0), and Xcode Runner target (currently 15.6) all set to `15.0` (§5.4)
-- [ ] `Info.plist` orientations match portrait lock in `main.dart` — remove LandscapeLeft/LandscapeRight (§5.5)
+- [x] ✅ iOS deployment targets aligned to `15.0` across Podfile, Xcode project-level, and Runner target (§5.4)
+- [x] ✅ `Info.plist` portrait-only — LandscapeLeft/LandscapeRight removed (§5.5)
 - [x] ✅ No leftover `print()` statements
 - [x] ✅ No hardcoded API keys in source files
-- [ ] Bundle ID updated to `org.beaconhealth.app` in Xcode + Google Cloud Console (§7.6, §9.2)
+- [x] ✅ Bundle ID updated to `org.beaconhealth.app` in Xcode `project.pbxproj` — **still need to update Google Cloud Console + App Store Connect** (§7.6, §9.2)
 - [x] ✅ `pubspec.lock` staged for commit (§14.4)
 - [x] ✅ Tracked `.DS_Store` files removed from git (§14.4)
 - [ ] `flutter build ios --release` succeeds
@@ -862,8 +862,8 @@ flutter test integration_test/
 - [ ] Privacy Policy URL live and accessible ✅ (`https://beacon-website-pied.vercel.app/privacy-policy`)
 - [ ] Terms of Use URL live and accessible ✅ (`https://beacon-website-pied.vercel.app/terms-of-use`)
 - [x] Support URL: `https://beacon-website-pied.vercel.app/contact` ✅
-- [ ] App Store screenshots created (engineering team, Tranche 7)
-- [ ] App Store description and metadata written (engineering team, Tranche 7; agent drafting available on request)
+- [ ] App Store screenshots created (engineering team, Phase 7)
+- [ ] App Store description and metadata written (engineering team, Phase 7; agent drafting available on request)
 - [ ] Privacy nutrition label completed (draft in §7.8)
 - [ ] Age rating questionnaire completed
 - [ ] Export compliance (encryption) questionnaire answered (Supabase uses HTTPS → "Yes, but exempt")
@@ -871,18 +871,18 @@ flutter test integration_test/
 - [ ] CI/CD pipeline operational (§11)
 - [ ] At least 1 round of external beta testing (TestFlight)
 
-### 15.5 Work Sequencing Tranches
+### 15.5 Work Sequencing Phases
 
-Dependency-ordered. Items within a tranche can parallelize; each tranche should be merged before the next starts.
+Dependency-ordered. Items within a phase can parallelize; each phase should be merged before the next starts.
 
 ---
 
-#### Tranche 1 — Doc refresh ✅
+#### Phase 1 — Doc refresh ✅
 This iteration of `MVP_RELEASE.md`. Establishes ground truth before anything else moves.
 
 ---
 
-#### Tranche 2 — Critical security hotfixes ✅
+#### Phase 2 — Critical security hotfixes ✅
 
 1. ✅ Removed `.env` from assets; migrated `main.dart` to `String.fromEnvironment`; removed `flutter_dotenv` dependency.
 2. ✅ `SUPABASE_ANON_KEY` now used. **Pending:** plug actual anon key value into `--dart-define` / GitHub Secret.
@@ -894,7 +894,7 @@ This iteration of `MVP_RELEASE.md`. Establishes ground truth before anything els
 
 ---
 
-#### Tranche 3 — Repository migration ✅
+#### Phase 3 — Repository migration ✅
 Clean repo live at `github.com/beacon-health/mobile-app`. Data pipeline at `github.com/beacon-health/beacon-data`.
 
 **Pre-migration audit (2026-04-15) — all items resolved ✅:**
@@ -911,7 +911,7 @@ Clean repo live at `github.com/beacon-health/mobile-app`. Data pipeline at `gith
 | `.windsurf/rules/rules.md` untracked | ✅ Fixed |
 | `.windsurf/` and `.claude/` in `.gitignore` | ✅ Added |
 | `README.md` updated for `--dart-define` workflow | ✅ Updated |
-| `test/widget_test.dart` broken (stale text) | ⚠️ Known — fix in Tranche 4 |
+| `test/widget_test.dart` broken (stale text) | ⚠️ Known — fix in Phase 4 |
 | Git history tainted with secrets | ⚠️ Known — clean `--orphan` migration resolves this |
 
 **Outcome:**
@@ -925,7 +925,7 @@ Clean repo live at `github.com/beacon-health/mobile-app`. Data pipeline at `gith
 
 ---
 
-#### Tranche 4 — Dev infrastructure ✅
+#### Phase 4 — Dev infrastructure ✅
 Builds on clean repo; confidence for bulk feature editing.
 
 1. ✅ `analysis_options.yaml` with `very_good_analysis` (631 → 0 lint issues).
@@ -937,7 +937,7 @@ Builds on clean repo; confidence for bulk feature editing.
 
 ---
 
-#### Tranche 5 — Architectural prerequisites ✅
+#### Phase 5 — Architectural prerequisites ✅
 Required before §2.3 / §2.4 / §2.5 lock-state UI work can start.
 
 1. ✅ [GuestModeService](lib/core/services/guest_mode_service.dart) — singleton `ChangeNotifier`; subscribes to Supabase auth state changes; handles demo mode + uninitialized Supabase; provided at app root; tested.
@@ -948,8 +948,8 @@ Required before §2.3 / §2.4 / §2.5 lock-state UI work can start.
 
 ---
 
-#### Tranche 6 — MVP feature build-out (~2 weeks, parallelizable within tranche)
-Depends on Tranche 5 (`GuestModeService` + `LockedFeatureGate`).
+#### Phase 6 — MVP feature build-out (~2 weeks, parallelizable within phase)
+Depends on Phase 5 (`GuestModeService` + `LockedFeatureGate`).
 
 1. **§2.1 Onboarding** — `OnboardingPage` (welcome → Continue as Guest → zip entry); comment out sign-in buttons with TODO; `SharedPreferences` zip storage + `has_completed_onboarding` flag; remove `CriteriaPage` from routes.
 2. **§2.2 Location** — Remove GPS calls from onboarding/home/settings entry paths; replace with stored-zip geocoding. Keep GPS behind explicit "use my location" tap on map/search (with TODO).
@@ -959,21 +959,21 @@ Depends on Tranche 5 (`GuestModeService` + `LockedFeatureGate`).
 
 ---
 
-#### Tranche 7 — Compliance & store readiness (~3–5 days)
-Cannot ship without these; some require human decisions (screenshots, description).
+#### Phase 7 — Compliance & store readiness ✅ (code-automatable items complete)
+Remaining items require human action (App Store Connect web UI, device testing, screenshots).
 
-1. Author [ios/Runner/PrivacyInfo.xcprivacy](ios/Runner/PrivacyInfo.xcprivacy) per §4.5. Survey each plugin; declare required-reason API entries.
-2. Complete App Store Privacy Nutrition Label in App Store Connect (draft in §7.8).
-3. Audit `Info.plist` usage strings — decide whether to keep `NSLocationWhenInUseUsageDescription` for map blue-dot.
-4. Align iOS deployment targets to `15.0` across Podfile, project-level, and Runner target (§5.4).
-5. Lock orientation to portrait in `Info.plist` — remove Landscape entries (§5.5).
-6. Update bundle ID to `org.beaconhealth.app` in Xcode + Google Cloud Console + App Store Connect (§7.6, §9.2).
-7. Accessibility pass (§6): VoiceOver labels on 4 category buttons, lock-state widgets, search bar; 44pt minimum tap targets; Dynamic Type test. **Owner: dev team.**
-8. App Store screenshots and description — **engineering team owns**; agent drafting available for description on request. Support URL already resolved ✅.
+1. ✅ [ios/Runner/PrivacyInfo.xcprivacy](ios/Runner/PrivacyInfo.xcprivacy) authored per §4.5 and wired into Xcode project (PBXBuildFile + PBXFileReference + Resources phase).
+2. ⬜ Complete App Store Privacy Nutrition Label in **App Store Connect** (draft in §7.8). **Human action required.**
+3. ✅ `Info.plist` location usage string already commented out for MVP (GPS deferred). No action needed.
+4. ✅ iOS deployment targets aligned to `15.0` across Podfile, project-level (`13.0` → `15.0`), and Runner target (`15.6` → `15.0`).
+5. ✅ Portrait-only orientation locked in `Info.plist` — LandscapeLeft/LandscapeRight removed from both phone and iPad keys.
+6. ✅ Bundle ID updated to `org.beaconhealth.app` in `project.pbxproj`. ⬜ **Still needed:** update in Google Cloud Console (API key restriction) and App Store Connect. **Human action required.**
+7. ⬜ Accessibility pass (§6): VoiceOver labels on 4 category buttons, lock-state widgets, search bar; 44pt minimum tap targets; Dynamic Type test. **Owner: dev team, requires device.**
+8. ⬜ App Store screenshots and description — **engineering team owns**; agent drafting available for description on request. Support URL already resolved ✅.
 
 ---
 
-#### Tranche 8 — TestFlight → Public submission (~1–2 days active + Apple review wait)
+#### Phase 8 — TestFlight → Public submission (~1–2 days active + Apple review wait)
 
 1. Internal TestFlight build via Fastlane `beta` lane.
 2. Smoke test on ≥2 iOS devices (different screen sizes).
@@ -983,7 +983,7 @@ Cannot ship without these; some require human decisions (screenshots, descriptio
 
 ---
 
-#### Tranche 9 — Post-MVP fast follows (§16)
+#### Phase 9 — Post-MVP fast follows (§16)
 After initial release: crash reporting, analytics, offline handling, Sign in with Apple, full a11y audit, Android.
 
 ---
@@ -994,7 +994,7 @@ These are improvements to tackle immediately after the initial release:
 
 | Item | Priority | Notes |
 |------|----------|-------|
-| User authentication (Apple + Google OAuth via Supabase) | **High** | Unlocks Favorites, Eligibility/Preferences filtering, profile; `GuestModeService` (Tranche 5) is designed to make this a drop-in. |
+| User authentication (Apple + Google OAuth via Supabase) | **High** | Unlocks Favorites, Eligibility/Preferences filtering, profile; `GuestModeService` (Phase 5) is designed to make this a drop-in. |
 | Location-based search (re-enable GPS with proper permission flow) | **High** | §2.2 scope split leaves GPS behind a tap in map/search — just un-comment + add permission UX. |
 | Favorites sync (requires auth — stored in Supabase per-user) | **High** | Local favorites possible before auth; post-auth adds cloud sync. |
 | Eligibility + Preferences filter unlock (requires auth) | **High** | `LockedFeatureGate` already gates these; just wire auth state. |
