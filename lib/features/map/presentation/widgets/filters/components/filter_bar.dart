@@ -3,26 +3,31 @@ import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/category_filter.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/eligibility_filter.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/filter_widgets.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/types/preferences_filter.dart';
 import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
   final double selectedDistance;
   final Set<String> selectedCategories;
   final Map<EligibilityRequirement, bool?> selectedEligibilityRequirements;
+  final Map<PreferenceRequirement, bool?> selectedPreferenceRequirements;
   final bool showFavoritesOnly;
   final bool showOpenNowOnly;
+  final bool isGuestMode;
   final VoidCallback onFavoritesTap;
   final VoidCallback onOpenNowTap;
   final VoidCallback onFiltersTap;
   final VoidCallback onDistanceTap;
   final VoidCallback onCategoryTap;
   final VoidCallback onEligibilityTap;
+  final VoidCallback onPreferencesTap;
 
   const FilterBar({
     super.key,
     required this.selectedDistance,
     required this.selectedCategories,
     required this.selectedEligibilityRequirements,
+    required this.selectedPreferenceRequirements,
     required this.showFavoritesOnly,
     required this.showOpenNowOnly,
     required this.onFavoritesTap,
@@ -31,6 +36,8 @@ class FilterBar extends StatelessWidget {
     required this.onDistanceTap,
     required this.onCategoryTap,
     required this.onEligibilityTap,
+    required this.onPreferencesTap,
+    this.isGuestMode = false,
   });
 
   @override
@@ -91,12 +98,20 @@ class FilterBar extends StatelessWidget {
               ToggleFilter(
                 label: 'Favorites',
                 isActive: showFavoritesOnly,
+                isLocked: isGuestMode,
                 onTap: onFavoritesTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               EligibilityFilter(
                 selectedRequirements: selectedEligibilityRequirements,
+                isLocked: isGuestMode,
                 onTap: onEligibilityTap,
+              ),
+              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              PreferencesFilter(
+                selectedRequirements: selectedPreferenceRequirements,
+                isLocked: isGuestMode,
+                onTap: onPreferencesTap,
               ),
             ],
           ),

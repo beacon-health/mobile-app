@@ -14,6 +14,7 @@ class SearchFilterSection extends StatelessWidget {
   final double selectedDistance;
   final Set<String> selectedCategories;
   final Map<EligibilityRequirement, bool?> selectedEligibilityRequirements;
+  final Map<PreferenceRequirement, bool?> selectedPreferenceRequirements;
   final bool showFavoritesOnly;
   final bool showOpenNowOnly;
   final VoidCallback onFavoritesTap;
@@ -22,6 +23,7 @@ class SearchFilterSection extends StatelessWidget {
   final VoidCallback onDistanceTap;
   final VoidCallback onCategoryTap;
   final VoidCallback onEligibilityTap;
+  final VoidCallback onPreferencesTap;
 
   const SearchFilterSection({
     super.key,
@@ -34,6 +36,7 @@ class SearchFilterSection extends StatelessWidget {
     required this.selectedDistance,
     required this.selectedCategories,
     required this.selectedEligibilityRequirements,
+    required this.selectedPreferenceRequirements,
     required this.showFavoritesOnly,
     required this.showOpenNowOnly,
     required this.onFavoritesTap,
@@ -42,6 +45,7 @@ class SearchFilterSection extends StatelessWidget {
     required this.onDistanceTap,
     required this.onCategoryTap,
     required this.onEligibilityTap,
+    required this.onPreferencesTap,
   });
 
   @override
@@ -94,6 +98,7 @@ class SearchFilterSection extends StatelessWidget {
           selectedDistance: selectedDistance,
           selectedCategories: selectedCategories,
           selectedEligibilityRequirements: selectedEligibilityRequirements,
+          selectedPreferenceRequirements: selectedPreferenceRequirements,
           showFavoritesOnly: showFavoritesOnly,
           showOpenNowOnly: showOpenNowOnly,
           onFavoritesTap: onFavoritesTap,
@@ -102,6 +107,7 @@ class SearchFilterSection extends StatelessWidget {
           onDistanceTap: onDistanceTap,
           onCategoryTap: onCategoryTap,
           onEligibilityTap: onEligibilityTap,
+          onPreferencesTap: onPreferencesTap,
         ),
       ],
     );

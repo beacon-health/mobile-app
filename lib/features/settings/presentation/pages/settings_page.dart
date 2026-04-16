@@ -1,12 +1,15 @@
-import 'package:beacon_app/core/constants/app_routes.dart';
-import 'package:beacon_app/core/models/demo_user.dart';
-import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'dart:ui';
+
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
+import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 /// Settings page with account info, language selector, eligibility
@@ -19,39 +22,41 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _showDeveloperSection = false;
+  String _versionString = '';
 
-  late TextEditingController _zipController;
-  bool _proofOfIncome = DemoUser.proofOfIncomeAvailable;
+  // Eligibility preferences (hard gates — what the user needs from a facility)
+  bool _proofOfIncome = false;
   bool _proofOfResidency = false;
   bool _insuranceRequired = false;
   bool _referralRequired = false;
-  bool _acceptsWalkIns = DemoUser.acceptsWalkIns;
+
+  // Service preferences (nice-to-have attributes)
+  bool _acceptsWalkIns = false;
   bool _appointmentOnly = false;
   bool _openToImmigrants = false;
   bool _freeServices = false;
   bool _slidingScale = false;
   bool _otherLanguages = false;
-  bool _telehealthPreference = DemoUser.telehealthPreference;
-  bool _wheelchairAccessible = DemoUser.wheelchairAccessible;
+  bool _telehealthPreference = false;
+  bool _wheelchairAccessible = false;
   bool _servesOutsideArea = false;
 
   @override
   void initState() {
     super.initState();
-    _zipController = TextEditingController(text: DemoUser.zipCode);
-  }
-
-  @override
-  void dispose() {
-    _zipController.dispose();
-    super.dispose();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) {
+        setState(() {
+          _versionString = '${info.version}+${info.buildNumber}';
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final demoMode = context.watch<DemoModeService>();
+    final isGuest = context.watch<GuestModeService>().isGuest;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -59,12 +64,18 @@ class _SettingsPageState extends State<SettingsPage> {
         appBar: AppBar(title: Text(l10n.settingsTitle)),
         body: ListView(
           children: [
-            _buildAccountSection(l10n, demoMode),
+            _buildAccountSection(l10n, isGuest: isGuest),
             _buildAppSection(l10n),
-            _buildEligibilitySection(l10n),
+            _buildEligibilitySection(l10n, isGuest: isGuest),
+            _buildPreferencesSection(l10n, isGuest: isGuest),
             _buildAboutSection(l10n),
-            if (_showDeveloperSection) _buildDeveloperSection(l10n, demoMode),
-            _buildSignOutButton(l10n),
+            // TODO(post-MVP): re-enable developer section after evaluating
+            // whether in-app demo mode toggle is needed post-launch.
+            // if (kDebugMode && _showDeveloperSection)
+            //   _buildDeveloperSection(l10n, demoMode),
+            // Sign out is not available in the guest-only MVP flow.
+            // TODO(post-MVP): re-enable once OAuth sign-in is wired.
+            // _buildSignOutButton(l10n),
             const SizedBox(height: 32),
           ],
         ),
@@ -87,77 +98,200 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildAccountSection(AppLocalizations l10n, DemoModeService demo) {
+  Widget _buildAccountSection(AppLocalizations l10n, {required bool isGuest}) {
+    final zipCode = context.watch<ZipCodeService>().zipCode;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(l10n.settingsAccount),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppTheme.honeydew,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.apple,
-                    size: 28,
-                    color: AppTheme.paynesGray,
-                  ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: isGuest
+                            ? Theme.of(context).colorScheme.surfaceContainerHighest
+                            : AppTheme.honeydew,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        isGuest ? Icons.lock_outline : Icons.person,
+                        size: isGuest ? 26 : 28,
+                        color: isGuest
+                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                            : AppTheme.paynesGray,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: isGuest
+                          ? Text(
+                              'Sign in to store favorites, filter by preferences, and more!',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Signed In',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.honeydew,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Your account',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.resedaGreen,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        DemoUser.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.location_on_outlined, color: AppTheme.paynesGray),
+                title: Text(l10n.settingsZipCode),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      zipCode ?? '—',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        DemoUser.email,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.paynesGray,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.honeydew,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          l10n.settingsSignedInWith(DemoUser.authProvider),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.resedaGreen,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 20),
+                  ],
                 ),
-              ],
-            ),
+                onTap: _showZipEditDialog,
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _showZipEditDialog() async {
+    final zipService = ZipCodeService();
+    final controller = TextEditingController(text: zipService.zipCode ?? '');
+    final formKey = GlobalKey<FormState>();
+    var isLoading = false;
+    String? errorMessage;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Update ZIP Code'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(5),
+                  ],
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: '60601',
+                    labelText: 'ZIP Code',
+                  ),
+                  style: const TextStyle(fontSize: 18, letterSpacing: 4),
+                  validator: (value) {
+                    if ((value ?? '').trim().length != 5) {
+                      return 'Please enter a 5-digit ZIP code';
+                    }
+                    return null;
+                  },
+                ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (!(formKey.currentState?.validate() ?? false)) return;
+                      setDialogState(() {
+                        isLoading = true;
+                        errorMessage = null;
+                      });
+                      final success = await zipService.setZipCode(
+                        controller.text.trim(),
+                      );
+                      if (!ctx.mounted) return;
+                      if (success) {
+                        Navigator.pop(ctx);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ZIP code updated')),
+                          );
+                        }
+                      } else {
+                        setDialogState(() {
+                          isLoading = false;
+                          errorMessage = "Couldn't find that ZIP code. Try again.";
+                        });
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
   }
 
   Widget _buildAppSection(AppLocalizations l10n) {
@@ -227,124 +361,243 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildEligibilitySection(AppLocalizations l10n) {
+  Widget _buildEligibilitySection(AppLocalizations l10n, {required bool isGuest}) {
+    final card = Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          _eligToggle(
+            'Proof of income required',
+            Icons.attach_money,
+            _proofOfIncome,
+            isGuest ? null : (v) => setState(() => _proofOfIncome = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Proof of residency required',
+            Icons.home_outlined,
+            _proofOfResidency,
+            isGuest ? null : (v) => setState(() => _proofOfResidency = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Insurance required',
+            Icons.health_and_safety,
+            _insuranceRequired,
+            isGuest ? null : (v) => setState(() => _insuranceRequired = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Referral required',
+            Icons.assignment_ind_outlined,
+            _referralRequired,
+            isGuest ? null : (v) => setState(() => _referralRequired = v),
+          ),
+        ],
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(l10n.settingsEligibility),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+        if (isGuest)
+          Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: TextField(
-                  controller: _zipController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.location_on_outlined),
-                    labelText: l10n.settingsZipCode,
-                    border: InputBorder.none,
+              IgnorePointer(child: Opacity(opacity: 0.4, child: card)),
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                      child: SizedBox.expand(
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 15,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Sign in to set preferences',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Proof of income required',
-                Icons.attach_money,
-                _proofOfIncome,
-                (v) => setState(() => _proofOfIncome = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Proof of residency required',
-                Icons.home_outlined,
-                _proofOfResidency,
-                (v) => setState(() => _proofOfResidency = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Insurance required',
-                Icons.health_and_safety,
-                _insuranceRequired,
-                (v) => setState(() => _insuranceRequired = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Referral required',
-                Icons.assignment_ind_outlined,
-                _referralRequired,
-                (v) => setState(() => _referralRequired = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Accepts walk-ins',
-                Icons.directions_walk,
-                _acceptsWalkIns,
-                (v) => setState(() => _acceptsWalkIns = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Appointment only',
-                Icons.calendar_today,
-                _appointmentOnly,
-                (v) => setState(() => _appointmentOnly = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Open to immigrants',
-                Icons.public,
-                _openToImmigrants,
-                (v) => setState(() => _openToImmigrants = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Free services available',
-                Icons.money_off,
-                _freeServices,
-                (v) => setState(() => _freeServices = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Sliding scale available',
-                Icons.tune,
-                _slidingScale,
-                (v) => setState(() => _slidingScale = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Other languages available',
-                Icons.translate,
-                _otherLanguages,
-                (v) => setState(() => _otherLanguages = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Telehealth available',
-                Icons.videocam_outlined,
-                _telehealthPreference,
-                (v) => setState(() => _telehealthPreference = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Wheelchair accessible',
-                Icons.accessible,
-                _wheelchairAccessible,
-                (v) => setState(() => _wheelchairAccessible = v),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                'Serves outside area',
-                Icons.map_outlined,
-                _servesOutsideArea,
-                (v) => setState(() => _servesOutsideArea = v),
+            ],
+          )
+        else
+          card,
+      ],
+    );
+  }
+
+  Widget _buildPreferencesSection(AppLocalizations l10n, {required bool isGuest}) {
+    final card = Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          _eligToggle(
+            'Accepts walk-ins',
+            Icons.directions_walk,
+            _acceptsWalkIns,
+            isGuest ? null : (v) => setState(() => _acceptsWalkIns = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Appointment only',
+            Icons.calendar_today,
+            _appointmentOnly,
+            isGuest ? null : (v) => setState(() => _appointmentOnly = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Open to immigrants',
+            Icons.public,
+            _openToImmigrants,
+            isGuest ? null : (v) => setState(() => _openToImmigrants = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Free services available',
+            Icons.money_off,
+            _freeServices,
+            isGuest ? null : (v) => setState(() => _freeServices = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Sliding scale available',
+            Icons.tune,
+            _slidingScale,
+            isGuest ? null : (v) => setState(() => _slidingScale = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Other languages available',
+            Icons.translate,
+            _otherLanguages,
+            isGuest ? null : (v) => setState(() => _otherLanguages = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Telehealth available',
+            Icons.videocam_outlined,
+            _telehealthPreference,
+            isGuest ? null : (v) => setState(() => _telehealthPreference = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Wheelchair accessible',
+            Icons.accessible,
+            _wheelchairAccessible,
+            isGuest ? null : (v) => setState(() => _wheelchairAccessible = v),
+          ),
+          const Divider(height: 1),
+          _eligToggle(
+            'Serves outside area',
+            Icons.map_outlined,
+            _servesOutsideArea,
+            isGuest ? null : (v) => setState(() => _servesOutsideArea = v),
+          ),
+        ],
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Preferences'),
+        if (isGuest)
+          Stack(
+            children: [
+              IgnorePointer(child: Opacity(opacity: 0.4, child: card)),
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                      child: SizedBox.expand(
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 15,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Sign in to set preferences',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
-          ),
-        ),
+          )
+        else
+          card,
       ],
     );
   }
@@ -353,7 +606,7 @@ class _SettingsPageState extends State<SettingsPage> {
     String title,
     IconData icon,
     bool value,
-    ValueChanged<bool> onChanged,
+    ValueChanged<bool>? onChanged,
   ) {
     return SwitchListTile(
       title: Text(title),
@@ -373,24 +626,12 @@ class _SettingsPageState extends State<SettingsPage> {
           margin: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              GestureDetector(
-                onLongPress: () {
-                  setState(() {
-                    _showDeveloperSection = !_showDeveloperSection;
-                  });
-                  if (_showDeveloperSection) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Developer options enabled'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                  }
-                },
-                child: ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: Text(l10n.settingsVersion),
-                  trailing: const Text('0.0.1+1'),
+              // TODO(post-MVP): re-evaluate long-press dev option trigger.
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.settingsVersion),
+                trailing: Text(
+                  _versionString.isEmpty ? '—' : _versionString,
                 ),
               ),
               const Divider(height: 1),
@@ -398,14 +639,20 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.privacy_tip_outlined),
                 title: Text(l10n.settingsPrivacyPolicy),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () => UrlLauncherService.launchUrlString(
+                  'https://beacon-website-pied.vercel.app/privacy-policy',
+                  context,
+                ),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.description_outlined),
                 title: Text(l10n.settingsTermsOfService),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () => UrlLauncherService.launchUrlString(
+                  'https://beacon-website-pied.vercel.app/terms-of-use',
+                  context,
+                ),
               ),
             ],
           ),
@@ -414,120 +661,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDeveloperSection(
-    AppLocalizations l10n,
-    DemoModeService demoMode,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(l10n.settingsDeveloper),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          color: AppTheme.honeydew,
-          child: Column(
-            children: [
-              SwitchListTile(
-                title: Text(l10n.settingsDemoMode),
-                subtitle: Text(
-                  l10n.settingsDemoModeDesc,
-                  style:
-                      const TextStyle(fontSize: 12, color: AppTheme.paynesGray),
-                ),
-                secondary: const Icon(
-                  Icons.science_outlined,
-                  color: AppTheme.resedaGreen,
-                ),
-                activeThumbColor: AppTheme.resedaGreen,
-                value: demoMode.isDemoMode,
-                onChanged: (value) => _confirmDemoToggle(l10n, value),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _confirmDemoToggle(
-    AppLocalizations l10n,
-    bool newValue,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsDemoMode),
-        content: Text(l10n.settingsDemoModeConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.commonContinue),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      // Clear cached facility data so the new mode loads fresh
-      Provider.of<FacilityProvider>(context, listen: false).setFacilities([]);
-
-      await DemoModeService().setDemoMode(newValue);
-
-      // Push a fresh MainNavBar and remove all previous routes so
-      // MapPage and HomePage are rebuilt with the correct repository.
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.main,
-          (_) => false,
-        );
-      }
-    }
-  }
-
-  Widget _buildSignOutButton(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () => _showSignOutDialog(l10n),
-          icon: const Icon(Icons.logout),
-          label: Text(l10n.settingsSignOut),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppTheme.bittersweet,
-            side: const BorderSide(color: AppTheme.bittersweet),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showSignOutDialog(AppLocalizations l10n) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsSignOut),
-        content: Text(l10n.settingsSignOutConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.settingsSignOut),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
+  // TODO(post-MVP): restore _buildDeveloperSection and _confirmDemoToggle
+  // once the in-app demo mode toggle is re-evaluated for post-launch use.
 }

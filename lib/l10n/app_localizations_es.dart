@@ -93,7 +93,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAppearance => 'Apariencia';
 
   @override
-  String get settingsEligibility => 'Preferencias de Elegibilidad';
+  String get settingsEligibility => 'Elegibilidad';
 
   @override
   String get settingsZipCode => 'Código Postal';
