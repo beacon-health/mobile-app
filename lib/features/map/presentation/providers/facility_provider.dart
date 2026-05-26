@@ -34,10 +34,9 @@ class FacilityProvider extends ChangeNotifier {
   }
 
   Facility? getFacilityById(String id) {
-    try {
-      return _facilities.firstWhere((f) => f.id == id);
-    } catch (e) {
-      return null;
+    for (final facility in _facilities) {
+      if (facility.id == id) return facility;
     }
+    return null;
   }
 }

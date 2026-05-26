@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 
+import 'package:beacon_app/features/map/data/supabase_facility_service.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
-import 'package:beacon_app/services/supabase_facility_service.dart';
 
 /// Abstract interface for facility data access.
 ///

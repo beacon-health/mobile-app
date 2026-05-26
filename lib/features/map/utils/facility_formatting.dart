@@ -1,4 +1,4 @@
-import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
 import 'package:flutter/material.dart';
 
 /// Utility class for building category icons based on 211 taxonomy.

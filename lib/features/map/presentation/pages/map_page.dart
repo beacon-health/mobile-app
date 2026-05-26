@@ -20,7 +20,7 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_l
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
-import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +37,6 @@ class MapPageState extends State<MapPage>
         AutomaticKeepAliveClientMixin,
         TickerProviderStateMixin,
         WidgetsBindingObserver {
-  final Completer<GoogleMapController> _mapController = Completer();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
@@ -207,10 +206,6 @@ class MapPageState extends State<MapPage>
     try {
       _googleMapController = controller;
 
-      if (!_mapController.isCompleted) {
-        _mapController.complete(controller);
-      }
-
       if (!_isMapCreated) {
         _isMapCreated = true;
         _currentZoom = await _googleMapController!.getZoomLevel();
@@ -248,8 +243,7 @@ class MapPageState extends State<MapPage>
   }
 
   Future<void> _loadFacilities() async {
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
 
     if (facilityProvider.facilities.isNotEmpty) {
       setState(() {
@@ -615,8 +609,7 @@ class MapPageState extends State<MapPage>
   }
 
   void _toggleFavorite(String facilityId) {
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
     facilityProvider.toggleFavorite(facilityId);
 
     setState(() {
@@ -674,32 +667,34 @@ class MapPageState extends State<MapPage>
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            style: _mapStyle,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(
-                MapConstants.defaultLatitude,
-                MapConstants.defaultLongitude,
+          RepaintBoundary(
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              style: _mapStyle,
+              initialCameraPosition: const CameraPosition(
+                target: LatLng(
+                  MapConstants.defaultLatitude,
+                  MapConstants.defaultLongitude,
+                ),
+                zoom: MapConstants.defaultZoom,
               ),
-              zoom: MapConstants.defaultZoom,
+              markers: _markers,
+              onCameraMove: (CameraPosition position) {
+                _currentZoom = position.zoom;
+              },
+              onCameraIdle: () {
+                if ((_previousZoom - _currentZoom).abs() > 0.1) {
+                  _previousZoom = _currentZoom;
+                  _updateMarkers();
+                }
+              },
+              onTap: _onMapTap,
+              // TODO: re-enable when location permission is added back post-MVP
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
             ),
-            markers: _markers,
-            onCameraMove: (CameraPosition position) {
-              _currentZoom = position.zoom;
-            },
-            onCameraIdle: () {
-              if ((_previousZoom - _currentZoom).abs() > 0.1) {
-                _previousZoom = _currentZoom;
-                _updateMarkers();
-              }
-            },
-            onTap: _onMapTap,
-            // TODO: re-enable when location permission is added back post-MVP
-            myLocationEnabled: false,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            mapToolbarEnabled: false,
           ),
           Positioned(
             top: 0,

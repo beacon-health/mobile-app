@@ -1,10 +1,10 @@
-import 'dart:ui';
-
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/widgets/locked_section_overlay.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -126,7 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         isGuest ? Icons.lock_outline : Icons.person,
                         size: isGuest ? 26 : 28,
                         color: isGuest
-                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                            ? Theme.of(context).colorScheme.onSurfaceFaded
                             : AppTheme.paynesGray,
                       ),
                     ),
@@ -137,7 +137,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               'Sign in to store favorites, filter by preferences, and more!',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                color: Theme.of(context).colorScheme.onSurfaceSecondary,
                               ),
                             )
                           : Column(
@@ -184,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       zipCode ?? '—',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceMuted,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -402,61 +402,9 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSectionHeader(l10n.settingsEligibility),
         if (isGuest)
-          Stack(
-            children: [
-              IgnorePointer(child: Opacity(opacity: 0.4, child: card)),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                      child: SizedBox.expand(
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.lock_outline,
-                                  size: 15,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Sign in to set preferences',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          LockedSectionOverlay(
+            message: 'Sign in to set preferences',
+            child: card,
           )
         else
           card,
@@ -540,61 +488,9 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSectionHeader('Preferences'),
         if (isGuest)
-          Stack(
-            children: [
-              IgnorePointer(child: Opacity(opacity: 0.4, child: card)),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                      child: SizedBox.expand(
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.lock_outline,
-                                  size: 15,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Sign in to set preferences',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          LockedSectionOverlay(
+            message: 'Sign in to set preferences',
+            child: card,
           )
         else
           card,

@@ -2,7 +2,7 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
-import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:flutter/material.dart';
 
 enum FilterSection {
