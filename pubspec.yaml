@@ -24,7 +24,7 @@ dependencies:
   path_provider: ^2.1.4
   provider: ^6.1.2
   shared_preferences: ^2.5.5
-  supabase_flutter: ^2.1.0
+  supabase_flutter: ^2.12.2
   url_launcher: ^6.1.11
 
 dev_dependencies:

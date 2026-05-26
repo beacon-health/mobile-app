@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:flutter/material.dart';
 
 class FacilitySearch extends StatefulWidget {
@@ -23,7 +24,7 @@ class _FacilitySearchState extends State<FacilitySearch> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+        Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceFaded),
         const SizedBox(width: 12),
         Expanded(
           child: TextField(
@@ -43,7 +44,7 @@ class _FacilitySearchState extends State<FacilitySearch> {
         ),
         if (widget.controller.text.isNotEmpty)
           IconButton(
-            icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+            icon: Icon(Icons.clear, color: Theme.of(context).colorScheme.onSurfaceFaded),
             onPressed: () {
               widget.controller.clear();
               widget.onClear();
