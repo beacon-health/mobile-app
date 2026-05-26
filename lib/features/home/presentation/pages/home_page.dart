@@ -10,8 +10,8 @@ import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
-import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
-import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -69,8 +69,7 @@ class _HomePageState extends State<HomePage>
   Future<void> _loadData() async {
     if (!mounted) return;
 
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
 
     try {
       facilityProvider.setLoading(true);
@@ -101,36 +100,33 @@ class _HomePageState extends State<HomePage>
 
       facilityProvider.setFacilities(facilities);
 
-      // Build custom markers matching the map page style
-      if (mounted) {
-        final markers = <Marker>{};
-        for (final facility in facilities) {
-          if (facility.location.latitude == 0.0 &&
-              facility.location.longitude == 0.0) {
-            continue;
-          }
-          final icon = await MarkerUtils.createFacilityMarker(
-            '',
-            facility.isFavorite,
-            facility.primaryCategory,
-            context,
-            showName: false,
-          );
-          markers.add(
-            Marker(
-              markerId: MarkerId(facility.id),
-              position: facility.location,
-              icon: icon,
-            ),
-          );
+      // Build custom markers matching the map page style. The marker
+      // factory yields inside this loop, so we must re-check `mounted`
+      // before calling `setState` at the end.
+      final markers = <Marker>{};
+      for (final facility in facilities) {
+        if (facility.location.latitude == 0.0 &&
+            facility.location.longitude == 0.0) {
+          continue;
         }
-        if (!mounted) return;
-        setState(() {
-          _markers = markers;
-        });
+        final icon = await MarkerUtils.createFacilityMarker(
+          '',
+          facility.isFavorite,
+          facility.primaryCategory,
+          context,
+          showName: false,
+        );
+        markers.add(
+          Marker(
+            markerId: MarkerId(facility.id),
+            position: facility.location,
+            icon: icon,
+          ),
+        );
       }
-
+      if (!mounted) return;
       setState(() {
+        _markers = markers;
         _currentLocation = newLocation;
       });
 
@@ -170,8 +166,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
 
     _mapController = controller;
     if (!mounted) return;
@@ -189,8 +184,13 @@ class _HomePageState extends State<HomePage>
         await controller.animateCamera(
           CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
         );
-      } catch (_) {
-        // Camera animation failure is non-critical.
+      } catch (e, stackTrace) {
+        // Camera animation failure is non-critical — report but don't throw.
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'HomePage._onMapCreated.animateCamera',
+        );
       }
     }
   }
@@ -309,21 +309,23 @@ class _HomePageState extends State<HomePage>
                   ],
                 ),
                 child: IgnorePointer(
-                  child: GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    style: _mapStyle,
-                    initialCameraPosition: CameraPosition(
-                      target: _currentLocation,
-                      zoom: 14.0,
+                  child: RepaintBoundary(
+                    child: GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      style: _mapStyle,
+                      initialCameraPosition: CameraPosition(
+                        target: _currentLocation,
+                        zoom: 14.0,
+                      ),
+                      markers: _markers,
+                      // TODO: re-enable when location permission is added back post-MVP
+                      myLocationEnabled: false,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      compassEnabled: false,
+                      minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
                     ),
-                    markers: _markers,
-                    // TODO: re-enable when location permission is added back post-MVP
-                    myLocationEnabled: false,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
-                    mapToolbarEnabled: false,
-                    compassEnabled: false,
-                    minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
                   ),
                 ),
               ),

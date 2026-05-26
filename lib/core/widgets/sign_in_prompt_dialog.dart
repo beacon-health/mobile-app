@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:flutter/material.dart';
 
 /// Shows a centered modal dialog prompting guest users to sign in.
@@ -36,7 +37,7 @@ class _SignInPromptDialog extends StatelessWidget {
               child: IconButton(
                 icon: Icon(
                   Icons.close,
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: colorScheme.onSurfaceMuted,
                 ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -65,7 +66,7 @@ class _SignInPromptDialog extends StatelessWidget {
                 'Eligibility filters, and more.',
                 textAlign: TextAlign.center,
                 style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: colorScheme.onSurfaceMuted,
                 ),
               ),
             ),
