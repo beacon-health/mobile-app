@@ -84,11 +84,6 @@ class FilterBar extends StatelessWidget {
                 onTap: onDistanceTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
-              CategoryFilter(
-                selectedCategories: selectedCategories,
-                onTap: onCategoryTap,
-              ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
               ToggleFilter(
                 label: 'Open Now',
                 isActive: showOpenNowOnly,
@@ -100,6 +95,11 @@ class FilterBar extends StatelessWidget {
                 isActive: showFavoritesOnly,
                 isLocked: isGuestMode,
                 onTap: onFavoritesTap,
+              ),
+              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              CategoryFilter(
+                selectedCategories: selectedCategories,
+                onTap: onCategoryTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               EligibilityFilter(
