@@ -92,7 +92,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppearance => '外观';
 
   @override
-  String get settingsEligibility => '资格偏好';
+  String get settingsEligibility => '资格';
 
   @override
   String get settingsZipCode => '邮政编码';

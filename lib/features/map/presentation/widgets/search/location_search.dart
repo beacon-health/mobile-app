@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 
 class LocationSearch extends StatefulWidget {
   final String currentLocation;
@@ -22,7 +21,6 @@ class LocationSearch extends StatefulWidget {
 
 class _LocationSearchState extends State<LocationSearch> {
   late TextEditingController _controller;
-  bool _isLoadingLocation = false;
   late FocusNode _focusNode;
   String _previousText = '';
 
@@ -60,54 +58,8 @@ class _LocationSearchState extends State<LocationSearch> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    setState(() {
-      _isLoadingLocation = true;
-    });
-
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Location permissions are denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Location permissions are permanently denied');
-      }
-
-      final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      _controller.text = 'Current Location';
-      widget.onLocationChanged(
-        'Current Location',
-        position.latitude,
-        position.longitude,
-      );
-    } catch (e) {
-      log('Error getting current location: $e', name: 'LocationSearch');
-      _controller.text = '60613';
-      widget.onLocationChanged('60613', 41.9542, -87.6668);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Unable to get current location. Using Chicago 60613.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } finally {
-      setState(() {
-        _isLoadingLocation = false;
-      });
-    }
-  }
+  // TODO: revisit once location-based search is in-scope
+  // Future<void> _getCurrentLocation() async { ... }
 
   bool _isValidZipCode(String value) {
     final zipRegex = RegExp(r'^\d{5}(-\d{4})?$');
@@ -120,7 +72,7 @@ class _LocationSearchState extends State<LocationSearch> {
     final trimmedValue = value.trim();
 
     if (trimmedValue.toLowerCase().contains('current')) {
-      _getCurrentLocation();
+      // GPS lookup disabled post-MVP; treat as empty.
       return;
     }
 
@@ -197,21 +149,22 @@ class _LocationSearchState extends State<LocationSearch> {
             onSubmitted: _onLocationSubmitted,
           ),
         ),
-        if (_isLoadingLocation)
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          )
-        else
-          IconButton(
-            icon: const Icon(Icons.my_location, color: Colors.blue),
-            onPressed: _getCurrentLocation,
-            tooltip: 'Use current location',
-          ),
+        // TODO: revisit once location-based search is in-scope
+        // if (_isLoadingLocation)
+        //   const Padding(
+        //     padding: EdgeInsets.all(12),
+        //     child: SizedBox(
+        //       width: 20,
+        //       height: 20,
+        //       child: CircularProgressIndicator(strokeWidth: 2),
+        //     ),
+        //   )
+        // else
+        //   IconButton(
+        //     icon: const Icon(Icons.my_location, color: Colors.blue),
+        //     onPressed: _getCurrentLocation,
+        //     tooltip: 'Use current location',
+        //   ),
       ],
     );
   }

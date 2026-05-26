@@ -3,16 +3,15 @@ import 'dart:async';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
-import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
-import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
-import 'package:beacon_app/features/map/presentation/widgets/markers/marker_utils.dart';
-import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -35,6 +34,7 @@ class _HomePageState extends State<HomePage>
   GoogleMapController? _mapController;
   String? _mapStyle;
   Set<Marker> _markers = {};
+  Brightness? _lastBrightness;
 
   @override
   bool get wantKeepAlive => true;
@@ -47,8 +47,17 @@ class _HomePageState extends State<HomePage>
         isDemoMode ? DemoFacilityRepository() : FacilityRepository();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
-      _loadMapStyle();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (brightness != _lastBrightness) {
+      _lastBrightness = brightness;
+      _loadMapStyle();
+    }
   }
 
   @override
@@ -60,30 +69,15 @@ class _HomePageState extends State<HomePage>
   Future<void> _loadData() async {
     if (!mounted) return;
 
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
 
     try {
       facilityProvider.setLoading(true);
 
-      double latitude = MapConstants.defaultLatitude;
-      double longitude = MapConstants.defaultLongitude;
-
-      try {
-        final locationResult =
-            await LocationService.getCurrentLocation().timeout(
-          const Duration(seconds: 10),
-        );
-        latitude = locationResult.latitude;
-        longitude = locationResult.longitude;
-      } catch (e, stackTrace) {
-        // Location unavailable — use defaults above.
-        ErrorReporter.instance.report(
-          e,
-          stackTrace,
-          context: 'HomePage._loadData.location',
-        );
-      }
+      // Use zip-based coordinates from onboarding; fall back to defaults.
+      final zipService = ZipCodeService();
+      final double latitude = zipService.latitude;
+      final double longitude = zipService.longitude;
 
       final facilities = await _facilityRepository
           .loadFacilitiesWithDistance(
@@ -106,36 +100,33 @@ class _HomePageState extends State<HomePage>
 
       facilityProvider.setFacilities(facilities);
 
-      // Build custom markers matching the map page style
-      if (mounted) {
-        final markers = <Marker>{};
-        for (final facility in facilities) {
-          if (facility.location.latitude == 0.0 &&
-              facility.location.longitude == 0.0) {
-            continue;
-          }
-          final icon = await MarkerUtils.createFacilityMarker(
-            '',
-            facility.isFavorite,
-            facility.primaryCategory,
-            context,
-            showName: false,
-          );
-          markers.add(
-            Marker(
-              markerId: MarkerId(facility.id),
-              position: facility.location,
-              icon: icon,
-            ),
-          );
+      // Build custom markers matching the map page style. The marker
+      // factory yields inside this loop, so we must re-check `mounted`
+      // before calling `setState` at the end.
+      final markers = <Marker>{};
+      for (final facility in facilities) {
+        if (facility.location.latitude == 0.0 &&
+            facility.location.longitude == 0.0) {
+          continue;
         }
-        if (!mounted) return;
-        setState(() {
-          _markers = markers;
-        });
+        final icon = await MarkerUtils.createFacilityMarker(
+          '',
+          facility.isFavorite,
+          facility.primaryCategory,
+          context,
+          showName: false,
+        );
+        markers.add(
+          Marker(
+            markerId: MarkerId(facility.id),
+            position: facility.location,
+            icon: icon,
+          ),
+        );
       }
-
+      if (!mounted) return;
       setState(() {
+        _markers = markers;
         _currentLocation = newLocation;
       });
 
@@ -167,15 +158,15 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _loadMapStyle() async {
-    _mapStyle ??= await MapStyleService.loadMapStyle();
+    final brightness = _lastBrightness ?? Brightness.light;
+    final style = await MapStyleService.loadMapStyle(brightness: brightness);
     if (mounted) {
-      setState(() {});
+      setState(() => _mapStyle = style);
     }
   }
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    final facilityProvider =
-        Provider.of<FacilityProvider>(context, listen: false);
+    final facilityProvider = context.read<FacilityProvider>();
 
     _mapController = controller;
     if (!mounted) return;
@@ -193,8 +184,13 @@ class _HomePageState extends State<HomePage>
         await controller.animateCamera(
           CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
         );
-      } catch (_) {
-        // Camera animation failure is non-critical.
+      } catch (e, stackTrace) {
+        // Camera animation failure is non-critical — report but don't throw.
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'HomePage._onMapCreated.animateCamera',
+        );
       }
     }
   }
@@ -313,21 +309,23 @@ class _HomePageState extends State<HomePage>
                   ],
                 ),
                 child: IgnorePointer(
-                  child: GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    style: _mapStyle,
-                    initialCameraPosition: CameraPosition(
-                      target: _currentLocation,
-                      zoom: 14.0,
+                  child: RepaintBoundary(
+                    child: GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      style: _mapStyle,
+                      initialCameraPosition: CameraPosition(
+                        target: _currentLocation,
+                        zoom: 14.0,
+                      ),
+                      markers: _markers,
+                      // TODO: re-enable when location permission is added back post-MVP
+                      myLocationEnabled: false,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      compassEnabled: false,
+                      minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
                     ),
-                    markers: _markers,
-                    // TODO: re-enable when location permission is added back post-MVP
-                    myLocationEnabled: false,
-                    myLocationButtonEnabled: false,
-                    zoomControlsEnabled: false,
-                    mapToolbarEnabled: false,
-                    compassEnabled: false,
-                    minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
                   ),
                 ),
               ),
@@ -406,36 +404,33 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
     if (isGuest) {
-      return GestureDetector(
-        onTap: () => showSignInPromptDialog(context),
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.lock_outline, size: 48, color: Colors.grey),
-                SizedBox(height: 16),
-                Text(
-                  'Sign in to access Favorites',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardTheme.color,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline, size: 48, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'Sign in to access Favorites',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Save your favorite facilities by signing in.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Save your favorite facilities by signing in.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
           ),
         ),
       );

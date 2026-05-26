@@ -1,17 +1,9 @@
+/// Hard requirements that restrict which users can access a facility.
 enum EligibilityRequirement {
   proofOfIncome,
   proofOfResidency,
   insuranceRequired,
   referralRequired,
-  acceptsWalkins,
-  appointmentOnly,
-  openToImmigrants,
-  freeServicesAvailable,
-  slidingScaleAvailable,
-  otherLanguages,
-  telehealthAvailable,
-  wheelchairAccessible,
-  servesOutsideArea,
 }
 
 extension EligibilityRequirementExtension on EligibilityRequirement {
@@ -25,24 +17,6 @@ extension EligibilityRequirementExtension on EligibilityRequirement {
         return 'Insurance required';
       case EligibilityRequirement.referralRequired:
         return 'Referral required';
-      case EligibilityRequirement.acceptsWalkins:
-        return 'Accepts walk-ins';
-      case EligibilityRequirement.appointmentOnly:
-        return 'Appointment only';
-      case EligibilityRequirement.openToImmigrants:
-        return 'Open to immigrants';
-      case EligibilityRequirement.freeServicesAvailable:
-        return 'Free services available';
-      case EligibilityRequirement.slidingScaleAvailable:
-        return 'Sliding scale available';
-      case EligibilityRequirement.otherLanguages:
-        return 'Other languages available';
-      case EligibilityRequirement.telehealthAvailable:
-        return 'Telehealth available';
-      case EligibilityRequirement.wheelchairAccessible:
-        return 'Wheelchair accessible';
-      case EligibilityRequirement.servesOutsideArea:
-        return 'Serves outside area';
     }
   }
 
@@ -58,23 +32,68 @@ extension EligibilityRequirementExtension on EligibilityRequirement {
         return 'insurance_required';
       case EligibilityRequirement.referralRequired:
         return 'referral_required';
-      case EligibilityRequirement.acceptsWalkins:
+    }
+  }
+}
+
+/// User-friendly service attributes that are nice-to-have rather than gating.
+enum PreferenceRequirement {
+  acceptsWalkins,
+  appointmentOnly,
+  openToImmigrants,
+  freeServicesAvailable,
+  slidingScaleAvailable,
+  otherLanguages,
+  telehealthAvailable,
+  wheelchairAccessible,
+  servesOutsideArea,
+}
+
+extension PreferenceRequirementExtension on PreferenceRequirement {
+  String get displayName {
+    switch (this) {
+      case PreferenceRequirement.acceptsWalkins:
+        return 'Accepts walk-ins';
+      case PreferenceRequirement.appointmentOnly:
+        return 'Appointment only';
+      case PreferenceRequirement.openToImmigrants:
+        return 'Open to immigrants';
+      case PreferenceRequirement.freeServicesAvailable:
+        return 'Free services available';
+      case PreferenceRequirement.slidingScaleAvailable:
+        return 'Sliding scale available';
+      case PreferenceRequirement.otherLanguages:
+        return 'Other languages available';
+      case PreferenceRequirement.telehealthAvailable:
+        return 'Telehealth available';
+      case PreferenceRequirement.wheelchairAccessible:
+        return 'Wheelchair accessible';
+      case PreferenceRequirement.servesOutsideArea:
+        return 'Serves outside area';
+    }
+  }
+
+  /// Maps to the snake_case keys used in [FacilityEligibility.toFilterMap]
+  /// and the Supabase column names.
+  String get fieldKey {
+    switch (this) {
+      case PreferenceRequirement.acceptsWalkins:
         return 'accepts_walkins';
-      case EligibilityRequirement.appointmentOnly:
+      case PreferenceRequirement.appointmentOnly:
         return 'appointment_only';
-      case EligibilityRequirement.openToImmigrants:
+      case PreferenceRequirement.openToImmigrants:
         return 'open_to_immigrants';
-      case EligibilityRequirement.freeServicesAvailable:
+      case PreferenceRequirement.freeServicesAvailable:
         return 'free_services_available';
-      case EligibilityRequirement.slidingScaleAvailable:
+      case PreferenceRequirement.slidingScaleAvailable:
         return 'sliding_scale_available';
-      case EligibilityRequirement.otherLanguages:
+      case PreferenceRequirement.otherLanguages:
         return 'other_languages';
-      case EligibilityRequirement.telehealthAvailable:
+      case PreferenceRequirement.telehealthAvailable:
         return 'telehealth_available';
-      case EligibilityRequirement.wheelchairAccessible:
+      case PreferenceRequirement.wheelchairAccessible:
         return 'wheelchair_accessible';
-      case EligibilityRequirement.servesOutsideArea:
+      case PreferenceRequirement.servesOutsideArea:
         return 'serves_outside_area';
     }
   }
@@ -89,15 +108,18 @@ class FilterConstants {
     EligibilityRequirement.proofOfResidency,
     EligibilityRequirement.insuranceRequired,
     EligibilityRequirement.referralRequired,
-    EligibilityRequirement.acceptsWalkins,
-    EligibilityRequirement.appointmentOnly,
-    EligibilityRequirement.openToImmigrants,
-    EligibilityRequirement.freeServicesAvailable,
-    EligibilityRequirement.slidingScaleAvailable,
-    EligibilityRequirement.otherLanguages,
-    EligibilityRequirement.telehealthAvailable,
-    EligibilityRequirement.wheelchairAccessible,
-    EligibilityRequirement.servesOutsideArea,
+  ];
+
+  static const List<PreferenceRequirement> preferenceRequirements = [
+    PreferenceRequirement.acceptsWalkins,
+    PreferenceRequirement.appointmentOnly,
+    PreferenceRequirement.openToImmigrants,
+    PreferenceRequirement.freeServicesAvailable,
+    PreferenceRequirement.slidingScaleAvailable,
+    PreferenceRequirement.otherLanguages,
+    PreferenceRequirement.telehealthAvailable,
+    PreferenceRequirement.wheelchairAccessible,
+    PreferenceRequirement.servesOutsideArea,
   ];
 }
 

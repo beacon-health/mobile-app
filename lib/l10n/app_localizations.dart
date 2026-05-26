@@ -265,7 +265,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsEligibility.
   ///
   /// In en, this message translates to:
-  /// **'Eligibility Preferences'**
+  /// **'Eligibility'**
   String get settingsEligibility;
 
   /// No description provided for @settingsZipCode.

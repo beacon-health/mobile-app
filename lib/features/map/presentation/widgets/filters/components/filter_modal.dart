@@ -2,13 +2,14 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
-import 'package:beacon_app/features/map/utils/facility_display_utils.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:flutter/material.dart';
 
 enum FilterSection {
   distance,
   category,
   eligibility,
+  preferences,
 }
 
 class FilterModal extends StatefulWidget {
@@ -16,6 +17,7 @@ class FilterModal extends StatefulWidget {
   final Set<String> selectedCategories;
   final List<String> availableCategories;
   final Map<EligibilityRequirement, bool?> selectedEligibilityRequirements;
+  final Map<PreferenceRequirement, bool?> selectedPreferenceRequirements;
   final bool showFavoritesOnly;
   final bool showOpenNowOnly;
   final FilterSection? expandedSection;
@@ -26,6 +28,7 @@ class FilterModal extends StatefulWidget {
     required this.selectedCategories,
     required this.availableCategories,
     required this.selectedEligibilityRequirements,
+    required this.selectedPreferenceRequirements,
     required this.showFavoritesOnly,
     required this.showOpenNowOnly,
     this.expandedSection,
@@ -39,6 +42,7 @@ class _FilterModalState extends State<FilterModal> {
   late double _tempDistance;
   late Set<String> _tempCategories;
   late Map<EligibilityRequirement, bool?> _tempEligibilityRequirements;
+  late Map<PreferenceRequirement, bool?> _tempPreferenceRequirements;
   late bool _tempShowFavoritesOnly;
   late bool _tempShowOpenNowOnly;
 
@@ -48,6 +52,7 @@ class _FilterModalState extends State<FilterModal> {
     FilterSection.distance: GlobalKey(),
     FilterSection.category: GlobalKey(),
     FilterSection.eligibility: GlobalKey(),
+    FilterSection.preferences: GlobalKey(),
   };
 
   @override
@@ -57,6 +62,8 @@ class _FilterModalState extends State<FilterModal> {
     _tempCategories = Set.from(widget.selectedCategories);
     _tempEligibilityRequirements =
         Map.from(widget.selectedEligibilityRequirements);
+    _tempPreferenceRequirements =
+        Map.from(widget.selectedPreferenceRequirements);
     _tempShowFavoritesOnly = widget.showFavoritesOnly;
     _tempShowOpenNowOnly = widget.showOpenNowOnly;
     _expandedSection = widget.expandedSection;
@@ -90,6 +97,7 @@ class _FilterModalState extends State<FilterModal> {
       'distance': MapConstants.distanceOptions.first,
       'categories': <String>{},
       'eligibilityRequirements': <EligibilityRequirement, bool?>{},
+      'preferenceRequirements': <PreferenceRequirement, bool?>{},
       'showFavoritesOnly': false,
       'showOpenNowOnly': false,
     });
@@ -100,6 +108,7 @@ class _FilterModalState extends State<FilterModal> {
       'distance': _tempDistance,
       'categories': _tempCategories,
       'eligibilityRequirements': _tempEligibilityRequirements,
+      'preferenceRequirements': _tempPreferenceRequirements,
       'showFavoritesOnly': _tempShowFavoritesOnly,
       'showOpenNowOnly': _tempShowOpenNowOnly,
     });
@@ -181,6 +190,12 @@ class _FilterModalState extends State<FilterModal> {
                   FilterSection.eligibility,
                   'Eligibility',
                   _buildEligibilityContent(),
+                ),
+                const Divider(height: FilterDesignTokens.spacingXXLarge),
+                _buildExpandableSection(
+                  FilterSection.preferences,
+                  'Preferences',
+                  _buildPreferencesContent(),
                 ),
               ],
             ),
@@ -382,8 +397,51 @@ class _FilterModalState extends State<FilterModal> {
       _tempEligibilityRequirements.putIfAbsent(requirement, () => null);
     }
 
+    return _buildRequirementOptions<EligibilityRequirement>(
+      requirements: FilterConstants.eligibilityRequirements,
+      getValue: (req) => _tempEligibilityRequirements[req],
+      getDisplayName: (req) => req.displayName,
+      onSetTrue: (req) => setState(
+        () => _tempEligibilityRequirements[req] =
+            _tempEligibilityRequirements[req] == true ? null : true,
+      ),
+      onSetFalse: (req) => setState(
+        () => _tempEligibilityRequirements[req] =
+            _tempEligibilityRequirements[req] == false ? null : false,
+      ),
+    );
+  }
+
+  Widget _buildPreferencesContent() {
+    for (final requirement in FilterConstants.preferenceRequirements) {
+      _tempPreferenceRequirements.putIfAbsent(requirement, () => null);
+    }
+
+    return _buildRequirementOptions<PreferenceRequirement>(
+      requirements: FilterConstants.preferenceRequirements,
+      getValue: (req) => _tempPreferenceRequirements[req],
+      getDisplayName: (req) => req.displayName,
+      onSetTrue: (req) => setState(
+        () => _tempPreferenceRequirements[req] =
+            _tempPreferenceRequirements[req] == true ? null : true,
+      ),
+      onSetFalse: (req) => setState(
+        () => _tempPreferenceRequirements[req] =
+            _tempPreferenceRequirements[req] == false ? null : false,
+      ),
+    );
+  }
+
+  Widget _buildRequirementOptions<T>({
+    required List<T> requirements,
+    required bool? Function(T) getValue,
+    required String Function(T) getDisplayName,
+    required void Function(T) onSetTrue,
+    required void Function(T) onSetFalse,
+  }) {
     return Column(
-      children: FilterConstants.eligibilityRequirements.map((requirement) {
+      children: requirements.map((requirement) {
+        final value = getValue(requirement);
         return Padding(
           padding:
               const EdgeInsets.only(bottom: FilterDesignTokens.spacingLarge),
@@ -391,7 +449,7 @@ class _FilterModalState extends State<FilterModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                requirement.displayName,
+                getDisplayName(requirement),
                 style: const TextStyle(
                   fontSize: FilterDesignTokens.fontSizeMedium,
                   fontWeight: FontWeight.w500,
@@ -402,115 +460,15 @@ class _FilterModalState extends State<FilterModal> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (_tempEligibilityRequirements[requirement] ==
-                              true) {
-                            _tempEligibilityRequirements[requirement] = null;
-                          } else {
-                            _tempEligibilityRequirements[requirement] = true;
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: FilterDesignTokens
-                              .eligibilityOptionPaddingVertical,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _tempEligibilityRequirements[requirement] == true
-                                  ? AppTheme.resedaGreen.withValues(alpha: 0.1)
-                                  : Colors.transparent,
-                          border: Border.all(
-                            color: _tempEligibilityRequirements[requirement] ==
-                                    true
-                                ? AppTheme.resedaGreen
-                                : Colors.grey.shade300,
-                            width: _tempEligibilityRequirements[requirement] ==
-                                    true
-                                ? FilterDesignTokens.borderWidthSelected
-                                : FilterDesignTokens.borderWidthNormal,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            FilterDesignTokens.borderRadiusSmall,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Yes',
-                            style: TextStyle(
-                              color:
-                                  _tempEligibilityRequirements[requirement] ==
-                                          true
-                                      ? AppTheme.resedaGreen
-                                      : Colors.black87,
-                              fontWeight:
-                                  _tempEligibilityRequirements[requirement] ==
-                                          true
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
+                      onTap: () => onSetTrue(requirement),
+                      child: _optionButton(label: 'Yes', active: value == true),
                     ),
                   ),
                   const SizedBox(width: FilterDesignTokens.spacingSmall),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (_tempEligibilityRequirements[requirement] ==
-                              false) {
-                            _tempEligibilityRequirements[requirement] = null;
-                          } else {
-                            _tempEligibilityRequirements[requirement] = false;
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: FilterDesignTokens
-                              .eligibilityOptionPaddingVertical,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _tempEligibilityRequirements[requirement] == false
-                                  ? AppTheme.resedaGreen.withValues(alpha: 0.1)
-                                  : Colors.transparent,
-                          border: Border.all(
-                            color: _tempEligibilityRequirements[requirement] ==
-                                    false
-                                ? AppTheme.resedaGreen
-                                : Colors.grey.shade300,
-                            width: _tempEligibilityRequirements[requirement] ==
-                                    false
-                                ? FilterDesignTokens.borderWidthSelected
-                                : FilterDesignTokens.borderWidthNormal,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            FilterDesignTokens.borderRadiusSmall,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'No',
-                            style: TextStyle(
-                              color:
-                                  _tempEligibilityRequirements[requirement] ==
-                                          false
-                                      ? AppTheme.resedaGreen
-                                      : Colors.black87,
-                              fontWeight:
-                                  _tempEligibilityRequirements[requirement] ==
-                                          false
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
+                      onTap: () => onSetFalse(requirement),
+                      child: _optionButton(label: 'No', active: value == false),
                     ),
                   ),
                 ],
@@ -519,6 +477,37 @@ class _FilterModalState extends State<FilterModal> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _optionButton({required String label, required bool active}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: FilterDesignTokens.eligibilityOptionPaddingVertical,
+      ),
+      decoration: BoxDecoration(
+        color: active
+            ? AppTheme.resedaGreen.withValues(alpha: 0.1)
+            : Colors.transparent,
+        border: Border.all(
+          color: active ? AppTheme.resedaGreen : Colors.grey.shade300,
+          width: active
+              ? FilterDesignTokens.borderWidthSelected
+              : FilterDesignTokens.borderWidthNormal,
+        ),
+        borderRadius: BorderRadius.circular(
+          FilterDesignTokens.borderRadiusSmall,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? AppTheme.resedaGreen : Colors.black87,
+            fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 }

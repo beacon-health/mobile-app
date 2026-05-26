@@ -58,8 +58,7 @@ class _FacilityCardState extends State<FacilityCard> {
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       clipBehavior: Clip.none,
       color: isDark ? null : AppTheme.honeydew,
-      child: IntrinsicHeight(
-        child: Stack(
+      child: Stack(
           clipBehavior: Clip.none,
           children: [
             Column(
@@ -129,7 +128,6 @@ class _FacilityCardState extends State<FacilityCard> {
               ),
           ],
         ),
-      ),
     );
   }
 

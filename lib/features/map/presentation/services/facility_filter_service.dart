@@ -11,6 +11,7 @@ class FacilityFilterService {
     required String searchText,
     required Set<String> selectedCategories,
     Map<EligibilityRequirement, bool?>? selectedEligibilityRequirements,
+    Map<PreferenceRequirement, bool?>? selectedPreferenceRequirements,
     required bool showFavoritesOnly,
     required bool showOpenNowOnly,
   }) {
@@ -35,8 +36,7 @@ class FacilityFilterService {
           selectedCategories.contains(facility.appCategory);
 
       // Eligibility requirements filter
-      // U (unknown) values are omitted from the map and always
-      // pass through.
+      // null values are unset and always pass through.
       bool matchesRequirements = true;
       if (selectedEligibilityRequirements != null) {
         for (final entry in selectedEligibilityRequirements.entries) {
@@ -51,11 +51,27 @@ class FacilityFilterService {
         }
       }
 
+      // Preference requirements filter — same logic as eligibility.
+      bool matchesPreferences = true;
+      if (selectedPreferenceRequirements != null) {
+        for (final entry in selectedPreferenceRequirements.entries) {
+          if (entry.value == null) continue;
+          final facilityValue =
+              facility.eligibilityRequirements[entry.key.fieldKey];
+          if (facilityValue == null) continue;
+          if (facilityValue != entry.value) {
+            matchesPreferences = false;
+            break;
+          }
+        }
+      }
+
       return matchesSearch &&
           matchesFavorites &&
           matchesOpenNow &&
           matchesCategory &&
-          matchesRequirements;
+          matchesRequirements &&
+          matchesPreferences;
     }).toList();
   }
 
