@@ -1,6 +1,6 @@
 # Beacon App — MVP Release Plan
 
-> **Living document.** Shared with AI agents for context. Keep concise.
+> **Context doc for AI agents.** Read this before making changes.
 >
 > **Last updated:** 2026-05-26 · **Target:** iOS App Store (TestFlight -> public)
 
@@ -14,139 +14,59 @@
 | **Bundle ID** | `org.beaconhealth.app` |
 | **iOS min target** | 15.0 (aligned across Podfile + Xcode) |
 | **Backend** | Supabase (Free tier), `facilities_il_full` view (~691 rows) |
-| **Auth** | Guest-only for MVP. Supabase OAuth (Google + Apple) wired but deferred. |
+| **Auth** | Supabase OAuth (Google + Apple) — partially wired, MVP requirement |
 | **State mgmt** | Provider + ChangeNotifier |
 | **Maps** | Google Maps Flutter plugin, API key via `Secrets.xcconfig` (gitignored) |
 | **Localization** | en, es, zh via `flutter_localizations` + ARB |
 | **Demo mode** | Feature-flagged, hidden in MVP (gated behind TODO) |
 | **Secrets** | `--dart-define` for Supabase URL/key; `Secrets.xcconfig` for Google Maps key. No secrets in source. |
-| **Linting** | `very_good_analysis` + `analysis_options.yaml` — 0 issues |
+| **Linting** | `very_good_analysis` — 0 issues (`flutter analyze` clean) |
 | **Tests** | 18 unit tests (all passing) |
 | **CI/CD** | GitHub Actions (`ci.yml` + `ios-build.yml`), Fastlane skeleton |
-| **Repo** | `github.com/beacon-health/mobile-app` (clean orphan history) |
-| **Data pipeline** | `github.com/beacon-health/beacon-data` (separate repo) |
+| **Repo** | `github.com/beacon-health/mobile-app` · Data pipeline: `github.com/beacon-health/beacon-data` |
 
 ### Architecture
 
-- **Entry flow:** `AuthGate` checks `ZipCodeService.hasCompletedOnboarding` — shows `OnboardingPage` -> `ZipEntryPage` if first launch, `MainNavBar` if returning.
-- **Guest mode:** `GuestModeService` (ChangeNotifier) exposes `isGuest`. `LockedFeatureGate` widget wraps locked features (Favorites, Eligibility, Preferences) with a sign-in dialog.
-- **Error handling:** `ErrorReporter` singleton — `developer.log` in debug, no-op in release. Swappable for Sentry post-MVP.
-- **Theming:** `AppGradients` for onboarding gradient (dark+light), `ColorSchemeExt` for consistent alpha blends, `LockedSectionOverlay` for frosted-glass lock UI.
-- **Location:** GPS deferred for MVP. `ZipCodeService` stores zip -> geocoded lat/lng via `SharedPreferences`. `LocationService` exists but is unused in current flows.
-- **Filter bar order:** Tune -> Distance -> Open Now -> Favorites -> Category -> Eligibility -> Preferences. Favorites/Eligibility/Preferences show sign-in dialog in guest mode.
+- **Entry flow:** `AuthGate` (`lib/features/auth/presentation/widgets/auth_gate.dart`) checks `ZipCodeService.hasCompletedOnboarding` — shows `OnboardingPage` -> `ZipEntryPage` if first launch, `MainNavBar` if returning.
+- **Guest mode:** `GuestModeService` (`lib/core/services/guest_mode_service.dart`) is a singleton `ChangeNotifier` that listens to `Supabase.instance.client.auth.onAuthStateChange`. Exposes `isGuest` (true when `currentUser == null`). Widgets use `context.watch<GuestModeService>().isGuest` for reactive rebuilds.
+- **Locked features:** `LockedFeatureGate` widget wraps children with a tap handler that shows `showSignInPromptDialog`. Used for Favorites, Eligibility, Preferences. `LockedSectionOverlay` provides a frosted-glass overlay for locked Settings sections.
+- **Error handling:** `ErrorReporter` singleton (`lib/core/services/error_reporter.dart`) — `developer.log` in debug, no-op in release. Has a `// TODO(post-MVP)` for Sentry that should now be implemented (see §2).
+- **Theming:** `AppGradients` for onboarding gradient (dark+light), `ColorSchemeExt` for consistent alpha blends (`onSurfaceMuted`, `onSurfaceSecondary`, `onSurfaceFaded`, `onSurfaceStrong`).
+- **Location:** `ZipCodeService` (`lib/core/services/zip_code_service.dart`) stores zip -> geocoded lat/lng via `SharedPreferences`. `LocationService` (`lib/features/map/presentation/services/location_service.dart`) has full GPS code using `geolocator` but is currently unused — needs re-enabling for MVP (see §2).
+- **Filter bar:** Tune -> Distance -> Open Now -> Favorites -> Category -> Eligibility -> Preferences. Favorites/Eligibility/Preferences show sign-in dialog in guest mode. Eligibility and Preferences are split into separate enums in `lib/features/map/constants/filter_constants.dart`.
 
 ### Key Files
 
 | Purpose | Path |
 |---------|------|
 | App entry | `lib/main.dart` |
-| App routing | `lib/app.dart`, `lib/features/auth/presentation/widgets/auth_gate.dart` |
-| Guest mode | `lib/core/services/guest_mode_service.dart` |
-| Zip code | `lib/core/services/zip_code_service.dart` |
+| App routing | `lib/app.dart` |
+| Auth gate | `lib/features/auth/presentation/widgets/auth_gate.dart` |
+| Login page | `lib/features/auth/presentation/pages/login_page.dart` |
+| Onboarding | `lib/features/auth/presentation/pages/onboarding_page.dart` |
+| Zip entry | `lib/features/auth/presentation/pages/zip_entry_page.dart` |
+| Guest mode service | `lib/core/services/guest_mode_service.dart` |
+| Zip code service | `lib/core/services/zip_code_service.dart` |
+| Error reporter | `lib/core/services/error_reporter.dart` |
+| Location service | `lib/features/map/presentation/services/location_service.dart` |
+| Sign-in prompt | `lib/core/widgets/sign_in_prompt_dialog.dart` |
+| Locked feature gate | `lib/core/widgets/locked_feature_gate.dart` |
+| Locked section overlay | `lib/core/widgets/locked_section_overlay.dart` |
 | Facility data | `lib/features/map/data/facility_repository.dart`, `supabase_facility_service.dart` |
+| Facility model | `lib/features/map/domain/models/facility_model.dart` |
+| Facility provider | `lib/features/map/presentation/providers/facility_provider.dart` |
 | Map page | `lib/features/map/presentation/pages/map_page.dart` |
 | Home page | `lib/features/home/presentation/pages/home_page.dart` |
+| Main nav bar | `lib/features/home/presentation/widgets/main_nav_bar.dart` |
 | Settings | `lib/features/settings/presentation/pages/settings_page.dart` |
 | Filter bar | `lib/features/map/presentation/widgets/filters/components/filter_bar.dart` |
 | Filter constants | `lib/features/map/constants/filter_constants.dart` |
+| Facility card | `lib/features/map/presentation/widgets/facility/facility_card.dart` |
 | iOS project | `ios/Runner.xcodeproj/project.pbxproj` |
-
----
-
-## 2. Completed Work Summary
-
-All items below are done and verified. Included for agent context — no action needed.
-
-### Security (all resolved)
-- `.env` removed from assets; secrets via `--dart-define` + `String.fromEnvironment`.
-- Service role key replaced with anon key parameter. `debug: kDebugMode`.
-- All `print()` replaced with `developer.log()`. Empty `catch` blocks routed through `ErrorReporter`.
-- `PrivacyInfo.xcprivacy` authored and wired into Xcode project (CA92.1, C617.1, 35F9.1, E174.1).
-
-### iOS Compliance
-- Bundle ID: `org.beaconhealth.app` across all Xcode configs.
-- Deployment target: `15.0` across Podfile + all Xcode build settings.
-- Portrait-only orientation locked in code + `Info.plist`.
-- `DEVELOPMENT_TEAM = 3VY6L9SG6K` aligned across Debug/Release/Profile.
-- LaunchImage placeholder PNGs deleted; `LaunchScreen.storyboard` is the sole launch screen.
-- `NSLocationWhenInUseUsageDescription` commented out in `Info.plist`.
-
-### Dev Infrastructure
-- `very_good_analysis` linting — 0 issues.
-- GitHub Actions CI (analyze + format + test on push/PR) + iOS build workflow (manual trigger).
-- Fastlane skeleton (`Appfile` + `Fastfile` with `beta`/`release` lanes).
-- CI secret injection for Supabase + Google Maps keys.
-- 18 unit tests: `FacilityFilterService`, `Facility.fromSupabase`, `DemoModeService`, `GuestModeService`.
-- Dependabot for weekly pub + GitHub Actions dependency updates.
-
-### Repo Hygiene
-- Clean orphan commit at `github.com/beacon-health/mobile-app`.
-- `database/` moved to `github.com/beacon-health/beacon-data`.
-- `.DS_Store` files untracked; `.gitignore` covers `.DS_Store`, `.env`, `Secrets.xcconfig`, `.claude/`, `.windsurf/`.
-
-### Feature Build-out (Phases 5-6)
-- **Onboarding:** `OnboardingPage` -> `ZipEntryPage` -> `MainNavBar`. Zip stored in `SharedPreferences` with `has_completed_onboarding` flag.
-- **Home page:** Map centers on zip coordinates. 4 category buttons. Favorites locked for guests. `myLocationEnabled: false`.
-- **Map page:** Search bar, filter bar with Eligibility/Preferences split, facility cards. Distance defaults to 1 mi. Favorites/Eligibility/Preferences locked for guests. `myLocationEnabled: false`. GPS entry paths removed from main flows.
-- **Settings:** Guest account state (lock icon + prompt). Zip edit dialog. Language + appearance selectors. Eligibility and Preferences sections split with lock overlay. Privacy Policy + Terms of Use wired to URLs via `url_launcher`. Version from `package_info_plus`. Sign-out commented out. Demo toggle hidden.
-- **Dead code removed:** `MapControllerService`, `SearchFilterSection`, `CriteriaPage`, orphan `app_icon.png`, `LaunchImage` assets.
-
-### Code Quality (Phase 6.5 cleanup)
-- `LockedSectionOverlay` extracted (deduped from `settings_page.dart`).
-- `AppGradients.onboarding()` extracted (deduped across 3 onboarding pages; fixed `login_page.dart` dark-mode gap).
-- `ColorSchemeExt` with `onSurfaceMuted`, `onSurfaceSecondary`, `onSurfaceFaded`, `onSurfaceStrong`.
-- `Provider.of(context, listen: false)` -> `context.read<T>()` everywhere.
-- `GoogleMap` wrapped in `RepaintBoundary` (home + map pages).
-- `Completer<GoogleMapController>` duplicate state removed from `map_page.dart`.
-- File renames: `supabase_facility_service.dart` -> `lib/features/map/data/`, `facility_display_utils.dart` -> `facility_formatting.dart`, `marker_utils.dart` -> `marker_icon_factory.dart`.
-
----
-
-## 3. Remaining Code Tasks
-
-| # | Priority | Task | Notes |
-|---|----------|------|-------|
-| 1 | **High** | Bump `pubspec.yaml` version to `1.0.0+1` | Currently `0.1.1` |
-| 2 | **Medium** | Remove `WidgetsBindingObserver` mixin from `MapPage` if no lifecycle overrides are used, OR verify `didChangeMetrics` is actively needed | Previous audit found it implemented — re-verify |
-| 3 | **Low** | Remove `flutter_signin_button` dependency if sign-in buttons are unreachable in guest-only flow | `LoginPage` is only reachable from `OnboardingPage` via auth — currently bypassed by guest flow |
-| 4 | **Low** | Remove `geolocator` package if `LocationService` is fully unused in MVP flows | Keep `geocoding` — used by `ZipCodeService` |
-| 5 | **Low** | Consider breaking `settings_page.dart` (560 lines, 8 `_build*` methods) into separate widgets per section | Improves rebuild granularity |
-| 6 | **Low** | `LocationService` file still contains active GPS code — comment out with TODO or delete if fully replaced by `ZipCodeService` | Currently unused but importable |
-
----
-
-## 4. Pre-TestFlight Checklist
-
-### Code (engineer)
-- [ ] Bump version to `1.0.0+1`
-- [ ] `flutter build ios --release` succeeds
-- [ ] Test on >= 2 iOS devices (different screen sizes)
-- [ ] Manual smoke test: onboarding -> zip entry -> home -> map -> search -> settings
-
-### External Config (requires human / web UI)
-- [ ] **Supabase:** Verify RLS is enabled on all tables/views with read-only anon policy
-- [ ] **Supabase:** Confirm `SUPABASE_ANON_KEY` in `--dart-define` / GitHub Secret is the publishable key (not service role)
-- [ ] **Google Cloud Console:** Update API key bundle ID restriction to `org.beaconhealth.app`
-- [ ] **Google Cloud Console:** Verify API key restricted to iOS apps + Maps SDK for iOS only
-- [ ] **Xcode:** Create/download iOS Distribution certificate
-- [ ] **Xcode:** Create App Store provisioning profile for `org.beaconhealth.app`
-- [ ] **Xcode:** Archive and upload to TestFlight
-
-### App Store Connect (requires human / web UI)
-- [ ] Create App ID matching `org.beaconhealth.app`
-- [ ] Set up the app in App Store Connect
-- [ ] App name: "Beacon" (verify no trademark conflicts)
-- [ ] Subtitle (e.g., "Find Free Healthcare Near You")
-- [ ] Description + keywords
-- [ ] Screenshots (6.7" + 6.5" minimum)
-- [ ] App icon: verify `app_icon_final.jpg` meets 1024x1024 no-alpha spec
-- [ ] Age rating questionnaire
-- [ ] Copyright
-- [ ] Privacy nutrition label (see draft below)
-- [ ] Export compliance: "Yes, but exempt" (HTTPS only)
-- [ ] App Review notes for guest flow (see template below)
+| Privacy manifest | `ios/Runner/PrivacyInfo.xcprivacy` |
 
 ### Apple Developer Account
+
 | Item | Value |
 |------|-------|
 | **Team ID** | `3VY6L9SG6K` |
@@ -156,55 +76,190 @@ All items below are done and verified. Included for agent context — no action 
 
 ---
 
-## 5. Privacy Nutrition Label (MVP Draft)
+## 2. Remaining MVP Code Tasks
 
-Guest-only MVP — no auth, no analytics, no PII collection.
+### 2.1 User Authentication (Apple + Google OAuth)
 
-| Data type | Collected? | Notes |
-|-----------|-----------|-------|
-| **Location (Coarse)** | Yes — by Google Maps SDK | Third-party, not linked to identity, not tracking |
-| **Location (Precise)** | No | `myLocationEnabled: false` in MVP |
-| All other categories | Not collected | No auth, no analytics, no crash reporting in MVP |
+**Goal:** Allow users to sign in via Apple or Google OAuth through Supabase, unlocking Favorites, Eligibility, and Preferences features.
 
-**Tracking declaration:** "This app does not track users." No ATT prompt needed.
+**Current state:** `LoginPage` (`lib/features/auth/presentation/pages/login_page.dart`) already has active Google + Apple sign-in buttons using `flutter_signin_button` + `Supabase.instance.client.auth.signInWithOAuth()`. `GuestModeService` already listens to auth state changes and will automatically flip `isGuest` to `false` on successful sign-in, which reactively unlocks all `LockedFeatureGate`-wrapped features.
 
-**Update required when:** auth, analytics (PostHog/Sentry), or crash reporting land post-MVP.
+**What needs to happen:**
+
+1. **Wire sign-in into the onboarding flow.** Currently `OnboardingPage` goes directly to `ZipEntryPage`. Add a "Sign In" option (e.g. a text button on the onboarding page, or route to `LoginPage`). The "Continue as Guest" button on `LoginPage` currently does `Navigator.pushReplacement` to `MainNavBar` directly — it should instead go to `ZipEntryPage` so guests still enter a zip code.
+2. **Update `AuthGate`** to handle the authenticated state. Currently it only checks `hasCompletedOnboarding`. It should also check `Supabase.instance.client.auth.currentUser` — if authenticated, go to `MainNavBar`. If not authenticated and no onboarding, show `OnboardingPage`.
+3. **Add Sign in with Apple capability in Xcode.** Create `ios/Runner/Runner.entitlements` with the `com.apple.developer.applesignin` entitlement. Reference it via `CODE_SIGN_ENTITLEMENTS` in `project.pbxproj`.
+4. **Configure Supabase Auth providers.** In Supabase Dashboard -> Authentication -> Providers, enable Apple and Google. Apple requires a Service ID + key from Apple Developer Console. Google requires OAuth client credentials from Google Cloud Console.
+5. **Update `showSignInPromptDialog`** (`lib/core/widgets/sign_in_prompt_dialog.dart`) to include an actual "Sign In" button that navigates to `LoginPage`, instead of just showing an informational message.
+6. **Handle sign-out.** The sign-out button in `settings_page.dart` is currently commented out (lines ~77). Uncomment it and wire it to `Supabase.instance.client.auth.signOut()`. After sign-out, navigate back to `OnboardingPage` or `LoginPage`.
+7. **Favorites sync with Supabase.** Currently favorites are in-memory only (`FacilityProvider.toggleFavorite` flips `isFavorite` on the model). For authenticated users, persist favorites to a Supabase `user_favorites` table (user_id + facility_id). Load on sign-in, sync on toggle.
+
+### 2.2 GPS Location Enablement
+
+**Goal:** Allow users to use their device GPS for location-based facility search, alongside the existing zip-code flow.
+
+**Current state:** `LocationService` (`lib/features/map/presentation/services/location_service.dart`) has full GPS code using `geolocator` package (already in `pubspec.yaml`). GPS calls are commented out in map/home pages. `NSLocationWhenInUseUsageDescription` is commented out in `ios/Runner/Info.plist` (line 39). `LocationSearch` widget (`lib/features/map/presentation/widgets/search/location_search.dart`) has "Current Location" button commented out with `// TODO: revisit once location-based search is in-scope`.
+
+**What needs to happen:**
+
+1. **Uncomment `NSLocationWhenInUseUsageDescription`** in `ios/Runner/Info.plist`. Use a clear, healthcare-relevant description (e.g. "Beacon uses your location to find healthcare facilities near you.").
+2. **Add a "Use My Location" button** on the map page. When tapped: request location permission via `LocationService.getCurrentLocation()`, center map on result, reload facilities for that location. If permission denied, show a snackbar explaining how to enable it in Settings.
+3. **Uncomment the "Current Location" button** in `LocationSearch` (`location_search.dart`, around lines 61-62 and 152-165). Wire it to call `LocationService.getCurrentLocation()` and update the map.
+4. **Re-enable `myLocationEnabled: true`** on the `GoogleMap` widgets in both `map_page.dart` and `home_page.dart` (currently set to `false` with TODO comments). This shows the blue dot on the map.
+5. **Update `PrivacyInfo.xcprivacy`** if the `geolocator` package accesses any additional required-reason APIs beyond what's already declared.
+6. **Keep zip-code as the default.** GPS should be an opt-in "Use My Location" action, not the default startup behavior. The zip-code flow via `ZipCodeService` remains the primary location source.
+
+### 2.3 Crash Reporting (Sentry)
+
+**Goal:** Capture crashes and errors in production via Sentry, using the existing `ErrorReporter` facade.
+
+**Current state:** `ErrorReporter` (`lib/core/services/error_reporter.dart`) is a singleton with a `report(error, stackTrace, {context})` method. In debug mode it logs via `developer.log`; in release it's a no-op. There's a `// TODO(post-MVP): Sentry.captureException(...)` comment on line 34. All error-catching code in the app already calls `ErrorReporter.instance.report(...)`.
+
+**What needs to happen:**
+
+1. **Add `sentry_flutter` dependency** to `pubspec.yaml`.
+2. **Initialize Sentry in `main.dart`** before `runApp`. Use `SentryFlutter.init()` with the DSN from Sentry project settings. Wrap `runApp(const BeaconApp())` in `SentryWidgets` or use the `appRunner` callback pattern.
+3. **Update `ErrorReporter.report()`** to call `Sentry.captureException(error, stackTrace: stackTrace)` in release mode (replace the TODO on line 34). Keep the `developer.log` path for debug mode.
+4. **Create a Sentry project** at sentry.io (free tier: 5K errors/month). Get the DSN. Inject it via `--dart-define=SENTRY_DSN=<dsn>` and read with `String.fromEnvironment('SENTRY_DSN')`.
+5. **Add `SENTRY_DSN` to GitHub Actions secrets** and update CI workflows to pass it.
+6. **Update `PrivacyInfo.xcprivacy`** if Sentry accesses additional required-reason APIs.
+
+### 2.4 Facility Feedback Submission (UI Only)
+
+**Goal:** Allow users to rate recently visited facilities with thumbs up/down and a text comment. UI only — no backend storage yet.
+
+**Current state:** The home page (`lib/features/home/presentation/pages/home_page.dart`) has a map cutout, 4 category buttons, and a Favorites section. There is no "recently visited" tracking or feedback mechanism.
+
+**What needs to happen:**
+
+1. **Track last-clicked facilities.** Create a lightweight service (e.g. `lib/core/services/recent_facilities_service.dart`) that maintains an in-memory list of the last 3 facilities the user tapped on (from map marker taps or facility list taps). Use a simple `List<Facility>` with max length 3, most-recent first. This should be a `ChangeNotifier` provided at app root so both `MapPage` and `HomePage` can access it.
+2. **Record taps in `MapPage`.** When `_selectedFacility` is set (around `map_page.dart` line 437 in `_onMarkerTap`), also call `RecentFacilitiesService.addFacility(facility)`. Similarly, when a facility is tapped in the facility list panel.
+3. **Add a "Recent" section to `HomePage`.** Place it between the category buttons and the Favorites section in the `build` method. Show the heading "Recent" and a list of up to 3 facility tiles (similar style to the Favorites list: icon + name + address + chevron). If empty, hide the section entirely.
+4. **Build a feedback dialog.** When a facility in the Recent section is tapped, show a modal dialog (`showDialog`) with:
+   - Facility name as the title
+   - A row with two `IconButton`s: thumbs-up (`Icons.thumb_up`) and thumbs-down (`Icons.thumb_down`). Tapping one selects it (highlighted) and deselects the other. Use a local `bool?` state to track selection.
+   - A `TextField` for free-text comments with a hint like "Tell us about your experience..."
+   - A "Submit" button that is **disabled** until both a rating is selected AND the text field is non-empty.
+   - On submit: show a `SnackBar` confirming "Thanks for your feedback!" and close the dialog. No data is sent anywhere — this is UI-only for now.
+5. **Do NOT store feedback in a database.** The dialog just validates the form and shows a confirmation. Backend storage will be added in a future iteration.
+
+### 2.5 Remaining Cleanup Tasks
+
+| # | Priority | Task | Notes |
+|---|----------|------|-------|
+| 1 | **High** | Set version to `1.0.0` in `pubspec.yaml` | Currently `0.1.1`. Standard for first public release. |
+| 2 | **Medium** | Audit `LocationService` after GPS re-enable | Clean up `debugPrint` calls (should use `ErrorReporter`), verify `defaultLocation` fallback uses `ZipCodeService` coordinates instead of hardcoded Chicago coords. |
+| 3 | **Low** | Consider breaking `settings_page.dart` (560 lines) into separate widgets per section | Improves rebuild granularity and readability. |
 
 ---
 
-## 6. App Review Notes Template
+## 3. Pre-TestFlight Checklist
+
+### Engineer (code)
+- [ ] All §2 tasks implemented
+- [ ] `pubspec.yaml` version: `1.0.0`
+- [ ] `flutter analyze` passes with 0 issues
+- [ ] `flutter test` — all tests pass (add tests for new features)
+- [ ] `flutter build ios --release` succeeds
+- [ ] Manual smoke test on >= 2 iOS devices (different screen sizes)
+
+### External Config (requires web UI / dashboard access)
+
+**Supabase Dashboard:**
+- [ ] Enable Apple OAuth provider (requires Apple Service ID + key from Apple Developer Console)
+- [ ] Enable Google OAuth provider (requires Google OAuth client credentials)
+- [ ] Create `user_favorites` table (columns: `id`, `user_id`, `facility_id`, `created_at`) with RLS policy allowing users to read/write only their own rows
+- [ ] Verify RLS is enabled on all tables/views with read-only anon policy for facility data
+- [ ] Confirm `SUPABASE_ANON_KEY` in `--dart-define` / GitHub Secret is the publishable key (not service role)
+
+**Sentry:**
+- [ ] Create Sentry project at sentry.io (free tier)
+- [ ] Get DSN and add as `SENTRY_DSN` GitHub Actions secret
+
+**Google Cloud Console:**
+- [ ] Update API key bundle ID restriction to `org.beaconhealth.app`
+- [ ] Verify API key restricted to iOS apps + Maps SDK for iOS only
+
+**Apple Developer Console:**
+- [ ] Create Service ID for Sign in with Apple
+- [ ] Create/download iOS Distribution certificate
+- [ ] Create App Store provisioning profile for `org.beaconhealth.app`
+
+**Xcode:**
+- [ ] Add Sign in with Apple capability
+- [ ] Create `Runner.entitlements` with `com.apple.developer.applesignin`
+- [ ] Archive and upload to TestFlight
+
+**App Store Connect:**
+- [ ] Create App ID matching `org.beaconhealth.app`
+- [ ] Set up the app in App Store Connect
+- [ ] App name: "Beacon" (verify no trademark conflicts)
+- [ ] Subtitle (e.g. "Find Free Healthcare Near You")
+- [ ] Description + keywords (healthcare, free clinics, community health, etc.)
+- [ ] Screenshots (6.7" + 6.5" minimum, 3 per size)
+- [ ] App icon: verify `app_icon_final.jpg` meets 1024x1024 no-alpha spec
+- [ ] Age rating questionnaire
+- [ ] Copyright
+- [ ] Privacy nutrition label (see §4)
+- [ ] Export compliance: "Yes, but exempt" (HTTPS only)
+- [ ] App Review notes (see §5)
+
+---
+
+## 4. Privacy Nutrition Label (MVP Draft)
+
+MVP includes auth, GPS, and crash reporting. Update this table in App Store Connect.
+
+| Data Type | Collected? | Details |
+|-----------|-----------|---------|
+| **Email Address** | Yes — collected via OAuth | Linked to user identity. Used for app functionality (account). Not used for tracking. |
+| **User ID** | Yes — collected via OAuth | Linked to user identity. Used for app functionality (favorites sync). Not used for tracking. |
+| **Coarse Location** | Yes — collected by Google Maps SDK | Third-party collection. Not linked to identity. Not used for tracking. |
+| **Precise Location** | Yes — collected via GPS (opt-in) | Used for app functionality (finding nearby facilities). Not linked to identity. Not used for tracking. |
+| **Diagnostics (Crash Data)** | Yes — collected via Sentry | Not linked to identity. Used for app functionality (crash reporting). Not used for tracking. |
+| **User Content (Feedback)** | Not collected | Feedback UI exists but data is not stored or transmitted in MVP. |
+| All other categories | Not collected | |
+
+**Tracking declaration:** "This app does **not** track users." No ATT prompt needed.
+
+---
+
+## 5. App Review Notes Template
 
 ```
-This app uses a guest-only flow. No authentication is required.
+This app helps users find free and low-cost healthcare facilities.
 
-To test:
-1. Launch the app and tap "Get Started"
-2. Enter any US zip code (e.g., 60613)
-3. Browse the map and facility list
-4. Favorites, Eligibility, and Preferences filters show a lock icon — these require sign-in (post-MVP feature)
-5. The app uses zip code-based location (no GPS permission required)
+To test sign-in:
+1. Launch the app and sign in with Apple or Google, OR tap "Continue as Guest"
+2. Enter a US zip code (e.g., 60613) when prompted
+3. Browse the map, search for facilities, and use filters
+4. Signed-in users can save Favorites and set Eligibility/Preferences filters
+5. Guest users see a lock icon on Favorites, Eligibility, and Preferences — tapping shows a sign-in prompt
+6. The "Recent" section on the home page shows the last 3 facilities tapped — tapping one opens a feedback dialog
+7. GPS location is available via "Use My Location" on the map (requires location permission)
 ```
 
 ---
 
-## 7. Secrets & CI
+## 6. Secrets & CI
 
 **Local dev:**
 ```bash
 flutter run \
   --dart-define=SUPABASE_URL=<url> \
-  --dart-define=SUPABASE_ANON_KEY=<anon-key>
+  --dart-define=SUPABASE_ANON_KEY=<anon-key> \
+  --dart-define=SENTRY_DSN=<dsn>
 ```
-Google Maps key comes from `ios/Flutter/Secrets.xcconfig` (gitignored).
+Google Maps key: `ios/Flutter/Secrets.xcconfig` (gitignored).
 
-**CI (GitHub Actions):**
-Secrets to configure in repo settings:
+**GitHub Actions secrets:**
 
 | Secret | Purpose |
 |--------|---------|
 | `SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_ANON_KEY` | Publishable API key |
 | `GOOGLE_MAPS_API_KEY` | iOS-restricted Maps key |
+| `SENTRY_DSN` | Sentry error tracking DSN |
 | `APP_STORE_CONNECT_API_KEY_ID` | Fastlane TestFlight upload |
 | `APP_STORE_CONNECT_API_KEY_ISSUER_ID` | Fastlane TestFlight upload |
 | `APP_STORE_CONNECT_API_KEY_CONTENT` | Base64-encoded `.p8` key |
@@ -212,13 +267,12 @@ Secrets to configure in repo settings:
 
 ---
 
-## 8. Post-MVP Fast Follows
+## 7. Post-MVP Fast Follows
 
 | Priority | Item |
 |----------|------|
-| **High** | User auth (Apple + Google OAuth via Supabase) — unlocks Favorites sync, Eligibility/Preferences filtering |
-| **High** | GPS re-enable with proper permission flow (code is preserved, just commented out) |
-| **High** | Crash reporting (Sentry recommended — plugs into existing `ErrorReporter`) |
+| **High** | Facility feedback backend storage (Supabase table + API) |
+| **High** | Favorites cloud sync for authenticated users |
 | **Medium** | Analytics (PostHog recommended for healthcare privacy) |
 | **Medium** | Offline/connectivity handling (`connectivity_plus` + offline banner) |
 | **Medium** | Full accessibility audit (VoiceOver, Dynamic Type, WCAG 2.1 AA) |
