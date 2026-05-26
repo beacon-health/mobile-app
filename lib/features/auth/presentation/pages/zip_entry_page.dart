@@ -1,5 +1,7 @@
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,17 +54,10 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
-                : [const Color(0xFFF4F7F5), const Color(0xFFDCE6DD)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient: AppGradients.onboarding(context),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: SafeArea(
@@ -90,7 +85,7 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   "We'll use this to show resources near you.",
                   style: TextStyle(
                     fontSize: 15,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurfaceSecondary,
                   ),
                 ),
                 const SizedBox(height: 32),

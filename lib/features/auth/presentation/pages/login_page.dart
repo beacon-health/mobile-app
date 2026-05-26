@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:flutter/foundation.dart';
@@ -59,14 +60,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDCE6DD),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF4F7F5), Color(0xFFDCE6DD)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+        decoration: BoxDecoration(
+          gradient: AppGradients.onboarding(context),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: SafeArea(

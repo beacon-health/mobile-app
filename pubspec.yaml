@@ -23,12 +23,12 @@ dependencies:
   package_info_plus: ^8.0.0
   path_provider: ^2.1.4
   provider: ^6.1.2
-  shared_preferences: ^2.5.4
-  supabase_flutter: ^2.1.0
+  shared_preferences: ^2.5.5
+  supabase_flutter: ^2.12.2
   url_launcher: ^6.1.11
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   very_good_analysis: ^10.2.0

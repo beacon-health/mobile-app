@@ -1,4 +1,6 @@
+import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
 import 'package:flutter/material.dart';
 
@@ -7,17 +9,10 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
-                : [const Color(0xFFF4F7F5), const Color(0xFFDCE6DD)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient: AppGradients.onboarding(context),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: SafeArea(
@@ -47,7 +42,7 @@ class OnboardingPage extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(context).colorScheme.onSurfaceSecondary,
                         height: 1.5,
                       ),
                     ),
