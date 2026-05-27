@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
+import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
+import 'package:beacon_app/features/home/presentation/widgets/facility_feedback_dialog.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -232,7 +235,10 @@ class _HomePageState extends State<HomePage>
     final isGuest = context.watch<GuestModeService>().isGuest;
 
     return Scaffold(
-      body: Padding(
+      // Page-level scrolling: when Recently Viewed and Favorites are both
+      // populated, neither needs its own scroll view — the whole home scrolls
+      // as a single column. This avoids nested-scroll conflicts.
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +250,7 @@ class _HomePageState extends State<HomePage>
                 height: 70,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             Text(
               l10n.homeGreeting,
               style: const TextStyle(
@@ -255,6 +261,16 @@ class _HomePageState extends State<HomePage>
             const SizedBox(height: 16),
             _buildMapAndCategories(l10n),
             const SizedBox(height: 20),
+            const Text(
+              'Recently Viewed Facilities',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildRecentlyViewedSection(isGuest: isGuest),
+            const SizedBox(height: 20),
             Text(
               l10n.homeFavorites,
               style: const TextStyle(
@@ -263,8 +279,8 @@ class _HomePageState extends State<HomePage>
               ),
             ),
             const SizedBox(height: 8),
-            Expanded(child: _buildFavoritesSection(l10n, isGuest: isGuest)),
-            const SizedBox(height: 12),
+            _buildFavoritesSection(l10n, isGuest: isGuest),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -412,6 +428,124 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// "Recently Viewed Facilities" section.
+  ///
+  /// Reads the in-memory list from [RecentFacilitiesService]. Tapping an entry
+  /// opens the feedback dialog (or the sign-in prompt for guests). Capped at
+  /// 3 items by the service; the container height is bounded so this section
+  /// never pushes the Favorites section off-screen.
+  Widget _buildRecentlyViewedSection({required bool isGuest}) {
+    return Consumer<RecentFacilitiesService>(
+      builder: (context, service, _) {
+        final recent = service.recentFacilities;
+        if (recent.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.history, size: 24, color: Colors.grey),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'No recently viewed facilities',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Tap a facility on the map to see it here.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Populated state — render rows inline so the whole home page can
+        // scroll as a single unit (no nested scroll views).
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).dividerColor),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                for (var i = 0; i < recent.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, color: Colors.grey[200]),
+                  _buildRecentRow(recent[i], isGuest: isGuest),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Single compact row used for both the Recently Viewed and Favorites
+  /// populated lists. Kept dense so the Home page stays usable when both
+  /// sections have items.
+  Widget _buildRecentRow(Facility facility, {required bool isGuest}) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 2,
+      ),
+      visualDensity: VisualDensity.compact,
+      leading: FacilityCategoryIcons.buildCategoryIcon(
+        facility.primaryCategory,
+      ),
+      title: Text(
+        facility.name,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        facility.address,
+        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      onTap: () => _onRecentFacilityTap(facility, isGuest: isGuest),
+    );
+  }
+
+  /// Routes a tap on a recently-viewed facility:
+  ///   - guest → sign-in prompt
+  ///   - signed in → feedback dialog
+  void _onRecentFacilityTap(
+    Facility facility, {
+    required bool isGuest,
+  }) {
+    if (isGuest) {
+      showSignInPromptDialog(context);
+      return;
+    }
+    showFacilityFeedbackDialog(context, facility: facility);
+  }
+
   Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
     if (isGuest) {
       return Center(
@@ -469,95 +603,112 @@ class _HomePageState extends State<HomePage>
         final favoriteFacilities = facilityProvider.favoriteFacilities;
 
         if (favoriteFacilities.isEmpty) {
+          // Compact, scroll-safe empty state. The available height shrinks
+          // significantly when the "Recently Viewed" section above is
+          // populated, so we keep this card short and let it scroll if it
+          // can't fit.
           return Center(
-            child: Container(
-              padding: const EdgeInsets.all(32.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.favorite_border,
-                    size: 48,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.homeNoFavorites,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.favorite_border,
+                      size: 28,
                       color: Colors.grey,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.homeNoFavoritesHint,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.homeNoFavorites,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.homeNoFavoritesHint,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
         }
 
+        // Cap Favorites height. As favorites grow past ~4 items the inner
+        // ListView starts scrolling instead of pushing the rest of the home
+        // page down forever. The outer SingleChildScrollView still works:
+        // ListView is wrapped in PrimaryScrollController.none-style
+        // semantics, so swiping inside the box scrolls the favorites and
+        // swiping outside scrolls the home page.
         return Container(
+          constraints: const BoxConstraints(maxHeight: 280),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).dividerColor,
-            ),
+            border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              padding: EdgeInsets.zero,
               itemCount: favoriteFacilities.length,
               separatorBuilder: (_, __) =>
                   Divider(height: 1, color: Colors.grey[200]),
-              itemBuilder: (context, index) {
-                final facility = favoriteFacilities[index];
-                return ListTile(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
+              itemBuilder: (context, i) => ListTile(
+                dense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 2,
+                ),
+                visualDensity: VisualDensity.compact,
+                leading: FacilityCategoryIcons.buildCategoryIcon(
+                  favoriteFacilities[i].primaryCategory,
+                ),
+                title: Text(
+                  favoriteFacilities[i].name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  leading: FacilityCategoryIcons.buildCategoryIcon(
-                    facility.primaryCategory,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  favoriteFacilities[i].address,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
                   ),
-                  title: Text(
-                    facility.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    facility.address,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                  ),
-                  onTap: () => _navigateToFacility(facility),
-                );
-              },
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: const Icon(Icons.chevron_right, size: 20),
+                onTap: () => _navigateToFacility(favoriteFacilities[i]),
+              ),
             ),
           ),
         );

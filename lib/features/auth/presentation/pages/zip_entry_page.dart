@@ -112,7 +112,14 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   ],
                   autofocus: true,
                   decoration: InputDecoration(
-                    hintText: '60601',
+                    hintText: '00000',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.35),
+                      letterSpacing: 4,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(

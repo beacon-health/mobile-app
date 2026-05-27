@@ -1,11 +1,14 @@
+import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/services/apple_sign_in_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
+import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -290,6 +293,12 @@ class _LoginPageState extends State<LoginPage> {
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () =>
+                                        UrlLauncherService.launchUrlString(
+                                      LegalUrls.termsOfUse,
+                                      context,
+                                    ),
                                 ),
                                 TextSpan(text: l10n.authAnd),
                                 TextSpan(
@@ -298,6 +307,12 @@ class _LoginPageState extends State<LoginPage> {
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () =>
+                                        UrlLauncherService.launchUrlString(
+                                      LegalUrls.privacyPolicy,
+                                      context,
+                                    ),
                                 ),
                               ],
                             ),

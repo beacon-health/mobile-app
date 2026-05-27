@@ -1,7 +1,10 @@
+import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
+import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 /// First-launch welcome screen. Surfaces the app value proposition and a
@@ -79,31 +82,48 @@ class OnboardingPage extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text.rich(
-                  TextSpan(
-                    text: 'By continuing, you agree to our ',
-                    style: TextStyle(color: Colors.black54, fontSize: 12),
-                    children: [
-                      TextSpan(
-                        text: 'Terms of Service',
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
-                        ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Builder(
+                  builder: (innerContext) => Text.rich(
+                    TextSpan(
+                      text: 'By continuing, you agree to our ',
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12,
                       ),
-                      TextSpan(text: ' and '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
+                      children: [
+                        TextSpan(
+                          text: 'Terms of Service',
+                          style: const TextStyle(
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () =>
+                                UrlLauncherService.launchUrlString(
+                              LegalUrls.termsOfUse,
+                              innerContext,
+                            ),
                         ),
-                      ),
-                    ],
+                        const TextSpan(text: ' and '),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: const TextStyle(
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () =>
+                                UrlLauncherService.launchUrlString(
+                              LegalUrls.privacyPolicy,
+                              innerContext,
+                            ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ],

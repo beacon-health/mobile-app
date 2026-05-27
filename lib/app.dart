@@ -1,7 +1,9 @@
 import 'package:beacon_app/core/constants/app_routes.dart';
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
@@ -38,6 +40,12 @@ class BeaconApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<ThemeModeProvider>.value(
           value: ThemeModeProvider(),
+        ),
+        ChangeNotifierProvider<RecentFacilitiesService>.value(
+          value: RecentFacilitiesService(),
+        ),
+        ChangeNotifierProvider<EligibilityPreferencesService>.value(
+          value: EligibilityPreferencesService(),
         ),
       ],
       child: Consumer2<LocaleProvider, ThemeModeProvider>(

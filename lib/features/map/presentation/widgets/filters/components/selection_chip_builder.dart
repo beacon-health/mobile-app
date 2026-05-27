@@ -2,13 +2,20 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:flutter/material.dart';
 
+/// Builds the selection-chip rows used inside the Filter modal.
+///
+/// Always builds via the static helpers below — they accept a [BuildContext]
+/// so chip text and borders can pick up the active theme (avoids hardcoded
+/// `Colors.black87` rendering invisibly on a dark surface).
 class SelectionChipBuilder<T> {
   static Widget buildSingleSelection<T>({
+    required BuildContext context,
     required List<T> options,
     required T selectedValue,
-    required Function(T) onSelected,
+    required void Function(T) onSelected,
     required String Function(T) getLabel,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Wrap(
       spacing: FilterDesignTokens.spacingSmall,
       runSpacing: FilterDesignTokens.spacingSmall,
@@ -26,7 +33,9 @@ class SelectionChipBuilder<T> {
                   ? AppTheme.resedaGreen.withValues(alpha: 0.1)
                   : Colors.transparent,
               border: Border.all(
-                color: isSelected ? AppTheme.resedaGreen : Colors.grey.shade300,
+                color: isSelected
+                    ? AppTheme.resedaGreen
+                    : Theme.of(context).dividerColor,
                 width: isSelected
                     ? FilterDesignTokens.borderWidthSelected
                     : FilterDesignTokens.borderWidthNormal,
@@ -37,7 +46,9 @@ class SelectionChipBuilder<T> {
             child: Text(
               getLabel(option),
               style: TextStyle(
-                color: isSelected ? AppTheme.resedaGreen : Colors.black87,
+                color: isSelected
+                    ? AppTheme.resedaGreen
+                    : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -48,11 +59,13 @@ class SelectionChipBuilder<T> {
   }
 
   static Widget buildMultiSelection<T>({
+    required BuildContext context,
     required List<T> options,
     required Set<T> selectedValues,
-    required Function(T, bool) onToggle,
+    required void Function(T, bool) onToggle,
     required String Function(T) getLabel,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Wrap(
       spacing: FilterDesignTokens.spacingSmall,
       runSpacing: FilterDesignTokens.spacingSmall,
@@ -70,7 +83,9 @@ class SelectionChipBuilder<T> {
                   ? AppTheme.resedaGreen.withValues(alpha: 0.1)
                   : Colors.transparent,
               border: Border.all(
-                color: isSelected ? AppTheme.resedaGreen : Colors.grey.shade300,
+                color: isSelected
+                    ? AppTheme.resedaGreen
+                    : Theme.of(context).dividerColor,
                 width: isSelected
                     ? FilterDesignTokens.borderWidthSelected
                     : FilterDesignTokens.borderWidthNormal,
@@ -81,7 +96,9 @@ class SelectionChipBuilder<T> {
             child: Text(
               getLabel(option),
               style: TextStyle(
-                color: isSelected ? AppTheme.resedaGreen : Colors.black87,
+                color: isSelected
+                    ? AppTheme.resedaGreen
+                    : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

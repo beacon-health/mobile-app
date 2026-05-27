@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 enum FilterSection {
   distance,
   category,
+  status,
   eligibility,
   preferences,
 }
@@ -51,6 +53,7 @@ class _FilterModalState extends State<FilterModal> {
   final Map<FilterSection, GlobalKey> _sectionKeys = {
     FilterSection.distance: GlobalKey(),
     FilterSection.category: GlobalKey(),
+    FilterSection.status: GlobalKey(),
     FilterSection.eligibility: GlobalKey(),
     FilterSection.preferences: GlobalKey(),
   };
@@ -186,6 +189,12 @@ class _FilterModalState extends State<FilterModal> {
                   FilterSection.category,
                   'Category',
                   _buildCategoryContent(),
+                ),
+                const Divider(height: FilterDesignTokens.spacingXXLarge),
+                _buildExpandableSection(
+                  FilterSection.status,
+                  'Status',
+                  _buildStatusContent(),
                 ),
                 const Divider(height: FilterDesignTokens.spacingXXLarge),
                 _buildExpandableSection(
@@ -371,6 +380,7 @@ class _FilterModalState extends State<FilterModal> {
 
   Widget _buildDistanceContent() {
     return SelectionChipBuilder.buildSingleSelection<double>(
+      context: context,
       options: MapConstants.distanceOptions,
       selectedValue: _tempDistance,
       onSelected: (distance) => setState(() => _tempDistance = distance),
@@ -382,6 +392,7 @@ class _FilterModalState extends State<FilterModal> {
 
   Widget _buildCategoryContent() {
     return SelectionChipBuilder.buildMultiSelection<String>(
+      context: context,
       options: widget.availableCategories,
       selectedValues: _tempCategories,
       onToggle: (category, selected) {
@@ -395,6 +406,166 @@ class _FilterModalState extends State<FilterModal> {
       },
       getLabel: FacilityCategoryIcons.getCategoryDisplayName,
     );
+  }
+
+  /// Renders the "Status" section: one-tap actions that auto-fill the
+  /// Eligibility and/or Preferences filters from what the user has saved in
+  /// Settings. Useful for "show me only facilities I actually qualify for"
+  /// without re-toggling each row.
+  Widget _buildStatusContent() {
+    final ep = EligibilityPreferencesService();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Auto-fill the filters below from your Settings.',
+          style: TextStyle(
+            fontSize: FilterDesignTokens.fontSizeMedium,
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+        const SizedBox(height: FilterDesignTokens.spacingMedium),
+        Wrap(
+          spacing: FilterDesignTokens.spacingSmall,
+          runSpacing: FilterDesignTokens.spacingSmall,
+          children: [
+            _statusChip(
+              label: 'Apply my Eligibility',
+              icon: Icons.verified_user_outlined,
+              onTap: () =>
+                  _applySavedEligibility(ep.eligibility),
+            ),
+            _statusChip(
+              label: 'Apply my Preferences',
+              icon: Icons.tune,
+              onTap: () =>
+                  _applySavedPreferences(ep.preferences),
+            ),
+            _statusChip(
+              label: 'Apply both',
+              icon: Icons.checklist_rtl,
+              onTap: () {
+                _applySavedEligibility(ep.eligibility);
+                _applySavedPreferences(ep.preferences);
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _statusChip({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: FilterDesignTokens.selectionChipPaddingHorizontal,
+          vertical: FilterDesignTokens.selectionChipPaddingVertical,
+        ),
+        decoration: BoxDecoration(
+          color: AppTheme.resedaGreen.withValues(alpha: 0.08),
+          border: Border.all(color: AppTheme.resedaGreen),
+          borderRadius:
+              BorderRadius.circular(FilterDesignTokens.borderRadiusSmall),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: AppTheme.resedaGreen),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.resedaGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Maps the user's saved [EligibilityState] booleans onto the modal's
+  /// temp eligibility filter values. ON toggles in Settings become `true`
+  /// in the filter (i.e. "facility must require this"). OFF toggles map to
+  /// `null` so the user can later set them explicitly without us
+  /// overwriting an intentional "No".
+  void _applySavedEligibility(EligibilityState e) {
+    setState(() {
+      if (e.proofOfIncome) {
+        _tempEligibilityRequirements[EligibilityRequirement.proofOfIncome] =
+            true;
+      }
+      if (e.proofOfResidency) {
+        _tempEligibilityRequirements[EligibilityRequirement.proofOfResidency] =
+            true;
+      }
+      if (e.insuranceRequired) {
+        _tempEligibilityRequirements[
+            EligibilityRequirement.insuranceRequired] = true;
+      }
+      if (e.referralRequired) {
+        _tempEligibilityRequirements[
+            EligibilityRequirement.referralRequired] = true;
+      }
+      _expandedSection = FilterSection.eligibility;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSection(FilterSection.eligibility);
+    });
+  }
+
+  /// Same idea as [_applySavedEligibility], but for [PreferencesState].
+  void _applySavedPreferences(PreferencesState p) {
+    setState(() {
+      if (p.acceptsWalkIns) {
+        _tempPreferenceRequirements[PreferenceRequirement.acceptsWalkins] =
+            true;
+      }
+      if (p.appointmentOnly) {
+        _tempPreferenceRequirements[PreferenceRequirement.appointmentOnly] =
+            true;
+      }
+      if (p.openToImmigrants) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.openToImmigrants] = true;
+      }
+      if (p.freeServices) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.freeServicesAvailable] = true;
+      }
+      if (p.slidingScale) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.slidingScaleAvailable] = true;
+      }
+      if (p.otherLanguages) {
+        _tempPreferenceRequirements[PreferenceRequirement.otherLanguages] =
+            true;
+      }
+      if (p.telehealthPreference) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.telehealthAvailable] = true;
+      }
+      if (p.wheelchairAccessible) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.wheelchairAccessible] = true;
+      }
+      if (p.servesOutsideArea) {
+        _tempPreferenceRequirements[
+            PreferenceRequirement.servesOutsideArea] = true;
+      }
+      _expandedSection = FilterSection.preferences;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSection(FilterSection.preferences);
+    });
   }
 
   Widget _buildEligibilityContent() {

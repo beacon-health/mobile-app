@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:beacon_app/core/constants/legal_urls.dart';
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -28,23 +32,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   String _versionString = '';
-
-  // Eligibility preferences (hard gates — what the user needs from a facility)
-  bool _proofOfIncome = false;
-  bool _proofOfResidency = false;
-  bool _insuranceRequired = false;
-  bool _referralRequired = false;
-
-  // Service preferences (nice-to-have attributes)
-  bool _acceptsWalkIns = false;
-  bool _appointmentOnly = false;
-  bool _openToImmigrants = false;
-  bool _freeServices = false;
-  bool _slidingScale = false;
-  bool _otherLanguages = false;
-  bool _telehealthPreference = false;
-  bool _wheelchairAccessible = false;
-  bool _servesOutsideArea = false;
 
   @override
   void initState() {
@@ -165,52 +152,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       )
                     : Row(
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppTheme.honeydew,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              size: 28,
-                              color: AppTheme.paynesGray,
-                            ),
-                          ),
+                          _buildProviderBadge(),
                           const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Signed In',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.honeydew,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'Your account',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.resedaGreen,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          Expanded(child: _buildSignedInIdentity()),
                         ],
                       ),
               ),
@@ -259,6 +203,136 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ],
     );
+  }
+
+  /// Square badge showing the OAuth provider's logo (Apple/Google) for the
+  /// signed-in user. Falls back to a generic person icon when the provider
+  /// can't be determined.
+  Widget _buildProviderBadge() {
+    final user = Supabase.instance.client.auth.currentUser;
+    final provider = user?.appMetadata['provider'] as String?;
+
+    Widget child;
+    Color background;
+    switch (provider) {
+      case 'apple':
+        background = Colors.black;
+        // Apple's HIG asks for the white Apple logo on black.
+        child = const Icon(Icons.apple, size: 28, color: Colors.white);
+      case 'google':
+        background = Colors.white;
+        // Google's branding uses a multicolor mark; the closest free
+        // Material glyph is Icons.g_mobiledata. Wrapping in a colored
+        // background reads as "Google" alongside the email line.
+        child = const Icon(
+          Icons.g_mobiledata,
+          size: 36,
+          color: Color(0xFF4285F4),
+        );
+      default:
+        background = AppTheme.honeydew;
+        child = const Icon(
+          Icons.person,
+          size: 28,
+          color: AppTheme.paynesGray,
+        );
+    }
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        border: provider == 'google'
+            ? Border.all(
+                color: Theme.of(context).dividerColor,
+              )
+            : null,
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  /// Renders the right-hand identity block of the Account card for signed-in
+  /// users.
+  ///
+  /// Apple's "Hide My Email" relay means we may never see a real address; the
+  /// user's display name field may also be empty. We show whichever pieces
+  /// are available, falling back to a friendly provider label.
+  Widget _buildSignedInIdentity() {
+    final user = Supabase.instance.client.auth.currentUser;
+    final providerLabel = _providerLabelFor(user);
+    final email = _displayEmail(user);
+    final name = _displayName(user);
+
+    final primary = name ?? (providerLabel != null
+        ? 'Signed in through $providerLabel'
+        : 'Signed in');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          primary,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        if (email != null)
+          Text(
+            email,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceMuted,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        else if (name != null && providerLabel != null)
+          Text(
+            'Signed in through $providerLabel',
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceMuted,
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Pretty-prints the OAuth provider used for the current session
+  /// ('apple' → 'Apple', 'google' → 'Google'). Returns null when unknown.
+  String? _providerLabelFor(User? user) {
+    final provider = user?.appMetadata['provider'] as String?;
+    if (provider == null || provider.isEmpty) return null;
+    if (provider == 'email') return null;
+    return provider[0].toUpperCase() + provider.substring(1);
+  }
+
+  /// Returns a user-displayable email or null. Filters out null/empty
+  /// addresses. (Apple's private-relay addresses like
+  /// `xyz@privaterelay.appleid.com` are still shown — they're the only
+  /// address the app has and may be useful to the user as confirmation.)
+  String? _displayEmail(User? user) {
+    final email = user?.email;
+    if (email == null || email.isEmpty) return null;
+    return email;
+  }
+
+  /// Returns the user's display name from Supabase metadata if present.
+  /// Tries `name`, `full_name`, `display_name` in order. Returns null if
+  /// none are available (common for "Hide My Email" sign-ins where the user
+  /// didn't share their name).
+  String? _displayName(User? user) {
+    final meta = user?.userMetadata;
+    if (meta == null) return null;
+    for (final key in const ['name', 'full_name', 'display_name']) {
+      final value = meta[key];
+      if (value is String && value.trim().isNotEmpty) return value.trim();
+    }
+    return null;
   }
 
   Future<void> _onUseMyLocationChanged(
@@ -399,6 +473,13 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildEligibilitySection(AppLocalizations l10n, {required bool isGuest}) {
+    final epService = context.watch<EligibilityPreferencesService>();
+    final state = epService.eligibility;
+    void update(EligibilityState next) {
+      // Fire-and-forget — the service notifies listeners on completion.
+      unawaited(epService.updateEligibility(next));
+    }
+
     final card = Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -406,29 +487,37 @@ class _SettingsPageState extends State<SettingsPage> {
           _eligToggle(
             'Proof of income required',
             Icons.attach_money,
-            _proofOfIncome,
-            isGuest ? null : (v) => setState(() => _proofOfIncome = v),
+            state.proofOfIncome,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(proofOfIncome: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Proof of residency required',
             Icons.home_outlined,
-            _proofOfResidency,
-            isGuest ? null : (v) => setState(() => _proofOfResidency = v),
+            state.proofOfResidency,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(proofOfResidency: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Insurance required',
             Icons.health_and_safety,
-            _insuranceRequired,
-            isGuest ? null : (v) => setState(() => _insuranceRequired = v),
+            state.insuranceRequired,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(insuranceRequired: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Referral required',
             Icons.assignment_ind_outlined,
-            _referralRequired,
-            isGuest ? null : (v) => setState(() => _referralRequired = v),
+            state.referralRequired,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(referralRequired: v)),
           ),
         ],
       ),
@@ -441,16 +530,6 @@ class _SettingsPageState extends State<SettingsPage> {
         if (isGuest)
           LockedSectionOverlay(
             message: 'Sign in to set preferences',
-            cta: Builder(
-              builder: (innerContext) => AppleSignInButton(
-                onFailure: (msg) {
-                  if (!innerContext.mounted) return;
-                  ScaffoldMessenger.of(innerContext).showSnackBar(
-                    SnackBar(content: Text(msg)),
-                  );
-                },
-              ),
-            ),
             child: card,
           )
         else
@@ -460,6 +539,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildPreferencesSection(AppLocalizations l10n, {required bool isGuest}) {
+    final epService = context.watch<EligibilityPreferencesService>();
+    final state = epService.preferences;
+    void update(PreferencesState next) {
+      unawaited(epService.updatePreferences(next));
+    }
+
     final card = Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -467,64 +552,82 @@ class _SettingsPageState extends State<SettingsPage> {
           _eligToggle(
             'Accepts walk-ins',
             Icons.directions_walk,
-            _acceptsWalkIns,
-            isGuest ? null : (v) => setState(() => _acceptsWalkIns = v),
+            state.acceptsWalkIns,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(acceptsWalkIns: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Appointment only',
             Icons.calendar_today,
-            _appointmentOnly,
-            isGuest ? null : (v) => setState(() => _appointmentOnly = v),
+            state.appointmentOnly,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(appointmentOnly: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Open to immigrants',
             Icons.public,
-            _openToImmigrants,
-            isGuest ? null : (v) => setState(() => _openToImmigrants = v),
+            state.openToImmigrants,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(openToImmigrants: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Free services available',
             Icons.money_off,
-            _freeServices,
-            isGuest ? null : (v) => setState(() => _freeServices = v),
+            state.freeServices,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(freeServices: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Sliding scale available',
             Icons.tune,
-            _slidingScale,
-            isGuest ? null : (v) => setState(() => _slidingScale = v),
+            state.slidingScale,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(slidingScale: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Other languages available',
             Icons.translate,
-            _otherLanguages,
-            isGuest ? null : (v) => setState(() => _otherLanguages = v),
+            state.otherLanguages,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(otherLanguages: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Telehealth available',
             Icons.videocam_outlined,
-            _telehealthPreference,
-            isGuest ? null : (v) => setState(() => _telehealthPreference = v),
+            state.telehealthPreference,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(telehealthPreference: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Wheelchair accessible',
             Icons.accessible,
-            _wheelchairAccessible,
-            isGuest ? null : (v) => setState(() => _wheelchairAccessible = v),
+            state.wheelchairAccessible,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(wheelchairAccessible: v)),
           ),
           const Divider(height: 1),
           _eligToggle(
             'Serves outside area',
             Icons.map_outlined,
-            _servesOutsideArea,
-            isGuest ? null : (v) => setState(() => _servesOutsideArea = v),
+            state.servesOutsideArea,
+            isGuest
+                ? null
+                : (v) => update(state.copyWith(servesOutsideArea: v)),
           ),
         ],
       ),
@@ -537,16 +640,6 @@ class _SettingsPageState extends State<SettingsPage> {
         if (isGuest)
           LockedSectionOverlay(
             message: 'Sign in to set preferences',
-            cta: Builder(
-              builder: (innerContext) => AppleSignInButton(
-                onFailure: (msg) {
-                  if (!innerContext.mounted) return;
-                  ScaffoldMessenger.of(innerContext).showSnackBar(
-                    SnackBar(content: Text(msg)),
-                  );
-                },
-              ),
-            ),
             child: card,
           )
         else
@@ -593,7 +686,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: Text(l10n.settingsPrivacyPolicy),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => UrlLauncherService.launchUrlString(
-                  'https://beacon-website-pied.vercel.app/privacy-policy',
+                  LegalUrls.privacyPolicy,
                   context,
                 ),
               ),
@@ -603,7 +696,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: Text(l10n.settingsTermsOfService),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => UrlLauncherService.launchUrlString(
-                  'https://beacon-website-pied.vercel.app/terms-of-use',
+                  LegalUrls.termsOfUse,
                   context,
                 ),
               ),
@@ -757,8 +850,15 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
                 LengthLimitingTextInputFormatter(5),
               ],
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: '60601',
+              decoration: InputDecoration(
+                hintText: '00000',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.35),
+                  letterSpacing: 4,
+                ),
                 labelText: 'ZIP Code',
               ),
               style: const TextStyle(fontSize: 18, letterSpacing: 4),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
@@ -113,15 +114,27 @@ class UserSettingsService {
 
   Future<void> _applyToLocal(Map<String, dynamic> row) async {
     final zip = row['zip_code'] as String?;
-    final lat = (row['latitude'] as num?)?.toDouble();
-    final lng = (row['longitude'] as num?)?.toDouble();
     final themeMode = row['theme_mode'] as String?;
     final locale = row['locale'] as String?;
     final locationSearchEnabled = row['location_search_enabled'] as bool?;
+    final eligibilityJson = row['eligibility'];
+    final preferencesJson = row['preferences'];
 
-    if (zip != null && zip.isNotEmpty && lat != null && lng != null) {
-      await ZipCodeService()
-          .setZipAndLocation(zip, lat, lng, syncToCloud: false);
+    // Lat/lng are no longer stored in the cloud — we re-derive them locally
+    // by geocoding the ZIP on apply. This keeps the cloud row free of
+    // device-derived coordinates and avoids stale coords if a user moves.
+    if (zip != null && zip.isNotEmpty) {
+      // `setZipCode` performs geocoding + persistence. It calls
+      // notifyListeners() and (when syncToCloud is true) re-uploads.
+      // We don't want that uploadback here.
+      final ok = await ZipCodeService().setZipCode(zip, syncToCloud: false);
+      if (!ok) {
+        ErrorReporter.instance.report(
+          Exception('Could not geocode cloud-stored ZIP: $zip'),
+          StackTrace.current,
+          context: '$_logContext._applyToLocal',
+        );
+      }
     }
     if (locationSearchEnabled != null) {
       await ZipCodeService()
@@ -136,6 +149,14 @@ class UserSettingsService {
     if (locale != null && locale.isNotEmpty) {
       await LocaleProvider().setLocale(Locale(locale), syncToCloud: false);
     }
+    await EligibilityPreferencesService().applyFromCloud(
+      eligibility: eligibilityJson is Map<String, dynamic>
+          ? EligibilityState.fromJson(eligibilityJson)
+          : null,
+      preferences: preferencesJson is Map<String, dynamic>
+          ? PreferencesState.fromJson(preferencesJson)
+          : null,
+    );
   }
 
   Map<String, dynamic> _payload(
@@ -143,15 +164,16 @@ class UserSettingsService {
     bool includeCreatedAt = false,
   }) {
     final zip = ZipCodeService();
+    final ep = EligibilityPreferencesService();
     final now = DateTime.now().toUtc().toIso8601String();
     return {
       'user_id': userId,
       'zip_code': zip.zipCode,
-      'latitude': zip.latitude,
-      'longitude': zip.longitude,
       'theme_mode': _themeModeName(ThemeModeProvider().themeMode),
       'locale': LocaleProvider().locale.languageCode,
       'location_search_enabled': zip.locationSearchEnabled,
+      'eligibility': ep.eligibility.toJson(),
+      'preferences': ep.preferences.toJson(),
       'updated_at': now,
       if (includeCreatedAt) 'created_at': now,
     };

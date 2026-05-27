@@ -17,6 +17,10 @@ class FacilityListPanel extends StatelessWidget {
   final Widget Function(String?) buildCategoryIcon;
   final Function(bool isPanelOpen, bool isFullyExpanded)? onPanelStateChange;
 
+  /// When false, every rendered [FacilityCard] disables its heart icon (used
+  /// in guest mode where favorites require sign-in).
+  final bool canFavorite;
+
   const FacilityListPanel({
     super.key,
     required this.facilities,
@@ -31,6 +35,7 @@ class FacilityListPanel extends StatelessWidget {
     required this.onLaunchUrl,
     required this.buildCategoryIcon,
     this.onPanelStateChange,
+    this.canFavorite = true,
   });
 
   @override
@@ -203,6 +208,7 @@ class FacilityListPanel extends StatelessWidget {
                       onToggleFavorite: () => onToggleFavorite(facility.id),
                       onLaunchUrl: onLaunchUrl,
                       buildCategoryIcon: buildCategoryIcon,
+                      canFavorite: canFavorite,
                     );
                   },
                 ),

@@ -21,6 +21,7 @@ class FilterBar extends StatelessWidget {
   final VoidCallback onCategoryTap;
   final VoidCallback onEligibilityTap;
   final VoidCallback onPreferencesTap;
+  final VoidCallback onStatusTap;
 
   const FilterBar({
     super.key,
@@ -37,6 +38,7 @@ class FilterBar extends StatelessWidget {
     required this.onCategoryTap,
     required this.onEligibilityTap,
     required this.onPreferencesTap,
+    required this.onStatusTap,
     this.isGuestMode = false,
   });
 
@@ -100,6 +102,13 @@ class FilterBar extends StatelessWidget {
               CategoryFilter(
                 selectedCategories: selectedCategories,
                 onTap: onCategoryTap,
+              ),
+              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              ToggleFilter(
+                label: 'Status',
+                isActive: false,
+                isLocked: isGuestMode,
+                onTap: onStatusTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               EligibilityFilter(

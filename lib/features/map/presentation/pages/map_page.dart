@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
+import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
@@ -106,7 +109,50 @@ class MapPageState extends State<MapPage>
     });
     _isPanelOpen = true;
     _searchFocusNode.addListener(_onSearchFocusChange);
+
+    // Stay in sync with ZipCodeService — when the user toggles GPS on/off
+    // or edits ZIP in Settings, that fires notifyListeners(). Without this,
+    // MapPage keeps the value from initState (and uses AutomaticKeepAlive
+    // so initState only runs once), causing Settings and Map to drift.
+    zipService.addListener(_onZipServiceChanged);
     // Map style is loaded in didChangeDependencies so it reacts to theme changes.
+  }
+
+  void _onZipServiceChanged() {
+    final zipService = ZipCodeService();
+    final newLabel = zipService.zipCode?.isNotEmpty == true
+        ? zipService.zipCode!
+        : 'Current Location';
+    final newLat = zipService.latitude;
+    final newLng = zipService.longitude;
+
+    final coordsChanged = newLat != _currentLatitude ||
+        newLng != _currentLongitude;
+    final labelChanged = newLabel != _currentLocation;
+    if (!coordsChanged && !labelChanged) return;
+
+    if (!mounted) return;
+    setState(() {
+      _currentLocation = newLabel;
+      _currentLatitude = newLat;
+      _currentLongitude = newLng;
+    });
+
+    if (coordsChanged) {
+      // Reload facilities around the new coords and re-center the camera.
+      unawaited(_loadFacilities());
+      final controller = _googleMapController;
+      if (controller != null) {
+        unawaited(
+          controller.animateCamera(
+            CameraUpdate.newLatLngZoom(
+              LatLng(newLat, newLng),
+              _getZoomLevelForDistance(_selectedDistance),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _refreshLocationPermission() async {
@@ -190,6 +236,7 @@ class MapPageState extends State<MapPage>
     _scrollController.dispose();
     _keyboardHideDebounce?.cancel();
     WidgetsBinding.instance.removeObserver(this);
+    ZipCodeService().removeListener(_onZipServiceChanged);
     _disposeMapController();
     _markerUpdateDebounce?.cancel();
     _markerIconCache.clear();
@@ -516,6 +563,10 @@ class MapPageState extends State<MapPage>
         _expandedFacilityId = null;
       });
 
+      // Track view for the "Recently Viewed Facilities" section on Home.
+      // `read` (vs. `watch`) — we don't need a rebuild here.
+      context.read<RecentFacilitiesService>().addFacility(facility);
+
       await _animateToFacility(facility);
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
@@ -571,7 +622,152 @@ class MapPageState extends State<MapPage>
       onPreferencesTap: isGuest
           ? () => showSignInPromptDialog(context)
           : () => _showFilterModal(expandedSection: FilterSection.preferences),
+      onStatusTap: isGuest
+          ? () => showSignInPromptDialog(context)
+          : _showStatusActionSheet,
     );
+  }
+
+  /// Bottom-sheet picker that one-shot applies the user's saved Eligibility,
+  /// Preferences, or both as filter values. Designed for the filter-bar chip
+  /// — taps auto-apply and close, no follow-up "Apply" press needed.
+  Future<void> _showStatusActionSheet() async {
+    final ep = EligibilityPreferencesService();
+    final colorScheme = Theme.of(context).colorScheme;
+    final choice = await showModalBottomSheet<_StatusChoice>(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Apply Status From Your Settings',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            ListTile(
+              leading: const Icon(
+                Icons.verified_user_outlined,
+                color: AppTheme.resedaGreen,
+              ),
+              title: const Text('Apply my Eligibility'),
+              onTap: () => Navigator.pop(ctx, _StatusChoice.eligibility),
+            ),
+            ListTile(
+              leading: const Icon(Icons.tune, color: AppTheme.resedaGreen),
+              title: const Text('Apply my Preferences'),
+              onTap: () => Navigator.pop(ctx, _StatusChoice.preferences),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.checklist_rtl,
+                color: AppTheme.resedaGreen,
+              ),
+              title: const Text('Apply both'),
+              onTap: () => Navigator.pop(ctx, _StatusChoice.both),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return;
+    _applyStatusChoice(choice, ep);
+  }
+
+  /// Mutates `_selectedEligibilityRequirements` / `_selectedPreferenceRequirements`
+  /// from the user's saved EligibilityPreferencesService state, then re-runs
+  /// the filter pipeline. Matches the per-modal helpers in FilterModal so
+  /// the semantics are consistent whether the user opens the modal or uses
+  /// the filter-bar chip.
+  void _applyStatusChoice(
+    _StatusChoice choice,
+    EligibilityPreferencesService ep,
+  ) {
+    setState(() {
+      if (choice == _StatusChoice.eligibility ||
+          choice == _StatusChoice.both) {
+        final e = ep.eligibility;
+        if (e.proofOfIncome) {
+          _selectedEligibilityRequirements[
+              EligibilityRequirement.proofOfIncome] = true;
+        }
+        if (e.proofOfResidency) {
+          _selectedEligibilityRequirements[
+              EligibilityRequirement.proofOfResidency] = true;
+        }
+        if (e.insuranceRequired) {
+          _selectedEligibilityRequirements[
+              EligibilityRequirement.insuranceRequired] = true;
+        }
+        if (e.referralRequired) {
+          _selectedEligibilityRequirements[
+              EligibilityRequirement.referralRequired] = true;
+        }
+      }
+      if (choice == _StatusChoice.preferences ||
+          choice == _StatusChoice.both) {
+        final p = ep.preferences;
+        if (p.acceptsWalkIns) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.acceptsWalkins] = true;
+        }
+        if (p.appointmentOnly) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.appointmentOnly] = true;
+        }
+        if (p.openToImmigrants) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.openToImmigrants] = true;
+        }
+        if (p.freeServices) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.freeServicesAvailable] = true;
+        }
+        if (p.slidingScale) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.slidingScaleAvailable] = true;
+        }
+        if (p.otherLanguages) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.otherLanguages] = true;
+        }
+        if (p.telehealthPreference) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.telehealthAvailable] = true;
+        }
+        if (p.wheelchairAccessible) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.wheelchairAccessible] = true;
+        }
+        if (p.servesOutsideArea) {
+          _selectedPreferenceRequirements[
+              PreferenceRequirement.servesOutsideArea] = true;
+        }
+      }
+      _filterFacilities();
+    });
   }
 
   void _toggleFavoritesFilter() {
@@ -679,6 +875,7 @@ class MapPageState extends State<MapPage>
   String? _expandedFacilityId;
 
   void _toggleFacilityExpansion(String facilityId) {
+    final isOpening = _expandedFacilityId != facilityId;
     setState(() {
       if (_expandedFacilityId == facilityId) {
         _expandedFacilityId = null;
@@ -686,6 +883,17 @@ class MapPageState extends State<MapPage>
         _expandedFacilityId = facilityId;
       }
     });
+
+    // Treat expanding a row in the list panel as a "view" — that's when the
+    // user is actually reading facility details and might want to leave
+    // feedback.
+    if (!isOpening) return;
+    final facility = _allFacilities
+        .where((f) => f.id == facilityId)
+        .firstOrNull;
+    if (facility != null) {
+      context.read<RecentFacilitiesService>().addFacility(facility);
+    }
   }
 
   void _toggleFavorite(String facilityId) {
@@ -742,6 +950,8 @@ class MapPageState extends State<MapPage>
     if (_error != null) {
       return _buildError();
     }
+
+    final isGuest = context.watch<GuestModeService>().isGuest;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -867,6 +1077,7 @@ class MapPageState extends State<MapPage>
                         onLaunchUrl: _launchUrl,
                         buildCategoryIcon:
                             FacilityCategoryIcons.buildCategoryIcon,
+                        canFavorite: !isGuest,
                         onPanelStateChange: (isPanelOpen, isFullyExpanded) {
                           setState(() {
                             _isPanelOpen = isPanelOpen;
@@ -882,6 +1093,7 @@ class MapPageState extends State<MapPage>
 
   Widget _buildSingleFacilityCard() {
     if (_selectedFacility == null) return const SizedBox.shrink();
+    final isGuest = context.read<GuestModeService>().isGuest;
 
     final maxCardHeight = MediaQuery.of(context).size.height * 0.45;
     return Container(
@@ -922,8 +1134,12 @@ class MapPageState extends State<MapPage>
           onLaunchUrl: _launchUrl,
           buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
           showExpandButton: false,
+          canFavorite: !isGuest,
         ),
       ),
     );
   }
 }
+
+/// Choices presented in the filter-bar Status action sheet.
+enum _StatusChoice { eligibility, preferences, both }

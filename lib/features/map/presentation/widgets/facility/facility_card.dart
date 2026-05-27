@@ -12,6 +12,10 @@ class FacilityCard extends StatefulWidget {
   final Future<void> Function(String) onLaunchUrl;
   final bool showExpandButton;
 
+  /// When false, the heart/favorite icon renders disabled and is not tappable.
+  /// Used in guest mode where favorites require sign-in.
+  final bool canFavorite;
+
   const FacilityCard({
     super.key,
     required this.facility,
@@ -21,6 +25,7 @@ class FacilityCard extends StatefulWidget {
     required this.buildCategoryIcon,
     required this.onLaunchUrl,
     this.showExpandButton = true,
+    this.canFavorite = true,
   });
 
   @override
@@ -106,10 +111,18 @@ class _FacilityCardState extends State<FacilityCard> {
                   widget.facility.isFavorite
                       ? Icons.favorite
                       : Icons.favorite_border,
-                  color: widget.facility.isFavorite ? Colors.red : null,
+                  color: !widget.canFavorite
+                      ? Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.3)
+                      : (widget.facility.isFavorite ? Colors.red : null),
                   size: 20,
                 ),
-                onPressed: widget.onToggleFavorite,
+                // `null` onPressed renders the IconButton in its disabled
+                // state (greyed-out splash, no ink response).
+                onPressed:
+                    widget.canFavorite ? widget.onToggleFavorite : null,
               ),
             ),
             if (widget.showExpandButton)

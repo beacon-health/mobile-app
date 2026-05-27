@@ -90,7 +90,7 @@ class ZipCodeService extends ChangeNotifier {
 
   /// Geocodes [zipCode] and stores the result.
   /// Returns `true` on success, `false` if the zip cannot be resolved.
-  Future<bool> setZipCode(String zipCode) async {
+  Future<bool> setZipCode(String zipCode, {bool syncToCloud = true}) async {
     try {
       final locations = await locationFromAddress('$zipCode, USA');
       if (locations.isEmpty) return false;
@@ -98,6 +98,7 @@ class ZipCodeService extends ChangeNotifier {
         zipCode,
         locations.first.latitude,
         locations.first.longitude,
+        syncToCloud: syncToCloud,
       );
       return true;
     } catch (_) {
