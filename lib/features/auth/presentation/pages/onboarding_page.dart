@@ -1,9 +1,15 @@
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
-import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
+import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
+/// First-launch welcome screen. Surfaces the app value proposition and a
+/// single CTA to the auth flow.
+///
+/// Shown by [AuthGate] when `hasCompletedOnboarding` is false. Tapping
+/// "Get Started" pushes [LoginPage]; after sign-in (or guest continue), the
+/// user reaches [LocationChoicePage] and ultimately [MainNavBar].
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
 
@@ -54,7 +60,7 @@ class OnboardingPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute<void>(
-                              builder: (_) => const ZipEntryPage(),
+                              builder: (_) => const LoginPage(),
                             ),
                           );
                         },

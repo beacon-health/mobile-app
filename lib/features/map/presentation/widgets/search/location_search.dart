@@ -1,5 +1,6 @@
-import 'dart:developer';
-
+import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/features/map/presentation/services/location_service.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -23,6 +24,7 @@ class _LocationSearchState extends State<LocationSearch> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
   String _previousText = '';
+  bool _isLoadingLocation = false;
 
   @override
   void initState() {
@@ -30,6 +32,15 @@ class _LocationSearchState extends State<LocationSearch> {
     _controller = TextEditingController(text: widget.currentLocation);
     _focusNode = FocusNode();
     _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(LocationSearch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentLocation != widget.currentLocation &&
+        !_focusNode.hasFocus) {
+      _controller.text = widget.currentLocation;
+    }
   }
 
   @override
@@ -58,8 +69,35 @@ class _LocationSearchState extends State<LocationSearch> {
     }
   }
 
-  // TODO: revisit once location-based search is in-scope
-  // Future<void> _getCurrentLocation() async { ... }
+  Future<void> _getCurrentLocation() async {
+    if (_isLoadingLocation) return;
+    setState(() => _isLoadingLocation = true);
+
+    final result = await LocationService.getCurrentLocation();
+
+    if (!mounted) return;
+    setState(() => _isLoadingLocation = false);
+
+    if (result.status == LocationStatus.granted) {
+      final name = AppLocalizations.of(context)?.locationCurrentLocation ??
+          'Current Location';
+      _controller.text = name;
+      widget.onLocationChanged(name, result.latitude, result.longitude);
+      _focusNode.unfocus();
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n?.locationPermissionDenied ??
+              'Location access denied. Enable it in Settings > Privacy > Location Services.',
+        ),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
 
   bool _isValidZipCode(String value) {
     final zipRegex = RegExp(r'^\d{5}(-\d{4})?$');
@@ -72,7 +110,7 @@ class _LocationSearchState extends State<LocationSearch> {
     final trimmedValue = value.trim();
 
     if (trimmedValue.toLowerCase().contains('current')) {
-      // GPS lookup disabled post-MVP; treat as empty.
+      await _getCurrentLocation();
       return;
     }
 
@@ -107,19 +145,23 @@ class _LocationSearchState extends State<LocationSearch> {
       } else {
         _handleGeocodingFailure(zipCode);
       }
-    } catch (e) {
-      log('Geocoding error for $zipCode: $e', name: 'LocationSearch');
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'LocationSearch.geocodeZipCode',
+      );
       _handleGeocodingFailure(zipCode);
     }
   }
 
   void _handleGeocodingFailure(String zipCode) {
-    widget.onLocationChanged(zipCode, 41.9542, -87.6668);
+    widget.onLocationChanged(zipCode, null, null);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not find location for zip code $zipCode. Using Chicago as default.',
+            'Could not find location for zip code $zipCode.',
           ),
           backgroundColor: Colors.orange,
         ),
@@ -129,42 +171,49 @@ class _LocationSearchState extends State<LocationSearch> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        const Icon(Icons.location_pin, color: Colors.grey),
+        Icon(
+          Icons.location_pin,
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
-            decoration: const InputDecoration(
-              hintText: 'Enter zip code',
+            decoration: InputDecoration(
+              hintText: l10n?.mapSearchLocation ?? 'Enter zip code',
+              hintStyle: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
               filled: false,
               fillColor: Colors.transparent,
             ),
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(color: colorScheme.onSurface),
             textAlignVertical: TextAlignVertical.center,
             onSubmitted: _onLocationSubmitted,
           ),
         ),
-        // TODO: revisit once location-based search is in-scope
-        // if (_isLoadingLocation)
-        //   const Padding(
-        //     padding: EdgeInsets.all(12),
-        //     child: SizedBox(
-        //       width: 20,
-        //       height: 20,
-        //       child: CircularProgressIndicator(strokeWidth: 2),
-        //     ),
-        //   )
-        // else
-        //   IconButton(
-        //     icon: const Icon(Icons.my_location, color: Colors.blue),
-        //     onPressed: _getCurrentLocation,
-        //     tooltip: 'Use current location',
-        //   ),
+        if (_isLoadingLocation)
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else
+          IconButton(
+            icon: const Icon(Icons.my_location, color: Colors.blue),
+            onPressed: _getCurrentLocation,
+            tooltip: l10n?.locationUseMyLocationTooltip ?? 'Use my location',
+          ),
       ],
     );
   }

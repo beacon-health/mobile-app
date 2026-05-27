@@ -236,6 +236,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authSigningIn => '正在登录...';
 
   @override
+  String get authSignIn => '登录';
+
+  @override
+  String get authSignInPromptTitle => '请登录以使用此功能';
+
+  @override
+  String get authSignInPromptBody => '创建免费账户即可解锁收藏、资格筛选等功能。';
+
+  @override
+  String get authSignInError => '登录失败，请重试。';
+
+  @override
+  String get locationChoiceTitle => '您希望如何查找资源？';
+
+  @override
+  String get locationChoiceSubtitle => '我们将以此向您显示附近的资源。';
+
+  @override
+  String get locationChoiceUseLocation => '启用基于位置的搜索';
+
+  @override
+  String get locationChoiceUseLocationDesc => '使用 GPS 获得最准确的结果。';
+
+  @override
+  String get locationChoiceEnterZip => '输入邮政编码';
+
+  @override
+  String get locationChoiceEnterZipDesc => '按美国邮政编码搜索。';
+
+  @override
+  String get locationCurrentLocation => '当前位置';
+
+  @override
+  String get locationPermissionDenied => '位置访问被拒绝。请在「设置」>「隐私」>「定位服务」中启用。';
+
+  @override
+  String get locationPermissionDeniedTitle => '需要位置访问权限';
+
+  @override
+  String get locationPermissionDeniedBody =>
+      '若要使用基于 GPS 的搜索，请在 iOS「设置」>「隐私」>「定位服务」中为 Beacon 启用位置权限。';
+
+  @override
+  String get locationUseMyLocationTooltip => '使用我的位置';
+
+  @override
+  String get settingsUseMyLocation => '使用我的位置';
+
+  @override
+  String get settingsUseMyLocationDesc => '使用 GPS 而非邮政编码';
+
+  @override
+  String get settingsSignOutSuccess => '已退出登录';
+
+  @override
   String get commonCancel => '取消';
 
   @override

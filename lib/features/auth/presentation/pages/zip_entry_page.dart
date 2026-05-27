@@ -7,17 +7,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ZipEntryPage extends StatefulWidget {
-  const ZipEntryPage({super.key});
+  const ZipEntryPage({super.key, this.prefilledZip});
+
+  /// Optional ZIP to pre-populate the input. Used when returning a recently
+  /// signed-in guest user back through the location flow.
+  final String? prefilledZip;
 
   @override
   State<ZipEntryPage> createState() => _ZipEntryPageState();
 }
 
 class _ZipEntryPageState extends State<ZipEntryPage> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.prefilledZip ?? '';
+    _controller = TextEditingController(
+      text: RegExp(r'^\d{5}$').hasMatch(initial) ? initial : '',
+    );
+  }
 
   @override
   void dispose() {
@@ -46,9 +59,10 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
       return;
     }
 
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const MainNavBar()),
+      MaterialPageRoute<void>(builder: (_) => const MainNavBar()),
+      (route) => false,
     );
   }
 

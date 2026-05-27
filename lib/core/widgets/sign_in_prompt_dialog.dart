@@ -1,11 +1,14 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Shows a centered modal dialog prompting guest users to sign in.
 ///
 /// The dialog is barrier-dismissible: tapping outside or pressing the X
-/// button closes it.
+/// button closes it. Tapping the "Sign In" button closes the dialog and
+/// pushes [LoginPage] in guest-upgrade mode.
 void showSignInPromptDialog(BuildContext context) {
   showDialog<void>(
     context: context,
@@ -21,6 +24,7 @@ class _SignInPromptDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
       backgroundColor: Theme.of(context).cardTheme.color,
@@ -28,7 +32,7 @@ class _SignInPromptDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 8, 28),
+        padding: const EdgeInsets.fromLTRB(24, 8, 8, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -51,7 +55,7 @@ class _SignInPromptDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Sign in to use this feature',
+                l10n.authSignInPromptTitle,
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -62,11 +66,24 @@ class _SignInPromptDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Create a free account to unlock Favorites, '
-                'Eligibility filters, and more.',
+                l10n.authSignInPromptBody,
                 textAlign: TextAlign.center,
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceMuted,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Builder(
+                builder: (innerContext) => AppleSignInButton(
+                  onFailure: (msg) {
+                    if (!innerContext.mounted) return;
+                    ScaffoldMessenger.of(innerContext).showSnackBar(
+                      SnackBar(content: Text(msg)),
+                    );
+                  },
                 ),
               ),
             ),

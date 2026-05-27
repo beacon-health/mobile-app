@@ -238,6 +238,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authSigningIn => 'Signing in...';
 
   @override
+  String get authSignIn => 'Sign In';
+
+  @override
+  String get authSignInPromptTitle => 'Sign in to use this feature';
+
+  @override
+  String get authSignInPromptBody =>
+      'Create a free account to unlock Favorites, Eligibility filters, and more.';
+
+  @override
+  String get authSignInError => 'Sign-in failed. Please try again.';
+
+  @override
+  String get locationChoiceTitle => 'How would you like to find resources?';
+
+  @override
+  String get locationChoiceSubtitle =>
+      'We\'ll use this to show resources near you.';
+
+  @override
+  String get locationChoiceUseLocation => 'Location-Based Search';
+
+  @override
+  String get locationChoiceUseLocationDesc =>
+      'Use GPS for the most accurate results.';
+
+  @override
+  String get locationChoiceEnterZip => 'Enter Zip Code';
+
+  @override
+  String get locationChoiceEnterZipDesc => 'Search by ZIP code in the US.';
+
+  @override
+  String get locationCurrentLocation => 'Current Location';
+
+  @override
+  String get locationPermissionDenied =>
+      'Location access denied. Enable it in Settings > Privacy > Location Services.';
+
+  @override
+  String get locationPermissionDeniedTitle => 'Location Access Required';
+
+  @override
+  String get locationPermissionDeniedBody =>
+      'To use GPS-based search, enable location for Beacon in iOS Settings > Privacy > Location Services.';
+
+  @override
+  String get locationUseMyLocationTooltip => 'Use my location';
+
+  @override
+  String get settingsUseMyLocation => 'Use My Location';
+
+  @override
+  String get settingsUseMyLocationDesc => 'Use GPS instead of ZIP code';
+
+  @override
+  String get settingsSignOutSuccess => 'Signed out';
+
+  @override
   String get commonCancel => 'Cancel';
 
   @override

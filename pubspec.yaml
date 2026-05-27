@@ -3,18 +3,18 @@ description: A new Flutter project.
 
 publish_to: "none"
 
-version: 0.1.1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.6.0
 
 dependencies:
+  crypto: ^3.0.6
   cupertino_icons: ^1.0.9
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_signin_button: ^2.0.0
   geocoding: ^4.0.0
   geolocator: ^10.1.0
   google_maps_flutter: ^2.17.0
@@ -24,6 +24,7 @@ dependencies:
   path_provider: ^2.1.4
   provider: ^6.1.2
   shared_preferences: ^2.5.5
+  sign_in_with_apple: ^7.0.1
   supabase_flutter: ^2.12.2
   url_launcher: ^6.1.11
 

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +22,10 @@ class ThemeModeProvider extends ChangeNotifier {
     ThemeMode.dark: 'Dark',
   };
 
-  ThemeMode _themeMode = ThemeMode.system;
+  // Default to light mode for first-launch / signed-out users. The user can
+  // switch to dark or system via Settings; that choice persists in prefs and
+  // also syncs to `user_settings.theme_mode` for signed-in users.
+  ThemeMode _themeMode = ThemeMode.light;
 
   /// The currently active theme mode.
   ThemeMode get themeMode => _themeMode;
@@ -34,11 +40,18 @@ class ThemeModeProvider extends ChangeNotifier {
   }
 
   /// Changes the app theme mode and persists the choice.
-  Future<void> setThemeMode(ThemeMode mode) async {
+  ///
+  /// When [syncToCloud] is true (the default), pushes the change to the
+  /// signed-in user's `user_settings` row. Set to false when applying a value
+  /// that just came from the cloud to avoid a redundant write.
+  Future<void> setThemeMode(ThemeMode mode, {bool syncToCloud = true}) async {
     if (_themeMode == mode) return;
     _themeMode = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_key, mode.index);
     notifyListeners();
+    if (syncToCloud) {
+      unawaited(UserSettingsService.instance.pushLocal());
+    }
   }
 }

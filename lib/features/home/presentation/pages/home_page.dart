@@ -4,11 +4,13 @@ import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
+import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
 import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
@@ -35,6 +37,7 @@ class _HomePageState extends State<HomePage>
   String? _mapStyle;
   Set<Marker> _markers = {};
   Brightness? _lastBrightness;
+  bool _locationGranted = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -47,7 +50,15 @@ class _HomePageState extends State<HomePage>
         isDemoMode ? DemoFacilityRepository() : FacilityRepository();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
+      _refreshLocationPermission();
     });
+  }
+
+  Future<void> _refreshLocationPermission() async {
+    final granted = await LocationService.hasPermission();
+    if (mounted && granted != _locationGranted) {
+      setState(() => _locationGranted = granted);
+    }
   }
 
   @override
@@ -318,8 +329,7 @@ class _HomePageState extends State<HomePage>
                         zoom: 14.0,
                       ),
                       markers: _markers,
-                      // TODO: re-enable when location permission is added back post-MVP
-                      myLocationEnabled: false,
+                      myLocationEnabled: _locationGranted,
                       myLocationButtonEnabled: false,
                       zoomControlsEnabled: false,
                       mapToolbarEnabled: false,
@@ -405,32 +415,46 @@ class _HomePageState extends State<HomePage>
   Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
     if (isGuest) {
       return Center(
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.lock_outline, size: 48, color: Colors.grey),
-              SizedBox(height: 16),
-              Text(
-                'Sign in to access Favorites',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 40, color: Colors.grey),
+                const SizedBox(height: 10),
+                const Text(
+                  'Sign in to access Favorites',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Save your favorite facilities by signing in.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
+                const SizedBox(height: 4),
+                const Text(
+                  'Save your favorite facilities by signing in.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+                const SizedBox(height: 14),
+                Builder(
+                  builder: (innerContext) => AppleSignInButton(
+                    onFailure: (msg) {
+                      if (!innerContext.mounted) return;
+                      ScaffoldMessenger.of(innerContext).showSnackBar(
+                        SnackBar(content: Text(msg)),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

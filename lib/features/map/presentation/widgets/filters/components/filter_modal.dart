@@ -116,12 +116,13 @@ class _FilterModalState extends State<FilterModal> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       height:
           MediaQuery.of(context).size.height * FilterConstants.modalHeightRatio,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(FilterDesignTokens.borderRadiusLarge),
           topRight: Radius.circular(FilterDesignTokens.borderRadiusLarge),
         ),
@@ -135,17 +136,18 @@ class _FilterModalState extends State<FilterModal> {
             ),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200),
+                bottom: BorderSide(color: Theme.of(context).dividerColor),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Filters',
                   style: TextStyle(
                     fontSize: FilterDesignTokens.fontSizeXLarge,
                     fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 IconButton(
@@ -209,7 +211,7 @@ class _FilterModalState extends State<FilterModal> {
                   MediaQuery.of(context).padding.bottom,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black
@@ -291,9 +293,10 @@ class _FilterModalState extends State<FilterModal> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: FilterDesignTokens.fontSizeNormal,
             fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         Switch(
@@ -332,16 +335,18 @@ class _FilterModalState extends State<FilterModal> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: FilterDesignTokens.fontSizeNormal,
                       fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Icon(
                     isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).colorScheme.onSurface
+                        .withValues(alpha: 0.6),
                   ),
                 ],
               ),
@@ -450,9 +455,10 @@ class _FilterModalState extends State<FilterModal> {
             children: [
               Text(
                 getDisplayName(requirement),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: FilterDesignTokens.fontSizeMedium,
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: FilterDesignTokens.spacingSmall),
@@ -481,6 +487,7 @@ class _FilterModalState extends State<FilterModal> {
   }
 
   Widget _optionButton({required String label, required bool active}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: FilterDesignTokens.eligibilityOptionPaddingVertical,
@@ -490,7 +497,9 @@ class _FilterModalState extends State<FilterModal> {
             ? AppTheme.resedaGreen.withValues(alpha: 0.1)
             : Colors.transparent,
         border: Border.all(
-          color: active ? AppTheme.resedaGreen : Colors.grey.shade300,
+          color: active
+              ? AppTheme.resedaGreen
+              : Theme.of(context).dividerColor,
           width: active
               ? FilterDesignTokens.borderWidthSelected
               : FilterDesignTokens.borderWidthNormal,
@@ -503,7 +512,7 @@ class _FilterModalState extends State<FilterModal> {
         child: Text(
           label,
           style: TextStyle(
-            color: active ? AppTheme.resedaGreen : Colors.black87,
+            color: active ? AppTheme.resedaGreen : colorScheme.onSurface,
             fontWeight: active ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

@@ -6,6 +6,16 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Root gate that picks the initial screen based on demo + onboarding state.
+///
+/// Routing:
+///   demo mode                 → MainNavBar (with brief splash)
+///   hasCompletedOnboarding    → MainNavBar
+///   else                      → OnboardingPage (welcome → LoginPage → …)
+///
+/// Supabase session persistence keeps signed-in users on MainNavBar across
+/// restarts; the `hasCompletedOnboarding` SharedPreferences flag is what
+/// determines whether a user needs to walk through the auth + location flow.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -40,7 +50,6 @@ class _AuthGateState extends State<AuthGate> {
       return const MainNavBar();
     }
 
-    // Onboarding gate: show main app only after onboarding is complete.
     final zipService = context.watch<ZipCodeService>();
     if (zipService.hasCompletedOnboarding) {
       return const MainNavBar();

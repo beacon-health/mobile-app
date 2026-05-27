@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
@@ -12,6 +13,7 @@ import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
+import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/map_style_service.dart';
 import 'package:beacon_app/features/map/presentation/services/marker_management_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -20,7 +22,9 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_l
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
+import 'package:beacon_app/features/map/presentation/widgets/search/location_search.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -75,6 +79,10 @@ class MapPageState extends State<MapPage>
   double _currentLatitude = MapConstants.defaultLatitude;
   double _currentLongitude = MapConstants.defaultLongitude;
 
+  /// Whether the OS has already granted GPS permission; controls the blue
+  /// user-location dot. Re-checked after each prompt or external change.
+  bool _locationGranted = false;
+
   @override
   void initState() {
     super.initState();
@@ -94,10 +102,18 @@ class MapPageState extends State<MapPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleKeyboardMetrics();
       _loadFacilities();
+      _refreshLocationPermission();
     });
     _isPanelOpen = true;
     _searchFocusNode.addListener(_onSearchFocusChange);
     // Map style is loaded in didChangeDependencies so it reacts to theme changes.
+  }
+
+  Future<void> _refreshLocationPermission() async {
+    final granted = await LocationService.hasPermission();
+    if (mounted && granted != _locationGranted) {
+      setState(() => _locationGranted = granted);
+    }
   }
 
   @override
@@ -237,8 +253,12 @@ class MapPageState extends State<MapPage>
           );
         }
       }
-    } catch (e) {
-      debugPrint('Error in _onMapCreated: $e');
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._onMapCreated',
+      );
     }
   }
 
@@ -262,10 +282,6 @@ class MapPageState extends State<MapPage>
     });
 
     try {
-      debugPrint(
-        '📍 Loading facilities near ($_currentLatitude, $_currentLongitude) within $_selectedDistance mi',
-      );
-
       final facilities = await _facilityRepository
           .loadFacilitiesWithDistance(
         latitude: _currentLatitude,
@@ -279,8 +295,6 @@ class MapPageState extends State<MapPage>
         },
       );
 
-      debugPrint('✅ Loaded ${facilities.length} facilities');
-
       if (mounted) {
         facilityProvider.setFacilities(facilities);
 
@@ -291,8 +305,11 @@ class MapPageState extends State<MapPage>
         _filterFacilities();
       }
     } catch (e, stackTrace) {
-      debugPrint('❌ Error loading facilities: $e');
-      debugPrint('Stack trace: $stackTrace');
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._loadFacilities',
+      );
       if (mounted) {
         setState(() {
           _error = 'Failed to load facilities. Please try again.';
@@ -302,8 +319,59 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  // TODO(post-MVP): restore _onLocationChanged, _onLocationSearchFocusChange,
-  // and _centerMapOnCurrentLocation when location search is re-enabled.
+  Future<void> _onLocationChanged(
+    String displayName,
+    double? latitude,
+    double? longitude,
+  ) async {
+    if (latitude == null || longitude == null) return;
+    final isCurrent =
+        displayName.toLowerCase().contains('current') ||
+            displayName == (AppLocalizations.of(context)?.locationCurrentLocation ?? '');
+
+    setState(() {
+      _currentLatitude = latitude;
+      _currentLongitude = longitude;
+      _currentLocation = displayName;
+    });
+
+    final zipService = ZipCodeService();
+    if (isCurrent) {
+      await zipService.setCurrentLocation(
+        latitude: latitude,
+        longitude: longitude,
+        displayName: displayName,
+      );
+    } else {
+      await zipService.setZipAndLocation(displayName, latitude, longitude);
+    }
+
+    await _refreshLocationPermission();
+    await _loadFacilities();
+
+    if (_googleMapController != null) {
+      await _googleMapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(latitude, longitude),
+          _getZoomLevelForDistance(_selectedDistance),
+        ),
+      );
+    }
+  }
+
+  void _onLocationSearchFocusChange(bool hasFocus) {
+    if (!hasFocus) return;
+    setState(() {
+      if (_showSingleFacility) {
+        _showSingleFacility = false;
+        _selectedFacility = null;
+      }
+      if (!_isPanelOpen) {
+        _isPanelOpen = true;
+        _isFullyExpanded = false;
+      }
+    });
+  }
 
   double _getZoomLevelForDistance(double distanceMiles) {
     return MapConstants.distanceToZoom[distanceMiles] ??
@@ -357,8 +425,12 @@ class MapPageState extends State<MapPage>
               ..addAll(newMarkers);
           });
         }
-      } catch (e) {
-        debugPrint('Error updating markers: $e');
+      } catch (e, stackTrace) {
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'MapPage._updateMarkers',
+        );
       } finally {
         _isUpdatingMarkers = false;
       }
@@ -425,8 +497,12 @@ class MapPageState extends State<MapPage>
           ),
         ),
       );
-    } catch (e) {
-      debugPrint('Error animating to facility: $e');
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._animateToFacility',
+      );
     }
   }
 
@@ -441,8 +517,12 @@ class MapPageState extends State<MapPage>
       });
 
       await _animateToFacility(facility);
-    } catch (e) {
-      debugPrint('Error in _showFacilityDetails: $e');
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._showFacilityDetails',
+      );
     }
   }
 
@@ -689,8 +769,7 @@ class MapPageState extends State<MapPage>
                 }
               },
               onTap: _onMapTap,
-              // TODO: re-enable when location permission is added back post-MVP
-              myLocationEnabled: false,
+              myLocationEnabled: _locationGranted,
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
               mapToolbarEnabled: false,
@@ -732,35 +811,35 @@ class MapPageState extends State<MapPage>
                       onClear: _filterFacilities,
                     ),
                   ),
-                  // TODO(post-MVP): re-enable location search once location
-                  // permissions and geocoding UX are finalized.
-                  // Container(
-                  //   margin: const EdgeInsets.symmetric(
-                  //     horizontal: 8.0,
-                  //     vertical: 8.0,
-                  //   ),
-                  //   padding: const EdgeInsets.symmetric(
-                  //     horizontal: 16.0,
-                  //     vertical: 4.0,
-                  //   ),
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.white,
-                  //     borderRadius: BorderRadius.circular(25.0),
-                  //     boxShadow: [
-                  //       BoxShadow(
-                  //         color: Colors.black.withValues(alpha: 0.1),
-                  //         spreadRadius: 1,
-                  //         blurRadius: 3,
-                  //         offset: const Offset(0, 1),
-                  //       ),
-                  //     ],
-                  //   ),
-                  //   child: LocationSearch(
-                  //     currentLocation: _currentLocation,
-                  //     onLocationChanged: _onLocationChanged,
-                  //     onFocusChanged: _onLocationSearchFocusChange,
-                  //   ),
-                  // ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 4.0,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 0.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF222240)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(25.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: LocationSearch(
+                      currentLocation: _currentLocation,
+                      onLocationChanged: _onLocationChanged,
+                      onFocusChanged: _onLocationSearchFocusChange,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   _buildFilterBar(),
                 ],

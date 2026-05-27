@@ -550,6 +550,114 @@ abstract class AppLocalizations {
   /// **'Signing in...'**
   String get authSigningIn;
 
+  /// No description provided for @authSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get authSignIn;
+
+  /// No description provided for @authSignInPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to use this feature'**
+  String get authSignInPromptTitle;
+
+  /// No description provided for @authSignInPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account to unlock Favorites, Eligibility filters, and more.'**
+  String get authSignInPromptBody;
+
+  /// No description provided for @authSignInError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. Please try again.'**
+  String get authSignInError;
+
+  /// No description provided for @locationChoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like to find resources?'**
+  String get locationChoiceTitle;
+
+  /// No description provided for @locationChoiceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll use this to show resources near you.'**
+  String get locationChoiceSubtitle;
+
+  /// No description provided for @locationChoiceUseLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location-Based Search'**
+  String get locationChoiceUseLocation;
+
+  /// No description provided for @locationChoiceUseLocationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Use GPS for the most accurate results.'**
+  String get locationChoiceUseLocationDesc;
+
+  /// No description provided for @locationChoiceEnterZip.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Zip Code'**
+  String get locationChoiceEnterZip;
+
+  /// No description provided for @locationChoiceEnterZipDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by ZIP code in the US.'**
+  String get locationChoiceEnterZipDesc;
+
+  /// No description provided for @locationCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get locationCurrentLocation;
+
+  /// No description provided for @locationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location access denied. Enable it in Settings > Privacy > Location Services.'**
+  String get locationPermissionDenied;
+
+  /// No description provided for @locationPermissionDeniedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Access Required'**
+  String get locationPermissionDeniedTitle;
+
+  /// No description provided for @locationPermissionDeniedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To use GPS-based search, enable location for Beacon in iOS Settings > Privacy > Location Services.'**
+  String get locationPermissionDeniedBody;
+
+  /// No description provided for @locationUseMyLocationTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get locationUseMyLocationTooltip;
+
+  /// No description provided for @settingsUseMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use My Location'**
+  String get settingsUseMyLocation;
+
+  /// No description provided for @settingsUseMyLocationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Use GPS instead of ZIP code'**
+  String get settingsUseMyLocationDesc;
+
+  /// No description provided for @settingsSignOutSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out'**
+  String get settingsSignOutSuccess;
+
   /// No description provided for @commonCancel.
   ///
   /// In en, this message translates to:

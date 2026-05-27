@@ -81,7 +81,7 @@
 
 **Goal:** iOS users sign in via Apple OAuth through Supabase, or continue as guest. Sign-in persists across app restarts. Database tables support Favorites, Feedback, and Settings for authenticated users.
 
-**Current state:** `LoginPage` has both Google + Apple sign-in buttons via `flutter_signin_button` + `Supabase.instance.client.auth.signInWithOAuth()`. Google sign-in has been tested successfully during development. `GuestModeService` already listens to auth state changes — on successful sign-in, `isGuest` flips to `false` and all `LockedFeatureGate`-wrapped features unlock reactively. `AuthGate` currently only checks `ZipCodeService.hasCompletedOnboarding` — it does not check Supabase auth state. The `OnboardingPage` goes directly to `ZipEntryPage` (no login step). "Continue as Guest" on `LoginPage` does `Navigator.pushReplacement` to `MainNavBar` (skips zip entry). Sign-out button in `settings_page.dart` is commented out (line ~77).
+**Current state:** `LoginPage` has Apple + Google sign-in buttons using custom `ElevatedButton.icon` widgets (the `flutter_signin_button` package was removed due to `font_awesome_flutter` v11 incompatibility) + `Supabase.instance.client.auth.signInWithOAuth()`. Google sign-in has been tested successfully during development. `GuestModeService` already listens to auth state changes — on successful sign-in, `isGuest` flips to `false` and all `LockedFeatureGate`-wrapped features unlock reactively. `AuthGate` currently only checks `ZipCodeService.hasCompletedOnboarding` — it does not check Supabase auth state. The `OnboardingPage` goes directly to `ZipEntryPage` (no login step). "Continue as Guest" on `LoginPage` does `Navigator.pushReplacement` to `MainNavBar` (skips zip entry). Sign-out button in `settings_page.dart` is commented out (line ~77).
 
 **What needs to happen:**
 
@@ -263,7 +263,7 @@
        - **Guest users:** Show `showSignInPromptDialog` instead of submitting. They need to sign in to submit feedback.
 
 5. **Guest handling.**
-   - Guest users can see the "Recently Viewed" section and tap on facilities, but when they tap "Submit" in the feedback dialog, show the sign-in prompt instead. Alternatively, show the sign-in prompt when they tap a facility in the section (before opening the dialog). Choose whichever feels more natural — the key point is guests cannot submit feedback without signing in.
+   - Guest users can see the "Recently Viewed" section and tap on facilities, but the sign-in prompt appears when they tap a facility in the section (before opening the dialog).
 
 ### 2.5 Remaining Cleanup Tasks
 
@@ -288,7 +288,9 @@
 ### External Config (requires web UI / dashboard access)
 
 **Supabase Dashboard:**
-- [ ] Enable Apple OAuth provider (requires Apple Service ID + key from Apple Developer Console)
+- [ ] Enable Apple provider. iOS uses the native `sign_in_with_apple` package + `supabase.auth.signInWithIdToken(...)`, so Supabase only needs to validate the Apple-issued JWT against Apple's public keys — **no OAuth secret JWT is required**. Required field in Authentication → Providers → Apple:
+  - **Client IDs**: comma-separated list — at minimum the iOS bundle ID (`org.beaconhealth.app`). Add a Services ID too if you ever plan to use the web OAuth fallback.
+  - You can leave the "Secret Key (for OAuth)" block empty for iOS-only MVP. (If you DO need the OAuth redirect path later — e.g. Android Web client or browser sign-in — populate it then.)
 - [ ] Confirm Google OAuth provider is configured (already tested in dev — needed for post-MVP Android)
 - [ ] Create `user_favorites` table with RLS (see §2.1 step 7 SQL)
 - [ ] Create `facility_feedback` table with RLS (see §2.1 step 7 SQL)
@@ -312,7 +314,8 @@
 
 **Xcode:**
 - [ ] Add Sign in with Apple capability
-- [ ] Create `Runner.entitlements` with `com.apple.developer.applesignin`
+- [ ] Create `Runner.entitlements` with `com.apple.developer.applesignin` (already done in repo)
+- [ ] Run `cd ios && pod install` after pulling — `sign_in_with_apple` adds a new CocoaPods entry; the Podfile.lock is committed, but a fresh `pod install` is required after the first checkout that introduces the dependency.
 - [ ] Archive and upload to TestFlight
 
 **App Store Connect:**

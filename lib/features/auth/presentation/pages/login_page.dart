@@ -1,13 +1,25 @@
+import 'package:beacon_app/core/services/apple_sign_in_service.dart';
+import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Sign-in entry point. Apple OAuth for iOS MVP + Continue as Guest.
+///
+/// Pass [isGuestUpgrade] = true when shown from within an already-running
+/// guest session (e.g. from a locked-feature sign-in prompt). The completed
+/// sign-in then routes through [LocationChoicePage] with the guest's existing
+/// ZIP pre-filled, and the previous navigation stack is replaced.
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.isGuestUpgrade = false});
+
+  final bool isGuestUpgrade;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -18,40 +30,103 @@ class _LoginPageState extends State<LoginPage> {
   String? _errorMessage;
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<void> _signInWithProvider(OAuthProvider provider) async {
+  Future<void> _signInWithApple() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    try {
-      if (kIsWeb) {
-        await _supabase.auth.signInWithOAuth(
-          provider,
-          redirectTo: _redirectUri(),
+
+    final result = await AppleSignInService.signIn();
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (result.isSuccess) {
+      _goToLocationChoice();
+      return;
+    }
+
+    if (result.isCancelled) {
+      // User cancelled the system Apple sheet — no error, no nav.
+      return;
+    }
+
+    setState(() {
+      _errorMessage = result.errorMessage ??
+          AppLocalizations.of(context)?.authSignInError ??
+              'Sign-in failed. Please try again.';
+    });
+  }
+
+  void _continueAsGuest() {
+    _goToLocationChoice();
+  }
+
+  void _goToLocationChoice() {
+    final prefilledZip = widget.isGuestUpgrade ? ZipCodeService().zipCode : null;
+    if (widget.isGuestUpgrade) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => LocationChoicePage(prefilledZip: prefilledZip),
+        ),
+        (route) => false,
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => LocationChoicePage(prefilledZip: prefilledZip),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showLanguagePicker() async {
+    final localeProvider = context.read<LocaleProvider>();
+    final currentCode = localeProvider.locale.languageCode;
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Text(
+                  AppLocalizations.of(ctx)?.authSelectLanguage ??
+                      'Select a language',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              for (final locale in LocaleProvider.supportedLocales)
+                ListTile(
+                  title: Text(
+                    LocaleProvider.localeDisplayNames[locale.languageCode] ??
+                        locale.languageCode,
+                  ),
+                  trailing: locale.languageCode == currentCode
+                      ? const Icon(Icons.check, color: AppTheme.resedaGreen)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, locale.languageCode),
+                ),
+            ],
+          ),
         );
-      } else {
-        await _supabase.auth.signInWithOAuth(provider);
-      }
-      // Navigation handled by AuthGate on auth state changes
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (e) {
-      setState(() => _errorMessage = 'Unexpected error. Please try again.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      },
+    );
+    if (selected != null && selected != currentCode) {
+      await localeProvider.setLocale(Locale(selected));
     }
   }
 
   String _redirectUri() {
-    // For mobile, supabase_flutter uses app links. Default scheme: io.supabase.flutter
-    // If you have custom scheme configured, update accordingly or pull from env.
     if (kIsWeb) {
-      // On web, use current origin for redirect
       return Uri.base.replace(path: '/').toString();
     }
     return 'io.supabase.flutter://login-callback';
@@ -59,6 +134,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -81,29 +158,66 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 160),
                           SizedBox(
                             width: double.infinity,
-                            child: SignInButton(
-                              Buttons.Google,
-                              text: 'Continue with Google',
-                              onPressed: _isLoading
-                                  ? () {}
-                                  : () {
-                                      _signInWithProvider(OAuthProvider.google);
-                                    },
+                            child: ElevatedButton.icon(
+                              onPressed:
+                                  _isLoading ? null : _signInWithApple,
+                              icon: const Icon(Icons.apple, size: 24),
+                              label: Text(l10n.authContinueWithApple),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: SignInButton(
-                              Buttons.Apple,
-                              text: 'Continue with Apple',
-                              onPressed: _isLoading
-                                  ? () {}
-                                  : () {
-                                      _signInWithProvider(OAuthProvider.apple);
-                                    },
+                          // TODO(Android): re-enable Continue with Google when
+                          // Android release ships. OAuth path already tested in
+                          // dev; UI is gated to iOS-only for MVP.
+                          // TODO(Android): re-enable Continue with Google
+                          // when Android release ships. OAuth path already
+                          // tested in dev; UI is gated to iOS-only for MVP.
+                          if (!kIsWeb &&
+                              defaultTargetPlatform != TargetPlatform.iOS)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () {
+                                          _signInWithProvider(
+                                            OAuthProvider.google,
+                                          );
+                                        },
+                                  icon: const Icon(
+                                    Icons.g_mobiledata,
+                                    size: 24,
+                                  ),
+                                  label: Text(l10n.authContinueWithGoogle),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.black87,
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                    ),
+                                    side: const BorderSide(
+                                      color: Colors.black12,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 12),
                             Text(
@@ -122,10 +236,11 @@ class _LoginPageState extends State<LoginPage> {
                                 child: Divider(color: Colors.black26),
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Text(
-                                  'or',
+                                  l10n.authOr,
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 14,
@@ -141,28 +256,19 @@ class _LoginPageState extends State<LoginPage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const MainNavBar(),
-                                        ),
-                                      );
-                                    },
+                              onPressed: _isLoading ? null : _continueAsGuest,
                               style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 backgroundColor: AppTheme.paynesGray,
                                 foregroundColor: Colors.white,
                                 textStyle: const TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 ),
                               ),
-                              child: const Text('Continue as Guest'),
+                              child: Text(l10n.authContinueAsGuest),
                             ),
                           ),
                         ],
@@ -170,25 +276,25 @@ class _LoginPageState extends State<LoginPage> {
                       Column(
                         children: [
                           const SizedBox(height: 16),
-                          const Text.rich(
+                          Text.rich(
                             TextSpan(
-                              text: 'By clicking continue, you agree to our ',
-                              style: TextStyle(
+                              text: l10n.authTermsPrefix,
+                              style: const TextStyle(
                                 color: Colors.black54,
                                 fontSize: 12,
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Terms of Service',
-                                  style: TextStyle(
+                                  text: l10n.authTermsOfService,
+                                  style: const TextStyle(
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                TextSpan(text: ' and '),
+                                TextSpan(text: l10n.authAnd),
                                 TextSpan(
-                                  text: 'Privacy Policy',
-                                  style: TextStyle(
+                                  text: l10n.authPrivacyPolicy,
+                                  style: const TextStyle(
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -199,10 +305,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed: _isLoading ? null : () {},
-                            child: const Text(
-                              'Select a language 🌐',
-                              style: TextStyle(
+                            onPressed:
+                                _isLoading ? null : _showLanguagePicker,
+                            child: Text(
+                              l10n.authSelectLanguage,
+                              style: const TextStyle(
                                 color: Colors.teal,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -220,5 +327,36 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _signInWithProvider(OAuthProvider provider) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      if (kIsWeb) {
+        await _supabase.auth.signInWithOAuth(
+          provider,
+          redirectTo: _redirectUri(),
+        );
+      } else {
+        await _supabase.auth.signInWithOAuth(provider);
+      }
+      if (!mounted) return;
+      _goToLocationChoice();
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _errorMessage = e.message);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _errorMessage =
+              AppLocalizations.of(context)?.authSignInError ??
+                  'Sign-in failed. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

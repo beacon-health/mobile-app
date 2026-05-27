@@ -35,9 +35,8 @@
 	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<!-- TODO post-MVP: restore location permission when GPS is re-enabled -->
-	<!-- <key>NSLocationWhenInUseUsageDescription</key> -->
-	<!-- <string>This app needs location access to find nearby healthcare facilities.</string> -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Beacon uses your location to find healthcare facilities near you.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
