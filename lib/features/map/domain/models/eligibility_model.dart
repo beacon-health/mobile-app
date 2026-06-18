@@ -147,10 +147,10 @@ class FacilityEligibility {
       ageRestriction: _nullIfN(data['age_restriction'] as String?),
       restrictedGroups: _nullIfN(data['restricted_groups'] as String?),
       operatingHours: _nullIfN(data['operating_hours'] as String?),
-      otherEligibilitySummary: _nullIfU(
+      otherEligibilitySummary: _cleanSummary(
         data['other_eligibility_summary'] as String?,
       ),
-      servicesSummary: data['services_summary'] as String?,
+      servicesSummary: _cleanSummary(data['services_summary'] as String?),
       facilityCategory: data['facility_category'] as String?,
       extractionDate: data['extraction_date'] as String?,
     );
@@ -192,8 +192,15 @@ class FacilityEligibility {
     return value;
   }
 
-  static String? _nullIfU(String? value) {
-    if (value == null || value.toUpperCase() == 'U') return null;
-    return value;
+  /// Cleans a free-text summary field: trims, and treats single-letter scrape
+  /// sentinels (Y/N/U) and "none"-like placeholders as absent so they aren't
+  /// rendered as if they were a real summary (e.g. the stray italic "N").
+  static String? _cleanSummary(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    const sentinels = {'N', 'U', 'Y', 'NONE', 'N/A', 'NA'};
+    if (sentinels.contains(trimmed.toUpperCase())) return null;
+    return trimmed;
   }
 }

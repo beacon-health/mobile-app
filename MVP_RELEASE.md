@@ -182,7 +182,10 @@ someone else's web console.
   the end of this section.
 
 ### 2.5 Cleanup ✅
-- `pubspec.yaml` bumped to `1.0.0+1`.
+- `pubspec.yaml` at `1.0.0+2` (bump `+N` per TestFlight upload).
+- **ARB scrub:** removed 40 stale keys (old home categories, Profile tab,
+  hardcoded filter/map strings, retired settings inputs) across `app_en/es/zh`;
+  all three now share an identical 64-key set, every used key translated.
 - `LocationService` no longer hardcodes Chicago — falls back to
   `ZipCodeService` coords. All `debugPrint` sites moved to
   `ErrorReporter.instance.report(...)` with a `context:` label.
@@ -264,24 +267,28 @@ churn low while the on-device set is still evolving.
 
 ### 2.6 Nationwide Data & Scaled Map Querying ✅ CODE-COMPLETE (device QA pending)
 
-> **Implementation status (2026-06-18).** All §2.6 app code is written and
-> passes `flutter analyze` + 24 tests; geocoding + migrations `0001`/`0002` are
-> applied, so the app queries the live `facilities_near` RPC. In code:
-> `SupabaseFacilityService` calls the RPC with a quantized region cache (no more
-> load-all); `MapPage` re-queries per region with a drift-gated **"Search this
-> area"** button and an overflow-safe empty/sparse state; **Favorites resolve by
-> id** from `user_favorites` (region-independent); **markers cluster** when
-> zoomed out; the Category filter uses **`category_level_2`** while icons
-> **consolidate to 4 groups** (see "Category taxonomy" below); Home→Map
-> navigation re-centers (favorites + cutout); and facility feedback uses
-> **selectable tag chips**. **Still pending:** a device QA pass, and (optional) a
-> lean column projection / lazy detail fetch — the RPC returns full rows, fine
-> at the 250-result cap.
->
-> ⚠️ **Re-run `0002` after pulling:** the `facilities_near` RPC return type and
-> the `fct_supabase_full` view changed (added `category_level_2`; `contact_phones`
-> normalized to a JSON array). The migration drops + recreates both, so just run
-> the whole file again — it's idempotent.
+Moved the data source off the ~691-row Illinois view to the nationwide
+**`FCT_Supabase`** (162,937 rows, geocoded via `scripts/geocode/`) and replaced
+"load everything, filter on device" with bounded server-side queries.
+`flutter analyze` clean, 24 tests pass; geocoding + migrations `0001`/`0002`
+applied. What shipped:
+- **Server-side proximity** via the PostGIS `facilities_near` RPC +
+  `fct_supabase_full` view; `SupabaseFacilityService` calls it with a quantized
+  region cache (no more load-all), capped at 250 results.
+- **"Search this area"** drift-gated map button (no auto-query on pan), and
+  Home→Map navigation that re-centers (favorites + map cutout).
+- **Marker clustering** when zoomed out (grid bubbles, tap to zoom in).
+- **Region-independent Favorites** — resolved by id from `user_favorites`.
+- **Category filter on `category_level_2`** (12 values) with marker/list icons
+  consolidated to 4 groups (see below). Null eligibility treated as "unknown".
+- Empty/sparse "search a wider area" state; dark-mode map style; `contact_phones`
+  normalized to a list; summary-sentinel ("N") scrubbing.
+- **Remaining:** device QA pass; optional lean projection / lazy detail fetch
+  (the RPC returns full rows — fine at the 250 cap).
+
+> ⚠️ **Re-run `0002` after pulling** if the RPC/view definition changed (it
+> drops + recreates both and is idempotent). The runnable schema lives in
+> `supabase/migrations/`; the DDL below mirrors it for reference.
 
 #### Category taxonomy (filter vs. icon)
 
@@ -319,175 +326,6 @@ near a point — never the whole table. Two query entry points drive this:
 2. **Pan / zoom the map:** add a **"Search this area"** floating button (the
    Yelp / Uber Eats / Google Maps pattern). We do **not** auto-query on every
    camera move — the button is the explicit, quota-friendly trigger.
-
-#### Why the current approach can't ship on this data
-
-`SupabaseFacilityService` is built around a single `getAllFacilities()` that
-does `.from(view).select().order(...)`, caches the whole list in `_cache`, and
-filters in Dart. At 162,937 rows: PostgREST caps the response (default
-`max-rows`, usually 1,000) so you'd **silently** get a truncated, arbitrary
-slice; the transfer is multi-MB; and parsing 160K+ models on the main isolate
-janks or OOMs. The in-memory "load once" cache and `FacilityProvider`'s
-"facilities == the entire dataset" assumption both have to go.
-
-#### Data prerequisites (must happen first — these block all app work)
-
-`FCT_Supabase` is **not query-ready as-is.** Two backfills and one view stand
-between the table and the app:
-
-**1. Geocode every facility — no coordinates exist yet.** `latitude` /
-`longitude` are `text` and currently null; `geocode_coordinates` is null too.
-Until they're populated **zero facilities can render on the map.** This is a
-one-time (then incremental) batch job — implemented here as a standalone
-script in **`scripts/geocode/geocode_facilities.py`** (could equally live in
-the `beacon-data` pipeline):
-- Reuse the existing free-geocoder + Python approach. For US street addresses
-  the **U.S. Census Bureau Geocoder** is the natural fit — no API key, no
-  cost, and a **batch endpoint of up to 10,000 addresses per request**
-  (`street, city, state, zip` → lat/lng), so ~163K rows ≈ 17 batches. Use
-  **Nominatim / OpenStreetMap** (1 req/s, real User-Agent, attribution) or a
-  paid geocoder for the long tail Census can't match (rural / PO-box /
-  malformed — expect a low-90s% match rate).
-- Write results back as **real numbers** (convert the columns to
-  `double precision`, or add `lat_num`/`lng_num`) so they can be indexed and
-  fed to PostGIS. Stamp a `geocoded_at` / match-quality column so re-runs only
-  touch the unmatched. Make the job idempotent + resumable — skip already-done
-  rows, log failures, never let one bad address stall the run.
-- **Implemented:** `scripts/geocode/geocode_facilities.py` (Census batch +
-  optional Nominatim fallback, idempotent/resumable) plus the two ordered
-  migrations in `supabase/migrations/`. Run order + flags in
-  `scripts/geocode/README.md`.
-
-**2. Eligibility coverage is partial — 3,713 / 162,937 (≈ 2.3%), growing.**
-`DM_Supabase_Eligibility` joins `master_id → FCT_Supabase.id`. The app must
-treat it as a **LEFT join**: most facilities return null eligibility today, so
-the Eligibility / Preferences / Status filters must treat null as **"unknown,"
-not "fails"** — otherwise turning those filters on empties the map. (The
-existing `FacilityFilterService` semantics should be re-checked against this.)
-
-**3. A wrapping view keeps the Dart model untouched.** `Facility.fromSupabase`
-expects the old IL view's column names; `FCT_Supabase`'s differ. Create a
-`fct_supabase_full` view (DDL below) that: casts `text` lat/lng →
-`double precision`; maps `category_level_1/2/3` → an `app_category` the app
-understands; LEFT-joins `DM_Supabase_Eligibility`; and passes the already-
-matching columns (`facility_name`, `facility_description`, `website_url`,
-`contact_email`, `street_address`, `city`, `state`, `postal_code`) straight
-through. **Mapping caveat (resolved):** `contact_phones` is free-text with
-varied formats — the view + RPC run it through `to_phone_jsonb` (splits on
-common separators) so the model's phone list renders. `hours` / `services` are
-all NULL today and pass through as-is; add a `::jsonb` cast in the view when
-they're populated. No model change was needed.
-
-#### Data-layer changes
-
-- **Server-side point-radius query.** Replace `getAllFacilities()` +
-  client-side Haversine with a bounded query. Keep the existing
-  `FacilityRepositoryBase.loadFacilitiesWithDistance(latitude, longitude,
-  radiusMiles)` signature — only the body changes. Two options:
-  - **(A — recommended) PostGIS RPC.** Add a `geography(Point,4326)` column +
-    GiST index to `FCT_Supabase`, and a `facilities_near(lat, lng, radius_m,
-    max_results)` SQL function using `ST_DWithin` for the filter and
-    `ST_Distance` for ordering. Call it with
-    `_client.rpc('facilities_near', params: {...})`. Returns only in-radius
-    rows, pre-sorted by distance, hard-capped. Scales to millions.
-  - **(B — fallback, no PostGIS) bounding box.** Compute a lat/lng min/max box
-    for the radius, filter with `.gte()/.lte()` on **indexed**
-    `latitude`/`longitude` columns, `.limit(N)`, then refine the square to a
-    circle and sort by Haversine on-device. Simpler, no extension, but
-    approximate and returns a box's worth of extras.
-  - DDL/RPC reference for both is at the end of this sub-section.
-- **Lean projection.** Stop selecting `*` from a 162,937-row table. The
-  map/list only needs `id, facility_name, latitude, longitude, app_category,
-  street_address, city, state, postal_code` (+ eligibility columns used by
-  the filter map). Fetch the full record lazily via `getFacilityById` only
-  when a facility card is opened.
-- **Hard result cap.** `max_results ≈ 250` per query. When a query hits the
-  cap, surface "Zoom in or narrow your search to see more."
-- **Drop the load-all cache.** Replace the global `_cache` with a small,
-  short-TTL region cache keyed by *quantized* center + radius + active-filter
-  signature; invalidate on filter / eligibility / preference change.
-- **`FacilityProvider` semantics.** `facilities` now means "facilities for the
-  current query region," not "everything." Favorites merge still works
-  (intersect by id) for in-region flags, and Home's Favorites list no longer
-  assumes the favorited facility is in the current region — done: the provider
-  keeps a separate `_favoriteFacilities` loaded via `getFacilitiesByIds` from
-  the `user_favorites` ids (signed-in only; guests can't favorite, demo uses
-  in-memory flags).
-
-#### "Search this area" interaction spec
-
-- Hidden on first load and immediately after any query completes.
-- On `onCameraIdle`, compare the current camera target to the last-query
-  center. Reveal the button (fade-in) once the drift exceeds a threshold
-  (~30% of the current query radius) **or** zoom changed by more than ~1 step.
-- Tap → query around the **current map center**, using a radius derived from
-  the visible region (`getVisibleRegion()` → half the diagonal), clamped to a
-  sane min/max; show an inline spinner on the button; on completion hide the
-  button and refresh markers + list panel.
-- Reuse the existing `_markerUpdateDebounce` / `onCameraIdle` plumbing; the
-  button gate is what prevents query spam.
-- The distance chip and location-search box still re-query around their own
-  center (current center / geocoded ZIP) at the chosen radius.
-
-#### Performance & UX best practices (build these in, not later)
-
-- **Indexes are non-negotiable:** GiST on the geography column (option A) or a
-  composite btree on `(latitude, longitude)` (option B). A 162,937-row table
-  scan per pan is unacceptably slow without one.
-- **Marker clustering / viewport cap.** Never drop hundreds of pins on the
-  map. Cluster at low zoom (e.g. `google_maps_cluster_manager`) or show
-  region counts; render individual markers only near `detailZoom`. This also
-  keeps `MarkerManagementService` icon generation bounded.
-- **Loading affordances.** Skeleton/shimmer rows in the list panel during a
-  fetch, a spinner on the "Search this area" button, and a min-visible
-  duration so spinners don't flash on fast queries. Keep the existing 30s
-  timeout + retry path.
-- **Empty / sparse states.** Rural areas may return 0 within the default
-  1 mi radius. Show "No facilities within X mi — widen your search" with a
-  one-tap widen (bump to the next distance option and re-query).
-- **Caching & cold start.** Optionally persist the last region's results to
-  disk for an instant first paint, then refresh in the background.
-- **Isolate offload.** If a capped payload still parses slowly, move
-  `Facility.fromSupabase` mapping to a background isolate via `compute`.
-- **Telemetry hooks.** Count capped/empty results to tune the default radius
-  post-launch.
-
-#### Still-open questions (smaller now that the schema is known)
-
-1. ~~Is PostGIS enabled?~~ **Resolved — PostGIS is enabled; Option A is the
-   chosen path.** The Option B bounding-box notes below stay only as a
-   reference/fallback.
-2. ~~What format are `contact_phones` / `hours` / `services`?~~ **Resolved.**
-   `contact_phones` is free-text with varied formats (`xxx-xxx-xxxx`,
-   `xxxxxxxxxx`, `(xxx) xxx-xxxx`) — the view + RPC normalize it to a JSON array
-   via `to_phone_jsonb` so the model renders phones (no Dart change). `hours` /
-   `services` are all NULL today; they pass through as-is and the model
-   tolerates null — add a `::jsonb` cast in the view once they're populated.
-3. **Geocoder coverage + licensing.** Census output is public-domain;
-   Nominatim's policy requires attribution + ≤1 req/s. Confirm which provider
-   covers the long tail and that its terms permit storing the coordinates.
-
-#### Option A (PostGIS) vs Option B (bounding box) — performance
-
-Both answer "facilities near a point," but differ on accuracy, index
-behavior, and where the work happens.
-
-| Dimension | A — PostGIS `ST_DWithin` + GiST | B — bounding box + btree |
-|---|---|---|
-| **Shape queried** | True circle (exact radius) | Square; ~21–27% extra corner rows you discard on-device |
-| **Index** | GiST spatial index, purpose-built for 2-D proximity (~O(log n)) | Composite btree `(latitude, longitude)`; only the **leading** column gets a true range scan — longitude becomes a filter on that latitude band |
-| **Distance sort** | Server-side via the `<->` KNN operator, index-assisted → a correct `LIMIT` of the true-nearest | Not possible server-side; must over-fetch the box and Haversine-sort on-device. A server `LIMIT` without distance order can drop closer edge facilities for farther in-box ones |
-| **Latency @ ~163K rows, small radius** | Single-digit-ms index probe | Fast in sparse areas; degrades in dense latitude bands (major metros) where the lat range-scan returns many rows to filter |
-| **Payload** | Exactly the capped in-radius set | A box's worth of rows (more transfer + parse) before client refine |
-| **Scales to millions** | Yes — this is PostGIS's job | OK to low hundreds-of-thousands; leading-column-only indexing caps it |
-| **Setup** | `create extension postgis` + `geom` column + GiST index + RPC | One btree index; pure PostgREST query — no extension, no function |
-| **Footguns** | Few | Square≠circle, and the LIMIT-without-order bug above |
-
-**Bottom line:** A is faster, exact, sorts by true distance server-side, and
-is the only one that comfortably scales as the table grows. B's sole
-advantage is needing no extension. **Target A; use B only if PostGIS genuinely
-can't be enabled**, and treat it as a stopgap. The repository interface is
-identical either way, so a later B→A swap is an internal change.
 
 #### DDL / RPC reference
 
@@ -603,6 +441,33 @@ still used.
 > RLS with a read-only `anon` / `authenticated` SELECT policy. `facilities_near`
 > is `stable` and runs under the caller's RLS.
 
+### 2.7 View & Edit Submitted Feedback ⏳ NEW SCOPE — NOT STARTED
+
+Let signed-in users see and revise the feedback they've submitted. Today it's
+write-only — §2.4 inserts a `facility_feedback` row and never surfaces it again.
+
+**Code:**
+- A "Your Feedback" surface listing the user's `facility_feedback` rows (rating
+  + tags + date) — on the facility detail card ("You rated this 👍 — edit") and/or
+  a Settings list.
+- Re-open `FacilityFeedbackDialog` **pre-filled** with the existing rating + tags
+  so a tap edits in place; support clearing a rating. The dialog already stores
+  tags comma-joined in `comment`, so parse that back into selected chips.
+- Switch the write from `insert` to an **upsert keyed on `(user_id,
+  facility_id)`** (one rating per user per facility — edits replace, not
+  duplicate), plus a delete path for "remove my feedback".
+
+**Non-code (Supabase):**
+- Add a `unique (user_id, facility_id)` constraint on `facility_feedback` to back
+  the upsert (`alter table public.facility_feedback add constraint
+  facility_feedback_user_facility_uniq unique (user_id, facility_id);`).
+- RLS already covers it — the existing `for all ... with check (auth.uid() =
+  user_id)` policy lets owners SELECT / UPDATE / DELETE their own rows.
+
+**Open question:** primary entry point — facility card (in-context edit),
+a Settings "Your Feedback" list, or both? Recommend the card plus an optional
+Settings list.
+
 ## 3. Pre-TestFlight Checklist
 
 ### Engineer (code)
@@ -623,12 +488,13 @@ still used.
   - [x] Marker clustering for dense metros (grid-bucketed count bubbles, tap to zoom)
   - [x] Empty/sparse ("search a wider area") state; loading spinner retained
   - [ ] **Verify end-to-end against the geocoded data** (smoke test ZIP search, pan + "Search this area", distance widen, sparse rural area, cluster tap, favorites across regions)
-- [x] `pubspec.yaml` version: `1.0.0+1`
+- [ ] **§2.7 view/edit submitted feedback (new scope — not started):** "Your Feedback" surface, pre-filled edit dialog, `insert` → upsert on `(user_id, facility_id)` + delete; add the unique constraint in Supabase
+- [x] `pubspec.yaml` version: `1.0.0+2` (bump the `+N` build number for each new TestFlight upload)
 - [x] `flutter analyze` passes with 0 issues
-- [x] `flutter test` — 18/18 unit tests pass
-- [ ] `flutter build ios --release` succeeds (requires Xcode signing — run after Apple Developer Console + App Store Connect items below)
+- [x] `flutter test` — 24/24 unit tests pass
+- [x] `flutter build ios --release` compiles (verified via `--no-codesign`; SPM disabled → pure CocoaPods). Signed Archive/`flutter build ipa` still needs Apple Developer Console + App Store Connect items below.
 - [ ] Manual smoke test on ≥ 2 iOS devices (different screen sizes): sign-in with Apple, location permission grant/deny, feedback submission, guest mode, sign-out
-- [ ] Write widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, and `RecentFacilitiesService` persistence (post-launch follow-up — current 18 unit tests cover the older services)
+- [ ] Write widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, and `RecentFacilitiesService` persistence (post-launch follow-up)
 
 ### External Config (requires web UI / dashboard access)
 

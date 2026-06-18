@@ -9,16 +9,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Beacon';
-
-  @override
   String get navHome => 'Home';
 
   @override
   String get navMap => 'Map';
-
-  @override
-  String get navProfile => 'Profile';
 
   @override
   String get navSettings => 'Settings';
@@ -37,51 +31,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add favorites from the map page to see them here';
 
   @override
-  String get homeNearby => 'Nearby Resources';
-
-  @override
-  String get homeQuickFind => 'Quick Find';
-
-  @override
-  String get homeUrgentCare => 'Urgent Care';
-
-  @override
-  String get homeHousing => 'Housing Shelters';
-
-  @override
-  String get homeFreeClinics => 'Free Clinics';
-
-  @override
-  String get homeFoodPantry => 'Food Pantry';
-
-  @override
-  String get mapResourcesNearYou => 'Resources near you';
-
-  @override
-  String get mapSwipeUp => 'Swipe up to view resources';
-
-  @override
-  String get mapSearchFacilities => 'Search facilities...';
-
-  @override
   String get mapSearchLocation => 'Enter ZIP code';
-
-  @override
-  String get mapLoading => 'Loading facilities...';
-
-  @override
-  String get mapNoResults => 'No facilities found in this area';
 
   @override
   String get settingsTitle => 'Settings';
 
   @override
   String get settingsAccount => 'Account';
-
-  @override
-  String settingsSignedInWith(String provider) {
-    return 'Signed in with $provider';
-  }
 
   @override
   String get settingsApp => 'App';
@@ -99,30 +55,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsZipCode => 'ZIP Code';
 
   @override
-  String get settingsWheelchair => 'Wheelchair accessible';
-
-  @override
-  String get settingsProofOfIncome => 'Proof of income available';
-
-  @override
-  String get settingsInsurance => 'Insurance status';
-
-  @override
-  String get settingsWalkIns => 'Accepts walk-ins';
-
-  @override
-  String get settingsTelehealth => 'Telehealth preference';
-
-  @override
-  String get settingsHouseholdSize => 'Household size';
-
-  @override
-  String get settingsAnnualIncome => 'Annual income';
-
-  @override
-  String get settingsEmployment => 'Employment status';
-
-  @override
   String get settingsAbout => 'About';
 
   @override
@@ -135,26 +67,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTermsOfService => 'Terms of Service';
 
   @override
-  String get settingsDeveloper => 'Developer';
-
-  @override
-  String get settingsDemoMode => 'Demo Mode';
-
-  @override
-  String get settingsDemoModeDesc => 'Use mock data and skip authentication';
-
-  @override
-  String get settingsDemoModeConfirm =>
-      'Switching demo mode will restart the app flow. Continue?';
-
-  @override
   String get settingsSignOut => 'Sign Out';
 
   @override
   String get settingsSignOutConfirm => 'Are you sure you want to sign out?';
-
-  @override
-  String get settingsSaved => 'Settings saved';
 
   @override
   String get profileTitle => 'Profile';
@@ -196,16 +112,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSaveChanges => 'Save Changes';
 
   @override
-  String get profileSaved => 'Profile saved';
-
-  @override
   String get profileChangePassword => 'Change Password';
 
   @override
   String get profilePrivacyPolicy => 'Privacy Policy';
-
-  @override
-  String get profileCreateAccount => 'Create an Account';
 
   @override
   String get authContinueWithGoogle => 'Continue with Google';
@@ -236,9 +146,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authSigningIn => 'Signing in...';
-
-  @override
-  String get authSignIn => 'Sign In';
 
   @override
   String get authSignInPromptTitle => 'Sign in to use this feature';
@@ -298,36 +205,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancel';
-
-  @override
-  String get commonContinue => 'Continue';
-
-  @override
-  String get commonSave => 'Save';
-
-  @override
-  String commonYesPerYear(String amount) {
-    return '$amount/year';
-  }
-
-  @override
-  String get filterCategories => 'Categories';
-
-  @override
-  String get filterDistance => 'Distance';
-
-  @override
-  String get filterOpenNow => 'Open Now';
-
-  @override
-  String get filterFavorites => 'Favorites';
-
-  @override
-  String get filterAll => 'All';
-
-  @override
-  String get filterApply => 'Apply Filters';
-
-  @override
-  String get filterReset => 'Reset';
 }

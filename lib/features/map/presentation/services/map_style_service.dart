@@ -2,39 +2,35 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// Loads custom Google Maps JSON styles.
+/// Loads custom Google Maps JSON styles, branched by [Brightness].
 ///
-/// **Design note:** We intentionally always serve the light/minimal style,
-/// even when the app is in dark mode. The dark JSON style makes road
-/// geometry and labels nearly invisible at typical zoom levels (matching
-/// Google's "Night Mode" template) — users reported the map looked broken
-/// even though markers were rendering correctly. Light tiles are far more
-/// legible alongside our dark UI chrome. If you need to re-enable the dark
-/// style later, replace this method body with the brightness-branched
-/// implementation from git history.
+/// Light/system → `minimal_style.json`; dark → `dark_style.json` (Google's
+/// night-mode template — legible roads + labels). Styles are cached per
+/// brightness so toggling the theme returns the correct one (a single shared
+/// cache would pin whichever style loaded first).
 class MapStyleService {
-  static String? _cachedStyle;
+  static final Map<Brightness, String> _cache = {};
 
-  /// Loads the active map style. The [brightness] parameter is accepted for
-  /// call-site compatibility but currently ignored — see class doc.
   static Future<String> loadMapStyle({
     Brightness brightness = Brightness.light,
   }) async {
-    if (_cachedStyle != null) return _cachedStyle!;
+    final cached = _cache[brightness];
+    if (cached != null) return cached;
 
+    final filename =
+        brightness == Brightness.dark ? 'dark_style.json' : 'minimal_style.json';
     try {
-      const filename = 'minimal_style.json';
       final jsonString =
           await rootBundle.loadString('assets/map_styles/$filename');
+      // Round-trip through decode/encode to validate the JSON early.
       final styleArray = json.decode(jsonString) as List<dynamic>;
-      _cachedStyle = json.encode(styleArray);
-      return _cachedStyle!;
+      final encoded = json.encode(styleArray);
+      _cache[brightness] = encoded;
+      return encoded;
     } catch (e) {
-      throw Exception('Failed to load map style: $e');
+      throw Exception('Failed to load map style ($filename): $e');
     }
   }
 
-  static void clearCache() {
-    _cachedStyle = null;
-  }
+  static void clearCache() => _cache.clear();
 }

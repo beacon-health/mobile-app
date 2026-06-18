@@ -100,12 +100,6 @@ abstract class AppLocalizations {
     Locale('zh')
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Beacon'**
-  String get appTitle;
-
   /// No description provided for @navHome.
   ///
   /// In en, this message translates to:
@@ -117,12 +111,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Map'**
   String get navMap;
-
-  /// No description provided for @navProfile.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile'**
-  String get navProfile;
 
   /// No description provided for @navSettings.
   ///
@@ -154,77 +142,11 @@ abstract class AppLocalizations {
   /// **'Add favorites from the map page to see them here'**
   String get homeNoFavoritesHint;
 
-  /// No description provided for @homeNearby.
-  ///
-  /// In en, this message translates to:
-  /// **'Nearby Resources'**
-  String get homeNearby;
-
-  /// No description provided for @homeQuickFind.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick Find'**
-  String get homeQuickFind;
-
-  /// No description provided for @homeUrgentCare.
-  ///
-  /// In en, this message translates to:
-  /// **'Urgent Care'**
-  String get homeUrgentCare;
-
-  /// No description provided for @homeHousing.
-  ///
-  /// In en, this message translates to:
-  /// **'Housing Shelters'**
-  String get homeHousing;
-
-  /// No description provided for @homeFreeClinics.
-  ///
-  /// In en, this message translates to:
-  /// **'Free Clinics'**
-  String get homeFreeClinics;
-
-  /// No description provided for @homeFoodPantry.
-  ///
-  /// In en, this message translates to:
-  /// **'Food Pantry'**
-  String get homeFoodPantry;
-
-  /// No description provided for @mapResourcesNearYou.
-  ///
-  /// In en, this message translates to:
-  /// **'Resources near you'**
-  String get mapResourcesNearYou;
-
-  /// No description provided for @mapSwipeUp.
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe up to view resources'**
-  String get mapSwipeUp;
-
-  /// No description provided for @mapSearchFacilities.
-  ///
-  /// In en, this message translates to:
-  /// **'Search facilities...'**
-  String get mapSearchFacilities;
-
   /// No description provided for @mapSearchLocation.
   ///
   /// In en, this message translates to:
   /// **'Enter ZIP code'**
   String get mapSearchLocation;
-
-  /// No description provided for @mapLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading facilities...'**
-  String get mapLoading;
-
-  /// No description provided for @mapNoResults.
-  ///
-  /// In en, this message translates to:
-  /// **'No facilities found in this area'**
-  String get mapNoResults;
 
   /// No description provided for @settingsTitle.
   ///
@@ -237,12 +159,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account'**
   String get settingsAccount;
-
-  /// No description provided for @settingsSignedInWith.
-  ///
-  /// In en, this message translates to:
-  /// **'Signed in with {provider}'**
-  String settingsSignedInWith(String provider);
 
   /// No description provided for @settingsApp.
   ///
@@ -274,54 +190,6 @@ abstract class AppLocalizations {
   /// **'ZIP Code'**
   String get settingsZipCode;
 
-  /// No description provided for @settingsWheelchair.
-  ///
-  /// In en, this message translates to:
-  /// **'Wheelchair accessible'**
-  String get settingsWheelchair;
-
-  /// No description provided for @settingsProofOfIncome.
-  ///
-  /// In en, this message translates to:
-  /// **'Proof of income available'**
-  String get settingsProofOfIncome;
-
-  /// No description provided for @settingsInsurance.
-  ///
-  /// In en, this message translates to:
-  /// **'Insurance status'**
-  String get settingsInsurance;
-
-  /// No description provided for @settingsWalkIns.
-  ///
-  /// In en, this message translates to:
-  /// **'Accepts walk-ins'**
-  String get settingsWalkIns;
-
-  /// No description provided for @settingsTelehealth.
-  ///
-  /// In en, this message translates to:
-  /// **'Telehealth preference'**
-  String get settingsTelehealth;
-
-  /// No description provided for @settingsHouseholdSize.
-  ///
-  /// In en, this message translates to:
-  /// **'Household size'**
-  String get settingsHouseholdSize;
-
-  /// No description provided for @settingsAnnualIncome.
-  ///
-  /// In en, this message translates to:
-  /// **'Annual income'**
-  String get settingsAnnualIncome;
-
-  /// No description provided for @settingsEmployment.
-  ///
-  /// In en, this message translates to:
-  /// **'Employment status'**
-  String get settingsEmployment;
-
   /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:
@@ -346,30 +214,6 @@ abstract class AppLocalizations {
   /// **'Terms of Service'**
   String get settingsTermsOfService;
 
-  /// No description provided for @settingsDeveloper.
-  ///
-  /// In en, this message translates to:
-  /// **'Developer'**
-  String get settingsDeveloper;
-
-  /// No description provided for @settingsDemoMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo Mode'**
-  String get settingsDemoMode;
-
-  /// No description provided for @settingsDemoModeDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Use mock data and skip authentication'**
-  String get settingsDemoModeDesc;
-
-  /// No description provided for @settingsDemoModeConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Switching demo mode will restart the app flow. Continue?'**
-  String get settingsDemoModeConfirm;
-
   /// No description provided for @settingsSignOut.
   ///
   /// In en, this message translates to:
@@ -381,12 +225,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to sign out?'**
   String get settingsSignOutConfirm;
-
-  /// No description provided for @settingsSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings saved'**
-  String get settingsSaved;
 
   /// No description provided for @profileTitle.
   ///
@@ -466,12 +304,6 @@ abstract class AppLocalizations {
   /// **'Save Changes'**
   String get profileSaveChanges;
 
-  /// No description provided for @profileSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile saved'**
-  String get profileSaved;
-
   /// No description provided for @profileChangePassword.
   ///
   /// In en, this message translates to:
@@ -483,12 +315,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get profilePrivacyPolicy;
-
-  /// No description provided for @profileCreateAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Create an Account'**
-  String get profileCreateAccount;
 
   /// No description provided for @authContinueWithGoogle.
   ///
@@ -549,12 +375,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Signing in...'**
   String get authSigningIn;
-
-  /// No description provided for @authSignIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign In'**
-  String get authSignIn;
 
   /// No description provided for @authSignInPromptTitle.
   ///
@@ -663,66 +483,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get commonCancel;
-
-  /// No description provided for @commonContinue.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue'**
-  String get commonContinue;
-
-  /// No description provided for @commonSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get commonSave;
-
-  /// No description provided for @commonYesPerYear.
-  ///
-  /// In en, this message translates to:
-  /// **'{amount}/year'**
-  String commonYesPerYear(String amount);
-
-  /// No description provided for @filterCategories.
-  ///
-  /// In en, this message translates to:
-  /// **'Categories'**
-  String get filterCategories;
-
-  /// No description provided for @filterDistance.
-  ///
-  /// In en, this message translates to:
-  /// **'Distance'**
-  String get filterDistance;
-
-  /// No description provided for @filterOpenNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Now'**
-  String get filterOpenNow;
-
-  /// No description provided for @filterFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorites'**
-  String get filterFavorites;
-
-  /// No description provided for @filterAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get filterAll;
-
-  /// No description provided for @filterApply.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply Filters'**
-  String get filterApply;
-
-  /// No description provided for @filterReset.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset'**
-  String get filterReset;
 }
 
 class _AppLocalizationsDelegate

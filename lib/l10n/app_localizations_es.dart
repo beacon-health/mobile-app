@@ -9,25 +9,19 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'Beacon';
-
-  @override
   String get navHome => 'Inicio';
 
   @override
   String get navMap => 'Mapa';
 
   @override
-  String get navProfile => 'Perfil';
-
-  @override
   String get navSettings => 'Ajustes';
 
   @override
-  String get homeGreeting => 'Encuentra Recursos de Salud';
+  String get homeGreeting => 'Encuentra recursos de salud';
 
   @override
-  String get homeFavorites => 'Tus Favoritos';
+  String get homeFavorites => 'Tus favoritos';
 
   @override
   String get homeNoFavorites => 'Aún no tienes favoritos';
@@ -37,51 +31,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Agrega favoritos desde el mapa para verlos aquí';
 
   @override
-  String get homeNearby => 'Recursos Cercanos';
-
-  @override
-  String get homeQuickFind => 'Búsqueda Rápida';
-
-  @override
-  String get homeUrgentCare => 'Urgencias';
-
-  @override
-  String get homeHousing => 'Refugios';
-
-  @override
-  String get homeFreeClinics => 'Clínicas Gratuitas';
-
-  @override
-  String get homeFoodPantry => 'Banco de Alimentos';
-
-  @override
-  String get mapResourcesNearYou => 'Recursos cerca de ti';
-
-  @override
-  String get mapSwipeUp => 'Desliza hacia arriba para ver recursos';
-
-  @override
-  String get mapSearchFacilities => 'Buscar centros...';
-
-  @override
   String get mapSearchLocation => 'Ingresa código postal';
-
-  @override
-  String get mapLoading => 'Cargando centros...';
-
-  @override
-  String get mapNoResults => 'No se encontraron centros en esta área';
 
   @override
   String get settingsTitle => 'Ajustes';
 
   @override
   String get settingsAccount => 'Cuenta';
-
-  @override
-  String settingsSignedInWith(String provider) {
-    return 'Sesión iniciada con $provider';
-  }
 
   @override
   String get settingsApp => 'Aplicación';
@@ -96,31 +52,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsEligibility => 'Elegibilidad';
 
   @override
-  String get settingsZipCode => 'Código Postal';
-
-  @override
-  String get settingsWheelchair => 'Accesible para silla de ruedas';
-
-  @override
-  String get settingsProofOfIncome => 'Comprobante de ingresos disponible';
-
-  @override
-  String get settingsInsurance => 'Estado del seguro';
-
-  @override
-  String get settingsWalkIns => 'Acepta sin cita';
-
-  @override
-  String get settingsTelehealth => 'Preferencia de telesalud';
-
-  @override
-  String get settingsHouseholdSize => 'Tamaño del hogar';
-
-  @override
-  String get settingsAnnualIncome => 'Ingreso anual';
-
-  @override
-  String get settingsEmployment => 'Estado laboral';
+  String get settingsZipCode => 'Código postal';
 
   @override
   String get settingsAbout => 'Acerca de';
@@ -129,49 +61,32 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsVersion => 'Versión';
 
   @override
-  String get settingsPrivacyPolicy => 'Política de Privacidad';
+  String get settingsPrivacyPolicy => 'Política de privacidad';
 
   @override
-  String get settingsTermsOfService => 'Términos de Servicio';
+  String get settingsTermsOfService => 'Términos de servicio';
 
   @override
-  String get settingsDeveloper => 'Desarrollador';
-
-  @override
-  String get settingsDemoMode => 'Modo Demo';
-
-  @override
-  String get settingsDemoModeDesc =>
-      'Usar datos simulados y omitir autenticación';
-
-  @override
-  String get settingsDemoModeConfirm =>
-      'Cambiar el modo demo reiniciará la aplicación. ¿Continuar?';
-
-  @override
-  String get settingsSignOut => 'Cerrar Sesión';
+  String get settingsSignOut => 'Cerrar sesión';
 
   @override
   String get settingsSignOutConfirm =>
       '¿Estás seguro de que deseas cerrar sesión?';
 
   @override
-  String get settingsSaved => 'Ajustes guardados';
-
-  @override
   String get profileTitle => 'Perfil';
 
   @override
-  String get profileName => 'Nombre Completo';
+  String get profileName => 'Nombre completo';
 
   @override
-  String get profileEmail => 'Correo Electrónico';
+  String get profileEmail => 'Correo electrónico';
 
   @override
-  String get profileZipCode => 'Código Postal';
+  String get profileZipCode => 'Código postal';
 
   @override
-  String get profileDateOfBirth => 'Fecha de Nacimiento';
+  String get profileDateOfBirth => 'Fecha de nacimiento';
 
   @override
   String get profileMonth => 'Mes';
@@ -180,34 +95,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileYear => 'Año';
 
   @override
-  String get profileLanguage => 'Idioma Preferido';
+  String get profileLanguage => 'Idioma preferido';
 
   @override
-  String get profileOptionalInfo => 'Información Opcional';
+  String get profileOptionalInfo => 'Información opcional';
 
   @override
   String get profileGender => 'Género';
 
   @override
-  String get profileHouseholdSize => 'Tamaño del Hogar';
+  String get profileHouseholdSize => 'Tamaño del hogar';
 
   @override
-  String get profileAnnualIncome => 'Ingreso Anual';
+  String get profileAnnualIncome => 'Ingreso anual';
 
   @override
-  String get profileSaveChanges => 'Guardar Cambios';
+  String get profileSaveChanges => 'Guardar cambios';
 
   @override
-  String get profileSaved => 'Perfil guardado';
+  String get profileChangePassword => 'Cambiar contraseña';
 
   @override
-  String get profileChangePassword => 'Cambiar Contraseña';
-
-  @override
-  String get profilePrivacyPolicy => 'Política de Privacidad';
-
-  @override
-  String get profileCreateAccount => 'Crear una Cuenta';
+  String get profilePrivacyPolicy => 'Política de privacidad';
 
   @override
   String get authContinueWithGoogle => 'Continuar con Google';
@@ -216,7 +125,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authContinueWithApple => 'Continuar con Apple';
 
   @override
-  String get authContinueAsGuest => 'Continuar como Invitado';
+  String get authContinueAsGuest => 'Continuar como invitado';
 
   @override
   String get authOr => 'o';
@@ -225,22 +134,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authTermsPrefix => 'Al hacer clic en continuar, aceptas nuestros ';
 
   @override
-  String get authTermsOfService => 'Términos de Servicio';
+  String get authTermsOfService => 'Términos de servicio';
 
   @override
   String get authAnd => ' y ';
 
   @override
-  String get authPrivacyPolicy => 'Política de Privacidad';
+  String get authPrivacyPolicy => 'Política de privacidad';
 
   @override
   String get authSelectLanguage => 'Seleccionar un idioma 🌐';
 
   @override
   String get authSigningIn => 'Iniciando sesión...';
-
-  @override
-  String get authSignIn => 'Iniciar Sesión';
 
   @override
   String get authSignInPromptTitle => 'Inicia sesión para usar esta función';
@@ -302,36 +208,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancelar';
-
-  @override
-  String get commonContinue => 'Continuar';
-
-  @override
-  String get commonSave => 'Guardar';
-
-  @override
-  String commonYesPerYear(String amount) {
-    return '$amount/año';
-  }
-
-  @override
-  String get filterCategories => 'Categorías';
-
-  @override
-  String get filterDistance => 'Distancia';
-
-  @override
-  String get filterOpenNow => 'Abierto Ahora';
-
-  @override
-  String get filterFavorites => 'Favoritos';
-
-  @override
-  String get filterAll => 'Todos';
-
-  @override
-  String get filterApply => 'Aplicar Filtros';
-
-  @override
-  String get filterReset => 'Restablecer';
 }

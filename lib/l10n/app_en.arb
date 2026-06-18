@@ -1,62 +1,26 @@
 {
   "@@locale": "en",
-  "appTitle": "Beacon",
   "navHome": "Home",
   "navMap": "Map",
-  "navProfile": "Profile",
   "navSettings": "Settings",
-
   "homeGreeting": "Find Healthcare Resources",
   "homeFavorites": "Your Favorites",
   "homeNoFavorites": "No favorites yet",
   "homeNoFavoritesHint": "Add favorites from the map page to see them here",
-  "homeNearby": "Nearby Resources",
-  "homeQuickFind": "Quick Find",
-  "homeUrgentCare": "Urgent Care",
-  "homeHousing": "Housing Shelters",
-  "homeFreeClinics": "Free Clinics",
-  "homeFoodPantry": "Food Pantry",
-
-  "mapResourcesNearYou": "Resources near you",
-  "mapSwipeUp": "Swipe up to view resources",
-  "mapSearchFacilities": "Search facilities...",
   "mapSearchLocation": "Enter ZIP code",
-  "mapLoading": "Loading facilities...",
-  "mapNoResults": "No facilities found in this area",
-
   "settingsTitle": "Settings",
   "settingsAccount": "Account",
-  "settingsSignedInWith": "Signed in with {provider}",
-  "@settingsSignedInWith": {
-    "placeholders": {
-      "provider": { "type": "String" }
-    }
-  },
   "settingsApp": "App",
   "settingsLanguage": "Language",
   "settingsAppearance": "Appearance",
   "settingsEligibility": "Eligibility",
   "settingsZipCode": "ZIP Code",
-  "settingsWheelchair": "Wheelchair accessible",
-  "settingsProofOfIncome": "Proof of income available",
-  "settingsInsurance": "Insurance status",
-  "settingsWalkIns": "Accepts walk-ins",
-  "settingsTelehealth": "Telehealth preference",
-  "settingsHouseholdSize": "Household size",
-  "settingsAnnualIncome": "Annual income",
-  "settingsEmployment": "Employment status",
   "settingsAbout": "About",
   "settingsVersion": "Version",
   "settingsPrivacyPolicy": "Privacy Policy",
   "settingsTermsOfService": "Terms of Service",
-  "settingsDeveloper": "Developer",
-  "settingsDemoMode": "Demo Mode",
-  "settingsDemoModeDesc": "Use mock data and skip authentication",
-  "settingsDemoModeConfirm": "Switching demo mode will restart the app flow. Continue?",
   "settingsSignOut": "Sign Out",
   "settingsSignOutConfirm": "Are you sure you want to sign out?",
-  "settingsSaved": "Settings saved",
-
   "profileTitle": "Profile",
   "profileName": "Full Name",
   "profileEmail": "Email",
@@ -70,11 +34,8 @@
   "profileHouseholdSize": "Household Size",
   "profileAnnualIncome": "Annual Income",
   "profileSaveChanges": "Save Changes",
-  "profileSaved": "Profile saved",
   "profileChangePassword": "Change Password",
   "profilePrivacyPolicy": "Privacy Policy",
-  "profileCreateAccount": "Create an Account",
-
   "authContinueWithGoogle": "Continue with Google",
   "authContinueWithApple": "Continue with Apple",
   "authContinueAsGuest": "Continue as Guest",
@@ -85,11 +46,9 @@
   "authPrivacyPolicy": "Privacy Policy",
   "authSelectLanguage": "Select a language 🌐",
   "authSigningIn": "Signing in...",
-  "authSignIn": "Sign In",
   "authSignInPromptTitle": "Sign in to use this feature",
   "authSignInPromptBody": "Create a free account to unlock Favorites, Eligibility filters, and more.",
   "authSignInError": "Sign-in failed. Please try again.",
-
   "locationChoiceTitle": "How would you like to find resources?",
   "locationChoiceSubtitle": "We'll use this to show resources near you.",
   "locationChoiceUseLocation": "Location-Based Search",
@@ -101,26 +60,8 @@
   "locationPermissionDeniedTitle": "Location Access Required",
   "locationPermissionDeniedBody": "To use GPS-based search, enable location for Beacon in iOS Settings > Privacy > Location Services.",
   "locationUseMyLocationTooltip": "Use my location",
-
   "settingsUseMyLocation": "Use My Location",
   "settingsUseMyLocationDesc": "Use GPS instead of ZIP code",
   "settingsSignOutSuccess": "Signed out",
-
-  "commonCancel": "Cancel",
-  "commonContinue": "Continue",
-  "commonSave": "Save",
-  "commonYesPerYear": "{amount}/year",
-  "@commonYesPerYear": {
-    "placeholders": {
-      "amount": { "type": "String" }
-    }
-  },
-
-  "filterCategories": "Categories",
-  "filterDistance": "Distance",
-  "filterOpenNow": "Open Now",
-  "filterFavorites": "Favorites",
-  "filterAll": "All",
-  "filterApply": "Apply Filters",
-  "filterReset": "Reset"
+  "commonCancel": "Cancel"
 }
