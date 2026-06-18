@@ -8,6 +8,7 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/home/presentation/widgets/facility_feedback_dialog.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -259,7 +260,7 @@ class _HomePageState extends State<HomePage>
               ),
             ),
             const SizedBox(height: 16),
-            _buildMapAndCategories(l10n),
+            _buildMapAndCategories(),
             const SizedBox(height: 20),
             const Text(
               'Recently Viewed Facilities',
@@ -287,32 +288,24 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildMapAndCategories(AppLocalizations l10n) {
+  Widget _buildMapAndCategories() {
+    // The four high-level groups, driven entirely off the shared taxonomy so
+    // labels, icons, colors, and the resulting map filter all stay in sync with
+    // the marker icons.
+    const groups = [
+      FacilityCategories.groupHealthCare,
+      FacilityCategories.groupMentalHealth,
+      FacilityCategories.groupHousingShelter,
+      FacilityCategories.groupBasicNeeds,
+    ];
     final actions = [
-      _QuickAction(
-        icon: Icons.local_hospital,
-        label: l10n.homeUrgentCare,
-        color: MarkerUtils.getColorForCategory('Health Care'),
-        category: 'Health Care',
-      ),
-      _QuickAction(
-        icon: Icons.night_shelter,
-        label: l10n.homeHousing,
-        color: MarkerUtils.getColorForCategory('Housing & Shelter'),
-        category: 'Housing & Shelter',
-      ),
-      _QuickAction(
-        icon: Icons.medical_services,
-        label: l10n.homeFreeClinics,
-        color: MarkerUtils.getColorForCategory('Health Care'),
-        category: 'Health Care',
-      ),
-      _QuickAction(
-        icon: Icons.volunteer_activism,
-        label: l10n.homeFoodPantry,
-        color: MarkerUtils.getColorForCategory('Basic Needs'),
-        category: 'Basic Needs',
-      ),
+      for (final group in groups)
+        _QuickAction(
+          icon: MarkerUtils.getIconForCategory(group),
+          label: group,
+          color: MarkerUtils.getColorForCategory(group),
+          category: group,
+        ),
     ];
 
     return SizedBox(

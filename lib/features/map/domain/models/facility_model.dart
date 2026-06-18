@@ -1,3 +1,4 @@
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -110,8 +111,13 @@ class Facility {
   /// List of service names offered by this facility.
   final List<String> services;
 
-  /// Consolidated app category (Health Care, Mental Health, etc.).
+  /// Raw category_level_1 value (kept for display; many distinct values).
   final String appCategory;
+
+  /// category_level_2 value (12 known values + null) — the dimension the map's
+  /// Category filter operates on. Consolidated into a high-level group by
+  /// [primaryCategory] for icons/colors.
+  final String? categoryLevel2;
 
   /// Structured eligibility data from DM_Supabase_Eligibility.
   final FacilityEligibility? eligibility;
@@ -177,8 +183,22 @@ class Facility {
     return hour * 60 + minute;
   }
 
-  /// Primary category for display and marker coloring.
-  String get primaryCategory => appCategory;
+  /// Consolidated high-level group used for marker icons/colors and the small
+  /// category icon on cards/lists. Derived from [categoryLevel2] so the four
+  /// Home-page groups stay consistent across the app. [appCategory]
+  /// (category_level_1) is retained for any raw-category display needs.
+  ///
+  /// Falls back to [appCategory] when category_level_2 doesn't map to a known
+  /// group but appCategory itself is one — keeps demo-mode data (which only
+  /// carries category_level_1) showing the right icons.
+  String get primaryCategory {
+    final group = FacilityCategories.groupFor(categoryLevel2);
+    if (group == FacilityCategories.groupOther &&
+        FacilityCategories.isGroup(appCategory)) {
+      return appCategory;
+    }
+    return group;
+  }
 
   const Facility({
     required this.id,
@@ -195,6 +215,7 @@ class Facility {
     this.hours = const [],
     this.services = const [],
     this.appCategory = 'Health Care',
+    this.categoryLevel2,
     this.eligibility,
     this.eligibilityRequirements = const {},
     this.servicesSummary,
@@ -264,6 +285,7 @@ class Facility {
       hours: hours,
       services: services,
       appCategory: appCategory,
+      categoryLevel2: data['category_level_2'] as String?,
       eligibility: eligibility,
       eligibilityRequirements: eligReqs,
       servicesSummary: eligibility?.servicesSummary,
@@ -455,6 +477,7 @@ class Facility {
       hours: hours,
       services: services,
       appCategory: appCategory,
+      categoryLevel2: categoryLevel2,
       eligibility: eligibility,
       eligibilityRequirements: eligibilityRequirements,
       servicesSummary: servicesSummary,

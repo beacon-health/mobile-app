@@ -2,24 +2,44 @@ import 'dart:async';
 
 import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/user_favorites_service.dart';
+import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
+import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FacilityProvider extends ChangeNotifier {
-  FacilityProvider() {
+  FacilityProvider({FacilityRepositoryBase? repository})
+      : _repository = repository ??
+            (DemoModeService().isDemoMode
+                ? DemoFacilityRepository()
+                : FacilityRepository()) {
     _subscribeToAuth();
   }
 
+  final FacilityRepositoryBase _repository;
+
   List<Facility> _facilities = [];
+
+  /// The signed-in user's favorited facilities, fetched by id from
+  /// `user_favorites` — independent of the current map region. Guests can't
+  /// favorite, and demo favorites live on [_facilities], so this stays empty
+  /// for those paths (see [favoriteFacilities]).
+  List<Facility> _favoriteFacilities = [];
   bool _isLoading = false;
   StreamSubscription<AuthState>? _authSubscription;
 
   List<Facility> get facilities => _facilities;
   bool get isLoading => _isLoading;
 
-  List<Facility> get favoriteFacilities =>
-      _facilities.where((f) => f.isFavorite).toList();
+  /// Signed-in users: favorites resolved by id from the table, region-agnostic.
+  /// Guests / demo: in-memory flags on the current region list.
+  List<Facility> get favoriteFacilities {
+    if (UserFavoritesService.instance.currentUserId != null) {
+      return List.unmodifiable(_favoriteFacilities);
+    }
+    return _facilities.where((f) => f.isFavorite).toList();
+  }
 
   void _subscribeToAuth() {
     if (DemoModeService().isDemoMode) return;
@@ -62,6 +82,7 @@ class FacilityProvider extends ChangeNotifier {
     final previous = _facilities[index];
     final updated = previous.copyWith(isFavorite: !previous.isFavorite);
     _facilities[index] = updated;
+    _syncFavoriteFacility(updated);
     notifyListeners();
 
     if (UserFavoritesService.instance.currentUserId == null) return;
@@ -75,8 +96,18 @@ class FacilityProvider extends ChangeNotifier {
           index < _facilities.length && _facilities[index].id == facilityId;
       if (stillSameSlot) {
         _facilities[index] = previous;
+        _syncFavoriteFacility(previous);
         notifyListeners();
       }
+    }
+  }
+
+  /// Mirrors a favorite toggle into [_favoriteFacilities] so the Home Favorites
+  /// list updates immediately, without waiting for a refetch.
+  void _syncFavoriteFacility(Facility facility) {
+    _favoriteFacilities.removeWhere((f) => f.id == facility.id);
+    if (facility.isFavorite) {
+      _favoriteFacilities.add(facility.copyWith(isFavorite: true));
     }
   }
 
@@ -97,17 +128,44 @@ class FacilityProvider extends ChangeNotifier {
     if (changed) notifyListeners();
   }
 
-  /// Loads the signed-in user's favorites and merges them into the facility
-  /// list. No-op if the user is not signed in.
+  /// Loads the signed-in user's favorites: flags any in-region facilities and
+  /// fetches the full favorited set by id (region-independent). No-op if the
+  /// user is not signed in.
   Future<void> loadRemoteFavorites() async {
     if (UserFavoritesService.instance.currentUserId == null) return;
     final ids = await UserFavoritesService.instance.loadFavoriteIds();
     applyFavoriteIds(ids);
+    await _loadFavoriteFacilities(ids);
   }
 
-  /// Clears all in-memory favorite flags. Called on sign-out.
+  /// Resolves favorite ids to full facility records via the repository so the
+  /// Home Favorites list shows favorites anywhere, not just the current region.
+  Future<void> _loadFavoriteFacilities(Set<String> ids) async {
+    if (ids.isEmpty) {
+      if (_favoriteFacilities.isNotEmpty) {
+        _favoriteFacilities = [];
+        notifyListeners();
+      }
+      return;
+    }
+    try {
+      final fetched = await _repository.getFacilitiesByIds(ids.toList());
+      _favoriteFacilities = [
+        for (final f in fetched) f.copyWith(isFavorite: true),
+      ];
+      notifyListeners();
+    } catch (_) {
+      // Keep the previous favorites list on a transient fetch failure.
+    }
+  }
+
+  /// Clears all favorite state. Called on sign-out.
   void clearFavorites() {
     var changed = false;
+    if (_favoriteFacilities.isNotEmpty) {
+      _favoriteFacilities = [];
+      changed = true;
+    }
     for (var i = 0; i < _facilities.length; i++) {
       if (_facilities[i].isFavorite) {
         _facilities[i] = _facilities[i].copyWith(isFavorite: false);

@@ -56,7 +56,10 @@ class _LocationSearchState extends State<LocationSearch> {
 
     if (_focusNode.hasFocus) {
       _previousText = _controller.text;
-      if (_controller.text.toLowerCase().contains('current location')) {
+      final lower = _controller.text.toLowerCase();
+      if (lower.contains('current location') || lower == 'map area') {
+        // Placeholder-style labels: clear on focus. If the user types nothing,
+        // the unfocus branch below restores the label from `_previousText`.
         _controller.clear();
       } else if (_isValidZipCode(_controller.text)) {
         _controller.selection =

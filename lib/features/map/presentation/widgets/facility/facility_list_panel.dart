@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
@@ -21,6 +22,10 @@ class FacilityListPanel extends StatelessWidget {
   /// in guest mode where favorites require sign-in).
   final bool canFavorite;
 
+  /// Optional handler for the empty-state "search a wider area" button. Null
+  /// when already at the widest distance (button hidden).
+  final Future<void> Function()? onWidenSearch;
+
   const FacilityListPanel({
     super.key,
     required this.facilities,
@@ -36,6 +41,7 @@ class FacilityListPanel extends StatelessWidget {
     required this.buildCategoryIcon,
     this.onPanelStateChange,
     this.canFavorite = true,
+    this.onWidenSearch,
   });
 
   @override
@@ -110,7 +116,7 @@ class FacilityListPanel extends StatelessWidget {
         child: Column(
           children: [
             _buildPanelHeader(context),
-            if (isPanelOpen || isFullyExpanded) _buildFacilityList(),
+            if (isPanelOpen || isFullyExpanded) _buildFacilityList(context),
           ],
         ),
       ),
@@ -155,7 +161,7 @@ class FacilityListPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildFacilityList() {
+  Widget _buildFacilityList(BuildContext context) {
     return Expanded(
       child: GestureDetector(
         onPanUpdate: (details) {
@@ -188,7 +194,9 @@ class FacilityListPanel extends StatelessWidget {
                     child: CircularProgressIndicator(),
                   ),
                 )
-              : ListView.builder(
+              : facilities.isEmpty
+                  ? _buildEmptyState(context)
+                  : ListView.builder(
                   controller: scrollController,
                   physics: isFullyExpanded
                       ? const ClampingScrollPhysics(
@@ -212,6 +220,51 @@ class FacilityListPanel extends StatelessWidget {
                     );
                   },
                 ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    // Scrollable + top-aligned so it never overflows when the panel is short
+    // (collapsed, or mid drag/animation the Expanded height can be ~0).
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off, size: 40, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            Text(
+              'No facilities in this area',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Try a wider distance or search another area on the map.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (onWidenSearch != null) ...[
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => onWidenSearch!(),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.resedaGreen,
+                ),
+                icon: const Icon(Icons.zoom_out_map, size: 18),
+                label: const Text('Search a wider area'),
+              ),
+            ],
+          ],
         ),
       ),
     );

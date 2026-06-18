@@ -31,9 +31,10 @@ class FacilityFilterService {
       // Open Now filter
       final matchesOpenNow = !showOpenNowOnly || facility.isOpenNow;
 
-      // Category filter — match on appCategory
+      // Category filter — match on category_level_2 (the map's filter dimension)
       final matchesCategory = selectedCategories.isEmpty ||
-          selectedCategories.contains(facility.appCategory);
+          (facility.categoryLevel2 != null &&
+              selectedCategories.contains(facility.categoryLevel2));
 
       // Eligibility requirements filter
       // null values are unset and always pass through.
@@ -75,13 +76,18 @@ class FacilityFilterService {
     }).toList();
   }
 
-  /// Returns all unique app categories from a list of facilities.
+  /// Returns the distinct `category_level_2` values present in [facilities].
+  ///
+  /// The map's Category filter uses the fixed `FacilityCategories` list rather
+  /// than this (so all options show regardless of region), but this stays
+  /// available for any region-scoped needs.
   static Set<String> getAvailableCategories(
     List<Facility> facilities,
   ) {
     final categories = <String>{};
     for (final facility in facilities) {
-      categories.add(facility.appCategory);
+      final c = facility.categoryLevel2;
+      if (c != null && c.isNotEmpty) categories.add(c);
     }
     return categories;
   }

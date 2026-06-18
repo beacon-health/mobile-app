@@ -70,6 +70,84 @@ class MarkerUtils {
     return descriptor;
   }
 
+  /// Creates a cluster bubble showing the number of facilities grouped at a
+  /// zoomed-out point. Cached per exact count.
+  static Future<BitmapDescriptor> createClusterMarker(
+    int count,
+    BuildContext context,
+  ) async {
+    final cacheKey = 'cluster_$count';
+    if (_markerCache.containsKey(cacheKey)) {
+      return _markerCache[cacheKey]!;
+    }
+
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
+    // Bubble grows with magnitude so large clusters read clearly.
+    final double size = count < 10
+        ? 90.0
+        : count < 100
+            ? 110.0
+            : 130.0;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = Offset(size / 2, size / 2);
+    final radius = size * 0.42;
+
+    // Translucent halo.
+    canvas.drawCircle(
+      center,
+      radius * 1.18,
+      Paint()..color = AppTheme.resedaGreen.withValues(alpha: 0.35),
+    );
+    // Main filled circle.
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()..color = AppTheme.resedaGreen,
+    );
+    // White border.
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0,
+    );
+
+    final label = count > 999 ? '999+' : '$count';
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size * 0.34,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(
+      canvas,
+      Offset((size - textPainter.width) / 2, (size - textPainter.height) / 2),
+    );
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.ceil(), size.ceil());
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+
+    final descriptor = BitmapDescriptor.bytes(
+      bytes,
+      imagePixelRatio: devicePixelRatio,
+    );
+
+    _markerCache[cacheKey] = descriptor;
+    return descriptor;
+  }
+
   static void _drawName(
     Canvas canvas,
     String text,

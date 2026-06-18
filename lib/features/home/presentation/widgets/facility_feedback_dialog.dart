@@ -33,38 +33,57 @@ class _FacilityFeedbackDialog extends StatefulWidget {
 }
 
 class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
-  final TextEditingController _commentController = TextEditingController();
+  /// Quick-select tags shown for a thumbs-up rating.
+  static const List<String> _positiveTags = [
+    'Friendly staff',
+    'Minimal wait times',
+    'Clean facility',
+    'Helpful with paperwork',
+    'Affordable or free',
+    'Easy to reach by phone',
+    'Welcoming environment',
+    'Knowledgeable providers',
+  ];
+
+  /// Quick-select tags shown for a thumbs-down rating.
+  static const List<String> _negativeTags = [
+    'Long wait times',
+    'Slow service',
+    'Unfriendly staff',
+    'Hard to reach by phone',
+    'Confusing paperwork',
+    'Unexpected costs',
+    'Hard to find',
+    'Services not as described',
+  ];
+
   bool? _isThumbsUp;
+  final Set<String> _selectedTags = {};
   bool _isSubmitting = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _commentController.addListener(_onCommentChanged);
-  }
-
-  @override
-  void dispose() {
-    _commentController.removeListener(_onCommentChanged);
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  void _onCommentChanged() {
-    // Rebuild so the Submit button enable/disable state stays in sync with
-    // the text field content.
-    setState(() {});
-  }
-
   bool get _canSubmit =>
-      !_isSubmitting &&
-      _isThumbsUp != null &&
-      _commentController.text.trim().isNotEmpty;
+      !_isSubmitting && _isThumbsUp != null && _selectedTags.isNotEmpty;
+
+  void _setRating(bool thumbsUp) {
+    setState(() {
+      // Switching rating swaps the tag set, so clear stale selections.
+      if (_isThumbsUp != thumbsUp) _selectedTags.clear();
+      _isThumbsUp = thumbsUp;
+    });
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (!_selectedTags.add(tag)) _selectedTags.remove(tag);
+    });
+  }
 
   Future<void> _submit() async {
     final rating = _isThumbsUp;
-    final comment = _commentController.text.trim();
-    if (rating == null || comment.isEmpty) return;
+    if (rating == null || _selectedTags.isEmpty) return;
+    // The `facility_feedback.comment` column stays text — store the selected
+    // tags as a comma-separated list (no schema change needed).
+    final comment = _selectedTags.join(', ');
 
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
@@ -127,6 +146,54 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
     );
   }
 
+  /// Multi-select tag chips, switched by the chosen rating. Shown only after a
+  /// thumbs up/down is picked.
+  Widget _buildTagSelector(ColorScheme colorScheme) {
+    if (_isThumbsUp == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          'Choose 👍 or 👎, then add a few quick details.',
+          style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+        ),
+      );
+    }
+    final tags = _isThumbsUp! ? _positiveTags : _negativeTags;
+    final accent = _isThumbsUp! ? AppTheme.resedaGreen : AppTheme.bittersweet;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final tag in tags)
+            FilterChip(
+              label: Text(tag),
+              selected: _selectedTags.contains(tag),
+              onSelected: _isSubmitting ? null : (_) => _toggleTag(tag),
+              showCheckmark: false,
+              backgroundColor: Colors.transparent,
+              selectedColor: accent.withValues(alpha: 0.18),
+              side: BorderSide(
+                color: _selectedTags.contains(tag)
+                    ? accent
+                    : Theme.of(context).dividerColor,
+              ),
+              labelStyle: TextStyle(
+                fontSize: 13,
+                color: _selectedTags.contains(tag)
+                    ? accent
+                    : colorScheme.onSurface,
+                fontWeight: _selectedTags.contains(tag)
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -135,50 +202,35 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
         widget.facility.name,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _RatingButton(
-                icon: Icons.thumb_up,
-                outlinedIcon: Icons.thumb_up_outlined,
-                activeColor: AppTheme.resedaGreen,
-                isActive: _isThumbsUp == true,
-                onTap: _isSubmitting
-                    ? null
-                    : () => setState(() => _isThumbsUp = true),
-              ),
-              const SizedBox(width: 24),
-              _RatingButton(
-                icon: Icons.thumb_down,
-                outlinedIcon: Icons.thumb_down_outlined,
-                activeColor: AppTheme.bittersweet,
-                isActive: _isThumbsUp == false,
-                onTap: _isSubmitting
-                    ? null
-                    : () => setState(() => _isThumbsUp = false),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _commentController,
-            maxLines: 3,
-            enabled: !_isSubmitting,
-            decoration: InputDecoration(
-              hintText: 'Tell us about your experience...',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              hintStyle: TextStyle(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _RatingButton(
+                  icon: Icons.thumb_up,
+                  outlinedIcon: Icons.thumb_up_outlined,
+                  activeColor: AppTheme.resedaGreen,
+                  isActive: _isThumbsUp == true,
+                  onTap: _isSubmitting ? null : () => _setRating(true),
+                ),
+                const SizedBox(width: 24),
+                _RatingButton(
+                  icon: Icons.thumb_down,
+                  outlinedIcon: Icons.thumb_down_outlined,
+                  activeColor: AppTheme.bittersweet,
+                  isActive: _isThumbsUp == false,
+                  onTap: _isSubmitting ? null : () => _setRating(false),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            _buildTagSelector(colorScheme),
+          ],
+        ),
       ),
       actions: [
         TextButton(

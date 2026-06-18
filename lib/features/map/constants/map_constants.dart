@@ -5,6 +5,10 @@ class MapConstants {
   static const double detailZoom = 15.0;
   static const double markerZoom = 16.0;
 
+  /// At or above this zoom, markers render individually; below it, nearby
+  /// facilities are clustered into count bubbles.
+  static const double clusterZoomThreshold = 14.0;
+
   static const double searchBarAreaHeight = 160.0;
   static const double panelMinHeight = 80.0;
   static const double panelDefaultHeightRatio = 0.30;

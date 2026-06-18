@@ -31,6 +31,8 @@ abstract class FacilityRepositoryBase {
     double? radiusMiles,
   });
 
+  Future<List<Facility>> getFacilitiesByIds(List<String> ids);
+
   Future<Facility?> getFacilityById(String id);
 }
 
@@ -43,11 +45,16 @@ class FacilityRepository implements FacilityRepositoryBase {
 
   final SupabaseFacilityService _service;
 
-  /// Loads all healthcare facilities.
+  /// Loads a bounded slice of facilities (no proximity filter).
+  ///
+  /// The nationwide table is far too large to load wholesale, so this returns
+  /// at most a capped page from the view. Real queries should use
+  /// [loadFacilitiesWithDistance]; this exists only to satisfy the interface
+  /// and the (unused) stream path.
   @override
   Future<List<Facility>> loadFacilities() async {
     try {
-      return await _service.getAllFacilities();
+      return await _service.searchFacilities('');
     } catch (e, stackTrace) {
       developer.log(
         'Error loading facilities: $e',
@@ -112,9 +119,7 @@ class FacilityRepository implements FacilityRepositoryBase {
     }
   }
 
-  /// Returns a stream of all facilities.
-  ///
-  /// Currently implemented as a single-shot stream since we have a small dataset.
+  /// Returns a single-shot stream wrapping [loadFacilities] (bounded slice).
   @override
   Stream<List<Facility>> getFacilitiesStream() {
     return Stream.fromFuture(loadFacilities());
@@ -143,6 +148,22 @@ class FacilityRepository implements FacilityRepositoryBase {
     } catch (e, stackTrace) {
       developer.log(
         'Error searching facilities: $e',
+        name: 'FacilityRepository',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return [];
+    }
+  }
+
+  /// Gets multiple facilities by ID (used for region-independent Favorites).
+  @override
+  Future<List<Facility>> getFacilitiesByIds(List<String> ids) async {
+    try {
+      return await _service.getFacilitiesByIds(ids);
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error loading facilities by ids: $e',
         name: 'FacilityRepository',
         error: e,
         stackTrace: stackTrace,

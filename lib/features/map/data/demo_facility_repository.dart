@@ -153,6 +153,14 @@ class DemoFacilityRepository implements FacilityRepositoryBase {
   }
 
   @override
+  Future<List<Facility>> getFacilitiesByIds(List<String> ids) async {
+    if (ids.isEmpty) return const [];
+    final all = await loadFacilities();
+    final idSet = ids.toSet();
+    return all.where((f) => idSet.contains(f.id)).toList();
+  }
+
+  @override
   Future<Facility?> getFacilityById(String id) async {
     final all = await loadFacilities();
     try {

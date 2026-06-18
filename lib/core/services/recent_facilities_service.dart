@@ -118,6 +118,7 @@ class RecentFacilitiesService extends ChangeNotifier {
         'city': f.city,
         'state': f.state,
         'appCategory': f.appCategory,
+        'categoryLevel2': f.categoryLevel2,
         'latitude': f.location.latitude,
         'longitude': f.location.longitude,
       };
@@ -143,6 +144,7 @@ class RecentFacilitiesService extends ChangeNotifier {
       city: json['city'] as String? ?? '',
       state: json['state'] as String? ?? '',
       appCategory: json['appCategory'] as String? ?? 'Health Care',
+      categoryLevel2: json['categoryLevel2'] as String?,
     );
   }
 }

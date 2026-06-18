@@ -9,22 +9,22 @@ void main() {
       createTestFacility(
         id: '1',
         name: 'Free Clinic',
-        appCategory: 'Health Care',
+        categoryLevel2: 'Nonprofit - Health Care',
       ),
       createTestFacility(
         id: '2',
         name: 'Food Pantry A',
-        appCategory: 'Food Pantry',
+        categoryLevel2: 'Nonprofit - Human Services',
       ),
       createTestFacility(
         id: '3',
         name: 'Shelter B',
-        appCategory: 'Housing & Shelter',
+        categoryLevel2: 'Nonprofit - Housing and Shelter',
       ),
       createTestFacility(
         id: '4',
         name: 'Mental Health Center',
-        appCategory: 'Mental Health',
+        categoryLevel2: 'Nonprofit - Mental Health and Crisis Intervention',
         isFavorite: true,
       ),
     ];
@@ -56,7 +56,7 @@ void main() {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: '',
-        selectedCategories: {'Food Pantry'},
+        selectedCategories: {'Nonprofit - Human Services'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -80,7 +80,7 @@ void main() {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: 'pantry',
-        selectedCategories: {'Food Pantry'},
+        selectedCategories: {'Nonprofit - Human Services'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -101,15 +101,15 @@ void main() {
   });
 
   group('FacilityFilterService.getAvailableCategories', () {
-    test('returns unique categories', () {
+    test('returns unique category_level_2 values', () {
       final facilities = [
-        createTestFacility(appCategory: 'Health Care'),
-        createTestFacility(appCategory: 'Health Care'),
-        createTestFacility(appCategory: 'Food Pantry'),
+        createTestFacility(categoryLevel2: 'Nonprofit - Health Care'),
+        createTestFacility(categoryLevel2: 'Nonprofit - Health Care'),
+        createTestFacility(categoryLevel2: 'Treatment Facility'),
       ];
       final categories =
           FacilityFilterService.getAvailableCategories(facilities);
-      expect(categories, {'Health Care', 'Food Pantry'});
+      expect(categories, {'Nonprofit - Health Care', 'Treatment Facility'});
     });
   });
 }

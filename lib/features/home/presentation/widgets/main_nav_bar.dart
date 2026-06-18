@@ -50,6 +50,12 @@ class _MainNavBarState extends State<MainNavBar> {
       Future.delayed(const Duration(milliseconds: 300), () {
         _mapPageKey.currentState?.filterByCategory(categoryFilter);
       });
+    } else {
+      // Plain "open the map" (e.g. the Home map cutout) — re-center on the
+      // user's saved location.
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _mapPageKey.currentState?.recenterOnUserLocation();
+      });
     }
   }
 
@@ -114,11 +120,17 @@ class _MapPageWrapperState extends State<_MapPageWrapper> {
   final GlobalKey<MapPageState> _mapPageKey = GlobalKey<MapPageState>();
 
   void showFacility(Facility facility) {
-    _mapPageKey.currentState?.showFacilityById(facility.id);
+    // Pass the full object so the map can center even on out-of-region
+    // favorites (it no longer holds the whole dataset in memory).
+    _mapPageKey.currentState?.showFacility(facility);
   }
 
   void filterByCategory(String category) {
     _mapPageKey.currentState?.filterByCategory(category);
+  }
+
+  void recenterOnUserLocation() {
+    _mapPageKey.currentState?.recenterOnUserLocation();
   }
 
   @override
