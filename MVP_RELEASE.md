@@ -662,9 +662,11 @@ still used.
 
 **Xcode:**
 - [x] `Runner.entitlements` with `com.apple.developer.applesignin` is in the repo + wired into `project.pbxproj` (`CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements`)
+- [x] **Build uses pure CocoaPods (Swift Package Manager disabled).** The project was previously a hybrid SPM + CocoaPods setup, but `google_maps_flutter_ios` and `sign_in_with_apple` don't support SPM, so **Archive failed** with `No such module 'Flutter'` + `Unable to resolve module dependency: 'GoogleMaps'`. Fixed by `flutter config --no-enable-swift-package-manager`, stripping the SPM integration from `project.pbxproj` (the `FlutterGeneratedPluginSwiftPackage` local-package + product-dependency refs), and a clean `pod install`. Verified with a successful `flutter build ios --release`. **Gotcha:** if a teammate/CI has SPM enabled globally, Flutter can re-migrate this project — keep SPM disabled there too.
 - [ ] Add **Sign in with Apple capability** in the Signing & Capabilities tab (Xcode → Runner target → "+ Capability"). The entitlement file alone isn't enough — Xcode also needs the capability listed for App Store builds.
 - [ ] Run `cd ios && pod install` after pulling — `sign_in_with_apple` and `sentry_flutter` both add new CocoaPods entries
-- [ ] Archive and upload to TestFlight
+- [ ] **Always open `ios/Runner.xcworkspace`** (not `Runner.xcodeproj`) — CocoaPods integration only exists in the workspace, and opening the bare project reproduces the "No such module 'Flutter'" error.
+- [ ] Build for upload via **`flutter build ipa --dart-define-from-file=config/dart_defines.json`** (bakes in Supabase defines + the Maps key), or Archive from the workspace. Then upload (Transporter / `xcrun altool` / Fastlane `beta`).
 
 **App Store Connect:**
 - [ ] Create App ID matching `org.beaconhealth.app`
