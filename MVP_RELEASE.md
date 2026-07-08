@@ -1,35 +1,37 @@
-# Beacon App — MVP Release Plan
+# Beacon App — Pre-Launch Plan
 
 > **Context doc for AI agents.** Read this before making changes.
 >
-> **Last updated:** 2026-06-18 · **Target:** iOS App Store (TestFlight -> public) · **Version:** `1.0.0+1`
+> **Last updated:** 2026-06-25 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
 >
-> **Status:** §2.1 – §2.5 **and** the §2.6 nationwide-data migration are
-> code-complete — `flutter analyze` clean, 24/24 tests pass. The geocoding
-> backfill is done and both migrations are applied.
+> **Status:** All MVP code (§2.1 – §2.7) is **code-complete** — `flutter
+> analyze` clean, 28/28 tests pass. The app builds and uploads to TestFlight.
+> What's left is **device QA + non-engineering launch prep** (App Store
+> listing, legal, beta testers) and **a few Supabase SQL one-liners** — see the
+> **Pre-Launch Checklist (§3)**, split into engineering vs. non-dev hand-off.
 >
-> **✅ Done**
+> **✅ Done (all code)**
 > - **§2.1–§2.5:** Auth (native Sign in with Apple), GPS, crash reporting
->   (Sentry via `ErrorReporter`), facility feedback, and cleanup.
-> - **§2.6 nationwide data:** moved off the ~691-row Illinois view to
->   **`FCT_Supabase`** (162,937 rows, geocoded via the Census batch script).
->   PostGIS `facilities_near` RPC + `fct_supabase_full` view are live; the app
->   queries **server-side per region** with a **"Search this area"** control,
->   **marker clustering** when zoomed out, and **region-independent Favorites**
->   (resolved by id from `user_favorites`). SQL lives in `supabase/migrations/`,
->   the geocoder in `scripts/geocode/`.
-> - **§2.6 map UX:** Category filter now uses **`category_level_2`** (12 values)
->   while marker/list icons **consolidate to 4 high-level groups**; Home→Map
->   navigation re-centers correctly (favorites + map cutout); facility feedback
->   uses **selectable tag chips** instead of free text; the "Search this area"
->   location label clears on focus; empty/sparse map state is overflow-safe.
+>   (Sentry via `ErrorReporter`), facility feedback, cleanup.
+> - **§2.6 nationwide data:** off the ~691-row Illinois view onto
+>   **`FCT_Supabase`** (162,937 rows, geocoded). PostGIS `facilities_near` RPC +
+>   `fct_supabase_full` view; **server-side per-region** queries, a **"Search
+>   this area"** control, **marker clustering**, **region-independent
+>   Favorites**, category filter on **`category_level_2`** (12 values) with icons
+>   consolidated to 4 groups, dark-mode map, overflow-safe empty states.
+> - **§2.7 view & edit feedback:** feedback is now read/write — a Settings
+>   **"Your Feedback"** list + in-place editing (dialog pre-fills, **upsert**,
+>   **Remove**) via the new `FacilityFeedbackService`.
 >
 > **⏳ Remaining**
-> - **Device QA of §2.6** end-to-end (the one code-side gate left — see §2.6).
-> - **External configuration only** — Supabase Dashboard, Google Cloud, Apple
->   Developer, App Store Connect (§3).
-> - **Optional polish** — lean column projection / lazy detail fetch; offline
->   mode stays a post-MVP outline (§9).
+> - **Device QA** end-to-end on real hardware (§3.1).
+> - **Supabase SQL one-liners:** §2.7 unique constraint + §2.8 state-rollout
+>   allow-list (both copy-paste, run in the dashboard).
+> - **Non-dev launch prep** — App Store Connect listing, screenshots, privacy
+>   label, legal links, beta testers (§3.2, written for hand-off).
+> - **Gradual state-by-state rollout** is wired via a server-side allow-list so
+>   the team can add states with one SQL `insert`, no app release (§2.8).
+> - **External config** — Google Cloud, Apple Developer, Supabase RLS (§3.1).
 
 ---
 
@@ -40,14 +42,14 @@
 | **Framework** | Flutter 3.41.6 / Dart 3.11.4, Material 3, iOS-only (Android post-MVP) |
 | **Bundle ID** | `org.beaconhealth.app` |
 | **iOS min target** | 15.0 (aligned across Podfile + Xcode) |
-| **Backend** | Supabase (Free tier). Data source migrating from `facilities_il_full` (~691 IL rows) → **`FCT_Supabase`** (162,937 rows, nationwide; lat/lng pending geocoding) + `DM_Supabase_Eligibility` (3,713 rows, growing) — see §2.6 |
+| **Backend** | Supabase (Free tier). Data source: **`FCT_Supabase`** (162,937 rows, nationwide, geocoded) via the `facilities_near` PostGIS RPC + `fct_supabase_full` view + `DM_Supabase_Eligibility` (3,713 rows, growing). Launch gated to Illinois first via a `launched_states` allow-list — see §2.6 / §2.8 |
 | **Auth** | Supabase OAuth — Sign in with Apple (iOS MVP), Google sign-in tested in dev (Android post-MVP) |
 | **State mgmt** | Provider + ChangeNotifier |
 | **Maps** | Google Maps Flutter plugin, API key via `Secrets.xcconfig` (gitignored) |
 | **Localization** | en, es, zh via `flutter_localizations` + ARB |
 | **Secrets** | `--dart-define` for Supabase URL/key; `Secrets.xcconfig` for Google Maps key. No secrets in source. |
 | **Linting** | `very_good_analysis` — 0 issues (`flutter analyze` clean) |
-| **Tests** | 18 unit tests (all passing) |
+| **Tests** | 28 unit tests (all passing) |
 | **CI/CD** | GitHub Actions (`ci.yml` + `ios-build.yml`), Fastlane skeleton |
 | **Repo** | `github.com/beacon-health/mobile-app` · Data pipeline: `github.com/beacon-health/beacon-data` |
 
@@ -61,8 +63,8 @@
 - **Theming:** `AppGradients` for onboarding gradients, `ColorSchemeExt` for alpha blends. App defaults to light mode (`ThemeModeProvider._themeMode = ThemeMode.light`); user can switch in Settings.
 - **Location:** `ZipCodeService` stores ZIP → geocoded lat/lng via `SharedPreferences`, including a `_previousZipCode` slot so GPS-on overwriting "Current Location" doesn't lose the user's prior ZIP. `LocationService` returns typed `LocationStatus`; `MapPage` listens to `ZipCodeService.addListener` so it stays in sync when Settings changes the location source.
 - **Settings sync:** `UserSettingsService` mirrors `{zip_code, theme_mode, locale, location_search_enabled, eligibility (jsonb), preferences (jsonb)}` to a Supabase `user_settings` row on sign-in. `EligibilityPreferencesService` is the local source of truth for eligibility/preferences toggles, mirrored via `unawaited(UserSettingsService.instance.pushLocal())` on each change.
-- **Feedback flow:** `RecentFacilitiesService` (last 3 viewed, persisted to SharedPreferences). Tap a row on Home → `FacilityFeedbackDialog` → insert into `facility_feedback`. Successful submit removes the facility from recently-viewed.
-- **Facility data (changing — see §2.6):** today `SupabaseFacilityService.getAllFacilities()` fetches the *entire* `facilities_il_full` view in one `.select()`, caches it in memory, and does all distance/search/category filtering client-side (Haversine in Dart). `loadFacilitiesWithDistance(lat, lng, radiusMiles)` just filters that cached list — the radius never reaches the server. Fine for ~691 rows; **breaks at 162,937**: PostgREST's default `max-rows` cap silently truncates the result, the payload balloons, and 160K+ `Facility.fromSupabase` parses on the UI isolate cause jank/OOM. §2.6 replaces this with bounded, server-side **point-radius** queries keyed off the user's GPS/ZIP or the current map center.
+- **Feedback flow:** `RecentFacilitiesService` (last 3 viewed, persisted to SharedPreferences). Tap a row on Home → `FacilityFeedbackDialog`. Writes go through `FacilityFeedbackService` (upsert on `(user_id, facility_id)`), so re-opening pre-fills the existing rating/tags and edits in place; **Remove** deletes. Settings → **"Your Feedback"** (`MyFeedbackPage`) lists everything submitted for view/edit (§2.7).
+- **Facility data (§2.6, done):** `SupabaseFacilityService.getFacilitiesNearLocation(lat, lng, radiusKm)` calls the server-side `facilities_near` PostGIS RPC — bounded, distance-sorted, capped at 250 — with a quantized per-region in-memory cache. Favorites / single-facility detail resolve by id through the `fct_supabase_full` view (region-independent). This replaced the old "load the whole table, filter on device" model, which didn't scale past the ~691-row Illinois view. State-rollout gating lives in the RPC (§2.8).
 - **Filter bar:** Tune → Distance → Open Now → Favorites → Category → **Status** → Eligibility → Preferences. The Status chip opens an action sheet that one-shot applies the user's saved eligibility/preferences from Settings as filter values (no Apply button — auto-apply + close).
 
 ### Key Files
@@ -88,7 +90,9 @@
 | User favorites sync | `lib/core/services/user_favorites_service.dart` |
 | Eligibility/Preferences | `lib/core/services/eligibility_preferences_service.dart` |
 | Recently viewed facilities | `lib/core/services/recent_facilities_service.dart` |
+| Feedback service (read/upsert/delete) | `lib/core/services/facility_feedback_service.dart` |
 | Feedback dialog | `lib/features/home/presentation/widgets/facility_feedback_dialog.dart` |
+| "Your Feedback" list (§2.7) | `lib/features/settings/presentation/pages/my_feedback_page.dart` |
 | Legal URL constants | `lib/core/constants/legal_urls.dart` |
 | Facility data | `lib/features/map/data/facility_repository.dart`, `supabase_facility_service.dart` |
 | Facility model | `lib/features/map/domain/models/facility_model.dart` |
@@ -117,11 +121,10 @@
 
 ## 2. Code Work
 
-§2.1 – §2.5 (✅ below) are implemented, `flutter analyze` is clean (0 issues),
-and `flutter test` passes (18/18). **§2.6 is new scope (⏳ not started)** —
-the nationwide-data migration and scaled map querying. Until §2.6 lands, the
-only *other* remaining work is external configuration (§3) — a click in
-someone else's web console.
+**All code work (§2.1 – §2.7) is complete.** `flutter analyze` is clean (0
+issues) and `flutter test` passes (28/28). What's left is device QA, two
+Supabase SQL one-liners (§2.7, §2.8), and non-engineering launch prep (§3).
+The subsections below are kept as the implementation record.
 
 ### 2.1 User Authentication ✅
 - Native **Sign in with Apple** via the `sign_in_with_apple` package and
@@ -268,10 +271,10 @@ churn low while the on-device set is still evolving.
 ### 2.6 Nationwide Data & Scaled Map Querying ✅ CODE-COMPLETE (device QA pending)
 
 Moved the data source off the ~691-row Illinois view to the nationwide
-**`FCT_Supabase`** (162,937 rows, geocoded via `scripts/geocode/`) and replaced
-"load everything, filter on device" with bounded server-side queries.
-`flutter analyze` clean, 24 tests pass; geocoding + migrations `0001`/`0002`
-applied. What shipped:
+**`FCT_Supabase`** (162,937 rows, geocoded via the Census batch script) and
+replaced "load everything, filter on device" with bounded server-side queries.
+`flutter analyze` clean, 28 tests pass; geocoding + the PostGIS schema (view +
+RPC, DDL below) applied. What shipped:
 - **Server-side proximity** via the PostGIS `facilities_near` RPC +
   `fct_supabase_full` view; `SupabaseFacilityService` calls it with a quantized
   region cache (no more load-all), capped at 250 results.
@@ -286,9 +289,9 @@ applied. What shipped:
 - **Remaining:** device QA pass; optional lean projection / lazy detail fetch
   (the RPC returns full rows — fine at the 250 cap).
 
-> ⚠️ **Re-run `0002` after pulling** if the RPC/view definition changed (it
-> drops + recreates both and is idempotent). The runnable schema lives in
-> `supabase/migrations/`; the DDL below mirrors it for reference.
+> ⚠️ The SQL below is the **authoritative record** — apply it via Supabase
+> Dashboard → SQL Editor. The view + RPC are idempotent (`create or replace`);
+> re-running is safe if the definition changes.
 
 #### Category taxonomy (filter vs. icon)
 
@@ -312,30 +315,15 @@ Two dimensions, one source of truth in
   owner wants different buckets. `category_level_1` (`appCategory`) is retained
   on the model for any raw-value display.
 
-**Goal.** Switch the facility data source from the ~691-row `facilities_il_full`
-view to the **`FCT_Supabase`** table (162,937 rows, US-wide) and make every map
-query **server-side and region-bounded**, so the app loads only the facilities
-near a point — never the whole table. Two query entry points drive this:
+#### DDL / RPC reference (applied)
 
-1. **Location-search change (ZIP):** when the user types a ZIP into the
-   location-search box, geocode it and query the DB around that lat/lng using
-   the **default distance** already in `MapConstants.distanceOptions.first`
-   (`1.0 mi`; the distance chip widens it). The wiring exists today
-   (`MapPage._onLocationChanged` → `_loadFacilities`); only the underlying
-   query needs to become a real bounded server call.
-2. **Pan / zoom the map:** add a **"Search this area"** floating button (the
-   Yelp / Uber Eats / Google Maps pattern). We do **not** auto-query on every
-   camera move — the button is the explicit, quota-friendly trigger.
+Two query entry points drive the map: a **ZIP location-search change** (geocode
+→ query around that point at the default distance) and a **"Search this area"**
+button on pan/zoom (explicit, quota-friendly — no auto-query on camera move).
+Both call the `facilities_near` RPC below.
 
-#### DDL / RPC reference
-
-> **Runnable versions:** `supabase/migrations/0001_geocode_prep.sql` (run
-> before geocoding) and `supabase/migrations/0002_facilities_postgis.sql`
-> (run after). The blocks below mirror those files for reading; apply the
-> files, don't copy-paste from here.
-
-Assumes the geocode backfill (prerequisite #1) has run. First promote the
-`text` coordinates to real numbers so they can be indexed / fed to PostGIS:
+The geocode backfill ran first; the `text` coordinates were then promoted to
+real numbers so they can be indexed / fed to PostGIS:
 ```sql
 alter table public."FCT_Supabase"
   alter column latitude  type double precision using nullif(latitude,'')::double precision,
@@ -363,7 +351,7 @@ from public."FCT_Supabase" f
 left join public."DM_Supabase_Eligibility" e on e.master_id = f.id;
 ```
 
-**Option A — PostGIS (recommended):**
+**PostGIS spatial column + RPC:**
 ```sql
 create extension if not exists postgis;
 
@@ -373,198 +361,224 @@ create extension if not exists postgis;
 alter table public."FCT_Supabase"
   add column if not exists geom geography(Point, 4326);
 update public."FCT_Supabase"
-  set geom = st_point(longitude, latitude)::geography
+  set geom = st_setsrid(st_point(longitude, latitude), 4326)::geography
   where latitude is not null and longitude is not null and geom is null;
 create index if not exists fct_supabase_geom_gix
   on public."FCT_Supabase" using gist (geom);
-
--- Bounded, distance-sorted, capped. Joins eligibility + maps category so it
--- returns the same shape as fct_supabase_full (feed rows to Facility.fromSupabase).
-create or replace function public.facilities_near(
-  lat double precision, lng double precision,
-  radius_m double precision, max_results integer default 250
-)
-returns table (
-  id text, facility_name text, facility_description text,
-  website_url text, contact_email text, contact_phones text,
-  street_address text, city text, state text, postal_code text,
-  latitude double precision, longitude double precision,
-  hours text, services text, app_category text,
-  operational text, proof_of_income text, proof_of_residency text,
-  insurance_required text, referral_required text, accepts_walkins text,
-  appointment_only text, open_to_immigrants text, free_services_available text,
-  sliding_scale_available text, other_languages text, telehealth_available text,
-  wheelchair_accessible text, serves_outside_area text,
-  operating_hours text, other_eligibility_summary text, services_summary text
-)
-language sql stable
-as $$
-  select
-    f.id, f.facility_name, f.facility_description,
-    f.website_url, f.contact_email, f.contact_phones,
-    f.street_address, f.city, f.state, f.postal_code,
-    f.latitude, f.longitude, f.hours, f.services,
-    coalesce(f.category_level_1, 'Health Care'),
-    e.operational, e.proof_of_income, e.proof_of_residency,
-    e.insurance_required, e.referral_required, e.accepts_walkins,
-    e.appointment_only, e.open_to_immigrants, e.free_services_available,
-    e.sliding_scale_available, e.other_languages, e.telehealth_available,
-    e.wheelchair_accessible, e.serves_outside_area,
-    e.operating_hours, e.other_eligibility_summary, e.services_summary
-  from public."FCT_Supabase" f
-  left join public."DM_Supabase_Eligibility" e on e.master_id = f.id
-  where f.geom is not null
-    and st_dwithin(f.geom, st_point(lng, lat)::geography, radius_m)
-  order by f.geom <-> st_point(lng, lat)::geography
-  limit max_results;
-$$;
 ```
-Call from Dart: `_client.rpc('facilities_near', params: {'lat': …, 'lng': …,
-'radius_m': radiusMiles * 1609.34, 'max_results': 250})`.
 
-**Option B — bounding box (no PostGIS):**
-```sql
-create index if not exists fct_supabase_lat_lng_idx
-  on public."FCT_Supabase" (latitude, longitude);
-```
-Query the **view** (so you still get the category map + eligibility join). Dart
-computes the box (≈ `radiusMiles / 69` for lat degrees,
-`/ (69 * cos(lat))` for lng):
-`_client.from('fct_supabase_full').select(projection)
-  .gte('latitude', minLat).lte('latitude', maxLat)
-  .gte('longitude', minLng).lte('longitude', maxLng).limit(250)`
-— then refine to the circle and Haversine-sort on-device. The planner inlines
-the simple view, so the `fct_supabase_lat_lng_idx` index on the base table is
-still used.
+The **`facilities_near` RPC** body (bounded, distance-sorted, capped, joins
+eligibility) is shown in full in **§2.8** — that's the authoritative deployed
+definition (returns `contact_phones` as `jsonb` via the `to_phone_jsonb` helper,
+includes `category_level_2`, `st_setsrid`-wrapped, limit clamped) and already
+carries the state-rollout gate. Copy it from there if standing the function up
+fresh. Called from `SupabaseFacilityService.getFacilitiesNearLocation` as
+`_client.rpc('facilities_near', params: {'lat': …, 'lng': …, 'radius_m':
+radiusKm * 1000, 'max_results': 250})`.
 
 > RLS: `FCT_Supabase` + `fct_supabase_full` are public facility data — enable
 > RLS with a read-only `anon` / `authenticated` SELECT policy. `facilities_near`
 > is `stable` and runs under the caller's RLS.
 
-### 2.7 View & Edit Submitted Feedback ⏳ NEW SCOPE — NOT STARTED
+### 2.7 View & Edit Submitted Feedback ✅ DONE (one Supabase one-liner pending)
 
-Let signed-in users see and revise the feedback they've submitted. Today it's
-write-only — §2.4 inserts a `facility_feedback` row and never surfaces it again.
+Feedback used to be write-only — §2.4 inserted a `facility_feedback` row and
+never surfaced it again. It's now fully read/write:
+- **`FacilityFeedbackService`** (`lib/core/services/facility_feedback_service.dart`)
+  is the single seam for `getForFacility` / `getMine` / `submit` (upsert) /
+  `delete`, plus the tag↔`comment` parsing (`FacilityFeedbackEntry`). This is
+  also the offline outbox seam §9 recommends.
+- **In-place editing:** `FacilityFeedbackDialog` now loads any existing
+  feedback on open and **pre-fills** the rating + tag chips; the write is an
+  **upsert keyed on `(user_id, facility_id)`** (edits replace, not duplicate),
+  and a **Remove** action deletes it. Submit button reads "Update" when editing.
+- **"Your Feedback" surface:** a Settings list (`MyFeedbackPage`, signed-in
+  only) shows every rating (facility name resolved by id — same region-
+  independent path as Favorites, rating icon, tags, date). Tap a row to
+  edit/remove via the same dialog. Empty + pull-to-refresh states included.
+- Tests: `FacilityFeedbackEntry` parsing/round-trip is unit-tested
+  (`test/core/services/facility_feedback_service_test.dart`).
 
-**Code:**
-- A "Your Feedback" surface listing the user's `facility_feedback` rows (rating
-  + tags + date) — on the facility detail card ("You rated this 👍 — edit") and/or
-  a Settings list.
-- Re-open `FacilityFeedbackDialog` **pre-filled** with the existing rating + tags
-  so a tap edits in place; support clearing a rating. The dialog already stores
-  tags comma-joined in `comment`, so parse that back into selected chips.
-- Switch the write from `insert` to an **upsert keyed on `(user_id,
-  facility_id)`** (one rating per user per facility — edits replace, not
-  duplicate), plus a delete path for "remove my feedback".
+**Supabase one-liner to run** (backs the upsert — without it, edits insert
+duplicate rows):
+```sql
+alter table public.facility_feedback
+  add constraint facility_feedback_user_facility_uniq unique (user_id, facility_id);
+```
+RLS already covers it — the existing `for all … with check (auth.uid() =
+user_id)` policy lets owners SELECT / UPDATE / DELETE their own rows.
 
-**Non-code (Supabase):**
-- Add a `unique (user_id, facility_id)` constraint on `facility_feedback` to back
-  the upsert (`alter table public.facility_feedback add constraint
-  facility_feedback_user_facility_uniq unique (user_id, facility_id);`).
-- RLS already covers it — the existing `for all ... with check (auth.uid() =
-  user_id)` policy lets owners SELECT / UPDATE / DELETE their own rows.
+> Not wired: an in-context "You rated this 👍 — edit" affordance on the map
+> facility detail card. The Settings list + the Recently-Viewed funnel cover
+> view & edit for MVP; the card affordance is an easy post-MVP add (the service
+> + dialog already support it).
 
-**Open question:** primary entry point — facility card (in-context edit),
-a Settings "Your Feedback" list, or both? Recommend the card plus an optional
-Settings list.
+### 2.8 Gradual State-by-State Rollout ✅ DESIGN — one Supabase table to add
 
-## 3. Pre-TestFlight Checklist
+The app already points at the full nationwide `FCT_Supabase`, but the team wants
+to **launch one state at a time** (Illinois first) as the eligibility table is
+populated, expanding **without re-pointing the app or shipping a new build each
+time**.
 
-### Engineer (code)
-- [x] All §2.1 – §2.5 tasks implemented
-- [x] **§2.6 data prerequisites (scripts + SQL written; backfill treated as run — confirm before release):**
-  - [x] Apply `supabase/migrations/0001_geocode_prep.sql` (tracking columns)
-  - [x] Run `scripts/geocode/geocode_facilities.py` to geocode all 162,937 rows (Census + optional Nominatim)
-  - [x] Apply `supabase/migrations/0002_facilities_postgis.sql` — PostGIS → lat/lng→`double precision`, `geom` + GiST index, `fct_supabase_full` view, `facilities_near` RPC, read-only RLS on `FCT_Supabase` + `DM_Supabase_Eligibility`
-  - [x] `contact_phones` normalized to a JSON array in the view/RPC (`to_phone_jsonb`); `hours`/`services` null today (deferred — add `::jsonb` cast when populated)
-- [ ] **§2.6 nationwide querying (code-complete ✓ — device QA pending):**
-  - [x] Repoint the data source at the `facilities_near` RPC / `fct_supabase_full` view
-  - [x] Server-side point-radius query via the PostGIS `facilities_near` RPC
-  - [x] `max_results` cap (250) — lean projection / lazy full-record fetch deferred (RPC returns full rows; fine at the cap)
-  - [x] Remove the load-all/in-memory-cache model in `SupabaseFacilityService`; quantized region cache added
-  - [x] Null eligibility treated as "unknown, not fails" (already handled by `FacilityFilterService`)
-  - [x] "Search this area" map button — drift-gated, explicit tap, no auto-query on pan
-  - [x] Favorites resolved by id from `user_favorites` (`getFacilitiesByIds`) — region-independent Home Favorites list
-  - [x] Marker clustering for dense metros (grid-bucketed count bubbles, tap to zoom)
-  - [x] Empty/sparse ("search a wider area") state; loading spinner retained
-  - [ ] **Verify end-to-end against the geocoded data** (smoke test ZIP search, pan + "Search this area", distance widen, sparse rural area, cluster tap, favorites across regions)
-- [ ] **§2.7 view/edit submitted feedback (new scope — not started):** "Your Feedback" surface, pre-filled edit dialog, `insert` → upsert on `(user_id, facility_id)` + delete; add the unique constraint in Supabase
-- [x] `pubspec.yaml` version: `1.0.0+2` (bump the `+N` build number for each new TestFlight upload)
-- [x] `flutter analyze` passes with 0 issues
-- [x] `flutter test` — 24/24 unit tests pass
-- [x] `flutter build ios --release` compiles (verified via `--no-codesign`; SPM disabled → pure CocoaPods). Signed Archive/`flutter build ipa` still needs Apple Developer Console + App Store Connect items below.
-- [ ] Manual smoke test on ≥ 2 iOS devices (different screen sizes): sign-in with Apple, location permission grant/deny, feedback submission, guest mode, sign-out
-- [ ] Write widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, and `RecentFacilitiesService` persistence (post-launch follow-up)
+**Recommendation: a server-side allow-list table the RPC filters against.** Add
+a tiny `launched_states` table and have `facilities_near` (and, optionally, the
+view) return only facilities whose `state` is in it. Adding a state is then a
+**one-row `insert` in the Supabase dashboard — no app release, no App Store
+review.** This is strictly better than the alternatives:
 
-### External Config (requires web UI / dashboard access)
+| Approach | Add a state by… | App release to expand? | Notes |
+|---|---|---|---|
+| **Allow-list table (recommended)** | `insert` one row | **No** | Single source of truth; non-dev team can flip states via SQL; instant. |
+| Hardcoded state list in Dart | edit code, rebuild | **Yes** (days of review) | Client builds drift out of sync; every state = a release cycle. |
+| Per-row `is_live` flag on facilities | update ~thousands of rows | No | Touches 162,937 rows; state-grain matches how the data is actually populated. |
 
-**Supabase Dashboard:**
-- [x] Enable Apple provider. iOS uses the native `sign_in_with_apple` package + `supabase.auth.signInWithIdToken(...)`, so Supabase only needs to validate the Apple-issued JWT against Apple's public keys — **no OAuth secret JWT is required**. Required field in Authentication → Providers → Apple:
-  - **Client IDs**: comma-separated list — at minimum the iOS bundle ID (`org.beaconhealth.app`). Add a Services ID too if you ever plan to use the web OAuth fallback.
-  - You can leave the "Secret Key (for OAuth)" block empty for iOS-only MVP. (If you DO need the OAuth redirect path later — e.g. Android Web client or browser sign-in — populate it then.)
-- [ ] Confirm Google OAuth provider is configured (already tested in dev — needed for post-MVP Android)
-- [x] Create `user_favorites` table with RLS (DDL in §2.x)
-- [x] Create `facility_feedback` table with RLS (DDL in §2.x) — make sure the policy uses `for all ... with check (auth.uid() = user_id)`; otherwise inserts fail with `42501`
-- [x] Create `user_settings` table with RLS (DDL in §2.x) — includes `eligibility jsonb` and `preferences jsonb` columns
-- [ ] Verify RLS is enabled on all tables/views with read-only anon policy for facility data
-- [ ] Confirm `SUPABASE_ANON_KEY` in `--dart-define` / GitHub Secret is the publishable key (not service role)
+**SQL (run in the dashboard):**
+```sql
+-- 1. Allow-list of launched states. Seed with Illinois.
+create table if not exists public.launched_states (
+  state_code text primary key,           -- must match FCT_Supabase.state values
+  launched_at timestamptz default now() not null
+);
+insert into public.launched_states (state_code) values ('IL')
+  on conflict do nothing;
 
-**Crash reporting (Sentry by default — see §8 for alternatives before locking in):**
-- [ ] Decide on provider (Sentry / Crashlytics / Supabase-native logging — see §8 trade-offs)
-- [ ] If staying on Sentry: create project at sentry.io (free tier: 5K errors/mo)
-- [ ] Add the DSN as `SENTRY_DSN` GitHub Actions secret + pass via `--dart-define` in CI
+alter table public.launched_states enable row level security;
+create policy "Anyone can read launched states" on public.launched_states
+  for select using (true);
+```
+Then re-run `facilities_near` **in its entirety** with the state-gate clause
+added to the `where`. This is the **live deployed definition** (verified via
+`pg_get_functiondef`) — it returns `contact_phones` as `jsonb` (via the
+`to_phone_jsonb` helper), includes `category_level_2`, wraps points in
+`st_setsrid`, and clamps the limit. Because the return type is unchanged, this
+is a clean `create or replace` (no drop needed):
+```sql
+CREATE OR REPLACE FUNCTION public.facilities_near(lat double precision, lng double precision, radius_m double precision, max_results integer DEFAULT 250)
+ RETURNS TABLE(id text, facility_name text, facility_description text, website_url text, contact_email text, contact_phones jsonb, street_address text, city text, state text, postal_code text, latitude double precision, longitude double precision, hours text, services text, app_category text, category_level_2 text, operational text, proof_of_income text, proof_of_residency text, insurance_required text, referral_required text, accepts_walkins text, appointment_only text, open_to_immigrants text, free_services_available text, sliding_scale_available text, other_languages text, telehealth_available text, wheelchair_accessible text, serves_outside_area text, operating_hours text, other_eligibility_summary text, services_summary text)
+ LANGUAGE sql
+ STABLE
+AS $function$
+  select
+    f.id,
+    f.facility_name,
+    f.facility_description,
+    f.website_url,
+    f.contact_email,
+    public.to_phone_jsonb(f.contact_phones),
+    f.street_address,
+    f.city,
+    f.state,
+    f.postal_code,
+    f.latitude,
+    f.longitude,
+    f.hours,
+    f.services,
+    coalesce(f.category_level_1, 'Health Care'),
+    f.category_level_2,
+    e.operational,
+    e.proof_of_income,
+    e.proof_of_residency,
+    e.insurance_required,
+    e.referral_required,
+    e.accepts_walkins,
+    e.appointment_only,
+    e.open_to_immigrants,
+    e.free_services_available,
+    e.sliding_scale_available,
+    e.other_languages,
+    e.telehealth_available,
+    e.wheelchair_accessible,
+    e.serves_outside_area,
+    e.operating_hours,
+    e.other_eligibility_summary,
+    e.services_summary
+  from public."FCT_Supabase" f
+  left join public."DM_Supabase_Eligibility" e on e.master_id = f.id
+  where f.geom is not null
+    and st_dwithin(f.geom, st_setsrid(st_point(lng, lat), 4326)::geography, radius_m)
+    -- §2.8 state gate: 'ALL' = nationwide; otherwise restrict to launched states.
+    and (
+      exists (select 1 from public.launched_states where state_code = 'ALL')
+      or f.state in (select state_code from public.launched_states)
+    )
+  order by f.geom <-> st_setsrid(st_point(lng, lat), 4326)::geography
+  limit greatest(1, least(max_results, 1000));
+$function$
+```
+> Only line added vs. the deployed function: the `and ( … )` state gate after
+> `st_dwithin`. Run the `launched_states` `create table` + seed **first**. If you
+> ever see `ERROR: 42P13 cannot change return type`, the live shape has drifted
+> again — re-dump with `pg_get_functiondef('public.facilities_near(double precision,double precision,double precision,integer)'::regprocedure)` and add the clause to that.
 
-**Google Cloud Console:**
-- [ ] Update API key bundle ID restriction to `org.beaconhealth.app`
-- [ ] Verify API key restricted to iOS apps + Maps SDK for iOS only
-- [ ] **Enable billing on the Google Cloud project.** Maps Platform requires a billing account to be attached to the project even though the first $200/month of usage is free. Without it, tile loading fails silently — the map view will render an empty background with markers but no streets or labels (no error printed to logs). If your dev install shows a uniform dark/grey map area with no map detail despite the "✅ Google Maps initialized with API key" success log, this is almost always the cause. Verify in Google Cloud Console → Billing → Account management.
-- [ ] **Confirm Maps SDK for iOS is enabled** (Cloud Console → APIs & Services → Library → "Maps SDK for iOS" → Enable). Initialization succeeding does not imply the API has actually been turned on for tile requests.
+**Operating it:**
+- **Add a state:** `insert into public.launched_states (state_code) values ('IN');`
+- **Go nationwide:** `insert into public.launched_states (state_code) values ('ALL');`
+- **Verify the code format first** — `state_code` must match what
+  `FCT_Supabase.state` stores (e.g. `'IL'` vs `'Illinois'`):
+  `select distinct state from public."FCT_Supabase" order by 1;`
 
-**Apple Developer Console:**
-- [ ] Create Service ID for Sign in with Apple
-- [ ] Configure Sign in with Apple for the App ID `org.beaconhealth.app`
-- [ ] Create/download iOS Distribution certificate
-- [ ] Create App Store provisioning profile for `org.beaconhealth.app`
+**Notes / decisions:**
+- **Fail-closed:** an empty table returns *no* facilities, so a fresh deploy
+  can't accidentally expose un-launched states. Seed `'IL'` before launch.
+- **Border bleed is handled:** because gating is inside the radius RPC, a user
+  near a state line only sees launched-state facilities — exactly the intent.
+- **No Dart change** — the existing RPC signature is unchanged. Favorites /
+  single-facility detail go through the view (`fct_supabase_full`), which is
+  intentionally left **ungated** (users only favorite what they already saw). If
+  you want those gated too, add the same `state in (…)` filter to the view.
+- **Eligibility is independent:** this gates *which facilities appear*, not
+  whether eligibility is populated. IL eligibility being filled in is what makes
+  IL the right first state; other states can launch list-only and gain
+  eligibility later.
 
-**Xcode:**
-- [x] `Runner.entitlements` with `com.apple.developer.applesignin` is in the repo + wired into `project.pbxproj` (`CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements`)
-- [x] **Build uses pure CocoaPods (Swift Package Manager disabled).** The project was previously a hybrid SPM + CocoaPods setup, but `google_maps_flutter_ios` and `sign_in_with_apple` don't support SPM, so **Archive failed** with `No such module 'Flutter'` + `Unable to resolve module dependency: 'GoogleMaps'`. Fixed by `flutter config --no-enable-swift-package-manager`, stripping the SPM integration from `project.pbxproj` (the `FlutterGeneratedPluginSwiftPackage` local-package + product-dependency refs), and a clean `pod install`. Verified with a successful `flutter build ios --release`. **Gotcha:** if a teammate/CI has SPM enabled globally, Flutter can re-migrate this project — keep SPM disabled there too.
-- [ ] Add **Sign in with Apple capability** in the Signing & Capabilities tab (Xcode → Runner target → "+ Capability"). The entitlement file alone isn't enough — Xcode also needs the capability listed for App Store builds.
-- [ ] Run `cd ios && pod install` after pulling — `sign_in_with_apple` and `sentry_flutter` both add new CocoaPods entries
-- [ ] **Always open `ios/Runner.xcworkspace`** (not `Runner.xcodeproj`) — CocoaPods integration only exists in the workspace, and opening the bare project reproduces the "No such module 'Flutter'" error.
-- [ ] Build for upload via **`flutter build ipa --dart-define-from-file=config/dart_defines.json`** (bakes in Supabase defines + the Maps key), or Archive from the workspace. Then upload (Transporter / `xcrun altool` / Fastlane `beta`).
+## 3. Pre-Launch Checklist
 
-**App Store Connect:**
-- [ ] Create App ID matching `org.beaconhealth.app`
-- [ ] Set up the app in App Store Connect
-- [ ] App name: "Beacon" (verify no trademark conflicts)
-- [ ] Subtitle (e.g. "Find Free Healthcare Near You")
-- [ ] Description + keywords
-- [ ] Screenshots (6.7" + 6.5" minimum, 3 per size)
-- [ ] App icon: verify `app_icon_final.jpg` meets 1024x1024 no-alpha spec
-- [ ] Age rating questionnaire
-- [ ] Copyright
-- [ ] Privacy nutrition label (see §4)
-- [ ] Export compliance: "Yes, but exempt" (HTTPS only)
-- [ ] App Review notes (see §5)
+All MVP **code** is done and the app uploads to TestFlight. The work below is
+split into **§3.1 engineering/backend** (dev-owned) and **§3.2 non-functional**
+(hand-off to non-dev team). The single biggest gate is **device QA**.
+
+### 3.1 Engineering & Backend (dev-owned)
+
+**Code — done**
+- [x] §2.1–§2.7 implemented; `flutter analyze` clean (0 issues); `flutter test` 28/28
+- [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods)
+- [x] `pubspec.yaml` at `1.0.0+2` (bump `+N` for each TestFlight upload)
+- [ ] Widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, `RecentFacilitiesService` (post-launch follow-up)
+
+**Supabase SQL to run** (copy-paste → Dashboard → SQL Editor)
+- [x] §2.6 PostGIS schema: lat/lng→`double precision`, `geom` + GiST index, `fct_supabase_full` view, `facilities_near` RPC
+- [ ] **§2.7 unique constraint** on `facility_feedback (user_id, facility_id)` — backs the upsert (without it, edits duplicate)
+- [ ] **§2.8 state allow-list:** create `launched_states`, seed `'IL'`, add the `state in (…)` clause to `facilities_near`
+- [ ] Verify **RLS** (read-only `anon`) on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
+
+**Device QA — the main gate** (smoke test on ≥2 iOS devices, different sizes)
+- [ ] Auth/onboarding: Apple sign-in, location grant/deny, guest mode, sign-out
+- [ ] §2.6 map: ZIP search, pan + "Search this area", distance widen, sparse rural area, cluster tap, Favorites across regions
+- [ ] §2.7 feedback: submit, re-open (pre-filled), edit, **Remove**, Settings → "Your Feedback" list
+- [ ] §2.8: confirm **only Illinois** facilities appear until more states are added
+
+**Technical console config** (dev/admin access)
+- *Google Cloud:* [ ] restrict Maps key to `org.beaconhealth.app` + Maps SDK for iOS; [ ] **enable billing** (else tiles fail silently → uniform grey map despite a success log — check Billing → Account management); [ ] confirm "Maps SDK for iOS" is enabled in the API Library
+- *Apple Developer:* [ ] Service ID for Sign in with Apple; [ ] configure Sign in with Apple for `org.beaconhealth.app`; [ ] iOS Distribution certificate; [ ] App Store provisioning profile
+- *Xcode:* [x] entitlements wired; [x] pure CocoaPods (SPM disabled — re-migrates if SPM is enabled globally, keep it off in CI); [ ] add **Sign in with Apple capability** (Signing & Capabilities — the entitlement file alone isn't enough); [ ] `cd ios && pod install` after pulling; [ ] always open **`Runner.xcworkspace`** (not the bare project); [ ] upload via `flutter build ipa --dart-define-from-file=config/dart_defines.json` or Archive → Transporter/Fastlane
+- *Supabase auth:* [x] Apple provider enabled (Client IDs incl. bundle ID; OAuth secret **not** needed for native iOS); [ ] confirm Google provider (post-MVP Android)
+- *Crash reporting:* [ ] confirm Sentry (or pick an alternative — §8); [ ] create sentry.io project (free 5K errors/mo); [ ] add `SENTRY_DSN` GitHub secret + pass via `--dart-define`
+
+### 3.2 Non-Functional — Hand-off to Non-Dev Team
+
+The non-engineering launch prep (App Store Connect listing, visual assets,
+compliance/legal) **and the Privacy Nutrition Label** now live in a standalone,
+hand-off-ready file at the repo root:
+**[`Non-Functional_Checklist.md`](Non-Functional_Checklist.md)**.
+App Review notes (the reviewer "how to test" text) remain in §5 below.
 
 ---
 
-## 4. Privacy Nutrition Label (MVP Draft)
+## 4. Privacy Nutrition Label
 
-MVP includes auth (Apple), GPS (opt-in), crash reporting, and feedback submission. Update this table in App Store Connect.
-
-| Data Type | Collected? | Details |
-|-----------|-----------|---------|
-| **Email Address** | Yes — collected via Apple OAuth | Linked to user identity. Used for app functionality (account). Not used for tracking. Note: Apple "Hide My Email" may provide a relay address. |
-| **User ID** | Yes — collected via Apple OAuth | Linked to user identity. Used for app functionality (favorites sync, feedback, settings). Not used for tracking. |
-| **Coarse Location** | Yes — collected by Google Maps SDK | Third-party collection. Not linked to identity. Not used for tracking. |
-| **Precise Location** | Yes — collected via GPS (opt-in) | Used for app functionality (finding nearby facilities). Not linked to identity. Not used for tracking. |
-| **Diagnostics (Crash Data)** | Yes — collected via Sentry | Not linked to identity. Used for app functionality (crash reporting). Not used for tracking. |
-| **User Content (Feedback)** | Yes — rating + text comment submitted by user | Linked to user identity. Used for app functionality. Not used for tracking. |
-| All other categories | Not collected | |
-
-**Tracking declaration:** "This app does **not** track users." No ATT prompt needed.
+Moved to **[`Non-Functional_Checklist.md`](Non-Functional_Checklist.md)** (the
+"Privacy Nutrition Label" section) so the non-dev checklist is self-contained.
+Enter those answers in App Store Connect → App Privacy.
 
 ---
 
@@ -577,7 +591,7 @@ To test:
 1. Launch the app — sign in with Apple, or tap "Continue as Guest"
 2. Choose "Enable Location-Based Search" or enter a US zip code (e.g., 60613)
 3. Browse the map, search for facilities, and use filters
-4. Signed-in users can save Favorites, set Eligibility/Preferences filters, and submit facility feedback
+4. Signed-in users can save Favorites, set Eligibility/Preferences filters, and submit facility feedback (and review/edit it under Settings → "Your Feedback")
 5. Guest users see a lock icon on Favorites, Eligibility, Preferences — tapping shows a sign-in prompt
 6. The "Recently Viewed Facilities" section on the home page shows the last 3 facilities tapped on the map — tapping one opens a feedback dialog (requires sign-in to submit)
 7. GPS location is available via the location button on the map (requires location permission)

@@ -14,6 +14,7 @@ import 'package:beacon_app/core/widgets/locked_section_overlay.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
+import 'package:beacon_app/features/settings/presentation/pages/my_feedback_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -198,6 +199,24 @@ class _SettingsPageState extends State<SettingsPage> {
                 activeThumbColor: AppTheme.resedaGreen,
                 onChanged: (value) => _onUseMyLocationChanged(value, l10n),
               ),
+              // Signed-in users can review and edit the feedback they've
+              // submitted (§2.7). Hidden for guests, who can't submit any.
+              if (!isGuest) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.rate_review_outlined,
+                    color: AppTheme.paynesGray,
+                  ),
+                  title: const Text('Your Feedback'),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const MyFeedbackPage(),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
