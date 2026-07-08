@@ -1,13 +1,16 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
-import 'package:beacon_app/features/map/constants/map_constants.dart';
+import 'package:beacon_app/features/map/constants/filter_l10n.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+// Distance was removed as a filter — every query is a fixed
+// MapConstants.defaultRadiusMiles around the search point (§2.9); the map's
+// "Search this area" button is how users move the query window.
 enum FilterSection {
-  distance,
   category,
   status,
   eligibility,
@@ -15,7 +18,6 @@ enum FilterSection {
 }
 
 class FilterModal extends StatefulWidget {
-  final double selectedDistance;
   final Set<String> selectedCategories;
   final List<String> availableCategories;
   final Map<EligibilityRequirement, bool?> selectedEligibilityRequirements;
@@ -26,7 +28,6 @@ class FilterModal extends StatefulWidget {
 
   const FilterModal({
     super.key,
-    required this.selectedDistance,
     required this.selectedCategories,
     required this.availableCategories,
     required this.selectedEligibilityRequirements,
@@ -41,7 +42,6 @@ class FilterModal extends StatefulWidget {
 }
 
 class _FilterModalState extends State<FilterModal> {
-  late double _tempDistance;
   late Set<String> _tempCategories;
   late Map<EligibilityRequirement, bool?> _tempEligibilityRequirements;
   late Map<PreferenceRequirement, bool?> _tempPreferenceRequirements;
@@ -51,7 +51,6 @@ class _FilterModalState extends State<FilterModal> {
   FilterSection? _expandedSection;
   final ScrollController _scrollController = ScrollController();
   final Map<FilterSection, GlobalKey> _sectionKeys = {
-    FilterSection.distance: GlobalKey(),
     FilterSection.category: GlobalKey(),
     FilterSection.status: GlobalKey(),
     FilterSection.eligibility: GlobalKey(),
@@ -61,7 +60,6 @@ class _FilterModalState extends State<FilterModal> {
   @override
   void initState() {
     super.initState();
-    _tempDistance = widget.selectedDistance;
     _tempCategories = Set.from(widget.selectedCategories);
     _tempEligibilityRequirements =
         Map.from(widget.selectedEligibilityRequirements);
@@ -97,7 +95,6 @@ class _FilterModalState extends State<FilterModal> {
 
   void _clearAll() {
     Navigator.pop(context, {
-      'distance': MapConstants.distanceOptions.first,
       'categories': <String>{},
       'eligibilityRequirements': <EligibilityRequirement, bool?>{},
       'preferenceRequirements': <PreferenceRequirement, bool?>{},
@@ -108,7 +105,6 @@ class _FilterModalState extends State<FilterModal> {
 
   void _apply() {
     Navigator.pop(context, {
-      'distance': _tempDistance,
       'categories': _tempCategories,
       'eligibilityRequirements': _tempEligibilityRequirements,
       'preferenceRequirements': _tempPreferenceRequirements,
@@ -146,7 +142,7 @@ class _FilterModalState extends State<FilterModal> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Filters',
+                  AppLocalizations.of(context)!.filterFilters,
                   style: TextStyle(
                     fontSize: FilterDesignTokens.fontSizeXLarge,
                     fontWeight: FontWeight.w600,
@@ -168,44 +164,38 @@ class _FilterModalState extends State<FilterModal> {
               padding: const EdgeInsets.all(FilterDesignTokens.spacingXLarge),
               children: [
                 _buildToggleSection(
-                  'Open Now',
+                  AppLocalizations.of(context)!.filterOpenNow,
                   _tempShowOpenNowOnly,
                   (value) => setState(() => _tempShowOpenNowOnly = value),
                 ),
                 const SizedBox(height: FilterDesignTokens.spacingLarge),
                 _buildToggleSection(
-                  'Favorites',
+                  AppLocalizations.of(context)!.filterFavorites,
                   _tempShowFavoritesOnly,
                   (value) => setState(() => _tempShowFavoritesOnly = value),
                 ),
                 const Divider(height: FilterDesignTokens.spacingXXLarge),
                 _buildExpandableSection(
-                  FilterSection.distance,
-                  'Distance',
-                  _buildDistanceContent(),
-                ),
-                const Divider(height: FilterDesignTokens.spacingXXLarge),
-                _buildExpandableSection(
                   FilterSection.category,
-                  'Category',
+                  AppLocalizations.of(context)!.filterCategory,
                   _buildCategoryContent(),
                 ),
                 const Divider(height: FilterDesignTokens.spacingXXLarge),
                 _buildExpandableSection(
                   FilterSection.status,
-                  'Status',
+                  AppLocalizations.of(context)!.filterStatus,
                   _buildStatusContent(),
                 ),
                 const Divider(height: FilterDesignTokens.spacingXXLarge),
                 _buildExpandableSection(
                   FilterSection.eligibility,
-                  'Eligibility',
+                  AppLocalizations.of(context)!.filterEligibility,
                   _buildEligibilityContent(),
                 ),
                 const Divider(height: FilterDesignTokens.spacingXXLarge),
                 _buildExpandableSection(
                   FilterSection.preferences,
-                  'Preferences',
+                  AppLocalizations.of(context)!.filterPreferences,
                   _buildPreferencesContent(),
                 ),
               ],
@@ -248,9 +238,9 @@ class _FilterModalState extends State<FilterModal> {
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Clear all',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.filterClearAll,
+                      style: const TextStyle(
                         color: AppTheme.resedaGreen,
                         fontSize: FilterDesignTokens.fontSizeNormal,
                         fontWeight: FontWeight.w600,
@@ -274,9 +264,9 @@ class _FilterModalState extends State<FilterModal> {
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Apply',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.filterApply,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: FilterDesignTokens.fontSizeNormal,
                         fontWeight: FontWeight.w600,
@@ -378,18 +368,6 @@ class _FilterModalState extends State<FilterModal> {
     );
   }
 
-  Widget _buildDistanceContent() {
-    return SelectionChipBuilder.buildSingleSelection<double>(
-      context: context,
-      options: MapConstants.distanceOptions,
-      selectedValue: _tempDistance,
-      onSelected: (distance) => setState(() => _tempDistance = distance),
-      getLabel: (distance) => '${distance.toStringAsFixed(
-        distance == distance.roundToDouble() ? 0 : 1,
-      )} mi',
-    );
-  }
-
   Widget _buildCategoryContent() {
     return SelectionChipBuilder.buildMultiSelection<String>(
       context: context,
@@ -418,7 +396,7 @@ class _FilterModalState extends State<FilterModal> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Auto-fill the filters below from your Settings.',
+          AppLocalizations.of(context)!.filterAutoFillFromSettings,
           style: TextStyle(
             fontSize: FilterDesignTokens.fontSizeMedium,
             color:
@@ -431,19 +409,19 @@ class _FilterModalState extends State<FilterModal> {
           runSpacing: FilterDesignTokens.spacingSmall,
           children: [
             _statusChip(
-              label: 'Apply my Eligibility',
+              label: AppLocalizations.of(context)!.filterApplyMyEligibility,
               icon: Icons.verified_user_outlined,
               onTap: () =>
                   _applySavedEligibility(ep.eligibility),
             ),
             _statusChip(
-              label: 'Apply my Preferences',
+              label: AppLocalizations.of(context)!.filterApplyMyPreferences,
               icon: Icons.tune,
               onTap: () =>
                   _applySavedPreferences(ep.preferences),
             ),
             _statusChip(
-              label: 'Apply both',
+              label: AppLocalizations.of(context)!.filterApplyBoth,
               icon: Icons.checklist_rtl,
               onTap: () {
                 _applySavedEligibility(ep.eligibility);
@@ -576,7 +554,8 @@ class _FilterModalState extends State<FilterModal> {
     return _buildRequirementOptions<EligibilityRequirement>(
       requirements: FilterConstants.eligibilityRequirements,
       getValue: (req) => _tempEligibilityRequirements[req],
-      getDisplayName: (req) => req.displayName,
+      getDisplayName: (req) =>
+          req.localizedName(AppLocalizations.of(context)!),
       onSetTrue: (req) => setState(
         () => _tempEligibilityRequirements[req] =
             _tempEligibilityRequirements[req] == true ? null : true,
@@ -596,7 +575,8 @@ class _FilterModalState extends State<FilterModal> {
     return _buildRequirementOptions<PreferenceRequirement>(
       requirements: FilterConstants.preferenceRequirements,
       getValue: (req) => _tempPreferenceRequirements[req],
-      getDisplayName: (req) => req.displayName,
+      getDisplayName: (req) =>
+          req.localizedName(AppLocalizations.of(context)!),
       onSetTrue: (req) => setState(
         () => _tempPreferenceRequirements[req] =
             _tempPreferenceRequirements[req] == true ? null : true,
@@ -638,14 +618,20 @@ class _FilterModalState extends State<FilterModal> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () => onSetTrue(requirement),
-                      child: _optionButton(label: 'Yes', active: value == true),
+                      child: _optionButton(
+                        label: AppLocalizations.of(context)!.commonYes,
+                        active: value == true,
+                      ),
                     ),
                   ),
                   const SizedBox(width: FilterDesignTokens.spacingSmall),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => onSetFalse(requirement),
-                      child: _optionButton(label: 'No', active: value == false),
+                      child: _optionButton(
+                        label: AppLocalizations.of(context)!.commonNo,
+                        active: value == false,
+                      ),
                     ),
                   ),
                 ],

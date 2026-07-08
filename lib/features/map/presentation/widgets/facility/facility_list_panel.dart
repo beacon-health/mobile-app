@@ -2,6 +2,7 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class FacilityListPanel extends StatelessWidget {
@@ -22,9 +23,13 @@ class FacilityListPanel extends StatelessWidget {
   /// in guest mode where favorites require sign-in).
   final bool canFavorite;
 
-  /// Optional handler for the empty-state "search a wider area" button. Null
-  /// when already at the widest distance (button hidden).
-  final Future<void> Function()? onWidenSearch;
+  /// Opens the "request a facility" flow from the empty state ("Can't find a
+  /// facility? Submit a request to add one").
+  final void Function()? onRequestFacility;
+
+  /// Opens the rating flow for a facility (expanded cards show an
+  /// "Already visited? Rate your experience" row when non-null).
+  final void Function(Facility)? onRateFacility;
 
   const FacilityListPanel({
     super.key,
@@ -41,7 +46,8 @@ class FacilityListPanel extends StatelessWidget {
     required this.buildCategoryIcon,
     this.onPanelStateChange,
     this.canFavorite = true,
-    this.onWidenSearch,
+    this.onRequestFacility,
+    this.onRateFacility,
   });
 
   @override
@@ -140,16 +146,16 @@ class FacilityListPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (!isPanelOpen && !isFullyExpanded)
-            const Text(
-              'Swipe up to view resources',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.mapSwipeUpToView,
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
               ),
             )
           else
             Text(
-              'Resources near you',
+              AppLocalizations.of(context)!.mapResourcesNearYou,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -217,6 +223,9 @@ class FacilityListPanel extends StatelessWidget {
                       onLaunchUrl: onLaunchUrl,
                       buildCategoryIcon: buildCategoryIcon,
                       canFavorite: canFavorite,
+                      onRate: onRateFacility == null
+                          ? null
+                          : () => onRateFacility!(facility),
                     );
                   },
                 ),
@@ -237,7 +246,7 @@ class FacilityListPanel extends StatelessWidget {
             Icon(Icons.search_off, size: 40, color: Colors.grey[400]),
             const SizedBox(height: 12),
             Text(
-              'No facilities in this area',
+              AppLocalizations.of(context)!.mapNoFacilitiesInArea,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -246,22 +255,22 @@ class FacilityListPanel extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Try a wider distance or search another area on the map.',
+              AppLocalizations.of(context)!.mapCantFindFacility,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            if (onWidenSearch != null) ...[
+            if (onRequestFacility != null) ...[
               const SizedBox(height: 12),
               TextButton.icon(
-                onPressed: () => onWidenSearch!(),
+                onPressed: () => onRequestFacility!(),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.resedaGreen,
                 ),
-                icon: const Icon(Icons.zoom_out_map, size: 18),
-                label: const Text('Search a wider area'),
+                icon: const Icon(Icons.add_business_outlined, size: 18),
+                label: Text(AppLocalizations.of(context)!.mapRequestFacility),
               ),
             ],
           ],

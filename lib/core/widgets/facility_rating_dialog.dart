@@ -3,63 +3,57 @@ import 'package:beacon_app/core/services/facility_feedback_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Shows a modal dialog where an authenticated user can submit (or edit)
-/// feedback — thumbs up/down + quick-select tags — about [facility].
+/// Shows a modal dialog where an authenticated user can rate (or edit their
+/// rating of) [facility]: thumbs up/down + visit date required, quick-select
+/// tags optional.
 ///
-/// On open it loads any feedback the user has already submitted for this
-/// facility and pre-fills the form, so re-opening edits in place rather than
-/// creating a duplicate (writes go through [FacilityFeedbackService.submit],
-/// an upsert keyed on `(user_id, facility_id)`). When existing feedback is
-/// present a **Remove** action is offered.
+/// On open it loads any rating the user already submitted for this facility
+/// and pre-fills the form, so re-opening edits in place (writes go through
+/// [FacilityFeedbackService.submit], an upsert keyed on
+/// `(user_id, facility_id)`). Existing ratings get a **Remove** action.
 ///
 /// Guests should not reach this — call `showSignInPromptDialog` instead.
-/// (The home page enforces this gate before calling here.)
-Future<void> showFacilityFeedbackDialog(
+/// (Callers enforce this gate.)
+Future<void> showFacilityRatingDialog(
   BuildContext context, {
   required Facility facility,
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => _FacilityFeedbackDialog(facility: facility),
+    builder: (_) => _FacilityRatingDialog(facility: facility),
   );
 }
 
-class _FacilityFeedbackDialog extends StatefulWidget {
-  const _FacilityFeedbackDialog({required this.facility});
+class _FacilityRatingDialog extends StatefulWidget {
+  const _FacilityRatingDialog({required this.facility});
 
   final Facility facility;
 
   @override
-  State<_FacilityFeedbackDialog> createState() =>
-      _FacilityFeedbackDialogState();
+  State<_FacilityRatingDialog> createState() => _FacilityRatingDialogState();
 }
 
-class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
-  /// Quick-select tags shown for a thumbs-up rating.
+class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
+  /// Quick-select tags shown for a thumbs-up rating (max 5 by design).
   static const List<String> _positiveTags = [
     'Friendly staff',
     'Minimal wait times',
-    'Clean facility',
     'Helpful with paperwork',
     'Affordable or free',
-    'Easy to reach by phone',
     'Welcoming environment',
-    'Knowledgeable providers',
   ];
 
-  /// Quick-select tags shown for a thumbs-down rating.
+  /// Quick-select tags shown for a thumbs-down rating (max 5 by design).
   static const List<String> _negativeTags = [
     'Long wait times',
-    'Slow service',
     'Unfriendly staff',
     'Hard to reach by phone',
-    'Confusing paperwork',
     'Unexpected costs',
-    'Hard to find',
     'Services not as described',
   ];
 
@@ -68,10 +62,13 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
   bool? _isThumbsUp;
   final Set<String> _selectedTags = {};
 
-  /// True while loading any existing feedback for this facility.
+  /// Date of visit — required, defaults to today, past dates only.
+  DateTime _visitedOn = DateTime.now();
+
+  /// True while loading any existing rating for this facility.
   bool _loadingExisting = true;
 
-  /// True when the user already had feedback for this facility (edit mode).
+  /// True when the user already rated this facility (edit mode).
   bool _hasExisting = false;
 
   bool _isSubmitting = false;
@@ -79,8 +76,8 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
 
   bool get _busy => _isSubmitting || _isDeleting;
 
-  bool get _canSubmit =>
-      !_busy && _isThumbsUp != null && _selectedTags.isNotEmpty;
+  /// Tags are optional; rating + date are required (date always has a value).
+  bool get _canSubmit => !_busy && _isThumbsUp != null;
 
   @override
   void initState() {
@@ -88,18 +85,18 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
     _loadExisting();
   }
 
-  /// Pre-fills the form with the user's existing feedback, if any.
+  /// Pre-fills the form with the user's existing rating, if any.
   Future<void> _loadExisting() async {
     try {
       final existing =
           await _feedbackService.getForFacility(widget.facility.id);
       if (!mounted) return;
       if (existing != null) {
-        final canonical =
-            existing.isThumbsUp ? _positiveTags : _negativeTags;
+        final canonical = existing.isThumbsUp ? _positiveTags : _negativeTags;
         setState(() {
           _hasExisting = true;
           _isThumbsUp = existing.isThumbsUp;
+          _visitedOn = existing.visitedOn ?? _visitedOn;
           _selectedTags
             ..clear()
             // Keep only tags still offered for this rating, so the chips and
@@ -111,7 +108,7 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
       ErrorReporter.instance.report(
         e,
         stackTrace,
-        context: 'FacilityFeedbackDialog._loadExisting',
+        context: 'FacilityRatingDialog._loadExisting',
       );
     } finally {
       if (mounted) setState(() => _loadingExisting = false);
@@ -132,16 +129,32 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
     });
   }
 
+  Future<void> _pickVisitDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _visitedOn.isAfter(now) ? now : _visitedOn,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now,
+    );
+    if (picked != null && mounted) {
+      setState(() => _visitedOn = picked);
+    }
+  }
+
   Future<void> _submit() async {
     final rating = _isThumbsUp;
-    if (rating == null || _selectedTags.isEmpty) return;
+    if (rating == null) return;
 
     final supabase = Supabase.instance.client;
     if (supabase.auth.currentUser?.id == null) {
-      // Belt-and-suspenders: the home page already blocks this for guests,
-      // but if we got here somehow without a user, surface a snackbar rather
-      // than letting the write fail silently with a 401.
-      _showSnack('Sign in required to submit feedback.', isError: true);
+      // Belt-and-suspenders: callers already block this for guests, but if we
+      // got here without a user, surface a snackbar rather than letting the
+      // write fail silently with a 401.
+      _showSnack(
+        AppLocalizations.of(context)!.ratingSignInRequired,
+        isError: true,
+      );
       Navigator.of(context).pop();
       return;
     }
@@ -152,30 +165,35 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
       await _feedbackService.submit(
         facilityId: widget.facility.id,
         isThumbsUp: rating,
+        visitedOn: _visitedOn,
         tags: _selectedTags,
       );
-      // A fresh submission means "I'm done with this one" — drop it from
-      // Recently Viewed. Edits come from the Your Feedback list, where the
+      // A fresh rating means "I'm done with this one" — drop it from
+      // Recently Viewed. Edits come from the Your Ratings list, where the
       // facility usually isn't in Recently Viewed anyway (no-op if absent).
       if (!wasEditing) {
         RecentFacilitiesService().removeFacility(widget.facility.id);
       }
       if (!mounted) return;
       Navigator.of(context).pop();
-      _showSnack(wasEditing ? 'Feedback updated.' : 'Thanks for your feedback!');
+      _showSnack(
+        wasEditing
+            ? AppLocalizations.of(context)!.ratingUpdated
+            : AppLocalizations.of(context)!.ratingThanks,
+      );
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,
         stackTrace,
-        context: 'FacilityFeedbackDialog._submit',
+        context: 'FacilityRatingDialog._submit',
       );
       if (!mounted) return;
       Navigator.of(context).pop();
-      // Debug builds surface the underlying error (RLS / missing-table /
-      // FK / unique-constraint specifics); release builds get a clean message.
+      // Debug builds surface the underlying error (RLS / missing-column /
+      // unique-constraint specifics); release builds get a clean message.
       final msg = kDebugMode
-          ? "Couldn't send feedback: ${_describeError(e)}"
-          : "Couldn't send feedback. Please try again.";
+          ? "Couldn't send rating: ${_describeError(e)}"
+          : AppLocalizations.of(context)!.ratingSendFailed;
       _showSnack(msg, isError: true);
     }
   }
@@ -187,18 +205,18 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
       RecentFacilitiesService().removeFacility(widget.facility.id);
       if (!mounted) return;
       Navigator.of(context).pop();
-      _showSnack('Feedback removed.');
+      _showSnack(AppLocalizations.of(context)!.ratingRemoved);
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,
         stackTrace,
-        context: 'FacilityFeedbackDialog._remove',
+        context: 'FacilityRatingDialog._remove',
       );
       if (!mounted) return;
       Navigator.of(context).pop();
       final msg = kDebugMode
-          ? "Couldn't remove feedback: ${_describeError(e)}"
-          : "Couldn't remove feedback. Please try again.";
+          ? "Couldn't remove rating: ${_describeError(e)}"
+          : AppLocalizations.of(context)!.ratingRemoveFailed;
       _showSnack(msg, isError: true);
     }
   }
@@ -221,18 +239,54 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
     );
   }
 
-  /// Multi-select tag chips, switched by the chosen rating. Shown only after a
-  /// thumbs up/down is picked.
-  Widget _buildTagSelector(ColorScheme colorScheme) {
-    if (_isThumbsUp == null) {
-      return Padding(
+  /// Tappable "Date visited" row; opens a past-only date picker.
+  Widget _buildDateRow(ColorScheme colorScheme) {
+    final formatted = MaterialLocalizations.of(context)
+        .formatMediumDate(_visitedOn);
+    return InkWell(
+      onTap: _busy ? null : _pickVisitDate,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(
-          'Choose 👍 or 👎, then add a few quick details.',
-          style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+        child: Row(
+          children: [
+            Icon(
+              Icons.event_outlined,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context)!.ratingDateVisited,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              formatted,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.edit_outlined,
+              size: 16,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
+
+  /// Multi-select tag chips, switched by the chosen rating. Shown only after a
+  /// thumbs up/down is picked; selection is optional.
+  Widget _buildTagSelector(ColorScheme colorScheme) {
+    if (_isThumbsUp == null) return const SizedBox.shrink();
     final tags = _isThumbsUp! ? _positiveTags : _negativeTags;
     final accent = _isThumbsUp! ? AppTheme.resedaGreen : AppTheme.bittersweet;
     return Align(
@@ -291,7 +345,7 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
-                        'You already rated this — update it below.',
+                        AppLocalizations.of(context)!.ratingAlreadyRated,
                         style: TextStyle(
                           fontSize: 12,
                           color: colorScheme.onSurfaceVariant,
@@ -318,7 +372,9 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  _buildDateRow(colorScheme),
+                  const SizedBox(height: 8),
                   _buildTagSelector(colorScheme),
                 ],
               ),
@@ -338,11 +394,11 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
                           width: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Remove'),
+                      : Text(AppLocalizations.of(context)!.ratingRemove),
                 ),
               TextButton(
                 onPressed: _busy ? null : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.commonCancel),
               ),
               FilledButton(
                 onPressed: _canSubmit ? _submit : null,
@@ -352,7 +408,11 @@ class _FacilityFeedbackDialogState extends State<_FacilityFeedbackDialog> {
                         width: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_hasExisting ? 'Update' : 'Submit'),
+                    : Text(
+                        _hasExisting
+                            ? AppLocalizations.of(context)!.ratingUpdate
+                            : AppLocalizations.of(context)!.ratingSubmit,
+                      ),
               ),
             ],
     );

@@ -1,26 +1,27 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_feedback_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/home/presentation/widgets/facility_feedback_dialog.dart';
+import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/features/map/data/supabase_facility_service.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-/// Lists the feedback the signed-in user has submitted, and lets them edit or
-/// remove each entry (MVP_RELEASE.md §2.7).
+/// Lists the ratings the signed-in user has submitted, and lets them edit or
+/// remove each one (MVP_RELEASE.md §2.7 / §2.9).
 ///
-/// Feedback rows store only a `facility_id`, so facility names are resolved by
+/// Rating rows store only a `facility_id`, so facility names are resolved by
 /// id from the view (region-independent, same path as Favorites). Tapping a
-/// row re-opens [showFacilityFeedbackDialog] pre-filled for in-place editing.
-class MyFeedbackPage extends StatefulWidget {
-  const MyFeedbackPage({super.key});
+/// row re-opens [showFacilityRatingDialog] pre-filled for in-place editing.
+class MyRatingsPage extends StatefulWidget {
+  const MyRatingsPage({super.key});
 
   @override
-  State<MyFeedbackPage> createState() => _MyFeedbackPageState();
+  State<MyRatingsPage> createState() => _MyRatingsPageState();
 }
 
-class _MyFeedbackPageState extends State<MyFeedbackPage> {
+class _MyRatingsPageState extends State<MyRatingsPage> {
   final FacilityFeedbackService _feedbackService = FacilityFeedbackService();
   final SupabaseFacilityService _facilityService = SupabaseFacilityService();
 
@@ -52,7 +53,7 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
       ErrorReporter.instance.report(
         e,
         stackTrace,
-        context: 'MyFeedbackPage._load',
+        context: 'MyRatingsPage._load',
       );
       if (!mounted) return;
       setState(() => _loading = false);
@@ -76,7 +77,7 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
   }
 
   Future<void> _edit(FacilityFeedbackEntry entry) async {
-    await showFacilityFeedbackDialog(context, facility: _facilityFor(entry));
+    await showFacilityRatingDialog(context, facility: _facilityFor(entry));
     // The dialog may have updated or removed the entry — refresh.
     if (mounted) await _load();
   }
@@ -84,7 +85,9 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Your Feedback')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.settingsYourRatings),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -104,9 +107,13 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
     final facility = _facilityFor(entry);
     final accent =
         entry.isThumbsUp ? AppTheme.resedaGreen : AppTheme.bittersweet;
+    final date = entry.visitedOn ?? entry.submittedAt;
     final subtitle = [
       if (entry.tags.isNotEmpty) entry.tags.join(', '),
-      if (entry.submittedAt != null) _formatDate(entry.submittedAt!),
+      if (date != null)
+        AppLocalizations.of(context)!.ratingsVisitedOn(
+          MaterialLocalizations.of(context).formatMediumDate(date),
+        ),
     ].join(' · ');
 
     return ListTile(
@@ -154,13 +161,13 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.rate_review_outlined,
+                    Icons.thumbs_up_down_outlined,
                     size: 48,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "You haven't submitted any feedback yet.",
+                    AppLocalizations.of(context)!.ratingsEmptyTitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
@@ -170,8 +177,7 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tap a recently viewed facility on the Home page to rate '
-                    'it. Your ratings show up here.',
+                    AppLocalizations.of(context)!.ratingsEmptyHint,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
@@ -185,24 +191,5 @@ class _MyFeedbackPageState extends State<MyFeedbackPage> {
         ),
       ),
     );
-  }
-
-  static String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final local = date.toLocal();
-    return '${months[local.month - 1]} ${local.day}, ${local.year}';
   }
 }

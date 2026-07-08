@@ -6,8 +6,8 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
-import 'package:beacon_app/features/home/presentation/widgets/facility_feedback_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage>
           .loadFacilitiesWithDistance(
         latitude: latitude,
         longitude: longitude,
-        radiusMiles: 5.0,
+        radiusMiles: MapConstants.defaultRadiusMiles,
       )
           .timeout(
         const Duration(seconds: 30),
@@ -262,9 +262,9 @@ class _HomePageState extends State<HomePage>
             const SizedBox(height: 16),
             _buildMapAndCategories(),
             const SizedBox(height: 20),
-            const Text(
-              'Recently Viewed Facilities',
-              style: TextStyle(
+            Text(
+              l10n.homeRecentlyViewed,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -441,26 +441,27 @@ class _HomePageState extends State<HomePage>
               color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.history, size: 24, color: Colors.grey),
-                SizedBox(width: 12),
+                const Icon(Icons.history, size: 24, color: Colors.grey),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'No recently viewed facilities',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.homeNoRecentlyViewed,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Tap a facility on the map to see it here.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        AppLocalizations.of(context)!.homeNoRecentlyViewedHint,
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -474,8 +475,15 @@ class _HomePageState extends State<HomePage>
         // scroll as a single unit (no nested scroll views).
         return Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).dividerColor),
+            color: Theme.of(context).cardTheme.color,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
@@ -527,7 +535,7 @@ class _HomePageState extends State<HomePage>
 
   /// Routes a tap on a recently-viewed facility:
   ///   - guest → sign-in prompt
-  ///   - signed in → feedback dialog
+  ///   - signed in → rating dialog
   void _onRecentFacilityTap(
     Facility facility, {
     required bool isGuest,
@@ -536,7 +544,7 @@ class _HomePageState extends State<HomePage>
       showSignInPromptDialog(context);
       return;
     }
-    showFacilityFeedbackDialog(context, facility: facility);
+    showFacilityRatingDialog(context, facility: facility);
   }
 
   Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
@@ -659,8 +667,15 @@ class _HomePageState extends State<HomePage>
         return Container(
           constraints: const BoxConstraints(maxHeight: 280),
           decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).dividerColor),
+            color: Theme.of(context).cardTheme.color,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),

@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,6 @@ class _LocationSearchState extends State<LocationSearch> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
   String _previousText = '';
-  bool _isLoadingLocation = false;
 
   @override
   void initState() {
@@ -39,8 +39,30 @@ class _LocationSearchState extends State<LocationSearch> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentLocation != widget.currentLocation &&
         !_focusNode.hasFocus) {
-      _controller.text = widget.currentLocation;
+      _controller.text = _displayFor(widget.currentLocation);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-render sentinel labels ("Current Location", "Map area") in the
+    // active locale — covers first build and language switches.
+    if (!_focusNode.hasFocus) {
+      _controller.text = _displayFor(widget.currentLocation);
+    }
+  }
+
+  /// Translates canonical location sentinels for display; ZIPs and anything
+  /// else pass through unchanged.
+  String _displayFor(String raw) {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return raw;
+    if (raw == MapConstants.currentLocationSentinel) {
+      return l10n.locationCurrentLocation;
+    }
+    if (raw == MapConstants.mapAreaSentinel) return l10n.mapAreaLabel;
+    return raw;
   }
 
   @override
@@ -57,7 +79,13 @@ class _LocationSearchState extends State<LocationSearch> {
     if (_focusNode.hasFocus) {
       _previousText = _controller.text;
       final lower = _controller.text.toLowerCase();
-      if (lower.contains('current location') || lower == 'map area') {
+      final l10n = AppLocalizations.of(context);
+      final isPlaceholder = lower.contains('current location') ||
+          lower == MapConstants.mapAreaSentinel.toLowerCase() ||
+          (l10n != null &&
+              (lower == l10n.locationCurrentLocation.toLowerCase() ||
+                  lower == l10n.mapAreaLabel.toLowerCase()));
+      if (isPlaceholder) {
         // Placeholder-style labels: clear on focus. If the user types nothing,
         // the unfocus branch below restores the label from `_previousText`.
         _controller.clear();
@@ -72,20 +100,21 @@ class _LocationSearchState extends State<LocationSearch> {
     }
   }
 
+  /// GPS lookup path — reached when the user types "current" into the field.
+  /// (The my-location *button* moved to the resources search bar, §2.9.)
   Future<void> _getCurrentLocation() async {
-    if (_isLoadingLocation) return;
-    setState(() => _isLoadingLocation = true);
-
     final result = await LocationService.getCurrentLocation();
 
     if (!mounted) return;
-    setState(() => _isLoadingLocation = false);
 
     if (result.status == LocationStatus.granted) {
-      final name = AppLocalizations.of(context)?.locationCurrentLocation ??
-          'Current Location';
-      _controller.text = name;
-      widget.onLocationChanged(name, result.latitude, result.longitude);
+      // Store the canonical sentinel; _displayFor localizes it on render.
+      _controller.text = _displayFor(MapConstants.currentLocationSentinel);
+      widget.onLocationChanged(
+        MapConstants.currentLocationSentinel,
+        result.latitude,
+        result.longitude,
+      );
       _focusNode.unfocus();
       return;
     }
@@ -111,8 +140,13 @@ class _LocationSearchState extends State<LocationSearch> {
     if (value.trim().isEmpty) return;
 
     final trimmedValue = value.trim();
+    final l10n = AppLocalizations.of(context);
 
-    if (trimmedValue.toLowerCase().contains('current')) {
+    // Typing "current" (or the localized current-location label) triggers GPS.
+    final lowerValue = trimmedValue.toLowerCase();
+    if (lowerValue.contains('current') ||
+        (l10n != null &&
+            lowerValue == l10n.locationCurrentLocation.toLowerCase())) {
       await _getCurrentLocation();
       return;
     }
@@ -120,9 +154,11 @@ class _LocationSearchState extends State<LocationSearch> {
     if (!_isValidZipCode(trimmedValue)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Please enter a valid 5-digit zip code (e.g., 60605)'),
+          SnackBar(
+            content: Text(
+              l10n?.mapInvalidZip ??
+                  'Please enter a valid 5-digit zip code (e.g., 60605)',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -164,7 +200,8 @@ class _LocationSearchState extends State<LocationSearch> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Could not find location for zip code $zipCode.',
+            AppLocalizations.of(context)?.mapZipNotFound(zipCode) ??
+                'Could not find location for zip code $zipCode.',
           ),
           backgroundColor: Colors.orange,
         ),
@@ -202,21 +239,6 @@ class _LocationSearchState extends State<LocationSearch> {
             onSubmitted: _onLocationSubmitted,
           ),
         ),
-        if (_isLoadingLocation)
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          )
-        else
-          IconButton(
-            icon: const Icon(Icons.my_location, color: Colors.blue),
-            onPressed: _getCurrentLocation,
-            tooltip: l10n?.locationUseMyLocationTooltip ?? 'Use my location',
-          ),
       ],
     );
   }

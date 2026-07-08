@@ -1,5 +1,6 @@
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class CategoryFilter extends StatelessWidget {
@@ -16,7 +17,7 @@ class CategoryFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     String label;
     if (selectedCategories.isEmpty) {
-      label = 'Category';
+      label = AppLocalizations.of(context)!.filterCategory;
     } else if (selectedCategories.length == 1) {
       label = FacilityCategoryIcons.getCategoryDisplayName(
         selectedCategories.first,

@@ -8,6 +8,8 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
+import 'package:beacon_app/core/widgets/facility_request_dialog.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
@@ -26,7 +28,6 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_l
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
-import 'package:beacon_app/features/map/presentation/widgets/search/location_search.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -76,9 +77,12 @@ class MapPageState extends State<MapPage>
   Timer? _markerUpdateDebounce;
   bool _isUpdatingMarkers = false;
 
-  double _selectedDistance = MapConstants.distanceOptions.first;
   late String _currentLocation;
   Brightness? _lastBrightness;
+
+  /// True while the my-location button (in the resources search bar) resolves
+  /// GPS.
+  bool _isLocatingUser = false;
 
   double _currentLatitude = MapConstants.defaultLatitude;
   double _currentLongitude = MapConstants.defaultLongitude;
@@ -112,7 +116,7 @@ class MapPageState extends State<MapPage>
     _currentLongitude = zipService.longitude;
     _currentLocation = zipService.zipCode?.isNotEmpty == true
         ? zipService.zipCode!
-        : 'Current Location';
+        : MapConstants.currentLocationSentinel;
 
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -135,7 +139,7 @@ class MapPageState extends State<MapPage>
     final zipService = ZipCodeService();
     final newLabel = zipService.zipCode?.isNotEmpty == true
         ? zipService.zipCode!
-        : 'Current Location';
+        : MapConstants.currentLocationSentinel;
     final newLat = zipService.latitude;
     final newLng = zipService.longitude;
 
@@ -160,7 +164,7 @@ class MapPageState extends State<MapPage>
           controller.animateCamera(
             CameraUpdate.newLatLngZoom(
               LatLng(newLat, newLng),
-              _getZoomLevelForDistance(_selectedDistance),
+              MapConstants.radiusFramingZoom,
             ),
           ),
         );
@@ -349,7 +353,7 @@ class MapPageState extends State<MapPage>
           .loadFacilitiesWithDistance(
         latitude: _currentLatitude,
         longitude: _currentLongitude,
-        radiusMiles: _selectedDistance,
+        radiusMiles: MapConstants.defaultRadiusMiles,
       )
           .timeout(
         const Duration(seconds: 30),
@@ -418,10 +422,44 @@ class MapPageState extends State<MapPage>
       await _googleMapController!.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(latitude, longitude),
-          _getZoomLevelForDistance(_selectedDistance),
+          MapConstants.radiusFramingZoom,
         ),
       );
     }
+  }
+
+  /// GPS path for the my-location button in the resources search bar. Reuses
+  /// the normal location-changed pipeline (persists to ZipCodeService, reloads,
+  /// re-centers).
+  Future<void> _useMyLocation() async {
+    if (_isLocatingUser) return;
+    setState(() => _isLocatingUser = true);
+
+    final result = await LocationService.getCurrentLocation();
+    if (!mounted) return;
+    setState(() => _isLocatingUser = false);
+
+    if (result.status == LocationStatus.granted) {
+      // Store the canonical label; LocationSearch translates it for display.
+      await _onLocationChanged(
+        MapConstants.currentLocationSentinel,
+        result.latitude,
+        result.longitude,
+      );
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n?.locationPermissionDenied ??
+              'Location access denied. Enable it in Settings > Privacy > '
+                  'Location Services.',
+        ),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   /// Reveals the "Search this area" button once the map has been panned far
@@ -433,8 +471,8 @@ class MapPageState extends State<MapPage>
     final last = _lastQueryCenter;
     if (center == null || last == null) return;
 
-    // Threshold scales with the current search radius (~35% of it).
-    final radiusMeters = _selectedDistance * 1609.34;
+    // Threshold scales with the fixed search radius (~35% of it).
+    const radiusMeters = MapConstants.defaultRadiusMiles * 1609.34;
     final thresholdMeters = (radiusMeters * 0.35).clamp(300.0, 40000.0);
     final drifted = _distanceMeters(last, center) > thresholdMeters;
 
@@ -455,7 +493,7 @@ class MapPageState extends State<MapPage>
       _isSearchingArea = true;
       _currentLatitude = center.latitude;
       _currentLongitude = center.longitude;
-      _currentLocation = 'Map area';
+      _currentLocation = MapConstants.mapAreaSentinel;
     });
 
     await _loadFacilities();
@@ -463,16 +501,6 @@ class MapPageState extends State<MapPage>
     if (mounted) {
       setState(() => _isSearchingArea = false);
     }
-  }
-
-  /// Bumps the search radius to the next distance option and reloads — backs
-  /// the empty-state "search a wider area" affordance.
-  Future<void> _onWidenSearch() async {
-    const options = MapConstants.distanceOptions;
-    final idx = options.indexOf(_selectedDistance);
-    if (idx < 0 || idx >= options.length - 1) return;
-    setState(() => _selectedDistance = options[idx + 1]);
-    await _loadFacilities();
   }
 
   double _distanceMeters(LatLng a, LatLng b) {
@@ -498,25 +526,6 @@ class MapPageState extends State<MapPage>
     await controller.animateCamera(
       CameraUpdate.newLatLngZoom(center, target),
     );
-  }
-
-  void _onLocationSearchFocusChange(bool hasFocus) {
-    if (!hasFocus) return;
-    setState(() {
-      if (_showSingleFacility) {
-        _showSingleFacility = false;
-        _selectedFacility = null;
-      }
-      if (!_isPanelOpen) {
-        _isPanelOpen = true;
-        _isFullyExpanded = false;
-      }
-    });
-  }
-
-  double _getZoomLevelForDistance(double distanceMiles) {
-    return MapConstants.distanceToZoom[distanceMiles] ??
-        MapConstants.detailZoom;
   }
 
   void _filterFacilities() {
@@ -724,7 +733,9 @@ class MapPageState extends State<MapPage>
       _currentLatitude = lat;
       _currentLongitude = lng;
       _currentLocation =
-          zipService.zipCode?.isNotEmpty == true ? zipService.zipCode! : 'Current Location';
+          zipService.zipCode?.isNotEmpty == true
+              ? zipService.zipCode!
+              : MapConstants.currentLocationSentinel;
       _showSingleFacility = false;
       _selectedFacility = null;
     });
@@ -734,7 +745,7 @@ class MapPageState extends State<MapPage>
       await controller.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(lat, lng),
-          _getZoomLevelForDistance(_selectedDistance),
+          MapConstants.radiusFramingZoom,
         ),
       );
     }
@@ -743,7 +754,6 @@ class MapPageState extends State<MapPage>
   Widget _buildFilterBar() {
     final isGuest = context.read<GuestModeService>().isGuest;
     return FilterBar(
-      selectedDistance: _selectedDistance,
       selectedCategories: _selectedCategories,
       selectedEligibilityRequirements: _selectedEligibilityRequirements,
       selectedPreferenceRequirements: _selectedPreferenceRequirements,
@@ -755,8 +765,6 @@ class MapPageState extends State<MapPage>
           : _toggleFavoritesFilter,
       onOpenNowTap: _toggleOpenNowFilter,
       onFiltersTap: _showFilterModal,
-      onDistanceTap: () =>
-          _showFilterModal(expandedSection: FilterSection.distance),
       onCategoryTap: () =>
           _showFilterModal(expandedSection: FilterSection.category),
       onEligibilityTap: isGuest
@@ -827,7 +835,10 @@ class MapPageState extends State<MapPage>
                             ),
                           const SizedBox(width: 8),
                           Text(
-                            _isSearchingArea ? 'Searching…' : 'Search this area',
+                            _isSearchingArea
+                                ? AppLocalizations.of(context)!.mapSearching
+                                : AppLocalizations.of(context)!
+                                    .mapSearchThisArea,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -873,7 +884,7 @@ class MapPageState extends State<MapPage>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Apply Status From Your Settings',
+                AppLocalizations.of(context)!.filterApplyStatusTitle,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -887,12 +898,16 @@ class MapPageState extends State<MapPage>
                 Icons.verified_user_outlined,
                 color: AppTheme.resedaGreen,
               ),
-              title: const Text('Apply my Eligibility'),
+              title: Text(
+                AppLocalizations.of(context)!.filterApplyMyEligibility,
+              ),
               onTap: () => Navigator.pop(ctx, _StatusChoice.eligibility),
             ),
             ListTile(
               leading: const Icon(Icons.tune, color: AppTheme.resedaGreen),
-              title: const Text('Apply my Preferences'),
+              title: Text(
+                AppLocalizations.of(context)!.filterApplyMyPreferences,
+              ),
               onTap: () => Navigator.pop(ctx, _StatusChoice.preferences),
             ),
             ListTile(
@@ -900,7 +915,7 @@ class MapPageState extends State<MapPage>
                 Icons.checklist_rtl,
                 color: AppTheme.resedaGreen,
               ),
-              title: const Text('Apply both'),
+              title: Text(AppLocalizations.of(context)!.filterApplyBoth),
               onTap: () => Navigator.pop(ctx, _StatusChoice.both),
             ),
             const SizedBox(height: 8),
@@ -1008,7 +1023,6 @@ class MapPageState extends State<MapPage>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FilterModal(
-        selectedDistance: _selectedDistance,
         selectedCategories: _selectedCategories,
         availableCategories: FacilityCategories.categoryLevel2Values,
         selectedEligibilityRequirements: _selectedEligibilityRequirements,
@@ -1020,18 +1034,14 @@ class MapPageState extends State<MapPage>
     );
 
     if (result != null && mounted) {
-      final wasSingleFacility = _showSingleFacility;
-      final oldDistance = _selectedDistance;
-
       setState(() {
-        if (wasSingleFacility) {
+        if (_showSingleFacility) {
           _showSingleFacility = false;
           _selectedFacility = null;
           _isPanelOpen = true;
           _isFullyExpanded = false;
         }
 
-        _selectedDistance = result['distance'] as double;
         _selectedCategories.clear();
         _selectedCategories.addAll(result['categories'] as Set<String>);
         _selectedEligibilityRequirements = result['eligibilityRequirements']
@@ -1041,51 +1051,28 @@ class MapPageState extends State<MapPage>
         _showFavoritesOnly = result['showFavoritesOnly'] as bool;
         _showOpenNowOnly = result['showOpenNowOnly'] as bool;
       });
-
-      if (_selectedDistance != oldDistance) {
-        setState(() {
-          _isLoading = true;
-        });
-
-        try {
-          final facilities =
-              await _facilityRepository.loadFacilitiesWithDistance(
-            latitude: _currentLatitude,
-            longitude: _currentLongitude,
-            radiusMiles: _selectedDistance,
-          );
-
-          if (mounted) {
-            setState(() {
-              _allFacilities = facilities;
-              _isLoading = false;
-              _lastQueryCenter = LatLng(_currentLatitude, _currentLongitude);
-              _showSearchAreaButton = false;
-            });
-            _filterFacilities();
-
-            if (_googleMapController != null) {
-              await _googleMapController!.animateCamera(
-                CameraUpdate.newLatLngZoom(
-                  LatLng(_currentLatitude, _currentLongitude),
-                  _getZoomLevelForDistance(_selectedDistance),
-                ),
-              );
-            }
-          }
-        } catch (e) {
-          if (mounted) {
-            setState(() {
-              _error =
-                  'Failed to update facilities for distance. Please try again.';
-              _isLoading = false;
-            });
-          }
-        }
-      } else {
-        _filterFacilities();
-      }
+      _filterFacilities();
     }
+  }
+
+  /// Rating entry point on facility cards ("Already visited? Rate your
+  /// experience"). Guests get the sign-in prompt.
+  void _onRateFacility(Facility facility) {
+    if (context.read<GuestModeService>().isGuest) {
+      showSignInPromptDialog(context);
+      return;
+    }
+    showFacilityRatingDialog(context, facility: facility);
+  }
+
+  /// Empty-state "request a facility" entry point. Requests are attributed to
+  /// a user (RLS), so guests get the sign-in prompt.
+  void _onRequestFacility() {
+    if (context.read<GuestModeService>().isGuest) {
+      showSignInPromptDialog(context);
+      return;
+    }
+    showFacilityRequestDialog(context);
   }
 
   String? _expandedFacilityId;
@@ -1146,13 +1133,14 @@ class MapPageState extends State<MapPage>
           const Icon(Icons.error_outline, size: 48, color: Colors.red),
           const SizedBox(height: 16),
           Text(
-            _error ?? 'An error occurred',
+            AppLocalizations.of(context)?.mapLoadFailed ??
+                (_error ?? 'An error occurred'),
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadFacilities,
-            child: const Text('Retry'),
+            child: Text(AppLocalizations.of(context)?.mapRetry ?? 'Retry'),
           ),
         ],
       ),
@@ -1237,37 +1225,15 @@ class MapPageState extends State<MapPage>
                       focusNode: _searchFocusNode,
                       onChanged: _filterFacilities,
                       onClear: _filterFacilities,
+                      onUseMyLocation: _useMyLocation,
+                      isLocatingUser: _isLocatingUser,
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 0.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF222240)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(25.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: LocationSearch(
-                      currentLocation: _currentLocation,
-                      onLocationChanged: _onLocationChanged,
-                      onFocusChanged: _onLocationSearchFocusChange,
-                    ),
-                  ),
+                  // The ZIP/location search bar is intentionally not rendered
+                  // — users move the query with the my-location button and
+                  // "Search this area" (§2.9 follow-up). The LocationSearch
+                  // widget is kept in the tree for potential reinstatement;
+                  // ZIP edits still flow in from Settings via ZipCodeService.
                   const SizedBox(height: 6),
                   _buildFilterBar(),
                   _buildSearchAreaButton(),
@@ -1297,10 +1263,8 @@ class MapPageState extends State<MapPage>
                         buildCategoryIcon:
                             FacilityCategoryIcons.buildCategoryIcon,
                         canFavorite: !isGuest,
-                        onWidenSearch:
-                            _selectedDistance == MapConstants.distanceOptions.last
-                                ? null
-                                : _onWidenSearch,
+                        onRequestFacility: _onRequestFacility,
+                        onRateFacility: _onRateFacility,
                         onPanelStateChange: (isPanelOpen, isFullyExpanded) {
                           setState(() {
                             _isPanelOpen = isPanelOpen;
@@ -1319,45 +1283,67 @@ class MapPageState extends State<MapPage>
     final isGuest = context.read<GuestModeService>().isGuest;
 
     final maxCardHeight = MediaQuery.of(context).size.height * 0.45;
-    return Container(
-      margin: const EdgeInsets.all(16.0),
-      constraints: BoxConstraints(maxHeight: maxCardHeight),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8.0,
-            spreadRadius: 1.0,
-            offset: const Offset(0, 3),
+    // Swipe down anywhere on the card chrome (handle bar, header, non-scroll
+    // areas) dismisses it — same flick gesture as the list panel. The card's
+    // internal scroll view wins the gesture arena while its content scrolls,
+    // so the handle bar is the always-available dismiss target.
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > MapConstants.minFlickVelocity) {
+          _dismissSingleFacilityView(showPanel: false);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.all(16.0),
+        constraints: BoxConstraints(maxHeight: maxCardHeight),
+        // No background color of its own — the FacilityCard fills the wrapper
+        // (zero margin, matching corner radius) and carries the drag handle on
+        // its own background, so there's no separate chrome strip behind it.
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8.0,
+              spreadRadius: 1.0,
+              offset: const Offset(0, 3),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 3.0,
+              spreadRadius: 0.5,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
+          child: FacilityCard(
+            facility: _selectedFacility!,
+            isExpanded: true,
+            onToggleExpand: () {},
+            onToggleFavorite: () {
+              _toggleFavorite(_selectedFacility!.id);
+              setState(() {
+                _selectedFacility = _allFacilities.firstWhere(
+                  (f) => f.id == _selectedFacility!.id,
+                  orElse: () => _selectedFacility!,
+                );
+              });
+            },
+            onLaunchUrl: _launchUrl,
+            buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
+            showExpandButton: false,
+            canFavorite: !isGuest,
+            onRate: () => _onRateFacility(_selectedFacility!),
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(MapConstants.panelBorderRadius),
+            ),
+            showDragHandle: true,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 3.0,
-            spreadRadius: 0.5,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
-        child: FacilityCard(
-          facility: _selectedFacility!,
-          isExpanded: true,
-          onToggleExpand: () {},
-          onToggleFavorite: () {
-            _toggleFavorite(_selectedFacility!.id);
-            setState(() {
-              _selectedFacility = _allFacilities.firstWhere(
-                (f) => f.id == _selectedFacility!.id,
-                orElse: () => _selectedFacility!,
-              );
-            });
-          },
-          onLaunchUrl: _launchUrl,
-          buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
-          showExpandButton: false,
-          canFavorite: !isGuest,
         ),
       ),
     );

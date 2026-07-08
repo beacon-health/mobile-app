@@ -20,14 +20,19 @@ class MapConstants {
   static const double defaultLatitude = 41.8781;
   static const double defaultLongitude = -87.6298;
 
-  static const List<double> distanceOptions = [1.0, 3.0, 5.0, 10.0];
+  /// Fixed query radius. The Distance filter was removed in favor of the
+  /// "Search this area" button — every query (initial, ZIP change, search
+  /// here) uses this radius.
+  static const double defaultRadiusMiles = 5.0;
 
-  static final Map<double, double> distanceToZoom = {
-    1.0: 14.0,
-    3.0: 12.5,
-    5.0: 12.0,
-    10.0: 11.0,
-  };
+  /// Zoom that roughly frames a [defaultRadiusMiles] query.
+  static const double radiusFramingZoom = 12.0;
+
+  /// Canonical (locale-independent) location labels. Stored/compared
+  /// internally so language switches can't break the "is this a placeholder
+  /// label?" logic; widgets translate them at display time.
+  static const String currentLocationSentinel = 'Current Location';
+  static const String mapAreaSentinel = 'Map area';
 
   static const Duration animationDuration = Duration(milliseconds: 300);
   static const Curve animationCurve = Curves.easeInOut;

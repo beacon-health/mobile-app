@@ -5,6 +5,7 @@ import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
@@ -14,7 +15,8 @@ import 'package:beacon_app/core/widgets/locked_section_overlay.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
-import 'package:beacon_app/features/settings/presentation/pages/my_feedback_page.dart';
+import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
+import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +36,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _versionString = '';
 
+  /// Remembered "Get Directions" app; null = ask on next use.
+  MapApp? _preferredMapApp;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,66 @@ class _SettingsPageState extends State<SettingsPage> {
         setState(() => _versionString = info.version);
       }
     });
+    MapLauncherService.preferredApp().then((app) {
+      if (mounted) setState(() => _preferredMapApp = app);
+    });
+  }
+
+  /// Bottom-sheet picker of installed map apps + an "ask each time" reset.
+  Future<void> _pickDirectionsApp() async {
+    final installed = await MapLauncherService.installedApps();
+    if (!mounted) return;
+    final colorScheme = Theme.of(context).colorScheme;
+    final choice = await showModalBottomSheet<Object>(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            for (final app in installed)
+              ListTile(
+                leading: const Icon(Icons.directions_outlined),
+                title: Text(app.displayName),
+                trailing: _preferredMapApp == app
+                    ? const Icon(Icons.check, color: AppTheme.resedaGreen)
+                    : null,
+                onTap: () => Navigator.pop(ctx, app),
+              ),
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: Text(AppLocalizations.of(context)!.settingsAskEachTime),
+              trailing: _preferredMapApp == null
+                  ? const Icon(Icons.check, color: AppTheme.resedaGreen)
+                  : null,
+              onTap: () => Navigator.pop(ctx, 'ask'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return;
+    if (choice is MapApp) {
+      await MapLauncherService.setPreferredApp(choice);
+      if (mounted) setState(() => _preferredMapApp = choice);
+    } else {
+      await MapLauncherService.clearPreferredApp();
+      if (mounted) setState(() => _preferredMapApp = null);
+    }
   }
 
   @override
@@ -126,8 +191,8 @@ class _SettingsPageState extends State<SettingsPage> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
-                                  'Sign in to store favorites, filter by '
-                                  'preferences, and more!',
+                                  AppLocalizations.of(context)!
+                                      .settingsSignInHint,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Theme.of(context)
@@ -199,20 +264,37 @@ class _SettingsPageState extends State<SettingsPage> {
                 activeThumbColor: AppTheme.resedaGreen,
                 onChanged: (value) => _onUseMyLocationChanged(value, l10n),
               ),
-              // Signed-in users can review and edit the feedback they've
-              // submitted (§2.7). Hidden for guests, who can't submit any.
+              // Signed-in users can review/edit their ratings and see their
+              // facility add-requests (§2.7 / §2.9). Hidden for guests, who
+              // can't submit either.
               if (!isGuest) ...[
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(
-                    Icons.rate_review_outlined,
+                    Icons.thumbs_up_down_outlined,
                     color: AppTheme.paynesGray,
                   ),
-                  title: const Text('Your Feedback'),
+                  title: Text(AppLocalizations.of(context)!.settingsYourRatings),
                   trailing: const Icon(Icons.chevron_right, size: 20),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const MyFeedbackPage(),
+                      builder: (_) => const MyRatingsPage(),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.add_business_outlined,
+                    color: AppTheme.paynesGray,
+                  ),
+                  title: Text(
+                    AppLocalizations.of(context)!.settingsYourRequests,
+                  ),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const MyRequestsPage(),
                     ),
                   ),
                 ),
@@ -419,7 +501,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     if (saved == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ZIP code updated')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settingsZipUpdated),
+        ),
       );
     }
   }
@@ -484,6 +568,29 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
               ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(
+                  Icons.directions_outlined,
+                  color: AppTheme.paynesGray,
+                ),
+                title: Text(AppLocalizations.of(context)!.settingsDirectionsApp),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _preferredMapApp?.displayName ??
+                          AppLocalizations.of(context)!.settingsAskEachTime,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceMuted,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 20),
+                  ],
+                ),
+                onTap: _pickDirectionsApp,
+              ),
             ],
           ),
         ),
@@ -504,7 +611,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         children: [
           _eligToggle(
-            'Proof of income required',
+            l10n.eligProofOfIncome,
             Icons.attach_money,
             state.proofOfIncome,
             isGuest
@@ -513,7 +620,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Proof of residency required',
+            l10n.eligProofOfResidency,
             Icons.home_outlined,
             state.proofOfResidency,
             isGuest
@@ -522,7 +629,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Insurance required',
+            l10n.eligInsuranceRequired,
             Icons.health_and_safety,
             state.insuranceRequired,
             isGuest
@@ -531,7 +638,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Referral required',
+            l10n.eligReferralRequired,
             Icons.assignment_ind_outlined,
             state.referralRequired,
             isGuest
@@ -548,7 +655,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSectionHeader(l10n.settingsEligibility),
         if (isGuest)
           LockedSectionOverlay(
-            message: 'Sign in to set preferences',
+            message: l10n.settingsSignInToSetPreferences,
             child: card,
           )
         else
@@ -569,7 +676,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Column(
         children: [
           _eligToggle(
-            'Accepts walk-ins',
+            l10n.prefAcceptsWalkIns,
             Icons.directions_walk,
             state.acceptsWalkIns,
             isGuest
@@ -578,7 +685,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Appointment only',
+            l10n.prefAppointmentOnly,
             Icons.calendar_today,
             state.appointmentOnly,
             isGuest
@@ -587,7 +694,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Open to immigrants',
+            l10n.prefOpenToImmigrants,
             Icons.public,
             state.openToImmigrants,
             isGuest
@@ -596,7 +703,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Free services available',
+            l10n.prefFreeServices,
             Icons.money_off,
             state.freeServices,
             isGuest
@@ -605,7 +712,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Sliding scale available',
+            l10n.prefSlidingScale,
             Icons.tune,
             state.slidingScale,
             isGuest
@@ -614,7 +721,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Other languages available',
+            l10n.prefOtherLanguages,
             Icons.translate,
             state.otherLanguages,
             isGuest
@@ -623,7 +730,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Telehealth available',
+            l10n.prefTelehealth,
             Icons.videocam_outlined,
             state.telehealthPreference,
             isGuest
@@ -632,7 +739,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Wheelchair accessible',
+            l10n.prefWheelchairAccessible,
             Icons.accessible,
             state.wheelchairAccessible,
             isGuest
@@ -641,7 +748,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 1),
           _eligToggle(
-            'Serves outside area',
+            l10n.prefServesOutsideArea,
             Icons.map_outlined,
             state.servesOutsideArea,
             isGuest
@@ -655,10 +762,10 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Preferences'),
+        _buildSectionHeader(l10n.settingsPreferences),
         if (isGuest)
           LockedSectionOverlay(
-            message: 'Sign in to set preferences',
+            message: l10n.settingsSignInToSetPreferences,
             child: card,
           )
         else
@@ -847,7 +954,8 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = "Couldn't find that ZIP code. Try again.";
+        _errorMessage =
+            AppLocalizations.of(context)!.settingsZipNotFoundError;
       });
     }
   }
@@ -855,7 +963,7 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Update ZIP Code'),
+      title: Text(AppLocalizations.of(context)!.settingsUpdateZipTitle),
       content: Form(
         key: _formKey,
         child: Column(
@@ -883,7 +991,7 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
               style: const TextStyle(fontSize: 18, letterSpacing: 4),
               validator: (value) {
                 if ((value ?? '').trim().length != 5) {
-                  return 'Please enter a 5-digit ZIP code';
+                  return AppLocalizations.of(context)!.settingsZipValidation;
                 }
                 return null;
               },
@@ -901,7 +1009,7 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.commonCancel),
         ),
         FilledButton(
           onPressed: _isLoading ? null : _onSave,

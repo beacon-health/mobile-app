@@ -10,17 +10,20 @@ class FacilityFeedbackEntry {
     required this.isThumbsUp,
     required this.tags,
     this.submittedAt,
+    this.visitedOn,
   });
 
   factory FacilityFeedbackEntry.fromRow(Map<String, dynamic> row) {
     final rating = row['rating'] as String? ?? 'up';
     final comment = row['comment'] as String? ?? '';
     final created = row['created_at'] as String?;
+    final visited = row['visited_on'] as String?;
     return FacilityFeedbackEntry(
       facilityId: row['facility_id'] as String? ?? '',
       isThumbsUp: rating == 'up',
       tags: parseTags(comment),
       submittedAt: created == null ? null : DateTime.tryParse(created),
+      visitedOn: visited == null ? null : DateTime.tryParse(visited),
     );
   }
 
@@ -28,6 +31,9 @@ class FacilityFeedbackEntry {
   final bool isThumbsUp;
   final List<String> tags;
   final DateTime? submittedAt;
+
+  /// Date the user visited the facility (required in the rating dialog).
+  final DateTime? visitedOn;
 
   /// Splits the comma-joined `comment` column back into discrete tags.
   static List<String> parseTags(String comment) => comment
@@ -91,7 +97,8 @@ class FacilityFeedbackService {
   Future<void> submit({
     required String facilityId,
     required bool isThumbsUp,
-    required Iterable<String> tags,
+    required DateTime visitedOn,
+    Iterable<String> tags = const [],
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
@@ -103,6 +110,9 @@ class FacilityFeedbackService {
         'facility_id': facilityId,
         'rating': isThumbsUp ? 'up' : 'down',
         'comment': FacilityFeedbackEntry.tagsToComment(tags),
+        // Date-only column; strip the time component.
+        'visited_on':
+            visitedOn.toIso8601String().split('T').first,
       },
       onConflict: 'user_id,facility_id',
     );

@@ -142,11 +142,647 @@ abstract class AppLocalizations {
   /// **'Add favorites from the map page to see them here'**
   String get homeNoFavoritesHint;
 
+  /// No description provided for @homeRecentlyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Viewed Facilities'**
+  String get homeRecentlyViewed;
+
+  /// No description provided for @homeNoRecentlyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'No recently viewed facilities'**
+  String get homeNoRecentlyViewed;
+
+  /// No description provided for @homeNoRecentlyViewedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a facility on the map to see it here.'**
+  String get homeNoRecentlyViewedHint;
+
   /// No description provided for @mapSearchLocation.
   ///
   /// In en, this message translates to:
   /// **'Enter ZIP code'**
   String get mapSearchLocation;
+
+  /// No description provided for @mapSearchResourcesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for resources...'**
+  String get mapSearchResourcesHint;
+
+  /// No description provided for @mapAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Map area'**
+  String get mapAreaLabel;
+
+  /// No description provided for @mapSearchThisArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this area'**
+  String get mapSearchThisArea;
+
+  /// No description provided for @mapSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching…'**
+  String get mapSearching;
+
+  /// No description provided for @mapSwipeUpToView.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe up to view resources'**
+  String get mapSwipeUpToView;
+
+  /// No description provided for @mapResourcesNearYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources near you'**
+  String get mapResourcesNearYou;
+
+  /// No description provided for @mapNoFacilitiesInArea.
+  ///
+  /// In en, this message translates to:
+  /// **'No facilities in this area'**
+  String get mapNoFacilitiesInArea;
+
+  /// No description provided for @mapCantFindFacility.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t find a facility? Submit a request to add one.'**
+  String get mapCantFindFacility;
+
+  /// No description provided for @mapRequestFacility.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a facility'**
+  String get mapRequestFacility;
+
+  /// No description provided for @mapLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load facilities. Please try again.'**
+  String get mapLoadFailed;
+
+  /// No description provided for @mapRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get mapRetry;
+
+  /// No description provided for @mapInvalidZip.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid 5-digit zip code (e.g., 60605)'**
+  String get mapInvalidZip;
+
+  /// No description provided for @mapZipNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find location for zip code {zipCode}.'**
+  String mapZipNotFound(String zipCode);
+
+  /// No description provided for @filterOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Now'**
+  String get filterOpenNow;
+
+  /// No description provided for @filterFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get filterFavorites;
+
+  /// No description provided for @filterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get filterStatus;
+
+  /// No description provided for @filterCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get filterCategory;
+
+  /// No description provided for @filterEligibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Eligibility'**
+  String get filterEligibility;
+
+  /// No description provided for @filterPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get filterPreferences;
+
+  /// No description provided for @filterFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filterFilters;
+
+  /// No description provided for @filterClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get filterClearAll;
+
+  /// No description provided for @filterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get filterApply;
+
+  /// No description provided for @filterApplyStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Status From Your Settings'**
+  String get filterApplyStatusTitle;
+
+  /// No description provided for @filterAutoFillFromSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-fill the filters below from your Settings.'**
+  String get filterAutoFillFromSettings;
+
+  /// No description provided for @commonYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get commonYes;
+
+  /// No description provided for @commonNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get commonNo;
+
+  /// No description provided for @filterApplyMyEligibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply my Eligibility'**
+  String get filterApplyMyEligibility;
+
+  /// No description provided for @filterApplyMyPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply my Preferences'**
+  String get filterApplyMyPreferences;
+
+  /// No description provided for @filterApplyBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply both'**
+  String get filterApplyBoth;
+
+  /// No description provided for @eligProofOfIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof of income required'**
+  String get eligProofOfIncome;
+
+  /// No description provided for @eligProofOfResidency.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof of residency required'**
+  String get eligProofOfResidency;
+
+  /// No description provided for @eligInsuranceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Insurance required'**
+  String get eligInsuranceRequired;
+
+  /// No description provided for @eligReferralRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral required'**
+  String get eligReferralRequired;
+
+  /// No description provided for @prefAcceptsWalkIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepts walk-ins'**
+  String get prefAcceptsWalkIns;
+
+  /// No description provided for @prefAppointmentOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment only'**
+  String get prefAppointmentOnly;
+
+  /// No description provided for @prefOpenToImmigrants.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to immigrants'**
+  String get prefOpenToImmigrants;
+
+  /// No description provided for @prefFreeServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Free services available'**
+  String get prefFreeServices;
+
+  /// No description provided for @prefSlidingScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Sliding scale available'**
+  String get prefSlidingScale;
+
+  /// No description provided for @prefOtherLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Other languages available'**
+  String get prefOtherLanguages;
+
+  /// No description provided for @prefTelehealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Telehealth available'**
+  String get prefTelehealth;
+
+  /// No description provided for @prefWheelchairAccessible.
+  ///
+  /// In en, this message translates to:
+  /// **'Wheelchair accessible'**
+  String get prefWheelchairAccessible;
+
+  /// No description provided for @prefServesOutsideArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Serves outside area'**
+  String get prefServesOutsideArea;
+
+  /// No description provided for @cardNextSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Steps'**
+  String get cardNextSteps;
+
+  /// No description provided for @cardHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get cardHours;
+
+  /// No description provided for @cardServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get cardServices;
+
+  /// No description provided for @cardAtAGlance.
+  ///
+  /// In en, this message translates to:
+  /// **'At a Glance'**
+  String get cardAtAGlance;
+
+  /// No description provided for @cardVisitWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit website'**
+  String get cardVisitWebsite;
+
+  /// No description provided for @cardWebsiteNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Website not available'**
+  String get cardWebsiteNotAvailable;
+
+  /// No description provided for @cardGetDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get cardGetDirections;
+
+  /// No description provided for @cardContactForHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact facility for hours'**
+  String get cardContactForHours;
+
+  /// No description provided for @cardOpen247.
+  ///
+  /// In en, this message translates to:
+  /// **'Open 24/7'**
+  String get cardOpen247;
+
+  /// No description provided for @cardRatePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Already visited? Rate your experience'**
+  String get cardRatePrompt;
+
+  /// No description provided for @cardAddressNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Address information not available for this facility'**
+  String get cardAddressNotAvailable;
+
+  /// No description provided for @chipWalkIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk-ins'**
+  String get chipWalkIns;
+
+  /// No description provided for @chipFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get chipFree;
+
+  /// No description provided for @chipTelehealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Telehealth'**
+  String get chipTelehealth;
+
+  /// No description provided for @chipAccessible.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessible'**
+  String get chipAccessible;
+
+  /// No description provided for @chipSlidingScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Sliding Scale'**
+  String get chipSlidingScale;
+
+  /// No description provided for @chipOtherLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Languages'**
+  String get chipOtherLanguages;
+
+  /// No description provided for @ratingAlreadyRated.
+  ///
+  /// In en, this message translates to:
+  /// **'You already rated this — update it below.'**
+  String get ratingAlreadyRated;
+
+  /// No description provided for @ratingDateVisited.
+  ///
+  /// In en, this message translates to:
+  /// **'Date visited'**
+  String get ratingDateVisited;
+
+  /// No description provided for @ratingRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get ratingRemove;
+
+  /// No description provided for @ratingSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get ratingSubmit;
+
+  /// No description provided for @ratingUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get ratingUpdate;
+
+  /// No description provided for @ratingThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your rating!'**
+  String get ratingThanks;
+
+  /// No description provided for @ratingUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating updated.'**
+  String get ratingUpdated;
+
+  /// No description provided for @ratingRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating removed.'**
+  String get ratingRemoved;
+
+  /// No description provided for @ratingSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send rating. Please try again.'**
+  String get ratingSendFailed;
+
+  /// No description provided for @ratingRemoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t remove rating. Please try again.'**
+  String get ratingRemoveFailed;
+
+  /// No description provided for @ratingSignInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in required to rate a facility.'**
+  String get ratingSignInRequired;
+
+  /// No description provided for @requestDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a facility'**
+  String get requestDialogTitle;
+
+  /// No description provided for @requestDialogIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about a facility we\'re missing and our team will review it.'**
+  String get requestDialogIntro;
+
+  /// No description provided for @requestFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility name *'**
+  String get requestFieldName;
+
+  /// No description provided for @requestFieldNameError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the facility name'**
+  String get requestFieldNameError;
+
+  /// No description provided for @requestFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get requestFieldDescription;
+
+  /// No description provided for @requestFieldServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services offered'**
+  String get requestFieldServices;
+
+  /// No description provided for @requestFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Street address'**
+  String get requestFieldAddress;
+
+  /// No description provided for @requestFieldCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get requestFieldCity;
+
+  /// No description provided for @requestFieldState.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get requestFieldState;
+
+  /// No description provided for @requestFieldZip.
+  ///
+  /// In en, this message translates to:
+  /// **'ZIP code'**
+  String get requestFieldZip;
+
+  /// No description provided for @requestFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get requestFieldPhone;
+
+  /// No description provided for @requestSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted — we\'ll review it soon. Thanks!'**
+  String get requestSubmitted;
+
+  /// No description provided for @requestSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t submit request. Please try again.'**
+  String get requestSubmitFailed;
+
+  /// No description provided for @requestSignInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in required to submit a request.'**
+  String get requestSignInRequired;
+
+  /// No description provided for @settingsYourRatings.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Ratings'**
+  String get settingsYourRatings;
+
+  /// No description provided for @settingsYourRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Requests'**
+  String get settingsYourRequests;
+
+  /// No description provided for @settingsDirectionsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions app'**
+  String get settingsDirectionsApp;
+
+  /// No description provided for @settingsAskEachTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask each time'**
+  String get settingsAskEachTime;
+
+  /// No description provided for @settingsPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsPreferences;
+
+  /// No description provided for @settingsSignInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to store favorites, filter by preferences, and more!'**
+  String get settingsSignInHint;
+
+  /// No description provided for @settingsSignInToSetPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to set preferences'**
+  String get settingsSignInToSetPreferences;
+
+  /// No description provided for @settingsZipUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'ZIP code updated'**
+  String get settingsZipUpdated;
+
+  /// No description provided for @settingsUpdateZipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update ZIP Code'**
+  String get settingsUpdateZipTitle;
+
+  /// No description provided for @settingsZipValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a 5-digit ZIP code'**
+  String get settingsZipValidation;
+
+  /// No description provided for @settingsZipNotFoundError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t find that ZIP code. Try again.'**
+  String get settingsZipNotFoundError;
+
+  /// No description provided for @ratingsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t rated any facilities yet.'**
+  String get ratingsEmptyTitle;
+
+  /// No description provided for @ratingsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate a facility from the map or from Recently Viewed on the Home page. Your ratings show up here.'**
+  String get ratingsEmptyHint;
+
+  /// No description provided for @ratingsVisitedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited {date}'**
+  String ratingsVisitedOn(String date);
+
+  /// No description provided for @requestsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get requestsEmptyTitle;
+
+  /// No description provided for @requestsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Know a facility we\'re missing? Submit a request and we\'ll review it.'**
+  String get requestsEmptyHint;
+
+  /// No description provided for @directionsOpenWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Open directions with'**
+  String get directionsOpenWith;
+
+  /// No description provided for @directionsChangeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in Settings.'**
+  String get directionsChangeLater;
+
+  /// No description provided for @directionsOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open directions.'**
+  String get directionsOpenFailed;
 
   /// No description provided for @settingsTitle.
   ///

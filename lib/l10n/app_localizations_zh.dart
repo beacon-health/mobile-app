@@ -30,7 +30,329 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeNoFavoritesHint => '从地图页面添加收藏即可在此查看';
 
   @override
+  String get homeRecentlyViewed => '最近浏览的机构';
+
+  @override
+  String get homeNoRecentlyViewed => '暂无最近浏览的机构';
+
+  @override
+  String get homeNoRecentlyViewedHint => '在地图上点击机构即可在此查看。';
+
+  @override
   String get mapSearchLocation => '输入邮政编码';
+
+  @override
+  String get mapSearchResourcesHint => '搜索资源...';
+
+  @override
+  String get mapAreaLabel => '地图区域';
+
+  @override
+  String get mapSearchThisArea => '搜索此区域';
+
+  @override
+  String get mapSearching => '搜索中…';
+
+  @override
+  String get mapSwipeUpToView => '上滑查看资源';
+
+  @override
+  String get mapResourcesNearYou => '附近的资源';
+
+  @override
+  String get mapNoFacilitiesInArea => '此区域没有机构';
+
+  @override
+  String get mapCantFindFacility => '找不到机构？提交请求以添加。';
+
+  @override
+  String get mapRequestFacility => '请求添加机构';
+
+  @override
+  String get mapLoadFailed => '加载机构失败，请重试。';
+
+  @override
+  String get mapRetry => '重试';
+
+  @override
+  String get mapInvalidZip => '请输入有效的 5 位邮政编码（例如 60605）';
+
+  @override
+  String mapZipNotFound(String zipCode) {
+    return '找不到邮政编码 $zipCode 对应的位置。';
+  }
+
+  @override
+  String get filterOpenNow => '营业中';
+
+  @override
+  String get filterFavorites => '收藏';
+
+  @override
+  String get filterStatus => '状态';
+
+  @override
+  String get filterCategory => '类别';
+
+  @override
+  String get filterEligibility => '资格';
+
+  @override
+  String get filterPreferences => '偏好';
+
+  @override
+  String get filterFilters => '筛选';
+
+  @override
+  String get filterClearAll => '全部清除';
+
+  @override
+  String get filterApply => '应用';
+
+  @override
+  String get filterApplyStatusTitle => '应用您设置中的状态';
+
+  @override
+  String get filterAutoFillFromSettings => '根据您的设置自动填写以下筛选条件。';
+
+  @override
+  String get commonYes => '是';
+
+  @override
+  String get commonNo => '否';
+
+  @override
+  String get filterApplyMyEligibility => '应用我的资格';
+
+  @override
+  String get filterApplyMyPreferences => '应用我的偏好';
+
+  @override
+  String get filterApplyBoth => '同时应用';
+
+  @override
+  String get eligProofOfIncome => '需要收入证明';
+
+  @override
+  String get eligProofOfResidency => '需要居住证明';
+
+  @override
+  String get eligInsuranceRequired => '需要医疗保险';
+
+  @override
+  String get eligReferralRequired => '需要转诊';
+
+  @override
+  String get prefAcceptsWalkIns => '接受无预约就诊';
+
+  @override
+  String get prefAppointmentOnly => '仅限预约';
+
+  @override
+  String get prefOpenToImmigrants => '向移民开放';
+
+  @override
+  String get prefFreeServices => '提供免费服务';
+
+  @override
+  String get prefSlidingScale => '提供按收入浮动收费';
+
+  @override
+  String get prefOtherLanguages => '提供其他语言服务';
+
+  @override
+  String get prefTelehealth => '提供远程医疗';
+
+  @override
+  String get prefWheelchairAccessible => '无障碍通道';
+
+  @override
+  String get prefServesOutsideArea => '服务范围外人群';
+
+  @override
+  String get cardNextSteps => '下一步';
+
+  @override
+  String get cardHours => '营业时间';
+
+  @override
+  String get cardServices => '服务';
+
+  @override
+  String get cardAtAGlance => '一览';
+
+  @override
+  String get cardVisitWebsite => '访问网站';
+
+  @override
+  String get cardWebsiteNotAvailable => '网站不可用';
+
+  @override
+  String get cardGetDirections => '获取路线';
+
+  @override
+  String get cardContactForHours => '请联系机构了解营业时间';
+
+  @override
+  String get cardOpen247 => '24/7 全天开放';
+
+  @override
+  String get cardRatePrompt => '去过了？评价您的体验';
+
+  @override
+  String get cardAddressNotAvailable => '该机构的地址信息不可用';
+
+  @override
+  String get chipWalkIns => '无需预约';
+
+  @override
+  String get chipFree => '免费';
+
+  @override
+  String get chipTelehealth => '远程医疗';
+
+  @override
+  String get chipAccessible => '无障碍';
+
+  @override
+  String get chipSlidingScale => '浮动收费';
+
+  @override
+  String get chipOtherLanguages => '其他语言';
+
+  @override
+  String get ratingAlreadyRated => '您已评价过 — 在下方更新。';
+
+  @override
+  String get ratingDateVisited => '到访日期';
+
+  @override
+  String get ratingRemove => '删除';
+
+  @override
+  String get ratingSubmit => '提交';
+
+  @override
+  String get ratingUpdate => '更新';
+
+  @override
+  String get ratingThanks => '感谢您的评价！';
+
+  @override
+  String get ratingUpdated => '评价已更新。';
+
+  @override
+  String get ratingRemoved => '评价已删除。';
+
+  @override
+  String get ratingSendFailed => '评价发送失败，请重试。';
+
+  @override
+  String get ratingRemoveFailed => '评价删除失败，请重试。';
+
+  @override
+  String get ratingSignInRequired => '请登录后再评价机构。';
+
+  @override
+  String get requestDialogTitle => '请求添加机构';
+
+  @override
+  String get requestDialogIntro => '告诉我们遗漏的机构，我们的团队会进行审核。';
+
+  @override
+  String get requestFieldName => '机构名称 *';
+
+  @override
+  String get requestFieldNameError => '请输入机构名称';
+
+  @override
+  String get requestFieldDescription => '描述';
+
+  @override
+  String get requestFieldServices => '提供的服务';
+
+  @override
+  String get requestFieldAddress => '街道地址';
+
+  @override
+  String get requestFieldCity => '城市';
+
+  @override
+  String get requestFieldState => '州';
+
+  @override
+  String get requestFieldZip => '邮政编码';
+
+  @override
+  String get requestFieldPhone => '电话';
+
+  @override
+  String get requestSubmitted => '请求已提交 — 我们会尽快审核。谢谢！';
+
+  @override
+  String get requestSubmitFailed => '请求提交失败，请重试。';
+
+  @override
+  String get requestSignInRequired => '请登录后再提交请求。';
+
+  @override
+  String get settingsYourRatings => '您的评价';
+
+  @override
+  String get settingsYourRequests => '您的请求';
+
+  @override
+  String get settingsDirectionsApp => '导航应用';
+
+  @override
+  String get settingsAskEachTime => '每次询问';
+
+  @override
+  String get settingsPreferences => '偏好';
+
+  @override
+  String get settingsSignInHint => '登录即可保存收藏、按偏好筛选等！';
+
+  @override
+  String get settingsSignInToSetPreferences => '登录以设置偏好';
+
+  @override
+  String get settingsZipUpdated => '邮政编码已更新';
+
+  @override
+  String get settingsUpdateZipTitle => '更新邮政编码';
+
+  @override
+  String get settingsZipValidation => '请输入 5 位邮政编码';
+
+  @override
+  String get settingsZipNotFoundError => '找不到该邮政编码，请重试。';
+
+  @override
+  String get ratingsEmptyTitle => '您还没有评价任何机构。';
+
+  @override
+  String get ratingsEmptyHint => '在地图上或首页的最近浏览中评价机构，您的评价将显示在这里。';
+
+  @override
+  String ratingsVisitedOn(String date) {
+    return '到访于 $date';
+  }
+
+  @override
+  String get requestsEmptyTitle => '暂无请求';
+
+  @override
+  String get requestsEmptyHint => '知道我们遗漏的机构吗？提交请求，我们会进行审核。';
+
+  @override
+  String get directionsOpenWith => '使用以下应用打开路线';
+
+  @override
+  String get directionsChangeLater => '您可以稍后在设置中更改。';
+
+  @override
+  String get directionsOpenFailed => '无法打开路线。';
 
   @override
   String get settingsTitle => '设置';

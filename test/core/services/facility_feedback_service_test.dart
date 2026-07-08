@@ -23,18 +23,20 @@ void main() {
   });
 
   group('FacilityFeedbackEntry.fromRow', () {
-    test('maps rating to isThumbsUp and parses tags + date', () {
+    test('maps rating to isThumbsUp and parses tags + dates', () {
       final entry = FacilityFeedbackEntry.fromRow({
         'facility_id': 'abc',
         'rating': 'down',
         'comment': 'Slow service, Long wait times',
         'created_at': '2026-01-15T10:30:00Z',
+        'visited_on': '2026-01-10',
       });
 
       expect(entry.facilityId, 'abc');
       expect(entry.isThumbsUp, isFalse);
       expect(entry.tags, ['Slow service', 'Long wait times']);
       expect(entry.submittedAt, isNotNull);
+      expect(entry.visitedOn, DateTime(2026, 1, 10));
     });
 
     test('defaults gracefully on missing fields', () {
@@ -42,6 +44,7 @@ void main() {
       expect(entry.isThumbsUp, isTrue); // default 'up'
       expect(entry.tags, isEmpty);
       expect(entry.submittedAt, isNull);
+      expect(entry.visitedOn, isNull);
     });
   });
 }

@@ -4,10 +4,10 @@ import 'package:beacon_app/features/map/presentation/widgets/filters/types/categ
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/eligibility_filter.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/filter_widgets.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/preferences_filter.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
-  final double selectedDistance;
   final Set<String> selectedCategories;
   final Map<EligibilityRequirement, bool?> selectedEligibilityRequirements;
   final Map<PreferenceRequirement, bool?> selectedPreferenceRequirements;
@@ -17,7 +17,6 @@ class FilterBar extends StatelessWidget {
   final VoidCallback onFavoritesTap;
   final VoidCallback onOpenNowTap;
   final VoidCallback onFiltersTap;
-  final VoidCallback onDistanceTap;
   final VoidCallback onCategoryTap;
   final VoidCallback onEligibilityTap;
   final VoidCallback onPreferencesTap;
@@ -25,7 +24,6 @@ class FilterBar extends StatelessWidget {
 
   const FilterBar({
     super.key,
-    required this.selectedDistance,
     required this.selectedCategories,
     required this.selectedEligibilityRequirements,
     required this.selectedPreferenceRequirements,
@@ -34,7 +32,6 @@ class FilterBar extends StatelessWidget {
     required this.onFavoritesTap,
     required this.onOpenNowTap,
     required this.onFiltersTap,
-    required this.onDistanceTap,
     required this.onCategoryTap,
     required this.onEligibilityTap,
     required this.onPreferencesTap,
@@ -80,20 +77,14 @@ class FilterBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
-              ValueFilter(
-                label:
-                    '${selectedDistance.toStringAsFixed(selectedDistance == selectedDistance.roundToDouble() ? 0 : 1)} mi',
-                onTap: onDistanceTap,
-              ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
               ToggleFilter(
-                label: 'Open Now',
+                label: AppLocalizations.of(context)!.filterOpenNow,
                 isActive: showOpenNowOnly,
                 onTap: onOpenNowTap,
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               ToggleFilter(
-                label: 'Favorites',
+                label: AppLocalizations.of(context)!.filterFavorites,
                 isActive: showFavoritesOnly,
                 isLocked: isGuestMode,
                 onTap: onFavoritesTap,
@@ -105,7 +96,7 @@ class FilterBar extends StatelessWidget {
               ),
               const SizedBox(width: FilterDesignTokens.spacingSmall),
               ToggleFilter(
-                label: 'Status',
+                label: AppLocalizations.of(context)!.filterStatus,
                 isActive: false,
                 isLocked: isGuestMode,
                 onTap: onStatusTap,

@@ -1,6 +1,9 @@
+import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/utils/phone_format.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class FacilityCard extends StatefulWidget {
@@ -16,6 +19,23 @@ class FacilityCard extends StatefulWidget {
   /// Used in guest mode where favorites require sign-in.
   final bool canFavorite;
 
+  /// Opens the rating flow ("Already visited? Rate your experience"), shown as
+  /// a Next Steps row when non-null. Callers gate guests to the sign-in
+  /// prompt inside this callback.
+  final VoidCallback? onRate;
+
+  /// Overrides the default list margin. The single-facility view passes
+  /// [EdgeInsets.zero] so the card fills its rounded wrapper with no seams.
+  final EdgeInsetsGeometry? margin;
+
+  /// Overrides the Card's default shape (the single-facility view matches the
+  /// wrapper's larger corner radius).
+  final ShapeBorder? shape;
+
+  /// Renders a drag handle at the top of the card, on the card's own
+  /// background (used by the swipe-to-dismiss single-facility view).
+  final bool showDragHandle;
+
   const FacilityCard({
     super.key,
     required this.facility,
@@ -26,6 +46,10 @@ class FacilityCard extends StatefulWidget {
     required this.onLaunchUrl,
     this.showExpandButton = true,
     this.canFavorite = true,
+    this.onRate,
+    this.margin,
+    this.shape,
+    this.showDragHandle = false,
   });
 
   @override
@@ -56,19 +80,57 @@ class _FacilityCardState extends State<FacilityCard> {
     super.dispose();
   }
 
+  /// Collapsed rows preview what the facility offers so users can judge
+  /// relevance before opening; expanded rows show "city, state" here (the full
+  /// text renders in the body). Description is preferred but currently null
+  /// across the dataset, so the services summary is the working preview.
+  String get _subtitleText {
+    final locationLine =
+        '${widget.facility.city}, ${widget.facility.state}';
+    if (widget.isExpanded) return locationLine;
+    final description = widget.facility.description.trim();
+    if (description.isNotEmpty) return description;
+    final services = widget.facility.servicesSummary?.trim() ?? '';
+    return services.isNotEmpty ? services : locationLine;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      margin: widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      shape: widget.shape,
       clipBehavior: Clip.none,
       color: isDark ? null : AppTheme.honeydew,
       child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Column(
+        clipBehavior: Clip.none,
+        children: [
+          // The whole card toggles expansion — the corner chevron is a visual
+          // affordance, not the only tap target. Interactive children (heart,
+          // links, rate row) sit above and consume their own taps.
+          InkWell(
+            onTap: widget.showExpandButton ? widget.onToggleExpand : null,
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Drag handle on the card's own background — no separate
+                // chrome strip behind it.
+                if (widget.showDragHandle)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.only(
                     top: 8.0,
@@ -89,11 +151,13 @@ class _FacilityCardState extends State<FacilityCard> {
                           : TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      '${widget.facility.city}, ${widget.facility.state}',
+                      _subtitleText,
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 11,
                       ),
+                      maxLines: widget.isExpanded ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
@@ -101,46 +165,46 @@ class _FacilityCardState extends State<FacilityCard> {
                 if (!widget.isExpanded) const SizedBox(height: 8),
               ],
             ),
+          ),
+          Positioned(
+            top: -2,
+            right: -2,
+            child: IconButton(
+              padding: const EdgeInsets.all(6),
+              constraints: const BoxConstraints(),
+              icon: Icon(
+                widget.facility.isFavorite
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: !widget.canFavorite
+                    ? Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.3)
+                    : (widget.facility.isFavorite ? Colors.red : null),
+                size: 20,
+              ),
+              // `null` onPressed renders the IconButton in its disabled
+              // state (greyed-out splash, no ink response).
+              onPressed: widget.canFavorite ? widget.onToggleFavorite : null,
+            ),
+          ),
+          if (widget.showExpandButton)
             Positioned(
-              top: -2,
+              bottom: -4,
               right: -2,
               child: IconButton(
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(),
                 icon: Icon(
-                  widget.facility.isFavorite
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: !widget.canFavorite
-                      ? Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.3)
-                      : (widget.facility.isFavorite ? Colors.red : null),
+                  widget.isExpanded ? Icons.expand_less : Icons.expand_more,
                   size: 20,
                 ),
-                // `null` onPressed renders the IconButton in its disabled
-                // state (greyed-out splash, no ink response).
-                onPressed:
-                    widget.canFavorite ? widget.onToggleFavorite : null,
+                onPressed: widget.onToggleExpand,
               ),
             ),
-            if (widget.showExpandButton)
-              Positioned(
-                bottom: -4,
-                right: -2,
-                child: IconButton(
-                  padding: const EdgeInsets.all(6),
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-                    size: 20,
-                  ),
-                  onPressed: widget.onToggleExpand,
-                ),
-              ),
-          ],
-        ),
+        ],
+      ),
     );
   }
 
@@ -183,9 +247,31 @@ class _FacilityCardState extends State<FacilityCard> {
     );
   }
 
-  Widget _buildFacilityDetails(Facility facility) {
-    final is24_7 = _isOpen24_7(facility);
+  void _openDirections() {
+    final facility = widget.facility;
+    final hasValidAddress = facility.address.isNotEmpty &&
+        !facility.address.toLowerCase().contains('not available');
+    final hasValidCity = facility.city.isNotEmpty;
+    final hasValidState = facility.state.isNotEmpty;
 
+    if (hasValidAddress && hasValidCity && hasValidState) {
+      final fullAddress =
+          '${facility.address}, ${facility.city}, ${facility.state}'.trim();
+      // Chooser + remembered preference — iOS has no default-maps API.
+      MapLauncherService.openDirections(context, address: fullAddress);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.cardAddressNotAvailable,
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Widget _buildFacilityDetails(Facility facility) {
     final Widget content = Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
@@ -199,127 +285,11 @@ class _FacilityCardState extends State<FacilityCard> {
             ),
             const SizedBox(height: 8),
           ],
+          // Services first — what the facility offers matters before how to
+          // reach it (product decision, §2.9).
+          ..._buildServicesSection(facility),
           const Divider(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Next Steps',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (widget.facility.website != null &&
-                        widget.facility.website!.isNotEmpty)
-                      _buildNextStepItem(
-                        icon: Icons.language,
-                        value: 'Visit website',
-                        onTap: () =>
-                            widget.onLaunchUrl(widget.facility.website!),
-                      )
-                    else
-                      _buildNextStepItem(
-                        icon: Icons.language,
-                        value: 'Website not available',
-                        onTap: () {},
-                      ),
-                    if (facility.primaryPhone.isNotEmpty &&
-                        facility.primaryPhone != 'Phone not available')
-                      _buildNextStepItem(
-                        icon: Icons.phone,
-                        value: facility.primaryPhone,
-                        onTap: () => widget.onLaunchUrl(
-                          'tel:${facility.primaryPhone.replaceAll(RegExp('[^0-9+]'), '')}',
-                        ),
-                      ),
-                    _buildNextStepItem(
-                      icon: Icons.directions,
-                      value: 'Get directions',
-                      onTap: () {
-                        final hasValidAddress = facility.address.isNotEmpty &&
-                            !facility.address
-                                .toLowerCase()
-                                .contains('not available');
-                        final hasValidCity = facility.city.isNotEmpty;
-                        final hasValidState = facility.state.isNotEmpty;
-
-                        if (hasValidAddress && hasValidCity && hasValidState) {
-                          final fullAddress =
-                              '${facility.address}, ${facility.city}, ${facility.state}'
-                                  .trim();
-                          final encodedAddress =
-                              Uri.encodeComponent(fullAddress);
-                          widget.onLaunchUrl(
-                            'https://maps.apple.com/?q=$encodedAddress',
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Address information not available for this facility',
-                              ),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 150,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                color: Theme.of(context).dividerColor,
-              ),
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hours',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (is24_7) ...[
-                      _buildDayHourRow('Open 24/7', ''),
-                    ] else ...[
-                      ...facility.hours.map(
-                        (h) => _buildDayHourRow(
-                          h.day,
-                          h.opensAt != null && h.closesAt != null
-                              ? '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}'
-                              : '',
-                        ),
-                      ),
-                      if (facility.hours.isEmpty)
-                        Text(
-                          'Contact facility for hours',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
+          _buildNextStepsAndHours(facility),
           const SizedBox(height: 4),
           const Divider(height: 8),
           _buildEligibilitySection(facility),
@@ -339,74 +309,187 @@ class _FacilityCardState extends State<FacilityCard> {
     }
   }
 
+  Widget _buildNextStepsAndHours(Facility facility) {
+    final is24_7 = _isOpen24_7(facility);
+    final phone = facility.primaryPhone;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.cardNextSteps,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (widget.facility.website != null &&
+                  widget.facility.website!.isNotEmpty)
+                _buildNextStepItem(
+                  icon: Icons.language,
+                  value: AppLocalizations.of(context)!.cardVisitWebsite,
+                  onTap: () => widget.onLaunchUrl(widget.facility.website!),
+                )
+              else
+                _buildNextStepItem(
+                  icon: Icons.language,
+                  value: AppLocalizations.of(context)!.cardWebsiteNotAvailable,
+                  onTap: () {},
+                ),
+              if (phone.isNotEmpty && phone != 'Phone not available')
+                _buildNextStepItem(
+                  icon: Icons.phone,
+                  // Mixed source formats normalize to (xxx) xxx-xxxx.
+                  value: formatPhoneForDisplay(phone),
+                  onTap: () =>
+                      widget.onLaunchUrl('tel:${dialablePhone(phone)}'),
+                ),
+              _buildNextStepItem(
+                icon: Icons.directions,
+                value: AppLocalizations.of(context)!.cardGetDirections,
+                onTap: _openDirections,
+              ),
+              // Rating entry lives with the other actions ("Already visited?
+              // Rate your experience") rather than in its own footer row.
+              if (widget.onRate != null)
+                _buildNextStepItem(
+                  icon: Icons.thumbs_up_down_outlined,
+                  value: AppLocalizations.of(context)!.cardRatePrompt,
+                  onTap: widget.onRate!,
+                ),
+            ],
+          ),
+        ),
+        Container(
+          width: 1,
+          height: 150,
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          color: Theme.of(context).dividerColor,
+        ),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.cardHours,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (is24_7) ...[
+                _buildDayHourRow('Open 24/7', ''),
+              ] else ...[
+                ...facility.hours.map(
+                  (h) => _buildDayHourRow(
+                    h.day,
+                    h.opensAt != null && h.closesAt != null
+                        ? '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}'
+                        : '',
+                  ),
+                ),
+                if (facility.hours.isEmpty)
+                  Text(
+                    AppLocalizations.of(context)!.cardContactForHours,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Services block (plain-language summary preferred, chips as fallback).
+  /// Returns an empty list when the facility has no service data.
+  List<Widget> _buildServicesSection(Facility facility) {
+    final title = Text(
+      AppLocalizations.of(context)!.cardServices,
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      ),
+    );
+
+    if (facility.servicesSummary != null &&
+        facility.servicesSummary!.isNotEmpty) {
+      return [
+        const Divider(height: 12),
+        title,
+        const SizedBox(height: 8),
+        Text(
+          facility.servicesSummary!,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        const SizedBox(height: 12),
+      ];
+    }
+    if (facility.services.isNotEmpty) {
+      return [
+        const Divider(height: 12),
+        title,
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: facility.services.map((service) {
+            return Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.bittersweet.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.bittersweet.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                service,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.bittersweet,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+      ];
+    }
+    return const [];
+  }
+
   Widget _buildEligibilitySection(Facility facility) {
     final eligibilityChips = _buildEligibilityChips(facility);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (facility.servicesSummary != null &&
-            facility.servicesSummary!.isNotEmpty) ...[
-          Text(
-            'Services',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            facility.servicesSummary!,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.4,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ] else if (facility.services.isNotEmpty) ...[
-          Text(
-            'Services',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: facility.services.map((service) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.bittersweet.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppTheme.bittersweet.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Text(
-                  service,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.bittersweet,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 12),
-        ],
         if (eligibilityChips.isNotEmpty) ...[
           Text(
-            'At a Glance',
+            AppLocalizations.of(context)!.cardAtAGlance,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -447,13 +530,14 @@ class _FacilityCardState extends State<FacilityCard> {
       }
     }
 
-    addChip('Walk-ins', elig.acceptsWalkins, Icons.directions_walk);
-    addChip('Free', elig.freeServicesAvailable, Icons.money_off);
-    addChip('Telehealth', elig.telehealthAvailable, Icons.videocam);
-    addChip('Accessible', elig.wheelchairAccessible, Icons.accessible);
-    addChip('Sliding Scale', elig.slidingScaleAvailable, Icons.tune);
+    final l10n = AppLocalizations.of(context)!;
+    addChip(l10n.chipWalkIns, elig.acceptsWalkins, Icons.directions_walk);
+    addChip(l10n.chipFree, elig.freeServicesAvailable, Icons.money_off);
+    addChip(l10n.chipTelehealth, elig.telehealthAvailable, Icons.videocam);
+    addChip(l10n.chipAccessible, elig.wheelchairAccessible, Icons.accessible);
+    addChip(l10n.chipSlidingScale, elig.slidingScaleAvailable, Icons.tune);
     addChip(
-      'Other Languages',
+      l10n.chipOtherLanguages,
       elig.otherLanguages,
       Icons.translate,
     );
@@ -531,7 +615,7 @@ class _FacilityCardState extends State<FacilityCard> {
           ),
           const SizedBox(width: 4),
           Text(
-            is24_7 ? 'Open 24/7' : hours,
+            is24_7 ? AppLocalizations.of(context)!.cardOpen247 : hours,
             style: TextStyle(
               fontSize: 11,
               color: isClosed ? AppTheme.bittersweet : defaultColor,

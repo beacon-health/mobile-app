@@ -125,6 +125,10 @@ class MarkerManagementService {
   }
 
   /// Creates markers for all facilities.
+  ///
+  /// Facilities that share the exact same coordinates (e.g. two providers at
+  /// one address) are fanned out in a small circle so both markers stay
+  /// visible and tappable instead of stacking into one unreadable pin.
   static Future<Set<Marker>> createMarkersForFacilities(
     List<Facility> facilities,
     BuildContext context,
@@ -133,6 +137,7 @@ class MarkerManagementService {
     Function(Facility) onMarkerTap,
   ) async {
     final markers = <Marker>{};
+    final positions = _fannedOutPositions(facilities);
 
     for (final facility in facilities) {
       try {
@@ -142,6 +147,7 @@ class MarkerManagementService {
           showFacilityNames,
           markerIconCache,
           onMarkerTap,
+          positionOverride: positions[facility.id],
         );
         markers.add(marker);
       } catch (e, stackTrace) {
@@ -157,18 +163,59 @@ class MarkerManagementService {
     return markers;
   }
 
+  /// Fixed geographic fan-out radius for co-located facilities.
+  ///
+  /// Deliberately constant (not zoom-scaled): the offset positions never
+  /// change, so markers behave like two real adjacent addresses instead of
+  /// sliding closer/apart as the user zooms. ~25 m reads as clearly separate
+  /// at street-level zooms and merges back into a cluster bubble below the
+  /// clustering threshold.
+  static const double _fanOutRadiusMeters = 25.0;
+
+  /// Returns adjusted positions for facilities that share exact coordinates:
+  /// groups of n > 1 spread evenly on a circle around the shared point.
+  /// Deterministic (sorted by id) so markers don't jump between renders.
+  static Map<String, LatLng> _fannedOutPositions(List<Facility> facilities) {
+    final groups = <String, List<Facility>>{};
+    for (final f in facilities) {
+      final key = '${f.location.latitude.toStringAsFixed(6)}:'
+          '${f.location.longitude.toStringAsFixed(6)}';
+      (groups[key] ??= []).add(f);
+    }
+
+    final overrides = <String, LatLng>{};
+    for (final group in groups.values) {
+      if (group.length < 2) continue;
+      group.sort((a, b) => a.id.compareTo(b.id));
+      final lat = group.first.location.latitude;
+      final lng = group.first.location.longitude;
+
+      for (var i = 0; i < group.length; i++) {
+        final angle = 2 * math.pi * i / group.length;
+        final dLat = _fanOutRadiusMeters * math.cos(angle) / 111320.0;
+        final dLng = _fanOutRadiusMeters *
+            math.sin(angle) /
+            (111320.0 * math.cos(lat * math.pi / 180));
+        overrides[group[i].id] = LatLng(lat + dLat, lng + dLng);
+      }
+    }
+    return overrides;
+  }
+
   static Future<Marker> _createMarkerForFacility(
     Facility facility,
     BuildContext context,
     bool showFacilityNames,
     Map<String, BitmapDescriptor> markerIconCache,
-    Function(Facility) onMarkerTap,
-  ) async {
+    Function(Facility) onMarkerTap, {
+    LatLng? positionOverride,
+  }) async {
     final markerId = MarkerId(facility.id);
-    final position = LatLng(
-      facility.location.latitude,
-      facility.location.longitude,
-    );
+    final position = positionOverride ??
+        LatLng(
+          facility.location.latitude,
+          facility.location.longitude,
+        );
 
     final primaryCategory = facility.primaryCategory;
     final cacheKey = '${facility.id}_${primaryCategory}_$showFacilityNames';

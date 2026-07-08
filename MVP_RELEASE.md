@@ -4,11 +4,12 @@
 >
 > **Last updated:** 2026-06-25 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
 >
-> **Status:** All MVP code (§2.1 – §2.7) is **code-complete** — `flutter
-> analyze` clean, 28/28 tests pass. The app builds and uploads to TestFlight.
-> What's left is **device QA + non-engineering launch prep** (App Store
-> listing, legal, beta testers) and **a few Supabase SQL one-liners** — see the
-> **Pre-Launch Checklist (§3)**, split into engineering vs. non-dev hand-off.
+> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 UX overhaul**) is
+> **code-complete** — `flutter analyze` clean, 31/31 tests pass. The app builds
+> and uploads to TestFlight. What's left is **device QA + non-engineering
+> launch prep** (App Store listing, legal, beta testers) and **a few Supabase
+> SQL blocks** (§2.7 constraint, §2.8 state gate, §2.9 `visited_on` +
+> `facility_requests`) — see the **Pre-Launch Checklist (§3)**.
 >
 > **✅ Done (all code)**
 > - **§2.1–§2.5:** Auth (native Sign in with Apple), GPS, crash reporting
@@ -19,9 +20,17 @@
 >   this area"** control, **marker clustering**, **region-independent
 >   Favorites**, category filter on **`category_level_2`** (12 values) with icons
 >   consolidated to 4 groups, dark-mode map, overflow-safe empty states.
-> - **§2.7 view & edit feedback:** feedback is now read/write — a Settings
->   **"Your Feedback"** list + in-place editing (dialog pre-fills, **upsert**,
->   **Remove**) via the new `FacilityFeedbackService`.
+> - **§2.7 view & edit ratings:** ratings are read/write — a Settings **"Your
+>   Ratings"** list + in-place editing (dialog pre-fills, **upsert**,
+>   **Remove**) via `FacilityFeedbackService`.
+> - **§2.9 UX overhaul (July 2026):** ratings rename + required visit date +
+>   5-tag lists; **Request a facility** flow (dialog + Settings "Your
+>   Requests"); search across description/services/tags; tap-anywhere card
+>   expansion + description previews; Services above Next Steps/Hours; swipe-
+>   down dismiss on the single-facility card; my-location button in the
+>   resources search bar; Distance filter removed (fixed 5-mi + "Search this
+>   area"); same-address marker fan-out; directions chooser (Apple/Google/
+>   Waze, remembered); home shadows; **full i18n chrome coverage** (en/es/zh).
 >
 > **⏳ Remaining**
 > - **Device QA** end-to-end on real hardware (§3.1).
@@ -531,6 +540,106 @@ $function$
   IL the right first state; other states can launch list-only and gain
   eligibility later.
 
+### 2.9 UX Overhaul Batch (July 2026) ✅ CODE-COMPLETE (device QA + 2 SQL pending)
+
+Twelve UX/functional changes requested 2026-07-08 — **all implemented**;
+`flutter analyze` clean, **31/31 tests pass**. Executed as independent,
+file-scoped workstreams (A–I), i18n last. Decisions confirmed with the product
+owner: rating tag lists trimmed to **5 options each**; Get Directions uses a
+**chooser sheet + remembered choice** (iOS has no default-maps API); the
+map-page rate entry lives on **expanded facility cards**; the required rating
+date is **date-of-visit, defaulting to today, past dates only**.
+
+**Still needed before device testing:** run the two SQL blocks below
+(`visited_on` column + `facility_requests` table) — the rating dialog writes
+`visited_on` on every submit and the request flow reads/writes
+`facility_requests`, so both features fail without them. Then `cd ios && pod
+install` isn't required (no new pods), but do a **full rebuild** — Info.plist
+gained `LSApplicationQueriesSchemes` (Google Maps / Waze detection).
+
+**Post-QA refinements (first device pass, 2026-07-08):**
+- **ZIP/location search bar hidden** on the map page — users navigate with the
+  my-location button + "Search this area". `LocationSearch` is kept in the tree
+  (unrendered) for easy reinstatement; Settings ZIP edits still flow in via
+  `ZipCodeService`.
+- **List preview falls back to the services summary** (descriptions are null
+  across the dataset today; description auto-takes-over when populated).
+- **Rate entry moved into Next Steps** (under Get directions) instead of a
+  divider-separated footer row.
+- **Single-card handle blends in** — the drag handle renders on the card's own
+  background (`FacilityCard.showDragHandle` + zero margin + matching radius);
+  no separate chrome strip.
+- **Marker fan-out is now a fixed ~25 m geographic offset** (was zoom-scaled
+  pixels) — co-located markers no longer slide together/apart while zooming.
+
+**Notable implementation decisions:**
+- **Feedback → Ratings** across all UI; the `facility_feedback` table name and
+  `FacilityFeedbackService` class stay (they document the storage), while the
+  dialog moved to `lib/core/widgets/facility_rating_dialog.dart` and Settings
+  gained **Your Ratings** + **Your Requests** + **Directions app** rows.
+- **i18n approach re-evaluated:** the gen-l10n/ARB infrastructure was right —
+  the failure was *coverage*. All app chrome is now keyed (~85 new keys ×
+  en/es/zh): map page, filter bar/modal (incl. eligibility/preference option
+  names via `filter_l10n.dart`), facility card, rating/request dialogs,
+  Settings toggles, home sections. **Location sentinels** ("Current Location",
+  "Map area") are stored canonically and translated at display time, so
+  language switches can't break placeholder-clearing logic.
+  **Deliberately not translated (data, not chrome):** facility
+  names/descriptions/services from the DB, `category_level_2` filter values,
+  and the rating **tag phrases** (stored verbatim in the `comment` column —
+  localizing them would break round-tripping; a display-map is a post-MVP
+  follow-up alongside the §7 professional-localization review).
+- **Same-coordinate markers** fan out in a ~35 px circle (zoom-aware,
+  deterministic by id) so co-located facilities stay individually tappable.
+- **5-mile fixed radius** everywhere (initial load, ZIP change, Search this
+  area); the Distance chip/modal section and "widen search" empty state are
+  gone — the empty state now funnels into **Request a facility** (guest-gated,
+  writes to `facility_requests` with status `pending`).
+
+| WS | Scope | Key files |
+|---|---|---|
+| **A** | Foundations: 5-mi default radius constant; `visited_on` on the feedback service; new `FacilityRequestService`; new `MapLauncherService` (directions chooser + remember); `LSApplicationQueriesSchemes`; phone formatter | `map_constants.dart`, `facility_feedback_service.dart`, `facility_request_service.dart` (new), `map_launcher_service.dart` (new), `Info.plist` |
+| **B** | Rating dialog: rename Feedback→Ratings, remove explainer, 5 tags/rating, tags optional, required visit-date picker (default today, past-only), pre-fill incl. date | `facility_rating_dialog.dart` (moved to `core/widgets/`) |
+| **C** | Settings: "Your Ratings" (renamed), new "Your Requests", "Directions app" row | `my_ratings_page.dart` (renamed), `my_requests_page.dart` (new), `settings_page.dart` |
+| **D** | Facility card: Services above Next Steps/Hours; subtitle shows **description** (fallback city, state); tap anywhere toggles expansion; "Already visited? Rate your experience" row; directions via chooser; consistent phone/hours formatting | `facility_card.dart` |
+| **E** | Map page: my-location button moves into the "Search for resources" bar; Distance filter removed (fixed 5-mi initial + "Search this area" queries); single-facility card gets handle bar + swipe-down dismiss; empty state → "Can't find a facility? Submit a request to add one" | `map_page.dart`, `facility_search.dart`, `location_search.dart`, `filter_bar.dart`, `filter_modal.dart`, `facility_list_panel.dart` |
+| **F** | Same-coordinate facilities fan out with small deterministic offsets so both markers stay visible/tappable | `marker_management_service.dart` |
+| **G** | Home: Recently Viewed + Favorites drop `Border.all` for card-style shadows | `home_page.dart` |
+| **H** | i18n: full-coverage ARB sweep (map page, filters, facility card, dialogs, settings toggles, home). Sentinel labels ("Current Location", "Map area") stay stable internally and are translated at display time. **DB-sourced content (facility names/descriptions/category values) stays English** — data, not chrome | `app_en/es/zh.arb`, all UI files |
+| **I** | `flutter analyze` + tests green; doc updated; manual dev tasks listed | — |
+
+**Search scope decision:** facility search matches **name, description,
+services, services summary, and category values** over the loaded region pool
+(client-side — zero extra DB load; the pool is ≤250 rows). Server-side trigram
+search across all 162,937 rows is deliberately out of scope for MVP.
+
+**Supabase SQL to run (manual — see §3.1):**
+```sql
+-- (1) Rating visit date (required in the new dialog)
+alter table public.facility_feedback
+  add column if not exists visited_on date;
+
+-- (2) Facility add-requests (temp table for internal review)
+create table if not exists public.facility_requests (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  facility_name text not null,
+  description text,
+  services text,
+  street_address text,
+  city text,
+  state text,
+  postal_code text,
+  phone text,
+  status text default 'pending' not null,  -- pending | approved | rejected
+  created_at timestamptz default now() not null
+);
+alter table public.facility_requests enable row level security;
+create policy "Users manage own facility requests" on public.facility_requests
+  for all using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+```
+
 ## 3. Pre-Launch Checklist
 
 All MVP **code** is done and the app uploads to TestFlight. The work below is
@@ -540,21 +649,27 @@ split into **§3.1 engineering/backend** (dev-owned) and **§3.2 non-functional*
 ### 3.1 Engineering & Backend (dev-owned)
 
 **Code — done**
-- [x] §2.1–§2.7 implemented; `flutter analyze` clean (0 issues); `flutter test` 28/28
-- [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods)
+- [x] §2.1–§2.7 + §2.9 implemented; `flutter analyze` clean (0 issues); `flutter test` 31/31
+- [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods). Re-verify after §2.9 (Info.plist changed).
 - [x] `pubspec.yaml` at `1.0.0+2` (bump `+N` for each TestFlight upload)
 - [ ] Widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, `RecentFacilitiesService` (post-launch follow-up)
 
 **Supabase SQL to run** (copy-paste → Dashboard → SQL Editor)
 - [x] §2.6 PostGIS schema: lat/lng→`double precision`, `geom` + GiST index, `fct_supabase_full` view, `facilities_near` RPC
 - [ ] **§2.7 unique constraint** on `facility_feedback (user_id, facility_id)` — backs the upsert (without it, edits duplicate)
-- [ ] **§2.8 state allow-list:** create `launched_states`, seed `'IL'`, add the `state in (…)` clause to `facilities_near`
+- [ ] **§2.8 state allow-list:** create `launched_states`, seed `'IL'`, re-run the full `facilities_near` in §2.8
+- [ ] **§2.9 `visited_on` column** on `facility_feedback` — rating submits **fail** without it
+- [ ] **§2.9 `facility_requests` table** + RLS — the request flow fails without it
 - [ ] Verify **RLS** (read-only `anon`) on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
 
 **Device QA — the main gate** (smoke test on ≥2 iOS devices, different sizes)
 - [ ] Auth/onboarding: Apple sign-in, location grant/deny, guest mode, sign-out
-- [ ] §2.6 map: ZIP search, pan + "Search this area", distance widen, sparse rural area, cluster tap, Favorites across regions
-- [ ] §2.7 feedback: submit, re-open (pre-filled), edit, **Remove**, Settings → "Your Feedback" list
+- [ ] §2.6 map: ZIP search, pan + "Search this area" (fixed 5 mi), sparse rural area, cluster tap, Favorites across regions
+- [ ] §2.7/§2.9 ratings: rate from a map card ("Already visited?"), date picker (past-only), tags optional, re-open (pre-filled), edit, **Remove**, Settings → "Your Ratings"
+- [ ] §2.9 requests: empty map area → "Request a facility" dialog → row appears under Settings → "Your Requests" (status `pending`)
+- [ ] §2.9 UX: my-location button in the resources search bar; search matches description/services; tap-anywhere card expansion; description preview on collapsed rows; Services above Next Steps/Hours; swipe-down dismisses the single-facility card; two same-address facilities render side-by-side
+- [ ] §2.9 directions: first "Get directions" shows the chooser (Google Maps/Waze listed only if installed), choice remembered, changeable in Settings → "Directions app"
+- [ ] §2.9 i18n: switch to Spanish and Chinese — home sections, Settings toggles, map filter bar/modal, facility card labels, and both dialogs all translate (facility data + rating tags stay English by design)
 - [ ] §2.8: confirm **only Illinois** facilities appear until more states are added
 
 **Technical console config** (dev/admin access)

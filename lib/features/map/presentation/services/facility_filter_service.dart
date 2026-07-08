@@ -16,14 +16,21 @@ class FacilityFilterService {
     required bool showOpenNowOnly,
   }) {
     return allFacilities.where((facility) {
-      // Search filter
+      // Search filter — matches across name, description, services (list +
+      // plain-language summary), and category tags, not just the title (§2.9).
+      // Runs client-side over the loaded region pool (≤250 rows), so widening
+      // the match set costs nothing server-side.
       final q = searchText.toLowerCase();
       final matchesSearch = q.isEmpty ||
           facility.name.toLowerCase().contains(q) ||
           facility.description.toLowerCase().contains(q) ||
           facility.services.any(
             (s) => s.toLowerCase().contains(q),
-          );
+          ) ||
+          (facility.servicesSummary?.toLowerCase().contains(q) ?? false) ||
+          (facility.categoryLevel2?.toLowerCase().contains(q) ?? false) ||
+          facility.appCategory.toLowerCase().contains(q) ||
+          facility.city.toLowerCase().contains(q);
 
       // Favorites filter
       final matchesFavorites = !showFavoritesOnly || facility.isFavorite;

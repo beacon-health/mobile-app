@@ -31,7 +31,348 @@ class AppLocalizationsEs extends AppLocalizations {
       'Agrega favoritos desde el mapa para verlos aquí';
 
   @override
+  String get homeRecentlyViewed => 'Centros vistos recientemente';
+
+  @override
+  String get homeNoRecentlyViewed => 'No hay centros vistos recientemente';
+
+  @override
+  String get homeNoRecentlyViewedHint =>
+      'Toca un centro en el mapa para verlo aquí.';
+
+  @override
   String get mapSearchLocation => 'Ingresa código postal';
+
+  @override
+  String get mapSearchResourcesHint => 'Buscar recursos...';
+
+  @override
+  String get mapAreaLabel => 'Área del mapa';
+
+  @override
+  String get mapSearchThisArea => 'Buscar en esta área';
+
+  @override
+  String get mapSearching => 'Buscando…';
+
+  @override
+  String get mapSwipeUpToView => 'Desliza hacia arriba para ver recursos';
+
+  @override
+  String get mapResourcesNearYou => 'Recursos cerca de ti';
+
+  @override
+  String get mapNoFacilitiesInArea => 'No hay centros en esta área';
+
+  @override
+  String get mapCantFindFacility =>
+      '¿No encuentras un centro? Envía una solicitud para agregarlo.';
+
+  @override
+  String get mapRequestFacility => 'Solicitar un centro';
+
+  @override
+  String get mapLoadFailed =>
+      'No se pudieron cargar los centros. Inténtalo de nuevo.';
+
+  @override
+  String get mapRetry => 'Reintentar';
+
+  @override
+  String get mapInvalidZip =>
+      'Ingresa un código postal válido de 5 dígitos (p. ej., 60605)';
+
+  @override
+  String mapZipNotFound(String zipCode) {
+    return 'No se encontró la ubicación para el código postal $zipCode.';
+  }
+
+  @override
+  String get filterOpenNow => 'Abierto ahora';
+
+  @override
+  String get filterFavorites => 'Favoritos';
+
+  @override
+  String get filterStatus => 'Estado';
+
+  @override
+  String get filterCategory => 'Categoría';
+
+  @override
+  String get filterEligibility => 'Elegibilidad';
+
+  @override
+  String get filterPreferences => 'Preferencias';
+
+  @override
+  String get filterFilters => 'Filtros';
+
+  @override
+  String get filterClearAll => 'Borrar todo';
+
+  @override
+  String get filterApply => 'Aplicar';
+
+  @override
+  String get filterApplyStatusTitle => 'Aplicar estado desde tus ajustes';
+
+  @override
+  String get filterAutoFillFromSettings =>
+      'Completar los filtros de abajo desde tus Ajustes.';
+
+  @override
+  String get commonYes => 'Sí';
+
+  @override
+  String get commonNo => 'No';
+
+  @override
+  String get filterApplyMyEligibility => 'Aplicar mi elegibilidad';
+
+  @override
+  String get filterApplyMyPreferences => 'Aplicar mis preferencias';
+
+  @override
+  String get filterApplyBoth => 'Aplicar ambos';
+
+  @override
+  String get eligProofOfIncome => 'Requiere comprobante de ingresos';
+
+  @override
+  String get eligProofOfResidency => 'Requiere comprobante de residencia';
+
+  @override
+  String get eligInsuranceRequired => 'Requiere seguro médico';
+
+  @override
+  String get eligReferralRequired => 'Requiere referencia médica';
+
+  @override
+  String get prefAcceptsWalkIns => 'Acepta visitas sin cita';
+
+  @override
+  String get prefAppointmentOnly => 'Solo con cita';
+
+  @override
+  String get prefOpenToImmigrants => 'Abierto a inmigrantes';
+
+  @override
+  String get prefFreeServices => 'Servicios gratuitos disponibles';
+
+  @override
+  String get prefSlidingScale => 'Tarifa según ingresos disponible';
+
+  @override
+  String get prefOtherLanguages => 'Otros idiomas disponibles';
+
+  @override
+  String get prefTelehealth => 'Telemedicina disponible';
+
+  @override
+  String get prefWheelchairAccessible => 'Accesible en silla de ruedas';
+
+  @override
+  String get prefServesOutsideArea => 'Atiende fuera del área';
+
+  @override
+  String get cardNextSteps => 'Próximos pasos';
+
+  @override
+  String get cardHours => 'Horario';
+
+  @override
+  String get cardServices => 'Servicios';
+
+  @override
+  String get cardAtAGlance => 'De un vistazo';
+
+  @override
+  String get cardVisitWebsite => 'Visitar sitio web';
+
+  @override
+  String get cardWebsiteNotAvailable => 'Sitio web no disponible';
+
+  @override
+  String get cardGetDirections => 'Cómo llegar';
+
+  @override
+  String get cardContactForHours =>
+      'Contacta al centro para conocer el horario';
+
+  @override
+  String get cardOpen247 => 'Abierto 24/7';
+
+  @override
+  String get cardRatePrompt => '¿Ya lo visitaste? Califica tu experiencia';
+
+  @override
+  String get cardAddressNotAvailable =>
+      'La dirección de este centro no está disponible';
+
+  @override
+  String get chipWalkIns => 'Sin cita';
+
+  @override
+  String get chipFree => 'Gratis';
+
+  @override
+  String get chipTelehealth => 'Telemedicina';
+
+  @override
+  String get chipAccessible => 'Accesible';
+
+  @override
+  String get chipSlidingScale => 'Tarifa variable';
+
+  @override
+  String get chipOtherLanguages => 'Otros idiomas';
+
+  @override
+  String get ratingAlreadyRated =>
+      'Ya calificaste este centro — actualízalo abajo.';
+
+  @override
+  String get ratingDateVisited => 'Fecha de visita';
+
+  @override
+  String get ratingRemove => 'Eliminar';
+
+  @override
+  String get ratingSubmit => 'Enviar';
+
+  @override
+  String get ratingUpdate => 'Actualizar';
+
+  @override
+  String get ratingThanks => '¡Gracias por tu calificación!';
+
+  @override
+  String get ratingUpdated => 'Calificación actualizada.';
+
+  @override
+  String get ratingRemoved => 'Calificación eliminada.';
+
+  @override
+  String get ratingSendFailed =>
+      'No se pudo enviar la calificación. Inténtalo de nuevo.';
+
+  @override
+  String get ratingRemoveFailed =>
+      'No se pudo eliminar la calificación. Inténtalo de nuevo.';
+
+  @override
+  String get ratingSignInRequired => 'Inicia sesión para calificar un centro.';
+
+  @override
+  String get requestDialogTitle => 'Solicitar un centro';
+
+  @override
+  String get requestDialogIntro =>
+      'Cuéntanos sobre un centro que nos falte y nuestro equipo lo revisará.';
+
+  @override
+  String get requestFieldName => 'Nombre del centro *';
+
+  @override
+  String get requestFieldNameError => 'Ingresa el nombre del centro';
+
+  @override
+  String get requestFieldDescription => 'Descripción';
+
+  @override
+  String get requestFieldServices => 'Servicios ofrecidos';
+
+  @override
+  String get requestFieldAddress => 'Dirección';
+
+  @override
+  String get requestFieldCity => 'Ciudad';
+
+  @override
+  String get requestFieldState => 'Estado';
+
+  @override
+  String get requestFieldZip => 'Código postal';
+
+  @override
+  String get requestFieldPhone => 'Teléfono';
+
+  @override
+  String get requestSubmitted =>
+      'Solicitud enviada — la revisaremos pronto. ¡Gracias!';
+
+  @override
+  String get requestSubmitFailed =>
+      'No se pudo enviar la solicitud. Inténtalo de nuevo.';
+
+  @override
+  String get requestSignInRequired =>
+      'Inicia sesión para enviar una solicitud.';
+
+  @override
+  String get settingsYourRatings => 'Tus calificaciones';
+
+  @override
+  String get settingsYourRequests => 'Tus solicitudes';
+
+  @override
+  String get settingsDirectionsApp => 'App de direcciones';
+
+  @override
+  String get settingsAskEachTime => 'Preguntar cada vez';
+
+  @override
+  String get settingsPreferences => 'Preferencias';
+
+  @override
+  String get settingsSignInHint =>
+      '¡Inicia sesión para guardar favoritos, filtrar por preferencias y más!';
+
+  @override
+  String get settingsSignInToSetPreferences =>
+      'Inicia sesión para configurar preferencias';
+
+  @override
+  String get settingsZipUpdated => 'Código postal actualizado';
+
+  @override
+  String get settingsUpdateZipTitle => 'Actualizar código postal';
+
+  @override
+  String get settingsZipValidation => 'Ingresa un código postal de 5 dígitos';
+
+  @override
+  String get settingsZipNotFoundError =>
+      'No se encontró ese código postal. Inténtalo de nuevo.';
+
+  @override
+  String get ratingsEmptyTitle => 'Aún no has calificado ningún centro.';
+
+  @override
+  String get ratingsEmptyHint =>
+      'Califica un centro desde el mapa o desde Vistos recientemente en Inicio. Tus calificaciones aparecerán aquí.';
+
+  @override
+  String ratingsVisitedOn(String date) {
+    return 'Visitado el $date';
+  }
+
+  @override
+  String get requestsEmptyTitle => 'Aún no hay solicitudes';
+
+  @override
+  String get requestsEmptyHint =>
+      '¿Conoces un centro que nos falte? Envía una solicitud y la revisaremos.';
+
+  @override
+  String get directionsOpenWith => 'Abrir direcciones con';
+
+  @override
+  String get directionsChangeLater => 'Puedes cambiarlo después en Ajustes.';
+
+  @override
+  String get directionsOpenFailed => 'No se pudieron abrir las direcciones.';
 
   @override
   String get settingsTitle => 'Ajustes';
