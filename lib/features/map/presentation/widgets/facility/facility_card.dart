@@ -85,8 +85,7 @@ class _FacilityCardState extends State<FacilityCard> {
   /// text renders in the body). Description is preferred but currently null
   /// across the dataset, so the services summary is the working preview.
   String get _subtitleText {
-    final locationLine =
-        '${widget.facility.city}, ${widget.facility.state}';
+    final locationLine = '${widget.facility.city}, ${widget.facility.state}';
     if (widget.isExpanded) return locationLine;
     final description = widget.facility.description.trim();
     if (description.isNotEmpty) return description;
@@ -290,6 +289,14 @@ class _FacilityCardState extends State<FacilityCard> {
           ..._buildServicesSection(facility),
           const Divider(height: 12),
           _buildNextStepsAndHours(facility),
+          // Full-width rate row directly under the Next Steps/Hours block —
+          // sits with the actions (not the old divider-boxed footer) and,
+          // spanning the full width, doesn't wrap awkwardly in the narrow
+          // Next Steps column.
+          if (widget.onRate != null) ...[
+            const SizedBox(height: 4),
+            _buildRateRow(),
+          ],
           const SizedBox(height: 4),
           const Divider(height: 8),
           _buildEligibilitySection(facility),
@@ -307,6 +314,42 @@ class _FacilityCardState extends State<FacilityCard> {
     } else {
       return content;
     }
+  }
+
+  /// Full-width "Already visited? Rate your experience" action, matching the
+  /// Next Steps item styling (bittersweet icon) so it reads as one more action.
+  Widget _buildRateRow() {
+    return InkWell(
+      onTap: widget.onRate,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.thumbs_up_down_outlined,
+              size: 20,
+              color: AppTheme.bittersweet,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.cardRatePrompt,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildNextStepsAndHours(Facility facility) {
@@ -356,14 +399,6 @@ class _FacilityCardState extends State<FacilityCard> {
                 value: AppLocalizations.of(context)!.cardGetDirections,
                 onTap: _openDirections,
               ),
-              // Rating entry lives with the other actions ("Already visited?
-              // Rate your experience") rather than in its own footer row.
-              if (widget.onRate != null)
-                _buildNextStepItem(
-                  icon: Icons.thumbs_up_down_outlined,
-                  value: AppLocalizations.of(context)!.cardRatePrompt,
-                  onTap: widget.onRate!,
-                ),
             ],
           ),
         ),

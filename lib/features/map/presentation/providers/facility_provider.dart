@@ -44,8 +44,8 @@ class FacilityProvider extends ChangeNotifier {
   void _subscribeToAuth() {
     if (DemoModeService().isDemoMode) return;
     try {
-      _authSubscription = Supabase.instance.client.auth.onAuthStateChange
-          .listen((state) {
+      _authSubscription =
+          Supabase.instance.client.auth.onAuthStateChange.listen((state) {
         if (state.event == AuthChangeEvent.signedIn ||
             state.event == AuthChangeEvent.initialSession) {
           unawaited(loadRemoteFavorites());

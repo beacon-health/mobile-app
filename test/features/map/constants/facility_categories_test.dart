@@ -18,7 +18,8 @@ void main() {
       );
     });
 
-    test('psych / treatment / mental-health nonprofit map to Mental Health', () {
+    test('psych / treatment / mental-health nonprofit map to Mental Health',
+        () {
       expect(
         FacilityCategories.groupFor('Hospital- PSYCH'),
         FacilityCategories.groupMentalHealth,

@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _errorMessage = result.errorMessage ??
           AppLocalizations.of(context)?.authSignInError ??
-              'Sign-in failed. Please try again.';
+          'Sign-in failed. Please try again.';
     });
   }
 
@@ -66,7 +66,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _goToLocationChoice() {
-    final prefilledZip = widget.isGuestUpgrade ? ZipCodeService().zipCode : null;
+    final prefilledZip =
+        widget.isGuestUpgrade ? ZipCodeService().zipCode : null;
     if (widget.isGuestUpgrade) {
       Navigator.pushAndRemoveUntil(
         context,
@@ -162,8 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed:
-                                  _isLoading ? null : _signInWithApple,
+                              onPressed: _isLoading ? null : _signInWithApple,
                               icon: const Icon(Icons.apple, size: 24),
                               label: Text(l10n.authContinueWithApple),
                               style: ElevatedButton.styleFrom(
@@ -296,9 +296,9 @@ class _LoginPageState extends State<LoginPage> {
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () =>
                                         UrlLauncherService.launchUrlString(
-                                      LegalUrls.termsOfUse,
-                                      context,
-                                    ),
+                                          LegalUrls.termsOfUse,
+                                          context,
+                                        ),
                                 ),
                                 TextSpan(text: l10n.authAnd),
                                 TextSpan(
@@ -310,9 +310,9 @@ class _LoginPageState extends State<LoginPage> {
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () =>
                                         UrlLauncherService.launchUrlString(
-                                      LegalUrls.privacyPolicy,
-                                      context,
-                                    ),
+                                          LegalUrls.privacyPolicy,
+                                          context,
+                                        ),
                                 ),
                               ],
                             ),
@@ -320,8 +320,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed:
-                                _isLoading ? null : _showLanguagePicker,
+                            onPressed: _isLoading ? null : _showLanguagePicker,
                             child: Text(
                               l10n.authSelectLanguage,
                               style: const TextStyle(
@@ -365,9 +364,8 @@ class _LoginPageState extends State<LoginPage> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _errorMessage =
-              AppLocalizations.of(context)?.authSignInError ??
-                  'Sign-in failed. Please try again.',
+          () => _errorMessage = AppLocalizations.of(context)?.authSignInError ??
+              'Sign-in failed. Please try again.',
         );
       }
     } finally {

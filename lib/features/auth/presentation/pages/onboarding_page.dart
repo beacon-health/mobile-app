@@ -100,11 +100,10 @@ class OnboardingPage extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                           recognizer: TapGestureRecognizer()
-                            ..onTap = () =>
-                                UrlLauncherService.launchUrlString(
-                              LegalUrls.termsOfUse,
-                              innerContext,
-                            ),
+                            ..onTap = () => UrlLauncherService.launchUrlString(
+                                  LegalUrls.termsOfUse,
+                                  innerContext,
+                                ),
                         ),
                         const TextSpan(text: ' and '),
                         TextSpan(
@@ -114,11 +113,10 @@ class OnboardingPage extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                           recognizer: TapGestureRecognizer()
-                            ..onTap = () =>
-                                UrlLauncherService.launchUrlString(
-                              LegalUrls.privacyPolicy,
-                              innerContext,
-                            ),
+                            ..onTap = () => UrlLauncherService.launchUrlString(
+                                  LegalUrls.privacyPolicy,
+                                  innerContext,
+                                ),
                         ),
                       ],
                     ),

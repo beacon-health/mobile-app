@@ -2,6 +2,7 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/home/presentation/pages/home_page.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/pages/map_page.dart';
+import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _MainNavBarState extends State<MainNavBar> {
         onNavigateToMap: _handleNavigateToMap,
       ),
       _MapPageWrapper(key: _mapPageKey),
+      const ProfilePage(),
       const SettingsPage(),
     ]);
   }
@@ -94,6 +96,10 @@ class _MainNavBarState extends State<MainNavBar> {
               BottomNavigationBarItem(
                 icon: const Icon(Icons.map),
                 label: l10n?.navMap ?? 'Map',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.person),
+                label: l10n?.navProfile ?? 'Profile',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.settings),

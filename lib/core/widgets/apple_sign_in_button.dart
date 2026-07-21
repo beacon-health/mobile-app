@@ -55,8 +55,8 @@ class _AppleSignInButtonState extends State<AppleSignInButton> {
       }
       // Default: restart onboarding from the location preference page,
       // pre-filling the guest's last-entered ZIP if we have one.
-      final prefilledZip = ZipCodeService().previousZipCode ??
-          ZipCodeService().zipCode;
+      final prefilledZip =
+          ZipCodeService().previousZipCode ?? ZipCodeService().zipCode;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(
           builder: (_) => LocationChoicePage(prefilledZip: prefilledZip),
@@ -70,7 +70,7 @@ class _AppleSignInButtonState extends State<AppleSignInButton> {
 
     final msg = result.errorMessage ??
         AppLocalizations.of(context)?.authSignInError ??
-            'Sign-in failed. Please try again.';
+        'Sign-in failed. Please try again.';
     widget.onFailure?.call(msg);
   }
 

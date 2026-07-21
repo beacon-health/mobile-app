@@ -87,8 +87,8 @@ class FacilityFeedbackService {
         .order('created_at', ascending: false);
     return (rows as List)
         .map(
-          (r) =>
-              FacilityFeedbackEntry.fromRow(Map<String, dynamic>.from(r as Map)),
+          (r) => FacilityFeedbackEntry.fromRow(
+              Map<String, dynamic>.from(r as Map)),
         )
         .toList();
   }
@@ -111,8 +111,7 @@ class FacilityFeedbackService {
         'rating': isThumbsUp ? 'up' : 'down',
         'comment': FacilityFeedbackEntry.tagsToComment(tags),
         // Date-only column; strip the time component.
-        'visited_on':
-            visitedOn.toIso8601String().split('T').first,
+        'visited_on': visitedOn.toIso8601String().split('T').first,
       },
       onConflict: 'user_id,facility_id',
     );

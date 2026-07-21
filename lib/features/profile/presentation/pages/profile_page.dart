@@ -1,394 +1,454 @@
-import 'package:beacon_app/core/models/demo_user.dart';
-import 'package:beacon_app/core/services/demo_mode_service.dart';
+import 'dart:async';
+
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
+import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
+import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
+import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Account + eligibility hub. Gated: guests see a sign-in prompt only.
+///
+/// Signed-in users get their identity, Ratings, Requests, sign-out, and the
+/// Eligibility gates (with a parent "apply to search" toggle). Eligibility is
+/// the search-affecting profile data; service Preferences live on the Map as
+/// filters, and app settings (ZIP, GPS, language, theme) live under Settings.
 class ProfilePage extends StatefulWidget {
-  final bool isGuest;
-
-  const ProfilePage({super.key, this.isGuest = false});
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _monthController = TextEditingController();
-  final TextEditingController _yearController = TextEditingController();
-  final TextEditingController _zipController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-
-  int _income = 0;
-  String? _gender;
-  String? _householdSize;
-  String? _selectedLanguage;
-  final List<String> _languages = [
-    'English',
-    'Spanish',
-    'Chinese',
-    'Tagalog',
-    'Vietnamese',
-  ];
-
   @override
-  void initState() {
-    super.initState();
-    final isDemoMode = DemoModeService().isDemoMode;
-    if (isDemoMode) {
-      _nameController.text = DemoUser.name;
-      _emailController.text = DemoUser.email;
-      _zipController.text = DemoUser.zipCode;
-      _selectedLanguage = DemoUser.language;
-    }
-  }
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isGuest = context.watch<GuestModeService>().isGuest;
 
-  @override
-  void dispose() {
-    _monthController.dispose();
-    _yearController.dispose();
-    _zipController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _monthController.text = '${picked.month}';
-        _yearController.text = '${picked.year}';
-      });
-    }
-  }
-
-  Future<void> _showLogoutDialog() async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.profileTitle)),
+      body: isGuest
+          ? _buildGuestState(l10n)
+          : ListView(
+              children: [
+                _buildIdentitySection(l10n),
+                _buildAccountLinksSection(l10n),
+                _buildEligibilitySection(l10n),
+                _buildSignOutButton(l10n),
+                const SizedBox(height: 32),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
     );
   }
 
-  Widget _buildGuestUI() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: () {
-              // Navigate back to login/signup page
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Create an Account',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.paynesGray,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  // --- Guest ---------------------------------------------------------------
+
+  Widget _buildGuestState(AppLocalizations l10n) {
+    return ListView(
+      children: [
+        _buildSectionHeader(l10n.settingsAccount),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.lock_outline,
+                        size: 26,
+                        color: Theme.of(context).colorScheme.onSurfaceFaded,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        l10n.settingsSignInHint,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Builder(
+                  builder: (innerContext) => AppleSignInButton(
+                    onFailure: (msg) {
+                      if (!innerContext.mounted) return;
+                      ScaffoldMessenger.of(innerContext).showSnackBar(
+                        SnackBar(content: Text(msg)),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildAuthenticatedUI() {
-    final isDemoMode = DemoModeService().isDemoMode;
-    final l10n = AppLocalizations.of(context);
+  // --- Identity ------------------------------------------------------------
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _nameController,
-              readOnly: isDemoMode,
-              decoration: InputDecoration(
-                labelText: l10n?.profileName ?? 'Full Name',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: const OutlineInputBorder(),
-                suffixIcon: isDemoMode
-                    ? const Icon(Icons.lock_outline, size: 18)
-                    : null,
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _emailController,
-              readOnly: isDemoMode,
-              decoration: InputDecoration(
-                labelText: l10n?.profileEmail ?? 'Email',
-                prefixIcon: const Icon(Icons.email_outlined),
-                border: const OutlineInputBorder(),
-                suffixIcon: isDemoMode
-                    ? const Icon(Icons.lock_outline, size: 18)
-                    : null,
-              ),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _zipController,
-              decoration: InputDecoration(
-                labelText: l10n?.profileZipCode ?? 'ZIP Code',
-                prefixIcon: const Icon(Icons.location_on_outlined),
-                border: const OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your ZIP code';
-                }
-                if (value.length != 5 || int.tryParse(value) == null) {
-                  return 'Please enter a valid 5-digit ZIP code';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n?.profileDateOfBirth ?? 'Date of Birth',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Row(
+  Widget _buildIdentitySection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(l10n.settingsAccount),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _monthController,
-                    decoration: InputDecoration(
-                      labelText: l10n?.profileMonth ?? 'Month',
-                      border: const OutlineInputBorder(),
-                    ),
-                    readOnly: true,
-                    onTap: () => _selectDate(context),
-                  ),
-                ),
+                _buildProviderBadge(),
                 const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _yearController,
-                    decoration: InputDecoration(
-                      labelText: l10n?.profileYear ?? 'Year',
-                      border: const OutlineInputBorder(),
-                    ),
-                    readOnly: true,
-                    onTap: () => _selectDate(context),
-                  ),
-                ),
+                Expanded(child: _buildSignedInIdentity()),
               ],
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: l10n?.profileLanguage ?? 'Preferred Language',
-                prefixIcon: const Icon(Icons.language),
-                border: const OutlineInputBorder(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Square badge showing the OAuth provider's logo (Apple/Google).
+  Widget _buildProviderBadge() {
+    final user = Supabase.instance.client.auth.currentUser;
+    final provider = user?.appMetadata['provider'] as String?;
+
+    Widget child;
+    Color background;
+    switch (provider) {
+      case 'apple':
+        background = Colors.black;
+        child = const Icon(Icons.apple, size: 28, color: Colors.white);
+      case 'google':
+        background = Colors.white;
+        child = const Icon(
+          Icons.g_mobiledata,
+          size: 36,
+          color: Color(0xFF4285F4),
+        );
+      default:
+        background = AppTheme.honeydew;
+        child = const Icon(
+          Icons.person,
+          size: 28,
+          color: AppTheme.paynesGray,
+        );
+    }
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        border: provider == 'google'
+            ? Border.all(color: Theme.of(context).dividerColor)
+            : null,
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _buildSignedInIdentity() {
+    final user = Supabase.instance.client.auth.currentUser;
+    final providerLabel = _providerLabelFor(user);
+    final email = _displayEmail(user);
+    final name = _displayName(user);
+
+    final primary = name ??
+        (providerLabel != null
+            ? 'Signed in through $providerLabel'
+            : 'Signed in');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          primary,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        if (email != null)
+          Text(
+            email,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceMuted,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        else if (name != null && providerLabel != null)
+          Text(
+            'Signed in through $providerLabel',
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceMuted,
+            ),
+          ),
+      ],
+    );
+  }
+
+  String? _providerLabelFor(User? user) {
+    final provider = user?.appMetadata['provider'] as String?;
+    if (provider == null || provider.isEmpty) return null;
+    if (provider == 'email') return null;
+    return provider[0].toUpperCase() + provider.substring(1);
+  }
+
+  String? _displayEmail(User? user) {
+    final email = user?.email;
+    if (email == null || email.isEmpty) return null;
+    return email;
+  }
+
+  String? _displayName(User? user) {
+    final meta = user?.userMetadata;
+    if (meta == null) return null;
+    for (final key in const ['name', 'full_name', 'display_name']) {
+      final value = meta[key];
+      if (value is String && value.trim().isNotEmpty) return value.trim();
+    }
+    return null;
+  }
+
+  // --- Ratings / Requests --------------------------------------------------
+
+  Widget _buildAccountLinksSection(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.thumbs_up_down_outlined,
+                color: AppTheme.paynesGray,
               ),
-              initialValue: _selectedLanguage,
-              items: _languages.map((String language) {
-                return DropdownMenuItem<String>(
-                  value: language,
-                  child: Text(language),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedLanguage = newValue;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a language';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            Text(
-              l10n?.profileOptionalInfo ?? 'Optional Information',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+              title: Text(l10n.settingsYourRatings),
+              trailing: const Icon(Icons.chevron_right, size: 20),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const MyRatingsPage()),
               ),
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: l10n?.profileGender ?? 'Gender',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: const OutlineInputBorder(),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(
+                Icons.add_business_outlined,
+                color: AppTheme.paynesGray,
               ),
-              initialValue: _gender,
-              items: ['Male', 'Female', 'Non-binary', 'Prefer not to say']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _gender = newValue;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: l10n?.profileHouseholdSize ?? 'Household Size',
-                prefixIcon: const Icon(Icons.people_outline),
-                border: const OutlineInputBorder(),
-              ),
-              initialValue: _householdSize,
-              items: List.generate(10, (index) => '${index + 1}')
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _householdSize = newValue;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n?.profileAnnualIncome ?? 'Annual Income',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Slider(
-                  value: _income.toDouble(),
-                  min: 0,
-                  max: 200000,
-                  divisions: 20,
-                  label: '\$$_income',
-                  onChanged: (double value) {
-                    setState(() {
-                      _income = value.round();
-                    });
-                  },
-                ),
-                Text(
-                  '\$$_income/year',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profile saved')),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  l10n?.profileSaveChanges ?? 'Save Changes',
-                  style: const TextStyle(fontSize: 16),
-                ),
+              title: Text(l10n.settingsYourRequests),
+              trailing: const Icon(Icons.chevron_right, size: 20),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const MyRequestsPage()),
               ),
             ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () {},
-              child: Text(l10n?.profileChangePassword ?? 'Change Password'),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(l10n?.profilePrivacyPolicy ?? 'Privacy Policy'),
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.profileTitle ?? 'Profile'),
-        actions: widget.isGuest
-            ? null
-            : [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: _showLogoutDialog,
+  // --- Eligibility ---------------------------------------------------------
+
+  Widget _buildEligibilitySection(AppLocalizations l10n) {
+    final epService = context.watch<EligibilityPreferencesService>();
+    final state = epService.eligibility;
+    final applyOn = state.applyToSearch;
+    void update(EligibilityState next) {
+      unawaited(epService.updateEligibility(next));
+    }
+
+    // Child toggles are disabled (not reset) when the parent is off.
+    ValueChanged<bool>? child(EligibilityState Function(bool) build) {
+      if (!applyOn) return null;
+      return (v) => update(build(v));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(l10n.settingsEligibility),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              SwitchListTile(
+                title: Text(l10n.profileApplyEligibility),
+                subtitle: Text(l10n.profileApplyEligibilityDesc),
+                secondary: const Icon(
+                  Icons.filter_alt_outlined,
+                  color: AppTheme.paynesGray,
                 ),
-              ],
+                value: applyOn,
+                activeThumbColor: AppTheme.resedaGreen,
+                onChanged: (v) =>
+                    unawaited(epService.setApplyEligibilityToSearch(v)),
+              ),
+              const Divider(height: 1),
+              _eligToggle(
+                l10n.eligProofOfIncome,
+                Icons.attach_money,
+                state.proofOfIncome,
+                child((v) => state.copyWith(proofOfIncome: v)),
+              ),
+              const Divider(height: 1),
+              _eligToggle(
+                l10n.eligProofOfResidency,
+                Icons.home_outlined,
+                state.proofOfResidency,
+                child((v) => state.copyWith(proofOfResidency: v)),
+              ),
+              const Divider(height: 1),
+              _eligToggle(
+                l10n.eligInsuranceRequired,
+                Icons.health_and_safety,
+                state.insuranceRequired,
+                child((v) => state.copyWith(insuranceRequired: v)),
+              ),
+              const Divider(height: 1),
+              _eligToggle(
+                l10n.eligReferralRequired,
+                Icons.assignment_ind_outlined,
+                state.referralRequired,
+                child((v) => state.copyWith(referralRequired: v)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _eligToggle(
+    String title,
+    IconData icon,
+    bool value,
+    ValueChanged<bool>? onChanged,
+  ) {
+    return SwitchListTile(
+      title: Text(title),
+      secondary: Icon(icon, color: AppTheme.paynesGray),
+      value: value,
+      activeThumbColor: AppTheme.resedaGreen,
+      onChanged: onChanged,
+    );
+  }
+
+  // --- Sign out ------------------------------------------------------------
+
+  Widget _buildSignOutButton(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          icon: const Icon(Icons.logout, color: AppTheme.paynesGray),
+          label: Text(
+            l10n.settingsSignOut,
+            style: const TextStyle(
+              color: AppTheme.paynesGray,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            side: const BorderSide(color: AppTheme.paynesGray),
+          ),
+          onPressed: () => _confirmSignOut(l10n),
+        ),
       ),
-      body: widget.isGuest ? _buildGuestUI() : _buildAuthenticatedUI(),
+    );
+  }
+
+  Future<void> _confirmSignOut(AppLocalizations l10n) async {
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsSignOut),
+        content: Text(l10n.settingsSignOutConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.settingsSignOut),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSignOut != true || !mounted) return;
+    await _performSignOut(l10n);
+  }
+
+  Future<void> _performSignOut(AppLocalizations l10n) async {
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'ProfilePage.signOut',
+      );
+    }
+    await ZipCodeService().clear();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.settingsSignOutSuccess)),
+    );
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+      (route) => false,
     );
   }
 }

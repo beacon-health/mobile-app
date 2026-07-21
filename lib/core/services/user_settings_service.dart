@@ -45,7 +45,8 @@ class UserSettingsService {
         }
       });
     } catch (e, stackTrace) {
-      ErrorReporter.instance.report(e, stackTrace, context: '$_logContext.init');
+      ErrorReporter.instance
+          .report(e, stackTrace, context: '$_logContext.init');
     }
   }
 
@@ -86,9 +87,9 @@ class UserSettingsService {
     if (userId == null) return;
     try {
       await Supabase.instance.client.from(_table).upsert(
-        _payload(userId),
-        onConflict: 'user_id',
-      );
+            _payload(userId),
+            onConflict: 'user_id',
+          );
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,

@@ -3,6 +3,8 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
+    # Creates a temporary keychain on CI so cloud-managed signing certs can be
+    # installed for this run only.
     setup_ci if ENV["CI"]
 
     api_key = app_store_connect_api_key(
@@ -12,11 +14,20 @@ platform :ios do
       is_key_content_base64: true,
     )
 
+    # Automatic ("cloud-managed") signing: Xcode fetches/creates the App Store
+    # distribution certificate + provisioning profile via the App Store Connect
+    # API key. `-allowProvisioningUpdates` authorizes that at archive time, so
+    # no certs repo (Match) is required. The API key needs App Manager access.
     build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "../build/ios",
+      xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "3VY6L9SG6K",
+      },
     )
 
     upload_to_testflight(

@@ -2,8 +2,8 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
-import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -63,11 +63,9 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
   }
 
   void _goToMain() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const MainNavBar()),
-      (route) => false,
-    );
+    // Signed-in users get the required Eligibility step next; guests go
+    // straight to the app (§2.10).
+    finishLocationOnboarding(context);
   }
 
   @override

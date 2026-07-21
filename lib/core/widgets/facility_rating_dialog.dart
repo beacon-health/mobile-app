@@ -241,8 +241,8 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
 
   /// Tappable "Date visited" row; opens a past-only date picker.
   Widget _buildDateRow(ColorScheme colorScheme) {
-    final formatted = MaterialLocalizations.of(context)
-        .formatMediumDate(_visitedOn);
+    final formatted =
+        MaterialLocalizations.of(context).formatMediumDate(_visitedOn);
     return InkWell(
       onTap: _busy ? null : _pickVisitDate,
       borderRadius: BorderRadius.circular(8),

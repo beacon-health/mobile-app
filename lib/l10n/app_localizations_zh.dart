@@ -89,13 +89,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterFavorites => '收藏';
 
   @override
-  String get filterStatus => '状态';
-
-  @override
   String get filterCategory => '类别';
-
-  @override
-  String get filterEligibility => '资格';
 
   @override
   String get filterPreferences => '偏好';
@@ -110,25 +104,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterApply => '应用';
 
   @override
-  String get filterApplyStatusTitle => '应用您设置中的状态';
-
-  @override
-  String get filterAutoFillFromSettings => '根据您的设置自动填写以下筛选条件。';
-
-  @override
   String get commonYes => '是';
 
   @override
   String get commonNo => '否';
-
-  @override
-  String get filterApplyMyEligibility => '应用我的资格';
-
-  @override
-  String get filterApplyMyPreferences => '应用我的偏好';
-
-  @override
-  String get filterApplyBoth => '同时应用';
 
   @override
   String get eligProofOfIncome => '需要收入证明';
@@ -308,13 +287,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAskEachTime => '每次询问';
 
   @override
-  String get settingsPreferences => '偏好';
-
-  @override
   String get settingsSignInHint => '登录即可保存收藏、按偏好筛选等！';
-
-  @override
-  String get settingsSignInToSetPreferences => '登录以设置偏好';
 
   @override
   String get settingsZipUpdated => '邮政编码已更新';
@@ -395,48 +368,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profileTitle => '个人资料';
-
-  @override
-  String get profileName => '姓名';
-
-  @override
-  String get profileEmail => '电子邮箱';
-
-  @override
-  String get profileZipCode => '邮政编码';
-
-  @override
-  String get profileDateOfBirth => '出生日期';
-
-  @override
-  String get profileMonth => '月';
-
-  @override
-  String get profileYear => '年';
-
-  @override
-  String get profileLanguage => '首选语言';
-
-  @override
-  String get profileOptionalInfo => '可选信息';
-
-  @override
-  String get profileGender => '性别';
-
-  @override
-  String get profileHouseholdSize => '家庭人数';
-
-  @override
-  String get profileAnnualIncome => '年收入';
-
-  @override
-  String get profileSaveChanges => '保存更改';
-
-  @override
-  String get profileChangePassword => '更改密码';
-
-  @override
-  String get profilePrivacyPolicy => '隐私政策';
 
   @override
   String get authContinueWithGoogle => '使用 Google 继续';
@@ -522,4 +453,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonCancel => '取消';
+
+  @override
+  String get navProfile => '个人资料';
+
+  @override
+  String get profileApplyEligibility => '将资格条件应用于搜索';
+
+  @override
+  String get profileApplyEligibilityDesc => '仅显示符合您资格的机构。';
+
+  @override
+  String get commonSave => '保存';
+
+  @override
+  String get onboardingEligibilityTitle => '您的资格';
+
+  @override
+  String get onboardingEligibilitySubtitle =>
+      '告诉我们哪些适用于您，以便显示您符合条件的机构。您可以随时在个人资料中更改。';
+
+  @override
+  String get onboardingContinue => '继续';
 }

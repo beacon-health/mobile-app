@@ -44,7 +44,8 @@ class GuestModeService extends ChangeNotifier {
           .listen((_) => notifyListeners());
     } catch (_) {
       // Supabase not yet initialized — [isGuest] defaults to true.
-      debugPrint('$_debugName: Supabase not available during init, skipping auth listener.');
+      debugPrint(
+          '$_debugName: Supabase not available during init, skipping auth listener.');
     }
   }
 

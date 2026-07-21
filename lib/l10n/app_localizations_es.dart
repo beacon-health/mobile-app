@@ -94,13 +94,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterFavorites => 'Favoritos';
 
   @override
-  String get filterStatus => 'Estado';
-
-  @override
   String get filterCategory => 'Categoría';
-
-  @override
-  String get filterEligibility => 'Elegibilidad';
 
   @override
   String get filterPreferences => 'Preferencias';
@@ -115,26 +109,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterApply => 'Aplicar';
 
   @override
-  String get filterApplyStatusTitle => 'Aplicar estado desde tus ajustes';
-
-  @override
-  String get filterAutoFillFromSettings =>
-      'Completar los filtros de abajo desde tus Ajustes.';
-
-  @override
   String get commonYes => 'Sí';
 
   @override
   String get commonNo => 'No';
-
-  @override
-  String get filterApplyMyEligibility => 'Aplicar mi elegibilidad';
-
-  @override
-  String get filterApplyMyPreferences => 'Aplicar mis preferencias';
-
-  @override
-  String get filterApplyBoth => 'Aplicar ambos';
 
   @override
   String get eligProofOfIncome => 'Requiere comprobante de ingresos';
@@ -323,15 +301,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAskEachTime => 'Preguntar cada vez';
 
   @override
-  String get settingsPreferences => 'Preferencias';
-
-  @override
   String get settingsSignInHint =>
       '¡Inicia sesión para guardar favoritos, filtrar por preferencias y más!';
-
-  @override
-  String get settingsSignInToSetPreferences =>
-      'Inicia sesión para configurar preferencias';
 
   @override
   String get settingsZipUpdated => 'Código postal actualizado';
@@ -416,48 +387,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileTitle => 'Perfil';
-
-  @override
-  String get profileName => 'Nombre completo';
-
-  @override
-  String get profileEmail => 'Correo electrónico';
-
-  @override
-  String get profileZipCode => 'Código postal';
-
-  @override
-  String get profileDateOfBirth => 'Fecha de nacimiento';
-
-  @override
-  String get profileMonth => 'Mes';
-
-  @override
-  String get profileYear => 'Año';
-
-  @override
-  String get profileLanguage => 'Idioma preferido';
-
-  @override
-  String get profileOptionalInfo => 'Información opcional';
-
-  @override
-  String get profileGender => 'Género';
-
-  @override
-  String get profileHouseholdSize => 'Tamaño del hogar';
-
-  @override
-  String get profileAnnualIncome => 'Ingreso anual';
-
-  @override
-  String get profileSaveChanges => 'Guardar cambios';
-
-  @override
-  String get profileChangePassword => 'Cambiar contraseña';
-
-  @override
-  String get profilePrivacyPolicy => 'Política de privacidad';
 
   @override
   String get authContinueWithGoogle => 'Continuar con Google';
@@ -549,4 +478,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancelar';
+
+  @override
+  String get navProfile => 'Perfil';
+
+  @override
+  String get profileApplyEligibility =>
+      'Aplicar criterios de elegibilidad a la búsqueda';
+
+  @override
+  String get profileApplyEligibilityDesc =>
+      'Mostrar solo centros que coincidan con tu elegibilidad.';
+
+  @override
+  String get commonSave => 'Guardar';
+
+  @override
+  String get onboardingEligibilityTitle => 'Tu elegibilidad';
+
+  @override
+  String get onboardingEligibilitySubtitle =>
+      'Cuéntanos qué aplica a ti para mostrarte centros para los que calificas. Puedes cambiarlo cuando quieras en tu Perfil.';
+
+  @override
+  String get onboardingContinue => 'Continuar';
 }

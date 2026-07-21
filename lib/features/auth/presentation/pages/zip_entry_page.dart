@@ -2,7 +2,7 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
-import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -59,11 +59,9 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const MainNavBar()),
-      (route) => false,
-    );
+    // Signed-in users get the required Eligibility step next; guests go
+    // straight to the app (§2.10).
+    finishLocationOnboarding(context);
   }
 
   @override

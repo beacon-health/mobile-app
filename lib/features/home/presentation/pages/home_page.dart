@@ -162,7 +162,8 @@ class _HomePageState extends State<HomePage>
         }
       }
     } catch (e, stackTrace) {
-      ErrorReporter.instance.report(e, stackTrace, context: 'HomePage._loadData');
+      ErrorReporter.instance
+          .report(e, stackTrace, context: 'HomePage._loadData');
       if (mounted) {
         facilityProvider.setLoading(false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -490,8 +491,7 @@ class _HomePageState extends State<HomePage>
             child: Column(
               children: [
                 for (var i = 0; i < recent.length; i++) ...[
-                  if (i > 0)
-                    Divider(height: 1, color: Colors.grey[200]),
+                  if (i > 0) Divider(height: 1, color: Colors.grey[200]),
                   _buildRecentRow(recent[i], isGuest: isGuest),
                 ],
               ],
@@ -547,7 +547,8 @@ class _HomePageState extends State<HomePage>
     showFacilityRatingDialog(context, facility: facility);
   }
 
-  Widget _buildFavoritesSection(AppLocalizations l10n, {required bool isGuest}) {
+  Widget _buildFavoritesSection(AppLocalizations l10n,
+      {required bool isGuest}) {
     if (isGuest) {
       return Center(
         child: SingleChildScrollView(

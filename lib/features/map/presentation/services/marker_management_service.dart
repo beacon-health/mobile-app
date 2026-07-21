@@ -92,8 +92,8 @@ class MarkerManagementService {
     final scale = 256.0 * math.pow(2.0, zoom);
     final worldX = (lng + 180.0) / 360.0 * scale;
     final sinLat = math.sin(lat * math.pi / 180.0);
-    final worldY = (0.5 - math.log((1 + sinLat) / (1 - sinLat)) / (4 * math.pi)) *
-        scale;
+    final worldY =
+        (0.5 - math.log((1 + sinLat) / (1 - sinLat)) / (4 * math.pi)) * scale;
     final gx = (worldX / _clusterGridPx).floor();
     final gy = (worldY / _clusterGridPx).floor();
     return '$gx:$gy';
@@ -115,7 +115,8 @@ class MarkerManagementService {
     final icon = await MarkerUtils.createClusterMarker(count, context);
 
     return Marker(
-      markerId: MarkerId('cluster_${center.latitude}_${center.longitude}_$count'),
+      markerId:
+          MarkerId('cluster_${center.latitude}_${center.longitude}_$count'),
       position: center,
       icon: icon,
       onTap: () => onClusterTap(center),

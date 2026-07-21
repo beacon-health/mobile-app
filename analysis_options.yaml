@@ -30,6 +30,11 @@ linter:
     prefer_null_aware_method_calls: false
     use_setters_to_change_properties: false
     use_named_constants: false
+    # Incompatible with the Dart 3.7+ "tall style" formatter, which owns
+    # line-breaking and strips these commas — so `dart format` and this lint
+    # fought each other in CI. very_good_analysis retired the rule for the
+    # same reason; disable it here until the dependency catches up.
+    require_trailing_commas: false
 
     # Enforced from day one
     avoid_print: true

@@ -203,32 +203,32 @@ class FacilityListPanel extends StatelessWidget {
               : facilities.isEmpty
                   ? _buildEmptyState(context)
                   : ListView.builder(
-                  controller: scrollController,
-                  physics: isFullyExpanded
-                      ? const ClampingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics(),
-                        )
-                      : const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 8.0, bottom: 100.0),
-                  itemCount: facilities.length,
-                  itemBuilder: (context, index) {
-                    final facility = facilities[index];
-                    final isExpanded = facility.id == expandedFacilityId;
-                    return FacilityCard(
-                      facility: facility,
-                      isExpanded: isExpanded,
-                      onToggleExpand: () =>
-                          onToggleFacilityExpansion(facility.id),
-                      onToggleFavorite: () => onToggleFavorite(facility.id),
-                      onLaunchUrl: onLaunchUrl,
-                      buildCategoryIcon: buildCategoryIcon,
-                      canFavorite: canFavorite,
-                      onRate: onRateFacility == null
-                          ? null
-                          : () => onRateFacility!(facility),
-                    );
-                  },
-                ),
+                      controller: scrollController,
+                      physics: isFullyExpanded
+                          ? const ClampingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            )
+                          : const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 100.0),
+                      itemCount: facilities.length,
+                      itemBuilder: (context, index) {
+                        final facility = facilities[index];
+                        final isExpanded = facility.id == expandedFacilityId;
+                        return FacilityCard(
+                          facility: facility,
+                          isExpanded: isExpanded,
+                          onToggleExpand: () =>
+                              onToggleFacilityExpansion(facility.id),
+                          onToggleFavorite: () => onToggleFavorite(facility.id),
+                          onLaunchUrl: onLaunchUrl,
+                          buildCategoryIcon: buildCategoryIcon,
+                          canFavorite: canFavorite,
+                          onRate: onRateFacility == null
+                              ? null
+                              : () => onRateFacility!(facility),
+                        );
+                      },
+                    ),
         ),
       ),
     );

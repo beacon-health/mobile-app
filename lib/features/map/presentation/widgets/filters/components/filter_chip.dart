@@ -82,9 +82,8 @@ class CustomFilterChip extends StatelessWidget {
               label,
               style: TextStyle(
                 color: textColor,
-                fontWeight: isSelected && !isLocked
-                    ? FontWeight.w600
-                    : FontWeight.w500,
+                fontWeight:
+                    isSelected && !isLocked ? FontWeight.w600 : FontWeight.w500,
                 fontSize: FilterDesignTokens.fontSizeSmall,
               ),
             ),

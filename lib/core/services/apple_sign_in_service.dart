@@ -46,8 +46,7 @@ class AppleSignInService {
   static Future<AppleSignInResult> signIn() async {
     try {
       final rawNonce = Supabase.instance.client.auth.generateRawNonce();
-      final hashedNonce =
-          sha256.convert(utf8.encode(rawNonce)).toString();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [

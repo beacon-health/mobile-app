@@ -2,14 +2,15 @@
 
 > **Context doc for AI agents.** Read this before making changes.
 >
-> **Last updated:** 2026-06-25 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
+> **Last updated:** 2026-07-08 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
 >
-> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 UX overhaul**) is
-> **code-complete** — `flutter analyze` clean, 31/31 tests pass. The app builds
-> and uploads to TestFlight. What's left is **device QA + non-engineering
-> launch prep** (App Store listing, legal, beta testers) and **a few Supabase
-> SQL blocks** (§2.7 constraint, §2.8 state gate, §2.9 `visited_on` +
-> `facility_requests`) — see the **Pre-Launch Checklist (§3)**.
+> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 / §2.10 UX overhauls**)
+> is **code-complete** — `flutter analyze` clean, 31/31 tests pass, `dart
+> format` clean. The app builds and uploads to TestFlight. What's left is
+> **device QA + non-engineering launch prep** (App Store listing, legal, beta
+> testers) and **a few Supabase SQL blocks** (§2.7 constraint, §2.8 state gate,
+> §2.9 `visited_on` + `facility_requests`; **§2.10 adds no new SQL**) — see the
+> **Pre-Launch Checklist (§3)**.
 >
 > **✅ Done (all code)**
 > - **§2.1–§2.5:** Auth (native Sign in with Apple), GPS, crash reporting
@@ -31,6 +32,15 @@
 >   resources search bar; Distance filter removed (fixed 5-mi + "Search this
 >   area"); same-address marker fan-out; directions chooser (Apple/Google/
 >   Waze, remembered); home shadows; **full i18n chrome coverage** (en/es/zh).
+> - **§2.10 Profile + eligibility rework (July 2026):** new **Profile** nav tab
+>   (gated) holding account identity, Ratings, Requests, sign-out, and the
+>   **Eligibility** gates with a parent "apply to search" toggle; **Eligibility
+>   auto-applies** to the map (removed from map filters); **Preferences** is now
+>   Map-only; **Status** filter removed; Settings slimmed to App (now incl. ZIP
+>   + Use My Location) + About; required **eligibility onboarding step** for
+>   signed-in users; animated single-card collapse; cleaner rate-row layout;
+>   **TestFlight CI** hardened (API-key signing + build-number bump + main
+>   trigger).
 >
 > **⏳ Remaining**
 > - **Device QA** end-to-end on real hardware (§3.1).
@@ -640,6 +650,65 @@ create policy "Users manage own facility requests" on public.facility_requests
   with check (auth.uid() = user_id);
 ```
 
+### 2.10 Profile Tab + Eligibility/Preferences Rework (July 2026) ✅ CODE-COMPLETE
+
+Restructured where Eligibility, Preferences, and account data live, plus CI +
+polish fixes. `flutter analyze` clean, 31/31 tests, `dart format` clean. **No
+new Supabase SQL** — the eligibility parent toggle rides in the existing
+`user_settings.eligibility` jsonb (`apply_to_search`).
+
+**Navigation & pages**
+- New **Profile** tab between Map and Settings (`lib/features/profile/…`),
+  **gated** — guests see a sign-in CTA only (per product decision). Signed-in
+  users get: account identity ("Signed in through…"), **Your Ratings**, **Your
+  Requests**, **Eligibility** gates, and **Sign out** (all moved off Settings).
+- **Settings** slimmed to **App** + **About**. ZIP code and Use My Location
+  moved into the **App** section; account/eligibility/preferences/sign-out
+  removed. (The old dead `profile_page.dart` DOB/income form was replaced.)
+
+**Eligibility vs. Preferences split**
+- **Eligibility** is no longer a map filter. It lives only on Profile and
+  **auto-applies** to map search, gated by a parent **"Apply eligibility
+  criteria to search"** toggle (`EligibilityState.applyToSearch`, default on).
+  Turning it off **disables (doesn't reset)** the child gates. The map listens
+  to `EligibilityPreferencesService` and re-filters when it changes.
+- **Preferences** is now **Map-only** (the existing filter chip/modal section),
+  still sign-in-gated for guests (per product decision). Removed from Settings.
+- **Status** filter (chip + modal section + action sheet) removed entirely.
+
+**Onboarding**
+- After the location step, **signed-in** users hit a **required** Eligibility
+  step (`EligibilityOnboardingPage`) before the app opens; **guests skip it**.
+  Picks carry to the Profile tab. Both the GPS-grant and ZIP-entry paths route
+  through `finishLocationOnboarding()`.
+
+**Polish**
+- Single-facility card now **animates its swipe-down/tap collapse** (slide
+  down, matching the list panel) instead of vanishing.
+- Facility card "Already visited? Rate your experience" moved to a **clean
+  full-width row** under Next Steps/Hours (was wrapping to 4 lines in the
+  narrow column).
+
+**TestFlight CI hardening** (see §3.1 / §6)
+- `ios/fastlane/Fastfile` `beta` lane now does **App Store Connect API-key
+  automatic ("cloud-managed") signing** (`-allowProvisioningUpdates` +
+  `signingStyle: automatic`) — the previous lane never set up signing at all.
+- Workflow triggers on **push to `main`** (doc-only commits ignored) as well as
+  manual dispatch, and the build number is `1000 + github.run_number` so
+  TestFlight never rejects a duplicate. Added `ios/Gemfile` + `bundle exec`.
+- **Requires** the App Store Connect API key to have **App Manager** access
+  (needed to create/download the distribution cert + profile). See §6.
+
+**Lint note:** `require_trailing_commas` was disabled in
+`analysis_options.yaml` — it's incompatible with Dart 3.7+'s "tall style"
+`dart format` (which strips those commas), so the two fought in CI.
+`very_good_analysis` retired the rule for the same reason.
+
+> **iOS Metal HUD (dev question):** the black telemetry box a single tester saw
+> over the map is iOS's **Metal Performance HUD**, a per-device developer
+> overlay (Settings → Developer → Graphics HUD, or `MTL_HUD_ENABLED=1` in an
+> Xcode scheme). Not app code; never appears in Release/TestFlight builds.
+
 ## 3. Pre-Launch Checklist
 
 All MVP **code** is done and the app uploads to TestFlight. The work below is
@@ -738,7 +807,14 @@ Google Maps key: `ios/Flutter/Secrets.xcconfig` (gitignored).
 | `APP_STORE_CONNECT_API_KEY_ID` | Fastlane TestFlight upload |
 | `APP_STORE_CONNECT_API_KEY_ISSUER_ID` | Fastlane TestFlight upload |
 | `APP_STORE_CONNECT_API_KEY_CONTENT` | Base64-encoded `.p8` key |
-| `MATCH_PASSWORD` | Fastlane Match encryption |
+| `MATCH_PASSWORD` | Fastlane Match encryption (unused — CI now uses API-key cloud signing, §2.10) |
+
+> **TestFlight signing (§2.10):** the `beta` lane uses **API-key cloud-managed
+> signing** — the App Store Connect API key above must have **App Manager**
+> access so Xcode can create/download the distribution certificate + App Store
+> provisioning profile at build time. No Fastlane Match / certs repo is needed.
+> The workflow runs on push to `main` and bumps the build number automatically
+> (`1000 + run_number`).
 
 ---
 

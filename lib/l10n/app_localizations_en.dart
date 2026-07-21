@@ -93,13 +93,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterFavorites => 'Favorites';
 
   @override
-  String get filterStatus => 'Status';
-
-  @override
   String get filterCategory => 'Category';
-
-  @override
-  String get filterEligibility => 'Eligibility';
 
   @override
   String get filterPreferences => 'Preferences';
@@ -114,26 +108,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterApply => 'Apply';
 
   @override
-  String get filterApplyStatusTitle => 'Apply Status From Your Settings';
-
-  @override
-  String get filterAutoFillFromSettings =>
-      'Auto-fill the filters below from your Settings.';
-
-  @override
   String get commonYes => 'Yes';
 
   @override
   String get commonNo => 'No';
-
-  @override
-  String get filterApplyMyEligibility => 'Apply my Eligibility';
-
-  @override
-  String get filterApplyMyPreferences => 'Apply my Preferences';
-
-  @override
-  String get filterApplyBoth => 'Apply both';
 
   @override
   String get eligProofOfIncome => 'Proof of income required';
@@ -317,14 +295,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAskEachTime => 'Ask each time';
 
   @override
-  String get settingsPreferences => 'Preferences';
-
-  @override
   String get settingsSignInHint =>
       'Sign in to store favorites, filter by preferences, and more!';
-
-  @override
-  String get settingsSignInToSetPreferences => 'Sign in to set preferences';
 
   @override
   String get settingsZipUpdated => 'ZIP code updated';
@@ -408,48 +380,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileTitle => 'Profile';
-
-  @override
-  String get profileName => 'Full Name';
-
-  @override
-  String get profileEmail => 'Email';
-
-  @override
-  String get profileZipCode => 'ZIP Code';
-
-  @override
-  String get profileDateOfBirth => 'Date of Birth';
-
-  @override
-  String get profileMonth => 'Month';
-
-  @override
-  String get profileYear => 'Year';
-
-  @override
-  String get profileLanguage => 'Preferred Language';
-
-  @override
-  String get profileOptionalInfo => 'Optional Information';
-
-  @override
-  String get profileGender => 'Gender';
-
-  @override
-  String get profileHouseholdSize => 'Household Size';
-
-  @override
-  String get profileAnnualIncome => 'Annual Income';
-
-  @override
-  String get profileSaveChanges => 'Save Changes';
-
-  @override
-  String get profileChangePassword => 'Change Password';
-
-  @override
-  String get profilePrivacyPolicy => 'Privacy Policy';
 
   @override
   String get authContinueWithGoogle => 'Continue with Google';
@@ -539,4 +469,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonCancel => 'Cancel';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String get profileApplyEligibility => 'Apply eligibility criteria to search';
+
+  @override
+  String get profileApplyEligibilityDesc =>
+      'Only show facilities that match your eligibility.';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get onboardingEligibilityTitle => 'Your eligibility';
+
+  @override
+  String get onboardingEligibilitySubtitle =>
+      'Tell us what applies to you so we can show facilities you qualify for. You can change this anytime on your Profile.';
+
+  @override
+  String get onboardingContinue => 'Continue';
 }

@@ -46,9 +46,8 @@ class SelectionChipBuilder<T> {
             child: Text(
               getLabel(option),
               style: TextStyle(
-                color: isSelected
-                    ? AppTheme.resedaGreen
-                    : colorScheme.onSurface,
+                color:
+                    isSelected ? AppTheme.resedaGreen : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -96,9 +95,8 @@ class SelectionChipBuilder<T> {
             child: Text(
               getLabel(option),
               style: TextStyle(
-                color: isSelected
-                    ? AppTheme.resedaGreen
-                    : colorScheme.onSurface,
+                color:
+                    isSelected ? AppTheme.resedaGreen : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

@@ -69,19 +69,15 @@ class SupabaseFacilityService {
   /// still resolvable here.
   Future<List<Facility>> getFacilitiesByIds(List<String> ids) async {
     if (ids.isEmpty) return const [];
-    final response =
-        await _client.from(_viewName).select().inFilter('id', ids);
+    final response = await _client.from(_viewName).select().inFilter('id', ids);
     return _parseRows(response);
   }
 
   /// Fetches a single facility by id from the view (full record, lazily loaded
   /// when a card is opened).
   Future<Facility?> getFacilityById(String id) async {
-    final response = await _client
-        .from(_viewName)
-        .select()
-        .eq('id', id)
-        .maybeSingle();
+    final response =
+        await _client.from(_viewName).select().eq('id', id).maybeSingle();
     if (response == null) return null;
     return Facility.fromSupabase(Map<String, dynamic>.from(response));
   }

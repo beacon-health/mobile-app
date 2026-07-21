@@ -14,6 +14,7 @@ class EligibilityState {
     this.proofOfResidency = false,
     this.insuranceRequired = false,
     this.referralRequired = false,
+    this.applyToSearch = true,
   });
 
   final bool proofOfIncome;
@@ -21,17 +22,25 @@ class EligibilityState {
   final bool insuranceRequired;
   final bool referralRequired;
 
+  /// Parent toggle: when true, the eligibility gates above are auto-applied to
+  /// map search. When false, they're kept (not reset) but not applied — the
+  /// user sees all facilities regardless of their eligibility criteria.
+  /// Defaults to true so eligibility filtering is on out of the box.
+  final bool applyToSearch;
+
   EligibilityState copyWith({
     bool? proofOfIncome,
     bool? proofOfResidency,
     bool? insuranceRequired,
     bool? referralRequired,
+    bool? applyToSearch,
   }) {
     return EligibilityState(
       proofOfIncome: proofOfIncome ?? this.proofOfIncome,
       proofOfResidency: proofOfResidency ?? this.proofOfResidency,
       insuranceRequired: insuranceRequired ?? this.insuranceRequired,
       referralRequired: referralRequired ?? this.referralRequired,
+      applyToSearch: applyToSearch ?? this.applyToSearch,
     );
   }
 
@@ -40,6 +49,7 @@ class EligibilityState {
         'proof_of_residency': proofOfResidency,
         'insurance_required': insuranceRequired,
         'referral_required': referralRequired,
+        'apply_to_search': applyToSearch,
       };
 
   factory EligibilityState.fromJson(Map<String, dynamic>? json) {
@@ -49,6 +59,7 @@ class EligibilityState {
       proofOfResidency: json['proof_of_residency'] as bool? ?? false,
       insuranceRequired: json['insurance_required'] as bool? ?? false,
       referralRequired: json['referral_required'] as bool? ?? false,
+      applyToSearch: json['apply_to_search'] as bool? ?? true,
     );
   }
 }
@@ -149,6 +160,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
   static const _keyProofOfResidency = 'elig.proof_of_residency';
   static const _keyInsuranceRequired = 'elig.insurance_required';
   static const _keyReferralRequired = 'elig.referral_required';
+  static const _keyApplyToSearch = 'elig.apply_to_search';
 
   static const _keyAcceptsWalkIns = 'pref.accepts_walk_ins';
   static const _keyAppointmentOnly = 'pref.appointment_only';
@@ -173,6 +185,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
       proofOfResidency: prefs.getBool(_keyProofOfResidency) ?? false,
       insuranceRequired: prefs.getBool(_keyInsuranceRequired) ?? false,
       referralRequired: prefs.getBool(_keyReferralRequired) ?? false,
+      applyToSearch: prefs.getBool(_keyApplyToSearch) ?? true,
     );
     _preferences = PreferencesState(
       acceptsWalkIns: prefs.getBool(_keyAcceptsWalkIns) ?? false,
@@ -199,10 +212,17 @@ class EligibilityPreferencesService extends ChangeNotifier {
     await prefs.setBool(_keyProofOfResidency, value.proofOfResidency);
     await prefs.setBool(_keyInsuranceRequired, value.insuranceRequired);
     await prefs.setBool(_keyReferralRequired, value.referralRequired);
+    await prefs.setBool(_keyApplyToSearch, value.applyToSearch);
     notifyListeners();
     if (syncToCloud) {
       unawaited(UserSettingsService.instance.pushLocal());
     }
+  }
+
+  /// Flips the parent "apply eligibility to search" toggle without touching the
+  /// individual gate values (they're kept, just applied or not).
+  Future<void> setApplyEligibilityToSearch(bool value) {
+    return updateEligibility(_eligibility.copyWith(applyToSearch: value));
   }
 
   Future<void> updatePreferences(

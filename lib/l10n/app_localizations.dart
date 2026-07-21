@@ -256,23 +256,11 @@ abstract class AppLocalizations {
   /// **'Favorites'**
   String get filterFavorites;
 
-  /// No description provided for @filterStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get filterStatus;
-
   /// No description provided for @filterCategory.
   ///
   /// In en, this message translates to:
   /// **'Category'**
   String get filterCategory;
-
-  /// No description provided for @filterEligibility.
-  ///
-  /// In en, this message translates to:
-  /// **'Eligibility'**
-  String get filterEligibility;
 
   /// No description provided for @filterPreferences.
   ///
@@ -298,18 +286,6 @@ abstract class AppLocalizations {
   /// **'Apply'**
   String get filterApply;
 
-  /// No description provided for @filterApplyStatusTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply Status From Your Settings'**
-  String get filterApplyStatusTitle;
-
-  /// No description provided for @filterAutoFillFromSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-fill the filters below from your Settings.'**
-  String get filterAutoFillFromSettings;
-
   /// No description provided for @commonYes.
   ///
   /// In en, this message translates to:
@@ -321,24 +297,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No'**
   String get commonNo;
-
-  /// No description provided for @filterApplyMyEligibility.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply my Eligibility'**
-  String get filterApplyMyEligibility;
-
-  /// No description provided for @filterApplyMyPreferences.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply my Preferences'**
-  String get filterApplyMyPreferences;
-
-  /// No description provided for @filterApplyBoth.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply both'**
-  String get filterApplyBoth;
 
   /// No description provided for @eligProofOfIncome.
   ///
@@ -694,23 +652,11 @@ abstract class AppLocalizations {
   /// **'Ask each time'**
   String get settingsAskEachTime;
 
-  /// No description provided for @settingsPreferences.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferences'**
-  String get settingsPreferences;
-
   /// No description provided for @settingsSignInHint.
   ///
   /// In en, this message translates to:
   /// **'Sign in to store favorites, filter by preferences, and more!'**
   String get settingsSignInHint;
-
-  /// No description provided for @settingsSignInToSetPreferences.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to set preferences'**
-  String get settingsSignInToSetPreferences;
 
   /// No description provided for @settingsZipUpdated.
   ///
@@ -867,90 +813,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get profileTitle;
-
-  /// No description provided for @profileName.
-  ///
-  /// In en, this message translates to:
-  /// **'Full Name'**
-  String get profileName;
-
-  /// No description provided for @profileEmail.
-  ///
-  /// In en, this message translates to:
-  /// **'Email'**
-  String get profileEmail;
-
-  /// No description provided for @profileZipCode.
-  ///
-  /// In en, this message translates to:
-  /// **'ZIP Code'**
-  String get profileZipCode;
-
-  /// No description provided for @profileDateOfBirth.
-  ///
-  /// In en, this message translates to:
-  /// **'Date of Birth'**
-  String get profileDateOfBirth;
-
-  /// No description provided for @profileMonth.
-  ///
-  /// In en, this message translates to:
-  /// **'Month'**
-  String get profileMonth;
-
-  /// No description provided for @profileYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get profileYear;
-
-  /// No description provided for @profileLanguage.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferred Language'**
-  String get profileLanguage;
-
-  /// No description provided for @profileOptionalInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional Information'**
-  String get profileOptionalInfo;
-
-  /// No description provided for @profileGender.
-  ///
-  /// In en, this message translates to:
-  /// **'Gender'**
-  String get profileGender;
-
-  /// No description provided for @profileHouseholdSize.
-  ///
-  /// In en, this message translates to:
-  /// **'Household Size'**
-  String get profileHouseholdSize;
-
-  /// No description provided for @profileAnnualIncome.
-  ///
-  /// In en, this message translates to:
-  /// **'Annual Income'**
-  String get profileAnnualIncome;
-
-  /// No description provided for @profileSaveChanges.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Changes'**
-  String get profileSaveChanges;
-
-  /// No description provided for @profileChangePassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Password'**
-  String get profileChangePassword;
-
-  /// No description provided for @profilePrivacyPolicy.
-  ///
-  /// In en, this message translates to:
-  /// **'Privacy Policy'**
-  String get profilePrivacyPolicy;
 
   /// No description provided for @authContinueWithGoogle.
   ///
@@ -1119,6 +981,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get commonCancel;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @profileApplyEligibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply eligibility criteria to search'**
+  String get profileApplyEligibility;
+
+  /// No description provided for @profileApplyEligibilityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Only show facilities that match your eligibility.'**
+  String get profileApplyEligibilityDesc;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @onboardingEligibilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your eligibility'**
+  String get onboardingEligibilityTitle;
+
+  /// No description provided for @onboardingEligibilitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what applies to you so we can show facilities you qualify for. You can change this anytime on your Profile.'**
+  String get onboardingEligibilitySubtitle;
+
+  /// No description provided for @onboardingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get onboardingContinue;
 }
 
 class _AppLocalizationsDelegate

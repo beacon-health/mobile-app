@@ -1,7 +1,13 @@
 name: iOS Build & TestFlight
 
 on:
-  workflow_dispatch: # Manual trigger only — macOS minutes are expensive
+  push:
+    branches: [main]
+    # Don't burn macOS minutes on doc-only commits.
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  workflow_dispatch: # also allow manual runs
 
 concurrency:
   group: ios-build
@@ -20,6 +26,12 @@ jobs:
           channel: stable
           cache: true
 
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: ios
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -29,16 +41,15 @@ jobs:
             > ios/Flutter/Secrets.xcconfig
 
       - name: Build iOS
+        # Build number = a monotonic, unique value so TestFlight never rejects
+        # a duplicate. Offset by 1000 to stay above any manually-uploaded
+        # builds. Flutter injects this into CFBundleVersion; Fastlane's gym
+        # archives that same number.
         run: |
           flutter build ios --release --no-codesign \
+            --build-number=$(( 1000 + ${{ github.run_number }} )) \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
-
-      - name: Install Fastlane
-        run: |
-          cd ios
-          gem install bundler
-          bundle install --path vendor/bundle || gem install fastlane
 
       - name: Upload to TestFlight
         env:
@@ -47,4 +58,4 @@ jobs:
           APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
           cd ios
-          fastlane beta
+          bundle exec fastlane beta

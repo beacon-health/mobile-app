@@ -60,6 +60,11 @@ class MapPageState extends State<MapPage>
   bool _isKeyboardVisible = false;
   Timer? _keyboardHideDebounce;
   bool _showSingleFacility = false;
+
+  /// Drives the slide-down exit animation for the single-facility card so a
+  /// swipe (or map tap) collapses it smoothly, matching the list panel — not
+  /// an instant disappear.
+  bool _cardDismissing = false;
   Facility? _selectedFacility;
   late final FacilityRepositoryBase _facilityRepository;
   bool _isLoading = true;
@@ -69,7 +74,10 @@ class MapPageState extends State<MapPage>
   double _previousZoom = MapConstants.defaultZoom;
   bool get _showFacilityNames => _currentZoom >= MapConstants.detailZoom;
   final Set<String> _selectedCategories = {};
-  Map<EligibilityRequirement, bool?> _selectedEligibilityRequirements = {};
+  // Eligibility is no longer a map filter — it auto-applies from the user's
+  // Profile (EligibilityPreferencesService), gated by that page's parent
+  // "apply to search" toggle. See [_eligibilityFilter]. Preferences remain a
+  // manual map filter.
   Map<PreferenceRequirement, bool?> _selectedPreferenceRequirements = {};
   bool _showFavoritesOnly = false;
   bool _showOpenNowOnly = false;
@@ -132,6 +140,9 @@ class MapPageState extends State<MapPage>
     // MapPage keeps the value from initState (and uses AutomaticKeepAlive
     // so initState only runs once), causing Settings and Map to drift.
     zipService.addListener(_onZipServiceChanged);
+    // Eligibility auto-applies to search; re-filter when the user edits it on
+    // the Profile tab.
+    EligibilityPreferencesService().addListener(_onEligibilityChanged);
     // Map style is loaded in didChangeDependencies so it reacts to theme changes.
   }
 
@@ -143,8 +154,8 @@ class MapPageState extends State<MapPage>
     final newLat = zipService.latitude;
     final newLng = zipService.longitude;
 
-    final coordsChanged = newLat != _currentLatitude ||
-        newLng != _currentLongitude;
+    final coordsChanged =
+        newLat != _currentLatitude || newLng != _currentLongitude;
     final labelChanged = newLabel != _currentLocation;
     if (!coordsChanged && !labelChanged) return;
 
@@ -254,6 +265,7 @@ class MapPageState extends State<MapPage>
     _keyboardHideDebounce?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     ZipCodeService().removeListener(_onZipServiceChanged);
+    EligibilityPreferencesService().removeListener(_onEligibilityChanged);
     _disposeMapController();
     _markerUpdateDebounce?.cancel();
     _markerIconCache.clear();
@@ -394,9 +406,9 @@ class MapPageState extends State<MapPage>
     double? longitude,
   ) async {
     if (latitude == null || longitude == null) return;
-    final isCurrent =
-        displayName.toLowerCase().contains('current') ||
-            displayName == (AppLocalizations.of(context)?.locationCurrentLocation ?? '');
+    final isCurrent = displayName.toLowerCase().contains('current') ||
+        displayName ==
+            (AppLocalizations.of(context)?.locationCurrentLocation ?? '');
 
     setState(() {
       _currentLatitude = latitude;
@@ -528,13 +540,32 @@ class MapPageState extends State<MapPage>
     );
   }
 
+  /// Eligibility gates auto-applied to search from the user's Profile. Empty
+  /// when the parent "apply to search" toggle is off, so nothing is filtered.
+  Map<EligibilityRequirement, bool?> _eligibilityFilter() {
+    final e = EligibilityPreferencesService().eligibility;
+    if (!e.applyToSearch) return const {};
+    return {
+      if (e.proofOfIncome) EligibilityRequirement.proofOfIncome: true,
+      if (e.proofOfResidency) EligibilityRequirement.proofOfResidency: true,
+      if (e.insuranceRequired) EligibilityRequirement.insuranceRequired: true,
+      if (e.referralRequired) EligibilityRequirement.referralRequired: true,
+    };
+  }
+
+  /// Re-runs filtering when the user edits eligibility on the Profile tab
+  /// (this map stays alive in the IndexedStack, so it must react explicitly).
+  void _onEligibilityChanged() {
+    if (mounted) _filterFacilities();
+  }
+
   void _filterFacilities() {
     setState(() {
       _filteredFacilities = FacilityFilterService.filterFacilities(
         _allFacilities,
         searchText: _searchController.text,
         selectedCategories: _selectedCategories,
-        selectedEligibilityRequirements: _selectedEligibilityRequirements,
+        selectedEligibilityRequirements: _eligibilityFilter(),
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
@@ -559,8 +590,7 @@ class MapPageState extends State<MapPage>
 
         if (!mounted) return;
 
-        final newMarkers =
-            await MarkerManagementService.createMarkersClustered(
+        final newMarkers = await MarkerManagementService.createMarkersClustered(
           _filteredFacilities,
           context,
           zoom: zoom,
@@ -591,7 +621,7 @@ class MapPageState extends State<MapPage>
 
   void _onMapTap(LatLng position) {
     if (_showSingleFacility) {
-      _dismissSingleFacilityView(showPanel: false);
+      _dismissSingleFacilityAnimated(showPanel: false);
     } else if (_isPanelOpen) {
       setState(() {
         _isPanelOpen = false;
@@ -600,10 +630,23 @@ class MapPageState extends State<MapPage>
     }
   }
 
+  /// Slides the single-facility card down, then clears it — the animated
+  /// counterpart of [_dismissSingleFacilityView], used for user gestures
+  /// (swipe-down handle, map tap) so the collapse is smooth.
+  void _dismissSingleFacilityAnimated({bool showPanel = false}) {
+    if (!_showSingleFacility || _cardDismissing) return;
+    setState(() => _cardDismissing = true);
+    Future.delayed(MapConstants.animationDuration, () {
+      if (!mounted) return;
+      _dismissSingleFacilityView(showPanel: showPanel);
+    });
+  }
+
   void _dismissSingleFacilityView({bool showPanel = true}) {
     if (_showSingleFacility) {
       setState(() {
         _showSingleFacility = false;
+        _cardDismissing = false;
         _selectedFacility = null;
         _isPanelOpen = showPanel;
         _isFullyExpanded = false;
@@ -732,10 +775,9 @@ class MapPageState extends State<MapPage>
     setState(() {
       _currentLatitude = lat;
       _currentLongitude = lng;
-      _currentLocation =
-          zipService.zipCode?.isNotEmpty == true
-              ? zipService.zipCode!
-              : MapConstants.currentLocationSentinel;
+      _currentLocation = zipService.zipCode?.isNotEmpty == true
+          ? zipService.zipCode!
+          : MapConstants.currentLocationSentinel;
       _showSingleFacility = false;
       _selectedFacility = null;
     });
@@ -755,7 +797,6 @@ class MapPageState extends State<MapPage>
     final isGuest = context.read<GuestModeService>().isGuest;
     return FilterBar(
       selectedCategories: _selectedCategories,
-      selectedEligibilityRequirements: _selectedEligibilityRequirements,
       selectedPreferenceRequirements: _selectedPreferenceRequirements,
       showFavoritesOnly: _showFavoritesOnly,
       showOpenNowOnly: _showOpenNowOnly,
@@ -767,15 +808,9 @@ class MapPageState extends State<MapPage>
       onFiltersTap: _showFilterModal,
       onCategoryTap: () =>
           _showFilterModal(expandedSection: FilterSection.category),
-      onEligibilityTap: isGuest
-          ? () => showSignInPromptDialog(context)
-          : () => _showFilterModal(expandedSection: FilterSection.eligibility),
       onPreferencesTap: isGuest
           ? () => showSignInPromptDialog(context)
           : () => _showFilterModal(expandedSection: FilterSection.preferences),
-      onStatusTap: isGuest
-          ? () => showSignInPromptDialog(context)
-          : _showStatusActionSheet,
     );
   }
 
@@ -855,152 +890,6 @@ class MapPageState extends State<MapPage>
     );
   }
 
-  /// Bottom-sheet picker that one-shot applies the user's saved Eligibility,
-  /// Preferences, or both as filter values. Designed for the filter-bar chip
-  /// — taps auto-apply and close, no follow-up "Apply" press needed.
-  Future<void> _showStatusActionSheet() async {
-    final ep = EligibilityPreferencesService();
-    final colorScheme = Theme.of(context).colorScheme;
-    final choice = await showModalBottomSheet<_StatusChoice>(
-      context: context,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                AppLocalizations.of(context)!.filterApplyStatusTitle,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            ListTile(
-              leading: const Icon(
-                Icons.verified_user_outlined,
-                color: AppTheme.resedaGreen,
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.filterApplyMyEligibility,
-              ),
-              onTap: () => Navigator.pop(ctx, _StatusChoice.eligibility),
-            ),
-            ListTile(
-              leading: const Icon(Icons.tune, color: AppTheme.resedaGreen),
-              title: Text(
-                AppLocalizations.of(context)!.filterApplyMyPreferences,
-              ),
-              onTap: () => Navigator.pop(ctx, _StatusChoice.preferences),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.checklist_rtl,
-                color: AppTheme.resedaGreen,
-              ),
-              title: Text(AppLocalizations.of(context)!.filterApplyBoth),
-              onTap: () => Navigator.pop(ctx, _StatusChoice.both),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-    if (choice == null || !mounted) return;
-    _applyStatusChoice(choice, ep);
-  }
-
-  /// Mutates `_selectedEligibilityRequirements` / `_selectedPreferenceRequirements`
-  /// from the user's saved EligibilityPreferencesService state, then re-runs
-  /// the filter pipeline. Matches the per-modal helpers in FilterModal so
-  /// the semantics are consistent whether the user opens the modal or uses
-  /// the filter-bar chip.
-  void _applyStatusChoice(
-    _StatusChoice choice,
-    EligibilityPreferencesService ep,
-  ) {
-    setState(() {
-      if (choice == _StatusChoice.eligibility ||
-          choice == _StatusChoice.both) {
-        final e = ep.eligibility;
-        if (e.proofOfIncome) {
-          _selectedEligibilityRequirements[
-              EligibilityRequirement.proofOfIncome] = true;
-        }
-        if (e.proofOfResidency) {
-          _selectedEligibilityRequirements[
-              EligibilityRequirement.proofOfResidency] = true;
-        }
-        if (e.insuranceRequired) {
-          _selectedEligibilityRequirements[
-              EligibilityRequirement.insuranceRequired] = true;
-        }
-        if (e.referralRequired) {
-          _selectedEligibilityRequirements[
-              EligibilityRequirement.referralRequired] = true;
-        }
-      }
-      if (choice == _StatusChoice.preferences ||
-          choice == _StatusChoice.both) {
-        final p = ep.preferences;
-        if (p.acceptsWalkIns) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.acceptsWalkins] = true;
-        }
-        if (p.appointmentOnly) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.appointmentOnly] = true;
-        }
-        if (p.openToImmigrants) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.openToImmigrants] = true;
-        }
-        if (p.freeServices) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.freeServicesAvailable] = true;
-        }
-        if (p.slidingScale) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.slidingScaleAvailable] = true;
-        }
-        if (p.otherLanguages) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.otherLanguages] = true;
-        }
-        if (p.telehealthPreference) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.telehealthAvailable] = true;
-        }
-        if (p.wheelchairAccessible) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.wheelchairAccessible] = true;
-        }
-        if (p.servesOutsideArea) {
-          _selectedPreferenceRequirements[
-              PreferenceRequirement.servesOutsideArea] = true;
-        }
-      }
-      _filterFacilities();
-    });
-  }
-
   void _toggleFavoritesFilter() {
     _dismissSingleFacilityView();
     setState(() {
@@ -1025,7 +914,6 @@ class MapPageState extends State<MapPage>
       builder: (context) => FilterModal(
         selectedCategories: _selectedCategories,
         availableCategories: FacilityCategories.categoryLevel2Values,
-        selectedEligibilityRequirements: _selectedEligibilityRequirements,
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
@@ -1044,8 +932,6 @@ class MapPageState extends State<MapPage>
 
         _selectedCategories.clear();
         _selectedCategories.addAll(result['categories'] as Set<String>);
-        _selectedEligibilityRequirements = result['eligibilityRequirements']
-            as Map<EligibilityRequirement, bool?>;
         _selectedPreferenceRequirements = result['preferenceRequirements']
             as Map<PreferenceRequirement, bool?>;
         _showFavoritesOnly = result['showFavoritesOnly'] as bool;
@@ -1091,9 +977,8 @@ class MapPageState extends State<MapPage>
     // user is actually reading facility details and might want to leave
     // feedback.
     if (!isOpening) return;
-    final facility = _allFacilities
-        .where((f) => f.id == facilityId)
-        .firstOrNull;
+    final facility =
+        _allFacilities.where((f) => f.id == facilityId).firstOrNull;
     if (facility != null) {
       context.read<RecentFacilitiesService>().addFacility(facility);
     }
@@ -1286,69 +1171,73 @@ class MapPageState extends State<MapPage>
     // Swipe down anywhere on the card chrome (handle bar, header, non-scroll
     // areas) dismisses it — same flick gesture as the list panel. The card's
     // internal scroll view wins the gesture arena while its content scrolls,
-    // so the handle bar is the always-available dismiss target.
-    return GestureDetector(
-      onVerticalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity > MapConstants.minFlickVelocity) {
-          _dismissSingleFacilityView(showPanel: false);
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.all(16.0),
-        constraints: BoxConstraints(maxHeight: maxCardHeight),
-        // No background color of its own — the FacilityCard fills the wrapper
-        // (zero margin, matching corner radius) and carries the drag handle on
-        // its own background, so there's no separate chrome strip behind it.
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8.0,
-              spreadRadius: 1.0,
-              offset: const Offset(0, 3),
+    // so the handle bar is the always-available dismiss target. The exit
+    // slides the card down (AnimatedSlide) to match the list panel's animated
+    // collapse rather than vanishing instantly.
+    return AnimatedSlide(
+      offset: _cardDismissing ? const Offset(0, 1.2) : Offset.zero,
+      duration: MapConstants.animationDuration,
+      curve: MapConstants.animationCurve,
+      child: GestureDetector(
+        onVerticalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+          if (velocity > MapConstants.minFlickVelocity) {
+            _dismissSingleFacilityAnimated(showPanel: false);
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.all(16.0),
+          constraints: BoxConstraints(maxHeight: maxCardHeight),
+          // No background color of its own — the FacilityCard fills the wrapper
+          // (zero margin, matching corner radius) and carries the drag handle on
+          // its own background, so there's no separate chrome strip behind it.
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8.0,
+                spreadRadius: 1.0,
+                offset: const Offset(0, 3),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 3.0,
+                spreadRadius: 0.5,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
+            child: FacilityCard(
+              facility: _selectedFacility!,
+              isExpanded: true,
+              onToggleExpand: () {},
+              onToggleFavorite: () {
+                _toggleFavorite(_selectedFacility!.id);
+                setState(() {
+                  _selectedFacility = _allFacilities.firstWhere(
+                    (f) => f.id == _selectedFacility!.id,
+                    orElse: () => _selectedFacility!,
+                  );
+                });
+              },
+              onLaunchUrl: _launchUrl,
+              buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
+              showExpandButton: false,
+              canFavorite: !isGuest,
+              onRate: () => _onRateFacility(_selectedFacility!),
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(MapConstants.panelBorderRadius),
+              ),
+              showDragHandle: true,
             ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 3.0,
-              spreadRadius: 0.5,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
-          child: FacilityCard(
-            facility: _selectedFacility!,
-            isExpanded: true,
-            onToggleExpand: () {},
-            onToggleFavorite: () {
-              _toggleFavorite(_selectedFacility!.id);
-              setState(() {
-                _selectedFacility = _allFacilities.firstWhere(
-                  (f) => f.id == _selectedFacility!.id,
-                  orElse: () => _selectedFacility!,
-                );
-              });
-            },
-            onLaunchUrl: _launchUrl,
-            buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
-            showExpandButton: false,
-            canFavorite: !isGuest,
-            onRate: () => _onRateFacility(_selectedFacility!),
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(MapConstants.panelBorderRadius),
-            ),
-            showDragHandle: true,
           ),
         ),
       ),
     );
   }
 }
-
-/// Choices presented in the filter-bar Status action sheet.
-enum _StatusChoice { eligibility, preferences, both }

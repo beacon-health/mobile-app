@@ -17,8 +17,9 @@ class MapStyleService {
     final cached = _cache[brightness];
     if (cached != null) return cached;
 
-    final filename =
-        brightness == Brightness.dark ? 'dark_style.json' : 'minimal_style.json';
+    final filename = brightness == Brightness.dark
+        ? 'dark_style.json'
+        : 'minimal_style.json';
     try {
       final jsonString =
           await rootBundle.loadString('assets/map_styles/$filename');
