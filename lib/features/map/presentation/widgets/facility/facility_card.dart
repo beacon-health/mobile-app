@@ -24,6 +24,10 @@ class FacilityCard extends StatefulWidget {
   /// prompt inside this callback.
   final VoidCallback? onRate;
 
+  /// Opens the "submit corrections" flow ("Incorrect info?"), shown as a row
+  /// beneath the rate row when non-null. Callers gate guests.
+  final VoidCallback? onSubmitCorrection;
+
   /// Overrides the default list margin. The single-facility view passes
   /// [EdgeInsets.zero] so the card fills its rounded wrapper with no seams.
   final EdgeInsetsGeometry? margin;
@@ -47,6 +51,7 @@ class FacilityCard extends StatefulWidget {
     this.showExpandButton = true,
     this.canFavorite = true,
     this.onRate,
+    this.onSubmitCorrection,
     this.margin,
     this.shape,
     this.showDragHandle = false,
@@ -107,10 +112,12 @@ class _FacilityCardState extends State<FacilityCard> {
         children: [
           // The whole card toggles expansion — the corner chevron is a visual
           // affordance, not the only tap target. Interactive children (heart,
-          // links, rate row) sit above and consume their own taps.
-          InkWell(
+          // links, rate row) sit above and consume their own taps. Uses a
+          // GestureDetector (not InkWell) so tapping doesn't fire a circular
+          // ink ripple across the card.
+          GestureDetector(
             onTap: widget.showExpandButton ? widget.onToggleExpand : null,
-            borderRadius: BorderRadius.circular(12),
+            behavior: HitTestBehavior.opaque,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -284,22 +291,32 @@ class _FacilityCardState extends State<FacilityCard> {
             ),
             const SizedBox(height: 8),
           ],
-          // Services first — what the facility offers matters before how to
-          // reach it (product decision, §2.9).
+          // At a Glance first (eligibility chips), then Services, then the
+          // reach-out actions.
+          ..._buildAtAGlanceSection(facility),
           ..._buildServicesSection(facility),
           const Divider(height: 12),
           _buildNextStepsAndHours(facility),
-          // Full-width rate row directly under the Next Steps/Hours block —
-          // sits with the actions (not the old divider-boxed footer) and,
-          // spanning the full width, doesn't wrap awkwardly in the narrow
-          // Next Steps column.
+          // Full-width action rows under the Next Steps/Hours block — spanning
+          // the full width so they don't wrap awkwardly in the narrow column.
           if (widget.onRate != null) ...[
-            const SizedBox(height: 4),
-            _buildRateRow(),
+            const SizedBox(height: 6),
+            _buildActionLink(
+              Icons.thumbs_up_down_outlined,
+              AppLocalizations.of(context)!.cardRatePromptLead,
+              AppLocalizations.of(context)!.cardRatePromptAction,
+              widget.onRate,
+            ),
           ],
-          const SizedBox(height: 4),
-          const Divider(height: 8),
-          _buildEligibilitySection(facility),
+          if (widget.onSubmitCorrection != null) ...[
+            const SizedBox(height: 10),
+            _buildActionLink(
+              Icons.edit_note_outlined,
+              AppLocalizations.of(context)!.cardCorrectionPromptLead,
+              AppLocalizations.of(context)!.cardCorrectionPromptAction,
+              widget.onSubmitCorrection,
+            ),
+          ],
         ],
       ),
     );
@@ -316,35 +333,48 @@ class _FacilityCardState extends State<FacilityCard> {
     }
   }
 
-  /// Full-width "Already visited? Rate your experience" action, matching the
-  /// Next Steps item styling (bittersweet icon) so it reads as one more action.
-  Widget _buildRateRow() {
+  /// Full-width tappable "form" action (rate / submit corrections). Only the
+  /// [action] portion is styled as a link — bittersweet, semibold, underlined
+  /// — to flag the submittal route; the [lead] stays plain (no chevron).
+  Widget _buildActionLink(
+    IconData icon,
+    String lead,
+    String action,
+    VoidCallback? onTap,
+  ) {
     return InkWell(
-      onTap: widget.onRate,
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            const Icon(
-              Icons.thumbs_up_down_outlined,
-              size: 20,
-              color: AppTheme.bittersweet,
-            ),
+            Icon(icon, size: 20, color: AppTheme.bittersweet),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                AppLocalizations.of(context)!.cardRatePrompt,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: lead,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    TextSpan(
+                      text: action,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.bittersweet,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppTheme.bittersweet,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -516,42 +546,46 @@ class _FacilityCardState extends State<FacilityCard> {
     return const [];
   }
 
-  Widget _buildEligibilitySection(Facility facility) {
+  /// "At a Glance" eligibility chips + summary. Returns an empty list (no
+  /// leading divider) when the facility has neither, so it can sit at the top
+  /// of the details block without an orphan separator.
+  List<Widget> _buildAtAGlanceSection(Facility facility) {
     final eligibilityChips = _buildEligibilityChips(facility);
+    final hasSummary = facility.otherEligibilitySummary != null &&
+        facility.otherEligibilitySummary!.isNotEmpty;
+    if (eligibilityChips.isEmpty && !hasSummary) return const [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (eligibilityChips.isNotEmpty) ...[
-          Text(
-            AppLocalizations.of(context)!.cardAtAGlance,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
+    return [
+      const Divider(height: 12),
+      if (eligibilityChips.isNotEmpty) ...[
+        Text(
+          AppLocalizations.of(context)!.cardAtAGlance,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: eligibilityChips,
-          ),
-        ],
-        if (facility.otherEligibilitySummary != null &&
-            facility.otherEligibilitySummary!.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text(
-            facility.otherEligibilitySummary!,
-            style: TextStyle(
-              fontSize: 12,
-              fontStyle: FontStyle.italic,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
-        ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: eligibilityChips,
+        ),
       ],
-    );
+      if (hasSummary) ...[
+        const SizedBox(height: 12),
+        Text(
+          facility.otherEligibilitySummary!,
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+      ],
+      const SizedBox(height: 4),
+    ];
   }
 
   List<Widget> _buildEligibilityChips(Facility facility) {

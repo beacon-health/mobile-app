@@ -31,6 +31,10 @@ class FacilityListPanel extends StatelessWidget {
   /// "Already visited? Rate your experience" row when non-null).
   final void Function(Facility)? onRateFacility;
 
+  /// Opens the corrections flow for a facility (expanded cards show an
+  /// "Incorrect info?" row when non-null).
+  final void Function(Facility)? onCorrectFacility;
+
   const FacilityListPanel({
     super.key,
     required this.facilities,
@@ -48,6 +52,7 @@ class FacilityListPanel extends StatelessWidget {
     this.canFavorite = true,
     this.onRequestFacility,
     this.onRateFacility,
+    this.onCorrectFacility,
   });
 
   @override
@@ -226,6 +231,9 @@ class FacilityListPanel extends StatelessWidget {
                           onRate: onRateFacility == null
                               ? null
                               : () => onRateFacility!(facility),
+                          onSubmitCorrection: onCorrectFacility == null
+                              ? null
+                              : () => onCorrectFacility!(facility),
                         );
                       },
                     ),

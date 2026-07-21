@@ -316,23 +316,28 @@ class _ProfilePageState extends State<ProfilePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(l10n.settingsEligibility),
+        // Parent toggle in its own card, visually separated from the gates
+        // it governs below.
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: SwitchListTile(
+            title: Text(l10n.profileApplyEligibility),
+            subtitle: Text(l10n.profileApplyEligibilityDesc),
+            secondary: const Icon(
+              Icons.filter_alt_outlined,
+              color: AppTheme.paynesGray,
+            ),
+            value: applyOn,
+            activeThumbColor: AppTheme.resedaGreen,
+            onChanged: (v) =>
+                unawaited(epService.setApplyEligibilityToSearch(v)),
+          ),
+        ),
+        const SizedBox(height: 20),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              SwitchListTile(
-                title: Text(l10n.profileApplyEligibility),
-                subtitle: Text(l10n.profileApplyEligibilityDesc),
-                secondary: const Icon(
-                  Icons.filter_alt_outlined,
-                  color: AppTheme.paynesGray,
-                ),
-                value: applyOn,
-                activeThumbColor: AppTheme.resedaGreen,
-                onChanged: (v) =>
-                    unawaited(epService.setApplyEligibilityToSearch(v)),
-              ),
-              const Divider(height: 1),
               _eligToggle(
                 l10n.eligProofOfIncome,
                 Icons.attach_money,

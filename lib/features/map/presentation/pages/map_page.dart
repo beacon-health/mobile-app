@@ -8,6 +8,7 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/widgets/facility_correction_dialog.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/facility_request_dialog.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
@@ -65,6 +66,10 @@ class MapPageState extends State<MapPage>
   /// swipe (or map tap) collapses it smoothly, matching the list panel — not
   /// an instant disappear.
   bool _cardDismissing = false;
+
+  /// Single-facility card height state: false = default (~45% h), true =
+  /// expanded (~85% h). Driven by the handle-bar swipe, like the list panel.
+  bool _singleCardExpanded = false;
   Facility? _selectedFacility;
   late final FacilityRepositoryBase _facilityRepository;
   bool _isLoading = true;
@@ -647,6 +652,7 @@ class MapPageState extends State<MapPage>
       setState(() {
         _showSingleFacility = false;
         _cardDismissing = false;
+        _singleCardExpanded = false;
         _selectedFacility = null;
         _isPanelOpen = showPanel;
         _isFullyExpanded = false;
@@ -705,6 +711,7 @@ class MapPageState extends State<MapPage>
     try {
       setState(() {
         _showSingleFacility = true;
+        _singleCardExpanded = false;
         _selectedFacility = facility;
         _isPanelOpen = false;
         _isFullyExpanded = false;
@@ -961,6 +968,16 @@ class MapPageState extends State<MapPage>
     showFacilityRequestDialog(context);
   }
 
+  /// "Incorrect info? Submit corrections" entry point on facility cards.
+  /// Guests get the sign-in prompt.
+  void _onCorrectFacility(Facility facility) {
+    if (context.read<GuestModeService>().isGuest) {
+      showSignInPromptDialog(context);
+      return;
+    }
+    showFacilityCorrectionDialog(context, facility: facility);
+  }
+
   String? _expandedFacilityId;
 
   void _toggleFacilityExpansion(String facilityId) {
@@ -973,14 +990,22 @@ class MapPageState extends State<MapPage>
       }
     });
 
-    // Treat expanding a row in the list panel as a "view" — that's when the
-    // user is actually reading facility details and might want to leave
-    // feedback.
     if (!isOpening) return;
+
     final facility =
         _allFacilities.where((f) => f.id == facilityId).firstOrNull;
     if (facility != null) {
+      // Treat expanding a row as a "view" — that's when the user is reading
+      // details and might rate/correct.
       context.read<RecentFacilitiesService>().addFacility(facility);
+      // Center the map on the expanded facility at a moderate zoom — closer
+      // than the default region view, but not the tight single-card zoom.
+      _googleMapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          facility.location,
+          MapConstants.listExpandZoom,
+        ),
+      );
     }
   }
 
@@ -1150,6 +1175,7 @@ class MapPageState extends State<MapPage>
                         canFavorite: !isGuest,
                         onRequestFacility: _onRequestFacility,
                         onRateFacility: _onRateFacility,
+                        onCorrectFacility: _onCorrectFacility,
                         onPanelStateChange: (isPanelOpen, isFullyExpanded) {
                           setState(() {
                             _isPanelOpen = isPanelOpen;
@@ -1167,13 +1193,24 @@ class MapPageState extends State<MapPage>
     if (_selectedFacility == null) return const SizedBox.shrink();
     final isGuest = context.read<GuestModeService>().isGuest;
 
-    final maxCardHeight = MediaQuery.of(context).size.height * 0.45;
-    // Swipe down anywhere on the card chrome (handle bar, header, non-scroll
-    // areas) dismisses it — same flick gesture as the list panel. The card's
-    // internal scroll view wins the gesture arena while its content scrolls,
-    // so the handle bar is the always-available dismiss target. The exit
-    // slides the card down (AnimatedSlide) to match the list panel's animated
-    // collapse rather than vanishing instantly.
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    // Expanded height stops below the search + filter bars (same top budget as
+    // the list panel), minus the card's own 16px top margin, so it never
+    // overlaps that chrome. Default height is ~45% of the screen.
+    final expandedHeight = screenHeight -
+        MapConstants.searchBarAreaHeight -
+        topPadding -
+        kToolbarHeight -
+        MapConstants.panelBottomOffset -
+        16;
+    final cardHeight =
+        _singleCardExpanded ? expandedHeight : screenHeight * 0.45;
+    // The handle-bar swipe drives both height and dismissal, mirroring the
+    // list panel: swipe up expands (default → expanded); swipe down collapses
+    // (expanded → default) or, from default, dismisses with a slide-down.
+    // The card's internal scroll view wins the gesture arena while scrolling,
+    // so the handle bar is the always-available drag target.
     return AnimatedSlide(
       offset: _cardDismissing ? const Offset(0, 1.2) : Offset.zero,
       duration: MapConstants.animationDuration,
@@ -1182,12 +1219,24 @@ class MapPageState extends State<MapPage>
         onVerticalDragEnd: (details) {
           final velocity = details.primaryVelocity ?? 0;
           if (velocity > MapConstants.minFlickVelocity) {
-            _dismissSingleFacilityAnimated(showPanel: false);
+            // Swipe down.
+            if (_singleCardExpanded) {
+              setState(() => _singleCardExpanded = false);
+            } else {
+              _dismissSingleFacilityAnimated(showPanel: false);
+            }
+          } else if (velocity < -MapConstants.minFlickVelocity) {
+            // Swipe up → expand.
+            if (!_singleCardExpanded) {
+              setState(() => _singleCardExpanded = true);
+            }
           }
         },
-        child: Container(
+        child: AnimatedContainer(
+          duration: MapConstants.animationDuration,
+          curve: MapConstants.animationCurve,
           margin: const EdgeInsets.all(16.0),
-          constraints: BoxConstraints(maxHeight: maxCardHeight),
+          height: cardHeight,
           // No background color of its own — the FacilityCard fills the wrapper
           // (zero margin, matching corner radius) and carries the drag handle on
           // its own background, so there's no separate chrome strip behind it.
@@ -1228,6 +1277,7 @@ class MapPageState extends State<MapPage>
               showExpandButton: false,
               canFavorite: !isGuest,
               onRate: () => _onRateFacility(_selectedFacility!),
+              onSubmitCorrection: () => _onCorrectFacility(_selectedFacility!),
               margin: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                 borderRadius:

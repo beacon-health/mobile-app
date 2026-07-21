@@ -1,17 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// A user-submitted request to add a facility that isn't in the dataset.
+/// A user-submitted request in the `facility_requests` staging table — either
+/// a **new** facility to add, or a **correction** to an existing one
+/// (`requestType`).
 class FacilityRequestEntry {
   const FacilityRequestEntry({
     required this.facilityName,
     required this.status,
-    this.description,
-    this.services,
-    this.streetAddress,
-    this.city,
-    this.state,
-    this.postalCode,
+    required this.requestType,
+    this.facilityId,
+    this.website,
     this.phone,
+    this.hours,
+    this.streetAddress,
     this.createdAt,
   });
 
@@ -20,13 +21,12 @@ class FacilityRequestEntry {
     return FacilityRequestEntry(
       facilityName: row['facility_name'] as String? ?? '',
       status: row['status'] as String? ?? 'pending',
-      description: row['description'] as String?,
-      services: row['services'] as String?,
-      streetAddress: row['street_address'] as String?,
-      city: row['city'] as String?,
-      state: row['state'] as String?,
-      postalCode: row['postal_code'] as String?,
+      requestType: row['request_type'] as String? ?? 'new',
+      facilityId: row['facility_id'] as String?,
+      website: row['website'] as String?,
       phone: row['phone'] as String?,
+      hours: row['hours'] as String?,
+      streetAddress: row['street_address'] as String?,
       createdAt: created == null ? null : DateTime.tryParse(created),
     );
   }
@@ -35,21 +35,26 @@ class FacilityRequestEntry {
 
   /// Review status: `pending` | `approved` | `rejected` (set internally).
   final String status;
-  final String? description;
-  final String? services;
-  final String? streetAddress;
-  final String? city;
-  final String? state;
-  final String? postalCode;
+
+  /// `new` (add a facility) or `correction` (fix an existing one).
+  final String requestType;
+
+  /// Set for corrections — the id of the facility being corrected.
+  final String? facilityId;
+  final String? website;
   final String? phone;
+  final String? hours;
+  final String? streetAddress;
   final DateTime? createdAt;
+
+  bool get isCorrection => requestType == 'correction';
 }
 
-/// Writes and reads the current user's "add a facility" requests.
+/// Writes and reads the current user's facility requests (adds + corrections).
 ///
 /// Backed by the `facility_requests` table (staging for internal review — DDL
-/// in MVP_RELEASE.md §2.9). Owner-only RLS: users see and manage only their
-/// own requests; the review workflow happens in the Supabase dashboard.
+/// in MVP_RELEASE.md §2.9/§2.11). Owner-only RLS: users see and manage only
+/// their own requests; the review workflow happens in the Supabase dashboard.
 class FacilityRequestService {
   FacilityRequestService({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;
@@ -58,36 +63,52 @@ class FacilityRequestService {
 
   static const String _table = 'facility_requests';
 
-  /// Submits a new facility request. Only [facilityName] is required.
-  Future<void> submit({
-    required String facilityName,
-    String? description,
-    String? services,
-    String? streetAddress,
-    String? city,
-    String? state,
-    String? postalCode,
-    String? phone,
-  }) async {
+  static String? _clean(String? v) {
+    final t = v?.trim();
+    return (t == null || t.isEmpty) ? null : t;
+  }
+
+  String _requireUserId() {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       throw StateError('Cannot submit a facility request while signed out');
     }
-    String? clean(String? v) {
-      final t = v?.trim();
-      return (t == null || t.isEmpty) ? null : t;
-    }
+    return userId;
+  }
 
+  /// Submits a request to add a facility that isn't in the dataset. Name and
+  /// website are both required (§2.11).
+  Future<void> submitNew({
+    required String facilityName,
+    required String website,
+  }) async {
     await _client.from(_table).insert({
-      'user_id': userId,
+      'user_id': _requireUserId(),
+      'request_type': 'new',
       'facility_name': facilityName.trim(),
-      'description': clean(description),
-      'services': clean(services),
-      'street_address': clean(streetAddress),
-      'city': clean(city),
-      'state': clean(state),
-      'postal_code': clean(postalCode),
-      'phone': clean(phone),
+      'website': website.trim(),
+    });
+  }
+
+  /// Submits a correction to an existing facility. Any subset of fields may be
+  /// provided; blanks are dropped.
+  Future<void> submitCorrection({
+    required String facilityId,
+    required String facilityName,
+    String? website,
+    String? phone,
+    String? hours,
+    String? address,
+  }) async {
+    await _client.from(_table).insert({
+      'user_id': _requireUserId(),
+      'request_type': 'correction',
+      'facility_id': facilityId,
+      'facility_name': facilityName.trim(),
+      'website': _clean(website),
+      'phone': _clean(phone),
+      'hours': _clean(hours),
+      'street_address': _clean(address),
     });
   }
 

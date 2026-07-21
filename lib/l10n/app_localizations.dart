@@ -430,12 +430,6 @@ abstract class AppLocalizations {
   /// **'Open 24/7'**
   String get cardOpen247;
 
-  /// No description provided for @cardRatePrompt.
-  ///
-  /// In en, this message translates to:
-  /// **'Already visited? Rate your experience'**
-  String get cardRatePrompt;
-
   /// No description provided for @cardAddressNotAvailable.
   ///
   /// In en, this message translates to:
@@ -567,48 +561,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter the facility name'**
   String get requestFieldNameError;
-
-  /// No description provided for @requestFieldDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Description'**
-  String get requestFieldDescription;
-
-  /// No description provided for @requestFieldServices.
-  ///
-  /// In en, this message translates to:
-  /// **'Services offered'**
-  String get requestFieldServices;
-
-  /// No description provided for @requestFieldAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Street address'**
-  String get requestFieldAddress;
-
-  /// No description provided for @requestFieldCity.
-  ///
-  /// In en, this message translates to:
-  /// **'City'**
-  String get requestFieldCity;
-
-  /// No description provided for @requestFieldState.
-  ///
-  /// In en, this message translates to:
-  /// **'State'**
-  String get requestFieldState;
-
-  /// No description provided for @requestFieldZip.
-  ///
-  /// In en, this message translates to:
-  /// **'ZIP code'**
-  String get requestFieldZip;
-
-  /// No description provided for @requestFieldPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Phone'**
-  String get requestFieldPhone;
 
   /// No description provided for @requestSubmitted.
   ///
@@ -1023,6 +975,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get onboardingContinue;
+
+  /// No description provided for @requestFieldWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility website *'**
+  String get requestFieldWebsite;
+
+  /// No description provided for @requestFieldWebsiteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the facility website'**
+  String get requestFieldWebsiteError;
+
+  /// No description provided for @correctionDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit corrections'**
+  String get correctionDialogTitle;
+
+  /// No description provided for @correctionDialogIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Update anything that\'s wrong and our team will review it.'**
+  String get correctionDialogIntro;
+
+  /// No description provided for @correctionFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get correctionFieldName;
+
+  /// No description provided for @correctionFieldWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get correctionFieldWebsite;
+
+  /// No description provided for @correctionFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get correctionFieldPhone;
+
+  /// No description provided for @correctionFieldHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get correctionFieldHours;
+
+  /// No description provided for @correctionFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get correctionFieldAddress;
+
+  /// No description provided for @correctionSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction submitted — we\'ll review it. Thanks!'**
+  String get correctionSubmitted;
+
+  /// No description provided for @correctionSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t submit correction. Please try again.'**
+  String get correctionSubmitFailed;
+
+  /// No description provided for @requestTypeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New facility'**
+  String get requestTypeNew;
+
+  /// No description provided for @requestTypeCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
+  String get requestTypeCorrection;
+
+  /// No description provided for @cardRatePromptLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Already visited? '**
+  String get cardRatePromptLead;
+
+  /// No description provided for @cardRatePromptAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate your experience'**
+  String get cardRatePromptAction;
+
+  /// No description provided for @cardCorrectionPromptLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect info? '**
+  String get cardCorrectionPromptLead;
+
+  /// No description provided for @cardCorrectionPromptAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit corrections here'**
+  String get cardCorrectionPromptAction;
 }
 
 class _AppLocalizationsDelegate

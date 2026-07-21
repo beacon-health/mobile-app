@@ -176,9 +176,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cardOpen247 => '24/7 全天开放';
 
   @override
-  String get cardRatePrompt => '去过了？评价您的体验';
-
-  @override
   String get cardAddressNotAvailable => '该机构的地址信息不可用';
 
   @override
@@ -243,27 +240,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get requestFieldNameError => '请输入机构名称';
-
-  @override
-  String get requestFieldDescription => '描述';
-
-  @override
-  String get requestFieldServices => '提供的服务';
-
-  @override
-  String get requestFieldAddress => '街道地址';
-
-  @override
-  String get requestFieldCity => '城市';
-
-  @override
-  String get requestFieldState => '州';
-
-  @override
-  String get requestFieldZip => '邮政编码';
-
-  @override
-  String get requestFieldPhone => '电话';
 
   @override
   String get requestSubmitted => '请求已提交 — 我们会尽快审核。谢谢！';
@@ -475,4 +451,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboardingContinue => '继续';
+
+  @override
+  String get requestFieldWebsite => '机构网站 *';
+
+  @override
+  String get requestFieldWebsiteError => '请输入机构网站';
+
+  @override
+  String get correctionDialogTitle => '提交更正';
+
+  @override
+  String get correctionDialogIntro => '更正任何有误的信息，我们的团队会进行审核。';
+
+  @override
+  String get correctionFieldName => '名称';
+
+  @override
+  String get correctionFieldWebsite => '网站';
+
+  @override
+  String get correctionFieldPhone => '电话';
+
+  @override
+  String get correctionFieldHours => '营业时间';
+
+  @override
+  String get correctionFieldAddress => '地址';
+
+  @override
+  String get correctionSubmitted => '更正已提交 — 我们会进行审核。谢谢！';
+
+  @override
+  String get correctionSubmitFailed => '更正提交失败，请重试。';
+
+  @override
+  String get requestTypeNew => '新机构';
+
+  @override
+  String get requestTypeCorrection => '更正';
+
+  @override
+  String get cardRatePromptLead => '去过了？';
+
+  @override
+  String get cardRatePromptAction => '评价您的体验';
+
+  @override
+  String get cardCorrectionPromptLead => '信息有误？';
+
+  @override
+  String get cardCorrectionPromptAction => '在此提交更正';
 }

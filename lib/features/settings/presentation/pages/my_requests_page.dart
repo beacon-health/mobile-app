@@ -88,10 +88,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
 
   Widget _buildRow(FacilityRequestEntry entry) {
     final color = _statusColor(entry.status);
+    final l10n = AppLocalizations.of(context)!;
     final created = entry.createdAt;
     final parts = [
-      if (entry.city != null || entry.state != null)
-        [entry.city, entry.state].whereType<String>().join(', '),
+      if (entry.isCorrection)
+        l10n.requestTypeCorrection
+      else
+        l10n.requestTypeNew,
       if (created != null)
         MaterialLocalizations.of(context).formatMediumDate(created),
     ].where((s) => s.isNotEmpty).join(' · ');
@@ -99,7 +102,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color.withValues(alpha: 0.15),
-        child: Icon(Icons.add_business_outlined, color: color, size: 20),
+        child: Icon(
+          entry.isCorrection
+              ? Icons.edit_note_outlined
+              : Icons.add_business_outlined,
+          color: color,
+          size: 20,
+        ),
       ),
       title: Text(
         entry.facilityName,

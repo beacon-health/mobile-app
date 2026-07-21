@@ -4,13 +4,14 @@
 >
 > **Last updated:** 2026-07-08 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
 >
-> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 / §2.10 UX overhauls**)
-> is **code-complete** — `flutter analyze` clean, 31/31 tests pass, `dart
-> format` clean. The app builds and uploads to TestFlight. What's left is
-> **device QA + non-engineering launch prep** (App Store listing, legal, beta
-> testers) and **a few Supabase SQL blocks** (§2.7 constraint, §2.8 state gate,
-> §2.9 `visited_on` + `facility_requests`; **§2.10 adds no new SQL**) — see the
-> **Pre-Launch Checklist (§3)**.
+> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 / §2.10 / §2.11 UX
+> overhauls**) is **code-complete** — `flutter analyze` clean, 31/31 tests
+> pass, `dart format` clean. The app builds and uploads to TestFlight. What's
+> left is **device QA + non-engineering launch prep** (App Store listing,
+> legal, beta testers) and **a few Supabase SQL blocks** (§2.7 constraint, §2.8
+> state gate, §2.9 `visited_on` + `facility_requests`; **§2.10 no new SQL**;
+> **§2.11 `facility_requests` columns**) — see the **Pre-Launch Checklist
+> (§3)**.
 >
 > **✅ Done (all code)**
 > - **§2.1–§2.5:** Auth (native Sign in with Apple), GPS, crash reporting
@@ -708,6 +709,40 @@ new Supabase SQL** — the eligibility parent toggle rides in the existing
 > over the map is iOS's **Metal Performance HUD**, a per-device developer
 > overlay (Settings → Developer → Graphics HUD, or `MTL_HUD_ENABLED=1` in an
 > Xcode scheme). Not app code; never appears in Release/TestFlight builds.
+
+### 2.11 Card/Requests Refinements (July 2026) ✅ CODE-COMPLETE (1 SQL block pending)
+
+Second on-device pass. `flutter analyze` clean, 31/31 tests, `dart format`
+clean.
+- **Profile eligibility** — parent "apply to search" toggle split into its own
+  card, visually separated from the four gate toggles it governs.
+- **Facility card** — "At a Glance" moved **above** Services; added an
+  **"Incorrect info? Submit corrections here"** row under the rate row.
+- **Submit corrections** — new `FacilityCorrectionDialog` (name / website /
+  phone / hours / address, **pre-filled** from the facility) writes to
+  `facility_requests` with `request_type = 'correction'` + `facility_id`.
+- **Request-a-facility form simplified** to **name + website** (both required);
+  the other fields were removed.
+- **Your Requests** now shows a New/Correction type label + icon.
+- **Single-facility card** gains **expand/collapse** via the handle bar (swipe
+  up → ~85% height, swipe down → default → dismiss), mirroring the list panel.
+- **List-row expand** now **centers the map** on the facility at a moderate
+  zoom (`MapConstants.listExpandZoom = 14` — closer than the region view, less
+  than the single-card zoom).
+- **Home map cutout** zoom lowered (14 → 12) so POI/facility name labels don't
+  render in the preview.
+
+**Supabase SQL to run** (adds columns for corrections + the new/correction
+discriminator; safe/additive):
+```sql
+alter table public.facility_requests
+  add column if not exists request_type text default 'new' not null,  -- 'new' | 'correction'
+  add column if not exists facility_id text,   -- set for corrections
+  add column if not exists website text,
+  add column if not exists hours text;
+```
+Existing RLS already covers the new columns (owner-only). Corrections reuse
+`street_address` for the address and `phone` for the phone number.
 
 ## 3. Pre-Launch Checklist
 

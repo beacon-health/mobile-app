@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage>
 
         try {
           await _mapController!.animateCamera(
-            CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
+            CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
           );
         } catch (e, stackTrace) {
           // Camera animation failure is non-critical.
@@ -198,7 +198,7 @@ class _HomePageState extends State<HomePage>
     if (_currentLocation.latitude != MapConstants.defaultLatitude) {
       try {
         await controller.animateCamera(
-          CameraUpdate.newLatLngZoom(_currentLocation, 14.0),
+          CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
         );
       } catch (e, stackTrace) {
         // Camera animation failure is non-critical — report but don't throw.
@@ -488,13 +488,19 @@ class _HomePageState extends State<HomePage>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Column(
-              children: [
-                for (var i = 0; i < recent.length; i++) ...[
-                  if (i > 0) Divider(height: 1, color: Colors.grey[200]),
-                  _buildRecentRow(recent[i], isGuest: isGuest),
+            // Transparent Material so the ListTile rows paint their ink/tap
+            // splashes here, above the Container's colored background (which
+            // would otherwise hide them — Flutter asserts on this).
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                children: [
+                  for (var i = 0; i < recent.length; i++) ...[
+                    if (i > 0) Divider(height: 1, color: Colors.grey[200]),
+                    _buildRecentRow(recent[i], isGuest: isGuest),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -680,43 +686,48 @@ class _HomePageState extends State<HomePage>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemCount: favoriteFacilities.length,
-              separatorBuilder: (_, __) =>
-                  Divider(height: 1, color: Colors.grey[200]),
-              itemBuilder: (context, i) => ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
-                ),
-                visualDensity: VisualDensity.compact,
-                leading: FacilityCategoryIcons.buildCategoryIcon(
-                  favoriteFacilities[i].primaryCategory,
-                ),
-                title: Text(
-                  favoriteFacilities[i].name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+            // Transparent Material so the ListTile rows paint their ink/tap
+            // splashes above the Container's colored background.
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: favoriteFacilities.length,
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: Colors.grey[200]),
+                itemBuilder: (context, i) => ListTile(
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  favoriteFacilities[i].address,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                  visualDensity: VisualDensity.compact,
+                  leading: FacilityCategoryIcons.buildCategoryIcon(
+                    favoriteFacilities[i].primaryCategory,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  title: Text(
+                    favoriteFacilities[i].name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    favoriteFacilities[i].address,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
+                  onTap: () => _navigateToFacility(favoriteFacilities[i]),
                 ),
-                trailing: const Icon(Icons.chevron_right, size: 20),
-                onTap: () => _navigateToFacility(favoriteFacilities[i]),
               ),
             ),
           ),

@@ -1,43 +1,76 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
+import 'package:beacon_app/core/utils/phone_format.dart';
+import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Shows a modal dialog where an authenticated user can request a facility be
-/// added to Beacon. Simplified to **name + website** (both required, §2.11).
+/// Shows a modal where an authenticated user can submit corrections to an
+/// existing [facility] — name, website, phone, hours, address. Fields are
+/// pre-filled with current values; the user edits what's wrong.
 ///
-/// Submissions land in the `facility_requests` staging table (`request_type =
-/// 'new'`) for internal review. Guests should not reach this — callers gate
-/// with `showSignInPromptDialog`.
-Future<void> showFacilityRequestDialog(BuildContext context) {
+/// Submissions land in `facility_requests` (`request_type = 'correction'`,
+/// `facility_id` set) for internal review (§2.11). Guests should not reach
+/// this — callers gate with `showSignInPromptDialog`.
+Future<void> showFacilityCorrectionDialog(
+  BuildContext context, {
+  required Facility facility,
+}) {
   return showDialog<void>(
     context: context,
-    builder: (_) => const _FacilityRequestDialog(),
+    builder: (_) => _FacilityCorrectionDialog(facility: facility),
   );
 }
 
-class _FacilityRequestDialog extends StatefulWidget {
-  const _FacilityRequestDialog();
+class _FacilityCorrectionDialog extends StatefulWidget {
+  const _FacilityCorrectionDialog({required this.facility});
+
+  final Facility facility;
 
   @override
-  State<_FacilityRequestDialog> createState() => _FacilityRequestDialogState();
+  State<_FacilityCorrectionDialog> createState() =>
+      _FacilityCorrectionDialogState();
 }
 
-class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
+class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final FacilityRequestService _requestService = FacilityRequestService();
 
-  final _nameController = TextEditingController();
-  final _websiteController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _websiteController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _hoursController;
+  late final TextEditingController _addressController;
 
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final f = widget.facility;
+    final phone = f.primaryPhone;
+    _nameController = TextEditingController(text: f.name);
+    _websiteController = TextEditingController(text: f.website ?? '');
+    _phoneController = TextEditingController(
+      text: phone == 'Phone not available' ? '' : formatPhoneForDisplay(phone),
+    );
+    _hoursController = TextEditingController(
+      text: f.hours.isEmpty ? '' : f.hoursDisplay,
+    );
+    _addressController = TextEditingController(
+      text: f.address == 'Address not available' ? '' : f.address,
+    );
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _websiteController.dispose();
+    _phoneController.dispose();
+    _hoursController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -55,24 +88,28 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
 
     setState(() => _isSubmitting = true);
     try {
-      await _requestService.submitNew(
+      await _requestService.submitCorrection(
+        facilityId: widget.facility.id,
         facilityName: _nameController.text,
         website: _websiteController.text,
+        phone: _phoneController.text,
+        hours: _hoursController.text,
+        address: _addressController.text,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
-      _showSnack(AppLocalizations.of(context)!.requestSubmitted);
+      _showSnack(AppLocalizations.of(context)!.correctionSubmitted);
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,
         stackTrace,
-        context: 'FacilityRequestDialog._submit',
+        context: 'FacilityCorrectionDialog._submit',
       );
       if (!mounted) return;
       Navigator.of(context).pop();
       final msg = kDebugMode
-          ? "Couldn't submit request: $e"
-          : AppLocalizations.of(context)!.requestSubmitFailed;
+          ? "Couldn't submit correction: $e"
+          : AppLocalizations.of(context)!.correctionSubmitFailed;
       _showSnack(msg, isError: true);
     }
   }
@@ -91,13 +128,14 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
   Widget _field(
     TextEditingController controller,
     String label, {
+    int maxLines = 1,
     TextInputType? keyboardType,
-    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
+        maxLines: maxLines,
         keyboardType: keyboardType,
         enabled: !_isSubmitting,
         decoration: InputDecoration(
@@ -106,7 +144,6 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
           isDense: true,
         ),
         style: const TextStyle(fontSize: 14),
-        validator: validator,
       ),
     );
   }
@@ -117,7 +154,7 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(
-        l10n.requestDialogTitle,
+        l10n.correctionDialogTitle,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
       content: SingleChildScrollView(
@@ -130,27 +167,29 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  l10n.requestDialogIntro,
+                  l10n.correctionDialogIntro,
                   style: TextStyle(
                     fontSize: 13,
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              _field(
-                _nameController,
-                l10n.requestFieldName,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l10n.requestFieldNameError
-                    : null,
-              ),
+              _field(_nameController, l10n.correctionFieldName),
               _field(
                 _websiteController,
-                l10n.requestFieldWebsite,
+                l10n.correctionFieldWebsite,
                 keyboardType: TextInputType.url,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l10n.requestFieldWebsiteError
-                    : null,
+              ),
+              _field(
+                _phoneController,
+                l10n.correctionFieldPhone,
+                keyboardType: TextInputType.phone,
+              ),
+              _field(_hoursController, l10n.correctionFieldHours, maxLines: 2),
+              _field(
+                _addressController,
+                l10n.correctionFieldAddress,
+                maxLines: 2,
               ),
             ],
           ),

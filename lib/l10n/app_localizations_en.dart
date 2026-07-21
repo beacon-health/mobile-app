@@ -180,9 +180,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardOpen247 => 'Open 24/7';
 
   @override
-  String get cardRatePrompt => 'Already visited? Rate your experience';
-
-  @override
   String get cardAddressNotAvailable =>
       'Address information not available for this facility';
 
@@ -249,27 +246,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestFieldNameError => 'Please enter the facility name';
-
-  @override
-  String get requestFieldDescription => 'Description';
-
-  @override
-  String get requestFieldServices => 'Services offered';
-
-  @override
-  String get requestFieldAddress => 'Street address';
-
-  @override
-  String get requestFieldCity => 'City';
-
-  @override
-  String get requestFieldState => 'State';
-
-  @override
-  String get requestFieldZip => 'ZIP code';
-
-  @override
-  String get requestFieldPhone => 'Phone';
 
   @override
   String get requestSubmitted =>
@@ -492,4 +468,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingContinue => 'Continue';
+
+  @override
+  String get requestFieldWebsite => 'Facility website *';
+
+  @override
+  String get requestFieldWebsiteError => 'Please enter the facility website';
+
+  @override
+  String get correctionDialogTitle => 'Submit corrections';
+
+  @override
+  String get correctionDialogIntro =>
+      'Update anything that\'s wrong and our team will review it.';
+
+  @override
+  String get correctionFieldName => 'Name';
+
+  @override
+  String get correctionFieldWebsite => 'Website';
+
+  @override
+  String get correctionFieldPhone => 'Phone';
+
+  @override
+  String get correctionFieldHours => 'Hours';
+
+  @override
+  String get correctionFieldAddress => 'Address';
+
+  @override
+  String get correctionSubmitted =>
+      'Correction submitted — we\'ll review it. Thanks!';
+
+  @override
+  String get correctionSubmitFailed =>
+      'Couldn\'t submit correction. Please try again.';
+
+  @override
+  String get requestTypeNew => 'New facility';
+
+  @override
+  String get requestTypeCorrection => 'Correction';
+
+  @override
+  String get cardRatePromptLead => 'Already visited? ';
+
+  @override
+  String get cardRatePromptAction => 'Rate your experience';
+
+  @override
+  String get cardCorrectionPromptLead => 'Incorrect info? ';
+
+  @override
+  String get cardCorrectionPromptAction => 'Submit corrections here';
 }
