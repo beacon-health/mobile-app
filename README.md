@@ -110,10 +110,10 @@ test/                          Unit tests mirroring lib/
 
 **Guest mode is a first-class state.** `GuestModeService.isGuest` is derived
 from the Supabase session. Guests can browse, search, and get directions;
-Favorites, ratings, requests, and the whole Profile tab are gated behind
-`LockedFeatureGate` / `showSignInPromptDialog`. When adding a feature that
-writes to Supabase, gate it — RLS will reject anonymous writes anyway, and a
-sign-in prompt is a far better experience than a silent failure.
+Favorites, ratings, requests, and the whole Profile tab are gated by checking
+`isGuest` and calling `showSignInPromptDialog(context)`. When adding a feature
+that writes to Supabase, gate it — RLS will reject anonymous writes anyway, and
+a sign-in prompt is a far better experience than a silent failure.
 
 **Facility queries are server-side and bounded.** `SupabaseFacilityService`
 calls the PostGIS `facilities_near` RPC with a lat/lng + radius, capped at 250
@@ -168,13 +168,16 @@ Every user table has RLS with `using (auth.uid() = user_id)` **and** a matching
 
 **Categories** come from `category_broad` (13 values, the filter dimension) and
 `category_detail` (21 values, searchable). `FacilityCategories` is the single
-source of truth: it maps the 13 broad values into 4 icon groups plus a neutral
-fallback. If the database taxonomy changes, update that file — a test asserts
-the expected value count, so drift fails CI.
+source of truth: it maps the 13 broad values into the 6 Home quick-action
+groups, each with its own marker icon and color, plus a neutral fallback used
+only for unknown/null values. If the database taxonomy changes, update that
+file — tests assert both the value count and full group coverage, so drift
+fails CI.
 
 > **Schema and migrations are applied by hand** through the Supabase SQL Editor;
-> there is no migration tool in this repo. All DDL is recorded in
-> `MVP_RELEASE.md` — treat that file as the schema source of truth.
+> there is no migration tool in this repo, and the DDL is not tracked here.
+> Ask the project owner for the current schema reference before changing
+> anything that touches the database.
 
 ---
 
@@ -245,7 +248,8 @@ Google Cloud → Billing, and that "Maps SDK for iOS" is enabled.
 `--dart-define` flags. See "Getting started".
 
 **Ratings or requests fail to submit.** A required table, column, or unique
-constraint hasn't been applied. Check the SQL runbook in `MVP_RELEASE.md` §3.1.
+constraint hasn't been applied to the Supabase project. A 42501 specifically
+means an RLS policy is missing its `with check` clause.
 
 **No facilities appear anywhere.** Either the state you're searching isn't in
 `launched_states`, or you're outside the fixed 5-mile radius. Illinois ZIPs
@@ -255,16 +259,5 @@ constraint hasn't been applied. Check the SQL runbook in `MVP_RELEASE.md` §3.1.
 converting plugins to Swift Package Manager, disable SPM (see Prerequisites).
 
 **Every marker is a neutral grey pin and the Category filter matches nothing.**
-The Supabase view and RPC aren't exposing `category_broad` / `category_detail`
-yet — apply the migration in `MVP_RELEASE.md` §3.3.
-
----
-
-## Further reading
-
-- **[`MVP_RELEASE.md`](MVP_RELEASE.md)** — the living context doc: full
-  implementation record, all SQL/DDL, the pre-launch checklist, App Store
-  submission requirements, and post-MVP plans. **Read this before making
-  changes.**
-- **[`Non-Functional_Checklist.md`](Non-Functional_Checklist.md)** — App Store
-  listing, assets, and the privacy nutrition label (non-engineering hand-off).
+The `fct_supabase_full` view and the `facilities_near` RPC aren't returning
+`category_broad` / `category_detail`. Both must expose those columns.

@@ -440,6 +440,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonSave => '保存';
 
   @override
+  String get homeCategoryHealthCare => '医疗保健';
+
+  @override
+  String get homeCategoryMentalHealth => '心理健康';
+
+  @override
+  String get homeCategoryHousing => '住房与庇护';
+
+  @override
+  String get homeCategoryBasicNeeds => '基本需求';
+
+  @override
+  String get homeCategoryCommunity => '社区资源';
+
+  @override
+  String get homeCategorySpecialized => '专项服务';
+
+  @override
   String get commonLinkFailed => '无法打开该链接。';
 
   @override

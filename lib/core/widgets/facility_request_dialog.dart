@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Shows a modal dialog where an authenticated user can request a facility be
-/// added to Beacon. Simplified to **name + website** (both required, §2.11).
+/// added to Beacon. Requires **name + website**.
 ///
 /// Submissions land in the `facility_requests` staging table (`request_type =
 /// 'new'`) for internal review. Guests should not reach this — callers gate

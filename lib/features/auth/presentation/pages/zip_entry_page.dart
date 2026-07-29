@@ -60,7 +60,7 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
     }
 
     // Signed-in users get the required Eligibility step next; guests go
-    // straight to the app (§2.10).
+    // straight to the app.
     finishLocationOnboarding(context);
   }
 

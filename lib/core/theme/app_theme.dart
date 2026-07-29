@@ -7,11 +7,17 @@ class AppTheme {
   static const Color khaki = Color(0xFFF0E68C);
   static const Color bittersweet = Color(0xFFFE6F5E);
 
-  // Category colors
+  // Category colors — one per Home quick-action group. These double as marker
+  // pin colors, so they must stay distinguishable at ~20px. `paynesGray` is
+  // reserved for the uncategorized fallback and is deliberately not reused
+  // here (Mental Health previously shared it, making unknown pins and mental
+  // health pins identical on the map).
   static const Color healthCare = resedaGreen;
-  static const Color mentalHealth = paynesGray;
+  static const Color mentalHealth = Color(0xFF7A6BA8);
   static const Color basicNeeds = bittersweet;
-  static const Color housingShelter = Color.fromARGB(255, 53, 167, 238);
+  static const Color housingShelter = Color(0xFF35A7EE);
+  static const Color communityResources = Color(0xFFC9962C);
+  static const Color specializedServices = Color(0xFF157F7A);
 
   static ThemeData get lightTheme {
     return ThemeData(

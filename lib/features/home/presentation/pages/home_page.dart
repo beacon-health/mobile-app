@@ -280,20 +280,28 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Localized label for a quick-action group. The group constant itself stays
+  /// canonical English — it's the filter value and the icon/color key — so only
+  /// the display string is translated.
+  String _groupLabel(AppLocalizations l10n, String group) => switch (group) {
+        FacilityCategories.groupHealthCare => l10n.homeCategoryHealthCare,
+        FacilityCategories.groupMentalHealth => l10n.homeCategoryMentalHealth,
+        FacilityCategories.groupHousingShelter => l10n.homeCategoryHousing,
+        FacilityCategories.groupBasicNeeds => l10n.homeCategoryBasicNeeds,
+        FacilityCategories.groupCommunity => l10n.homeCategoryCommunity,
+        FacilityCategories.groupSpecialized => l10n.homeCategorySpecialized,
+        _ => group,
+      };
+
   Widget _buildMapAndCategories() {
     // Driven off the shared taxonomy so labels, icons, and the resulting map
     // filter stay in sync with the markers.
-    const groups = [
-      FacilityCategories.groupHealthCare,
-      FacilityCategories.groupMentalHealth,
-      FacilityCategories.groupHousingShelter,
-      FacilityCategories.groupBasicNeeds,
-    ];
+    final l10n = AppLocalizations.of(context)!;
     final actions = [
-      for (final group in groups)
+      for (final group in FacilityCategories.quickActionGroups)
         _QuickAction(
           icon: MarkerUtils.getIconForCategory(group),
-          label: group,
+          label: _groupLabel(l10n, group),
           color: MarkerUtils.getColorForCategory(group),
           category: group,
         ),
@@ -303,8 +311,10 @@ class _HomePageState extends State<HomePage>
       height: 160,
       child: Row(
         children: [
+          // 2:3 split — the map gives up width so the 3-column quick-action
+          // grid has room for readable labels.
           Expanded(
-            flex: 1,
+            flex: 2,
             child: GestureDetector(
               onTap: _navigateToMapPage,
               child: Container(
@@ -343,28 +353,22 @@ class _HomePageState extends State<HomePage>
           ),
           const SizedBox(width: 12),
           Expanded(
-            flex: 1,
+            flex: 3,
             child: Column(
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      _buildCategoryButton(actions[0]),
-                      const SizedBox(width: 8),
-                      _buildCategoryButton(actions[1]),
-                    ],
+                for (var row = 0; row < 2; row++) ...[
+                  if (row > 0) const SizedBox(height: 8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        for (var col = 0; col < 3; col++) ...[
+                          if (col > 0) const SizedBox(width: 6),
+                          _buildCategoryButton(actions[row * 3 + col]),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: Row(
-                    children: [
-                      _buildCategoryButton(actions[2]),
-                      const SizedBox(width: 8),
-                      _buildCategoryButton(actions[3]),
-                    ],
-                  ),
-                ),
+                ],
               ],
             ),
           ),
@@ -388,21 +392,34 @@ class _HomePageState extends State<HomePage>
               Icon(
                 action.icon,
                 color: action.color,
-                size: 22,
+                size: 20,
               ),
               const SizedBox(height: 2),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  action.label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: action.color,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                // Tiles are only ~58pt wide on the smallest supported device
+                // and translations vary a lot in length (es "especializados"
+                // is 14 characters). The SizedBox pins the width so the label
+                // wraps to two lines first; FittedBox then shrinks it only if
+                // it still doesn't fit, so nothing is ever cut mid-word.
+                child: LayoutBuilder(
+                  builder: (context, constraints) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Text(
+                        action.label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 9,
+                          height: 1.15,
+                          fontWeight: FontWeight.w600,
+                          color: action.color,
+                        ),
+                        maxLines: 2,
+                      ),
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

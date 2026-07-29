@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 import 'dart:math' as math;
 
+import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
@@ -75,11 +75,10 @@ class MarkerManagementService {
           markers.add(await _createClusterMarker(group, context, onClusterTap));
         }
       } catch (e, stackTrace) {
-        developer.log(
-          'Error creating cluster/marker: $e',
-          name: 'MarkerManagementService',
-          error: e,
-          stackTrace: stackTrace,
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'MarkerManagementService.cluster',
         );
       }
     }
@@ -152,11 +151,10 @@ class MarkerManagementService {
         );
         markers.add(marker);
       } catch (e, stackTrace) {
-        developer.log(
-          'Error creating marker for ${facility.id}: $e',
-          name: 'MarkerManagementService',
-          error: e,
-          stackTrace: stackTrace,
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'MarkerManagementService.marker',
         );
       }
     }
@@ -232,10 +230,11 @@ class MarkerManagementService {
           showName: showFacilityNames,
         );
         markerIconCache[cacheKey] = icon;
-      } catch (e) {
-        developer.log(
-          'Error creating marker icon: $e',
-          name: 'MarkerManagementService',
+      } catch (e, stackTrace) {
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'MarkerManagementService.icon',
         );
         icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
       }

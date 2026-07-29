@@ -52,9 +52,9 @@ class FacilityRequestEntry {
 
 /// Writes and reads the current user's facility requests (adds + corrections).
 ///
-/// Backed by the `facility_requests` table (staging for internal review — DDL
-/// in MVP_RELEASE.md §2.9/§2.11). Owner-only RLS: users see and manage only
-/// their own requests; the review workflow happens in the Supabase dashboard.
+/// Backed by the `facility_requests` staging table. Owner-only RLS: users see
+/// and manage only their own requests; the review workflow happens in the
+/// Supabase dashboard.
 class FacilityRequestService {
   FacilityRequestService({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;
@@ -77,7 +77,7 @@ class FacilityRequestService {
   }
 
   /// Submits a request to add a facility that isn't in the dataset. Name and
-  /// website are both required (§2.11).
+  /// website are both required.
   Future<void> submitNew({
     required String facilityName,
     required String website,

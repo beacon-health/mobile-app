@@ -7,8 +7,8 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 // Distance was removed as a filter — every query is a fixed
-// MapConstants.defaultRadiusMiles around the search point (§2.9). Eligibility
-// and the Status shortcut were removed too (§2.10): eligibility auto-applies
+// MapConstants.defaultRadiusMiles around the search point. Eligibility
+// and the Status shortcut were removed too: eligibility auto-applies
 // from the Profile tab, so the map filters are Category + Preferences.
 enum FilterSection {
   category,

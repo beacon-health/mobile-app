@@ -10,7 +10,7 @@ class FacilitySearch extends StatefulWidget {
 
   /// Jumps the map/query to the user's GPS position. Rendered as the blue
   /// my-location button on the right side of this bar (moved here from the
-  /// location search bar, §2.9).
+  /// location search bar).
   final VoidCallback? onUseMyLocation;
 
   /// Shows a spinner in place of the my-location button while GPS resolves.

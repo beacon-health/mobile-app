@@ -12,7 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// pre-filled with current values; the user edits what's wrong.
 ///
 /// Submissions land in `facility_requests` (`request_type = 'correction'`,
-/// `facility_id` set) for internal review (§2.11). Guests should not reach
+/// `facility_id` set) for internal review. Guests should not reach
 /// this — callers gate with `showSignInPromptDialog`.
 Future<void> showFacilityCorrectionDialog(
   BuildContext context, {

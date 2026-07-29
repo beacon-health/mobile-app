@@ -6,7 +6,7 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Lists the "add a facility" requests the signed-in user has submitted, with
-/// their review status (MVP_RELEASE.md §2.9). Mirrors the Your Ratings page.
+/// their review status. Mirrors the Your Ratings page.
 class MyRequestsPage extends StatefulWidget {
   const MyRequestsPage({super.key});
 

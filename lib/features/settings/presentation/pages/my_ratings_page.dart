@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 /// Lists the ratings the signed-in user has submitted, and lets them edit or
-/// remove each one (MVP_RELEASE.md §2.7 / §2.9).
+/// remove each one.
 ///
 /// Rating rows store only a `facility_id`, so facility names are resolved by
 /// id from the view (region-independent, same path as Favorites). Tapping a

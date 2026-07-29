@@ -449,7 +449,7 @@ class MapPageState extends State<MapPage>
     setState(() => _isLocatingUser = false);
 
     if (result.status == LocationStatus.granted) {
-      // Store the canonical label; LocationSearch translates it for display.
+      // Store the canonical sentinel; it's translated at display time.
       await _onLocationChanged(
         MapConstants.currentLocationSentinel,
         result.latitude,
@@ -1130,11 +1130,10 @@ class MapPageState extends State<MapPage>
                       isLocatingUser: _isLocatingUser,
                     ),
                   ),
-                  // The ZIP/location search bar is intentionally not rendered
-                  // — users move the query with the my-location button and
-                  // "Search this area" (§2.9 follow-up). The LocationSearch
-                  // widget is kept in the tree for potential reinstatement;
-                  // ZIP edits still flow in from Settings via ZipCodeService.
+                  // No ZIP/location search bar here by design — users move
+                  // the query with the my-location button and "Search this
+                  // area". ZIP edits still flow in from Settings via
+                  // ZipCodeService.
                   const SizedBox(height: 6),
                   _buildFilterBar(),
                   _buildSearchAreaButton(),

@@ -8,9 +8,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// Debug builds: errors are printed via [developer.log] with a named tag for
 /// console filtering. Release builds: forwards to Sentry via
 /// [Sentry.captureException] when Sentry has been initialized (see
-/// `main.dart`). If Sentry was not initialized (e.g. demo mode launched
-/// without a DSN), the release path is a no-op so callers never crash on
-/// reports.
+/// `main.dart`). If Sentry was not initialized — no DSN supplied — the release
+/// path is a no-op, so callers never crash on reports.
 class ErrorReporter {
   static final ErrorReporter instance = ErrorReporter._();
   ErrorReporter._();

@@ -1,5 +1,4 @@
-import 'dart:developer' as developer;
-
+import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -125,10 +124,11 @@ class SupabaseFacilityService {
         facilities.add(
           Facility.fromSupabase(Map<String, dynamic>.from(row as Map)),
         );
-      } catch (e) {
-        developer.log(
-          'Error parsing facility: $e',
-          name: 'SupabaseFacilityService',
+      } catch (e, stackTrace) {
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'SupabaseFacilityService._parseRows',
         );
       }
     }

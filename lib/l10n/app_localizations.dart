@@ -952,6 +952,42 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get commonSave;
 
+  /// No description provided for @homeCategoryHealthCare.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Care'**
+  String get homeCategoryHealthCare;
+
+  /// No description provided for @homeCategoryMentalHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Mental Health'**
+  String get homeCategoryMentalHealth;
+
+  /// No description provided for @homeCategoryHousing.
+  ///
+  /// In en, this message translates to:
+  /// **'Housing & Shelter'**
+  String get homeCategoryHousing;
+
+  /// No description provided for @homeCategoryBasicNeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Needs'**
+  String get homeCategoryBasicNeeds;
+
+  /// No description provided for @homeCategoryCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Resources'**
+  String get homeCategoryCommunity;
+
+  /// No description provided for @homeCategorySpecialized.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialized Services'**
+  String get homeCategorySpecialized;
+
   /// No description provided for @commonLinkFailed.
   ///
   /// In en, this message translates to:

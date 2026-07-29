@@ -30,20 +30,35 @@ class FacilityCategories {
     'Veterans',
   ];
 
-  // The four consolidated groups (+ a neutral fallback) that drive marker
-  // icons/colors and the Home quick-action buttons.
+  // The six consolidated groups that drive marker icons/colors and the Home
+  // quick-action grid, plus a neutral fallback.
   static const String groupHealthCare = 'Health Care';
   static const String groupMentalHealth = 'Mental Health';
   static const String groupBasicNeeds = 'Basic Needs';
   static const String groupHousingShelter = 'Housing & Shelter';
-  static const String groupOther = 'Community Resource';
+  static const String groupCommunity = 'Community Resources';
+  static const String groupSpecialized = 'Specialized Services';
+
+  /// Fallback for facilities whose `category_broad` is null or unrecognized.
+  ///
+  /// Every known value maps to one of the six groups above, so this only ever
+  /// applies to unknown data — it is **not** a quick-action button. Keeping it
+  /// separate from [groupCommunity] means a grey pin unambiguously reads as
+  /// "uncategorized" rather than "community nonprofit".
+  static const String groupOther = 'Other';
+
+  /// The six quick-action groups, in Home grid order (3 columns × 2 rows).
+  static const List<String> quickActionGroups = [
+    groupHealthCare,
+    groupMentalHealth,
+    groupHousingShelter,
+    groupBasicNeeds,
+    groupCommunity,
+    groupSpecialized,
+  ];
 
   /// Consolidates a `category_broad` value (or null) into a high-level group
   /// for marker icon/color selection.
-  ///
-  /// 'Community Services' is deliberately left in [groupOther]: it's the
-  /// generic community-nonprofit bucket and the single largest category, so
-  /// giving it a neutral pin keeps the specific groups legible on the map.
   static String groupFor(String? categoryBroad) {
     switch (categoryBroad) {
       case 'Medical Care':
@@ -57,11 +72,14 @@ class FacilityCategories {
       case 'Housing':
         return groupHousingShelter;
       case 'Basic Needs':
+        return groupBasicNeeds;
+      case 'Community Services':
+        return groupCommunity;
       case 'Children and Families':
       case 'Seniors':
       case 'Veterans':
       case 'Disability Services':
-        return groupBasicNeeds;
+        return groupSpecialized;
       default:
         return groupOther;
     }
@@ -73,10 +91,7 @@ class FacilityCategories {
     return categoryBroadValues.where((v) => groupFor(v) == group).toList();
   }
 
-  /// True if [value] is one of the four consolidated group names.
-  static bool isGroup(String value) =>
-      value == groupHealthCare ||
-      value == groupMentalHealth ||
-      value == groupBasicNeeds ||
-      value == groupHousingShelter;
+  /// True if [value] is one of the six consolidated group names (i.e. a Home
+  /// quick-action), rather than a raw `category_broad` value.
+  static bool isGroup(String value) => quickActionGroups.contains(value);
 }

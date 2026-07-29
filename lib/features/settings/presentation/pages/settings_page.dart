@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 
 /// App settings: language, appearance, location (ZIP / GPS), directions app,
 /// and About. Account, Ratings/Requests, and Eligibility now live on the
-/// Profile tab; service Preferences are Map filters (§2.10).
+/// Profile tab; service Preferences are Map filters.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 

@@ -18,7 +18,7 @@ class FacilityFilterService {
   }) {
     return allFacilities.where((facility) {
       // Search filter — matches across name, description, services (list +
-      // plain-language summary), and category tags, not just the title (§2.9).
+      // plain-language summary), and category values, not just the title.
       // Runs client-side over the loaded region pool (≤250 rows), so widening
       // the match set costs nothing server-side.
       final q = searchText.toLowerCase();

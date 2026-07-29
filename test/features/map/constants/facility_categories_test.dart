@@ -36,9 +36,15 @@ void main() {
       );
     });
 
-    test('population-specific services map to Basic Needs', () {
+    test('food and essentials maps to Basic Needs', () {
+      expect(
+        FacilityCategories.groupFor('Basic Needs'),
+        FacilityCategories.groupBasicNeeds,
+      );
+    });
+
+    test('population-specific services map to Specialized Services', () {
       for (final value in [
-        'Basic Needs',
         'Children and Families',
         'Seniors',
         'Veterans',
@@ -46,22 +52,36 @@ void main() {
       ]) {
         expect(
           FacilityCategories.groupFor(value),
-          FacilityCategories.groupBasicNeeds,
-          reason: '$value should group as Basic Needs',
+          FacilityCategories.groupSpecialized,
+          reason: '$value should group as Specialized Services',
         );
       }
     });
 
-    test('generic community services and unknowns fall back to Other', () {
+    test('community nonprofits map to Community Resources', () {
       expect(
         FacilityCategories.groupFor('Community Services'),
-        FacilityCategories.groupOther,
+        FacilityCategories.groupCommunity,
       );
+    });
+
+    test('only null / unrecognized values fall back to Other', () {
       expect(FacilityCategories.groupFor(null), FacilityCategories.groupOther);
       expect(
         FacilityCategories.groupFor('Something Else'),
         FacilityCategories.groupOther,
       );
+    });
+
+    test('every known broad value maps to a real group, never the fallback',
+        () {
+      for (final value in FacilityCategories.categoryBroadValues) {
+        expect(
+          FacilityCategories.groupFor(value),
+          isNot(FacilityCategories.groupOther),
+          reason: '$value must belong to a quick-action group',
+        );
+      }
     });
   });
 
@@ -88,6 +108,25 @@ void main() {
       expect(values, contains('Hospitals'));
       expect(values, contains('Medical Care'));
       expect(values, isNot(contains('Mental Health')));
+    });
+
+    test('the six quick-action groups cover all 13 broad values', () {
+      expect(FacilityCategories.quickActionGroups, hasLength(6));
+      final covered = [
+        for (final g in FacilityCategories.quickActionGroups)
+          ...FacilityCategories.valuesForGroup(g),
+      ];
+      expect(covered..sort(), FacilityCategories.categoryBroadValues.toList());
+    });
+
+    test('isGroup accepts group names and rejects raw broad values', () {
+      expect(FacilityCategories.isGroup(FacilityCategories.groupCommunity),
+          isTrue);
+      expect(FacilityCategories.isGroup(FacilityCategories.groupSpecialized),
+          isTrue);
+      expect(FacilityCategories.isGroup('Medical Care'), isFalse);
+      expect(
+          FacilityCategories.isGroup(FacilityCategories.groupOther), isFalse);
     });
   });
 }

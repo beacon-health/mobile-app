@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui show ImageByteFormat, PictureRecorder;
 
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -265,39 +266,43 @@ class MarkerUtils {
     );
   }
 
-  /// Returns the icon for a category string from 211 taxonomy.
+  /// Returns the icon for one of the [FacilityCategories] group names.
   static IconData getIconForCategory(String? category) {
-    if (category == null) return Icons.place;
-
     switch (category) {
-      case 'Health Care':
+      case FacilityCategories.groupHealthCare:
         return Icons.medical_services;
-      case 'Mental Health':
+      case FacilityCategories.groupMentalHealth:
         return Icons.psychology;
-      case 'Basic Needs':
+      case FacilityCategories.groupBasicNeeds:
         return Icons.volunteer_activism;
-      case 'Housing & Shelter':
+      case FacilityCategories.groupHousingShelter:
         return Icons.night_shelter;
+      case FacilityCategories.groupCommunity:
+        return Icons.groups;
+      case FacilityCategories.groupSpecialized:
+        return Icons.diversity_3;
       default:
         return Icons.place;
     }
   }
 
-  /// Returns the color for a category string from 211 taxonomy.
+  /// Returns the color for one of the [FacilityCategories] group names.
   ///
   /// Uses [AppTheme] category colors as the single source of truth.
   static Color getColorForCategory(String? category) {
-    if (category == null) return AppTheme.paynesGray;
-
     switch (category) {
-      case 'Health Care':
+      case FacilityCategories.groupHealthCare:
         return AppTheme.healthCare;
-      case 'Mental Health':
+      case FacilityCategories.groupMentalHealth:
         return AppTheme.mentalHealth;
-      case 'Basic Needs':
+      case FacilityCategories.groupBasicNeeds:
         return AppTheme.basicNeeds;
-      case 'Housing & Shelter':
+      case FacilityCategories.groupHousingShelter:
         return AppTheme.housingShelter;
+      case FacilityCategories.groupCommunity:
+        return AppTheme.communityResources;
+      case FacilityCategories.groupSpecialized:
+        return AppTheme.specializedServices;
       default:
         return AppTheme.paynesGray;
     }
