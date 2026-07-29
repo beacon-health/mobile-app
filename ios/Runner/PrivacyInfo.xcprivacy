@@ -6,34 +6,102 @@
 	<key>NSPrivacyTracking</key>
 	<false/>
 
-	<!-- No tracking domains. -->
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 
 	<!--
-		Data collected by Beacon (MVP guest-only):
-		- Zip code: stored locally via SharedPreferences only; never sent to Beacon servers.
-		  No other data is collected or transmitted.
-		  Google Maps SDK (third-party) may collect coarse location — see NSPrivacyTrackingDomains above.
-		  Update this section if analytics or auth land post-MVP.
+		Must stay in sync with the App Privacy answers in App Store Connect (the
+		nutrition label in Non-Functional_Checklist.md). Nothing here is used for
+		tracking, so NSPrivacyCollectedDataTypeTracking is false throughout.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<!-- Apple OAuth; may be a Hide My Email relay address. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- Supabase user id — keys favorites, ratings, requests, settings. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- Opt-in GPS, used only to bound and sort the facility search. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePreciseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- Collected by the Google Maps SDK while rendering the map. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- Sentry crash reports; sendDefaultPii is disabled in main.dart. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCrashData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!-- Facility ratings/tags and correction / new-facility requests. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
 
 	<!--
-		Required-reason APIs used directly or indirectly by Beacon's dependencies:
-
-		1. UserDefaults (shared_preferences, flutter_secure_storage)
-		   CA92.1 — accessing app's own defaults container.
-
-		2. File timestamp APIs (path_provider, flutter file I/O)
-		   C617.1 — reading timestamps of files created by the app itself.
-
-		3. System boot time (used by gRPC / BoringSSL transitive deps via supabase_flutter)
-		   35F9.1 — calculating time elapsed since last boot for connection management.
-
-		4. Disk space (path_provider / Flutter engine)
-		   E174.1 — checking whether the device has sufficient space for app data.
+		Required-reason APIs used by Beacon's dependencies:
+		  UserDefaults     CA92.1 — app's own defaults container (shared_preferences)
+		  File timestamp   C617.1 — timestamps of files the app itself created
+		  System boot time 35F9.1 — connection management in supabase_flutter deps
+		  Disk space       E174.1 — space checks in path_provider / Flutter engine
 	-->
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>

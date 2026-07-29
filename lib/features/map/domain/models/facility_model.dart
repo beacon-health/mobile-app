@@ -224,36 +224,28 @@ class Facility {
     this.isVisited = false,
   });
 
-  /// Creates a Facility from the `facilities_il_full` Supabase view.
-  ///
-  /// The view joins `facilities_il` with `DM_Supabase_Eligibility` and
-  /// includes a computed `app_category` column.
+  /// Creates a Facility from a `fct_supabase_full` row (or the equivalent
+  /// `facilities_near` RPC row), which joins `FCT_Supabase` with
+  /// `DM_Supabase_Eligibility` and adds a computed `app_category` column.
   factory Facility.fromSupabase(Map<String, dynamic> data) {
-    // Parse location (columns are now double precision)
     final latitude = _parseDouble(data['latitude']);
     final longitude = _parseDouble(data['longitude']);
     final location = LatLng(latitude, longitude);
 
-    // Parse phones
     final phones = _extractPhones(data);
 
-    // Parse structured hours from JSONB
     var hours = _parseHours(data['hours']);
 
-    // Parse services (extract names from services JSONB array)
     final services = _extractServiceNames(data['services']);
 
-    // Build formatted address
     final street = data['street_address'] as String? ?? '';
     final city = data['city'] as String? ?? '';
     final state = data['state'] as String? ?? '';
     final postalCode = data['postal_code'] as String?;
     final address = _formatAddress(street, city, state, postalCode);
 
-    // App category from the view's computed column
     final appCategory = data['app_category'] as String? ?? 'Health Care';
 
-    // Build eligibility from joined columns
     FacilityEligibility? eligibility;
     if (data['operational'] != null || data['proof_of_income'] != null) {
       eligibility = FacilityEligibility.fromSupabase(data);
@@ -262,8 +254,8 @@ class Facility {
     // Derive filter map from eligibility (Y→true, N→false, U→omit)
     final eligReqs = eligibility?.toFilterMap() ?? <String, bool>{};
 
-    // Fall back to eligibility operating_hours when structured
-    // hours are empty
+    // Fall back to the eligibility table's free-text hours when the
+    // structured JSONB hours are absent.
     if (hours.isEmpty && eligibility?.operatingHours != null) {
       hours = _parseOperatingHoursString(
         eligibility!.operatingHours!,
@@ -297,7 +289,6 @@ class Facility {
     final phones = <PhoneContact>[];
     final seenNumbers = <String>{};
 
-    // Get phones from contact_phones array (simple strings)
     final contactPhones = data['contact_phones'];
     if (contactPhones is List) {
       for (final phone in contactPhones) {
@@ -311,7 +302,7 @@ class Facility {
       }
     }
 
-    // Also extract detailed phones from services JSONB if available
+    // services JSONB can carry additional, more specific numbers.
     final services = data['services'];
     if (services is List) {
       for (final service in services) {

@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/user_favorites_service.dart';
-import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:flutter/foundation.dart';
@@ -10,10 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FacilityProvider extends ChangeNotifier {
   FacilityProvider({FacilityRepositoryBase? repository})
-      : _repository = repository ??
-            (DemoModeService().isDemoMode
-                ? DemoFacilityRepository()
-                : FacilityRepository()) {
+      : _repository = repository ?? FacilityRepository() {
     _subscribeToAuth();
   }
 
@@ -22,9 +17,8 @@ class FacilityProvider extends ChangeNotifier {
   List<Facility> _facilities = [];
 
   /// The signed-in user's favorited facilities, fetched by id from
-  /// `user_favorites` — independent of the current map region. Guests can't
-  /// favorite, and demo favorites live on [_facilities], so this stays empty
-  /// for those paths (see [favoriteFacilities]).
+  /// `user_favorites` — independent of the current map region. Stays empty for
+  /// guests, who can't favorite (see [favoriteFacilities]).
   List<Facility> _favoriteFacilities = [];
   bool _isLoading = false;
   StreamSubscription<AuthState>? _authSubscription;
@@ -33,7 +27,7 @@ class FacilityProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   /// Signed-in users: favorites resolved by id from the table, region-agnostic.
-  /// Guests / demo: in-memory flags on the current region list.
+  /// Guests: in-memory flags on the current region list.
   List<Facility> get favoriteFacilities {
     if (UserFavoritesService.instance.currentUserId != null) {
       return List.unmodifiable(_favoriteFacilities);
@@ -42,7 +36,6 @@ class FacilityProvider extends ChangeNotifier {
   }
 
   void _subscribeToAuth() {
-    if (DemoModeService().isDemoMode) return;
     try {
       _authSubscription =
           Supabase.instance.client.auth.onAuthStateChange.listen((state) {

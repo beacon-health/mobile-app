@@ -820,12 +820,6 @@ abstract class AppLocalizations {
   /// **'Select a language 🌐'**
   String get authSelectLanguage;
 
-  /// No description provided for @authSigningIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Signing in...'**
-  String get authSigningIn;
-
   /// No description provided for @authSignInPromptTitle.
   ///
   /// In en, this message translates to:
@@ -957,6 +951,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get commonSave;
+
+  /// No description provided for @commonLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open that link.'**
+  String get commonLinkFailed;
 
   /// No description provided for @onboardingEligibilityTitle.
   ///

@@ -110,19 +110,15 @@ class _FacilityCardState extends State<FacilityCard> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // The whole card toggles expansion — the corner chevron is a visual
-          // affordance, not the only tap target. Interactive children (heart,
-          // links, rate row) sit above and consume their own taps. Uses a
-          // GestureDetector (not InkWell) so tapping doesn't fire a circular
-          // ink ripple across the card.
+          // The whole card toggles expansion; the chevron is just an
+          // affordance. GestureDetector rather than InkWell so the tap doesn't
+          // fire a circular ripple across the card.
           GestureDetector(
             onTap: widget.showExpandButton ? widget.onToggleExpand : null,
             behavior: HitTestBehavior.opaque,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle on the card's own background — no separate
-                // chrome strip behind it.
                 if (widget.showDragHandle)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -190,8 +186,7 @@ class _FacilityCardState extends State<FacilityCard> {
                     : (widget.facility.isFavorite ? Colors.red : null),
                 size: 20,
               ),
-              // `null` onPressed renders the IconButton in its disabled
-              // state (greyed-out splash, no ink response).
+              // `null` onPressed renders the disabled state for guests.
               onPressed: widget.canFavorite ? widget.onToggleFavorite : null,
             ),
           ),
@@ -291,14 +286,11 @@ class _FacilityCardState extends State<FacilityCard> {
             ),
             const SizedBox(height: 8),
           ],
-          // At a Glance first (eligibility chips), then Services, then the
-          // reach-out actions.
           ..._buildAtAGlanceSection(facility),
           ..._buildServicesSection(facility),
           const Divider(height: 12),
           _buildNextStepsAndHours(facility),
-          // Full-width action rows under the Next Steps/Hours block — spanning
-          // the full width so they don't wrap awkwardly in the narrow column.
+          // Full width so these don't wrap awkwardly in the narrow column.
           if (widget.onRate != null) ...[
             const SizedBox(height: 6),
             _buildActionLink(
@@ -333,9 +325,9 @@ class _FacilityCardState extends State<FacilityCard> {
     }
   }
 
-  /// Full-width tappable "form" action (rate / submit corrections). Only the
-  /// [action] portion is styled as a link — bittersweet, semibold, underlined
-  /// — to flag the submittal route; the [lead] stays plain (no chevron).
+  /// Full-width tappable "form" action (rate / submit corrections). The [lead]
+  /// is bold in the default text color; only the [action] reads as a link
+  /// (bittersweet, underlined) to flag the submittal route.
   Widget _buildActionLink(
     IconData icon,
     String lead,
@@ -358,7 +350,7 @@ class _FacilityCardState extends State<FacilityCard> {
                       text: lead,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                         color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),

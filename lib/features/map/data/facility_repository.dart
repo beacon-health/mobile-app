@@ -3,10 +3,8 @@ import 'dart:developer' as developer;
 import 'package:beacon_app/features/map/data/supabase_facility_service.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 
-/// Abstract interface for facility data access.
-///
-/// Both [FacilityRepository] (Supabase) and `DemoFacilityRepository` (local
-/// JSON) implement this interface, enabling seamless swapping via demo mode.
+/// Abstract interface for facility data access, kept as a seam so the Supabase
+/// implementation can be swapped (e.g. for an offline cache — see §9).
 abstract class FacilityRepositoryBase {
   Future<List<Facility>> loadFacilities();
 

@@ -2,56 +2,65 @@
 
 > **Context doc for AI agents.** Read this before making changes.
 >
-> **Last updated:** 2026-07-08 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2`
+> **Last updated:** 2026-07-29 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2` · **Toolchain:** Flutter 3.44.2 (stable) / Dart 3.12.2
 >
-> **Status:** All MVP code (§2.1 – §2.7 **and the §2.9 / §2.10 / §2.11 UX
-> overhauls**) is **code-complete** — `flutter analyze` clean, 31/31 tests
-> pass, `dart format` clean. The app builds and uploads to TestFlight. What's
-> left is **device QA + non-engineering launch prep** (App Store listing,
-> legal, beta testers) and **a few Supabase SQL blocks** (§2.7 constraint, §2.8
-> state gate, §2.9 `visited_on` + `facility_requests`; **§2.10 no new SQL**;
-> **§2.11 `facility_requests` columns**) — see the **Pre-Launch Checklist
-> (§3)**.
+> **Status:** All MVP **app code** (§2.1 – §2.12) is **code-complete** — `flutter
+> analyze` clean, **28/28 tests** pass, `dart format` clean. The app builds and
+> uploads to TestFlight. Everything left is **not app code**: (1) a set of
+> copy-paste **Supabase SQL** migrations, (2) **device QA** on real hardware,
+> and (3) the **App Store submission** steps (signing / capabilities / privacy
+> manifest / export compliance, plus the non-dev listing). All three are
+> enumerated in the **Pre-Launch Checklist (§3)** — start there.
 >
-> **✅ Done (all code)**
+> **✅ Done — all app code (§2.1–§2.11)**
 > - **§2.1–§2.5:** Auth (native Sign in with Apple), GPS, crash reporting
->   (Sentry via `ErrorReporter`), facility feedback, cleanup.
+>   (Sentry via `ErrorReporter`), facility ratings, cleanup.
 > - **§2.6 nationwide data:** off the ~691-row Illinois view onto
 >   **`FCT_Supabase`** (162,937 rows, geocoded). PostGIS `facilities_near` RPC +
 >   `fct_supabase_full` view; **server-side per-region** queries, a **"Search
 >   this area"** control, **marker clustering**, **region-independent
->   Favorites**, category filter on **`category_level_2`** (12 values) with icons
->   consolidated to 4 groups, dark-mode map, overflow-safe empty states.
-> - **§2.7 view & edit ratings:** ratings are read/write — a Settings **"Your
->   Ratings"** list + in-place editing (dialog pre-fills, **upsert**,
->   **Remove**) via `FacilityFeedbackService`.
-> - **§2.9 UX overhaul (July 2026):** ratings rename + required visit date +
->   5-tag lists; **Request a facility** flow (dialog + Settings "Your
->   Requests"); search across description/services/tags; tap-anywhere card
->   expansion + description previews; Services above Next Steps/Hours; swipe-
->   down dismiss on the single-facility card; my-location button in the
->   resources search bar; Distance filter removed (fixed 5-mi + "Search this
->   area"); same-address marker fan-out; directions chooser (Apple/Google/
->   Waze, remembered); home shadows; **full i18n chrome coverage** (en/es/zh).
-> - **§2.10 Profile + eligibility rework (July 2026):** new **Profile** nav tab
->   (gated) holding account identity, Ratings, Requests, sign-out, and the
->   **Eligibility** gates with a parent "apply to search" toggle; **Eligibility
->   auto-applies** to the map (removed from map filters); **Preferences** is now
->   Map-only; **Status** filter removed; Settings slimmed to App (now incl. ZIP
->   + Use My Location) + About; required **eligibility onboarding step** for
->   signed-in users; animated single-card collapse; cleaner rate-row layout;
->   **TestFlight CI** hardened (API-key signing + build-number bump + main
->   trigger).
+>   Favorites**, category filter on **`category_level_2`** (12 values → 4 icon
+>   groups), dark-mode map, overflow-safe empty states.
+> - **§2.7 view & edit ratings:** ratings are read/write — a **"Your Ratings"**
+>   list + in-place editing (dialog pre-fills, **upsert**, **Remove**) via
+>   `FacilityFeedbackService`.
+> - **§2.9 UX overhaul:** Feedback→**Ratings** rename + required visit date +
+>   5-tag lists; **Request a facility** flow ("Your Requests"); search across
+>   description/services/tags; tap-anywhere card expansion + description
+>   previews; Services above Next Steps/Hours; swipe-down dismiss; my-location
+>   button in the resources search bar; Distance filter removed (fixed 5-mi +
+>   "Search this area"); same-address marker fan-out; directions chooser
+>   (Apple/Google/Waze, remembered); home shadows; **full i18n** (en/es/zh).
+> - **§2.10 Profile + eligibility rework:** new **Profile** nav tab (gated)
+>   holding account identity, Ratings, Requests, sign-out, and the
+>   **Eligibility** gates with a parent "apply to search" toggle; eligibility
+>   **auto-applies** to the map (removed from map filters); **Preferences** is
+>   now Map-only; **Status** filter removed; Settings slimmed to App (incl. ZIP
+>   + Use My Location) + About; required **eligibility onboarding step**
+>   (signed-in only); animated single-card collapse; **TestFlight CI** hardened
+>   (API-key signing + build-number bump + main trigger).
+> - **§2.11 card/requests refinements:** eligibility parent/child split; **"At a
+>   Glance"** above Services; **Submit corrections** dialog →
+>   `facility_requests`; request form simplified to name + website; single-card
+>   expand/collapse via the handle bar; list-row expand centers the map; home
+>   cutout zoomed out.
+> - **§2.12 pre-submission scrub:** **demo mode deleted** (unreachable dead
+>   code); `UrlLauncherService` debug/i18n fixes; comments trimmed to the
+>   non-obvious; **privacy manifest data types filled in**, export-compliance
+>   key added, target set to **iPhone-only** for 1.0.
 >
-> **⏳ Remaining**
-> - **Device QA** end-to-end on real hardware (§3.1).
-> - **Supabase SQL one-liners:** §2.7 unique constraint + §2.8 state-rollout
->   allow-list (both copy-paste, run in the dashboard).
+> **⏳ Remaining before App Store (no app code — all in §3)**
+> - **Supabase SQL** — one consolidated run-order in §3.1 (base schema + §2.6
+>   PostGIS, `facility_feedback` unique constraint + `visited_on`,
+>   `facility_requests` + correction columns, `launched_states` gate, RLS).
+> - **Device QA** end-to-end on ≥2 real devices (§3.1).
+> - **App Store submission (technical)** — distribution signing, Sign in with
+>   Apple capability, privacy manifest, export-compliance key, dSYM upload,
+>   attach build → submit for review (§3.2).
 > - **Non-dev launch prep** — App Store Connect listing, screenshots, privacy
->   label, legal links, beta testers (§3.2, written for hand-off).
-> - **Gradual state-by-state rollout** is wired via a server-side allow-list so
->   the team can add states with one SQL `insert`, no app release (§2.8).
-> - **External config** — Google Cloud, Apple Developer, Supabase RLS (§3.1).
+>   label, legal links (in `Non-Functional_Checklist.md`; see §3.4).
+> - **Gradual state-by-state rollout** is wired server-side (§2.8) — add a state
+>   with one SQL `insert`, no app release.
 
 ---
 
@@ -59,7 +68,7 @@
 
 | Area | Value |
 |------|-------|
-| **Framework** | Flutter 3.41.6 / Dart 3.11.4, Material 3, iOS-only (Android post-MVP) |
+| **Framework** | Flutter 3.44.2 (stable) / Dart 3.12.2, Material 3, iOS-only (Android post-MVP) |
 | **Bundle ID** | `org.beaconhealth.app` |
 | **iOS min target** | 15.0 (aligned across Podfile + Xcode) |
 | **Backend** | Supabase (Free tier). Data source: **`FCT_Supabase`** (162,937 rows, nationwide, geocoded) via the `facilities_near` PostGIS RPC + `fct_supabase_full` view + `DM_Supabase_Eligibility` (3,713 rows, growing). Launch gated to Illinois first via a `launched_states` allow-list — see §2.6 / §2.8 |
@@ -83,9 +92,9 @@
 - **Theming:** `AppGradients` for onboarding gradients, `ColorSchemeExt` for alpha blends. App defaults to light mode (`ThemeModeProvider._themeMode = ThemeMode.light`); user can switch in Settings.
 - **Location:** `ZipCodeService` stores ZIP → geocoded lat/lng via `SharedPreferences`, including a `_previousZipCode` slot so GPS-on overwriting "Current Location" doesn't lose the user's prior ZIP. `LocationService` returns typed `LocationStatus`; `MapPage` listens to `ZipCodeService.addListener` so it stays in sync when Settings changes the location source.
 - **Settings sync:** `UserSettingsService` mirrors `{zip_code, theme_mode, locale, location_search_enabled, eligibility (jsonb), preferences (jsonb)}` to a Supabase `user_settings` row on sign-in. `EligibilityPreferencesService` is the local source of truth for eligibility/preferences toggles, mirrored via `unawaited(UserSettingsService.instance.pushLocal())` on each change.
-- **Feedback flow:** `RecentFacilitiesService` (last 3 viewed, persisted to SharedPreferences). Tap a row on Home → `FacilityFeedbackDialog`. Writes go through `FacilityFeedbackService` (upsert on `(user_id, facility_id)`), so re-opening pre-fills the existing rating/tags and edits in place; **Remove** deletes. Settings → **"Your Feedback"** (`MyFeedbackPage`) lists everything submitted for view/edit (§2.7).
+- **Ratings flow:** `RecentFacilitiesService` (last 3 viewed, persisted to SharedPreferences). Tap a row on Home → the rating dialog (`lib/core/widgets/facility_rating_dialog.dart`). Writes go through `FacilityFeedbackService` (upsert on `(user_id, facility_id)`; the `facility_feedback` table name is kept), so re-opening pre-fills the existing rating/tags/visit-date and edits in place; **Remove** deletes. **Profile → "Your Ratings"** (`MyRatingsPage`) lists everything submitted for view/edit (§2.7; moved off Settings in §2.10).
 - **Facility data (§2.6, done):** `SupabaseFacilityService.getFacilitiesNearLocation(lat, lng, radiusKm)` calls the server-side `facilities_near` PostGIS RPC — bounded, distance-sorted, capped at 250 — with a quantized per-region in-memory cache. Favorites / single-facility detail resolve by id through the `fct_supabase_full` view (region-independent). This replaced the old "load the whole table, filter on device" model, which didn't scale past the ~691-row Illinois view. State-rollout gating lives in the RPC (§2.8).
-- **Filter bar:** Tune → Distance → Open Now → Favorites → Category → **Status** → Eligibility → Preferences. The Status chip opens an action sheet that one-shot applies the user's saved eligibility/preferences from Settings as filter values (no Apply button — auto-apply + close).
+- **Filter bar (post-§2.10):** Tune → Open Now → Favorites → Category → **Preferences** (Map-only, sign-in-gated). The **Distance**, **Status**, and **Eligibility** chips were removed: distance is a fixed 5-mile radius (§2.9), Status is gone, and Eligibility now lives on the **Profile** tab and **auto-applies** to map search via `EligibilityPreferencesService` (parent "apply to search" toggle) — the map re-filters when it changes.
 
 ### Key Files
 
@@ -110,9 +119,15 @@
 | User favorites sync | `lib/core/services/user_favorites_service.dart` |
 | Eligibility/Preferences | `lib/core/services/eligibility_preferences_service.dart` |
 | Recently viewed facilities | `lib/core/services/recent_facilities_service.dart` |
-| Feedback service (read/upsert/delete) | `lib/core/services/facility_feedback_service.dart` |
-| Feedback dialog | `lib/features/home/presentation/widgets/facility_feedback_dialog.dart` |
-| "Your Feedback" list (§2.7) | `lib/features/settings/presentation/pages/my_feedback_page.dart` |
+| Ratings service (read/upsert/delete) | `lib/core/services/facility_feedback_service.dart` |
+| Rating dialog | `lib/core/widgets/facility_rating_dialog.dart` |
+| "Your Ratings" list (§2.7) | `lib/features/settings/presentation/pages/my_ratings_page.dart` |
+| "Your Requests" list (§2.9/§2.11) | `lib/features/settings/presentation/pages/my_requests_page.dart` |
+| Facility request/correction service | `lib/core/services/facility_request_service.dart` |
+| Request-a-facility dialog | `lib/core/widgets/facility_request_dialog.dart` |
+| Submit-corrections dialog | `lib/core/widgets/facility_correction_dialog.dart` |
+| Directions chooser service | `lib/core/services/map_launcher_service.dart` |
+| Profile page (§2.10) | `lib/features/profile/presentation/pages/profile_page.dart` |
 | Legal URL constants | `lib/core/constants/legal_urls.dart` |
 | Facility data | `lib/features/map/data/facility_repository.dart`, `supabase_facility_service.dart` |
 | Facility model | `lib/features/map/domain/models/facility_model.dart` |
@@ -141,10 +156,11 @@
 
 ## 2. Code Work
 
-**All code work (§2.1 – §2.7) is complete.** `flutter analyze` is clean (0
-issues) and `flutter test` passes (28/28). What's left is device QA, two
-Supabase SQL one-liners (§2.7, §2.8), and non-engineering launch prep (§3).
-The subsections below are kept as the implementation record.
+**All app code (§2.1 – §2.12) is complete.** `flutter analyze` is clean (0
+issues), `flutter test` passes (28/28), and `dart format` is clean. What's left
+is the consolidated Supabase SQL runbook (§3.1), device QA (§3.1), and the
+technical App Store submission steps (§3.2). The subsections below are kept as
+the implementation record.
 
 ### 2.1 User Authentication ✅
 - Native **Sign in with Apple** via the `sign_in_with_apple` package and
@@ -412,10 +428,12 @@ never surfaced it again. It's now fully read/write:
   feedback on open and **pre-fills** the rating + tag chips; the write is an
   **upsert keyed on `(user_id, facility_id)`** (edits replace, not duplicate),
   and a **Remove** action deletes it. Submit button reads "Update" when editing.
-- **"Your Feedback" surface:** a Settings list (`MyFeedbackPage`, signed-in
-  only) shows every rating (facility name resolved by id — same region-
-  independent path as Favorites, rating icon, tags, date). Tap a row to
-  edit/remove via the same dialog. Empty + pull-to-refresh states included.
+- **"Your Feedback" surface:** a list (signed-in only) shows every rating
+  (facility name resolved by id — same region-independent path as Favorites,
+  rating icon, tags, date). Tap a row to edit/remove via the same dialog. Empty
+  + pull-to-refresh states included. *(Later renamed "Your Ratings"
+  (`MyRatingsPage`) and moved from Settings to the Profile tab — see §2.9 /
+  §2.10.)*
 - Tests: `FacilityFeedbackEntry` parsing/round-trip is unit-tested
   (`test/core/services/facility_feedback_service_test.dart`).
 
@@ -744,46 +762,224 @@ alter table public.facility_requests
 Existing RLS already covers the new columns (owner-only). Corrections reuse
 `street_address` for the address and `phone` for the phone number.
 
+### 2.12 Pre-Submission Scrub (July 2026) ✅ CODE-COMPLETE
+
+Codebase pass for App Store readiness. `flutter analyze` clean, **28/28 tests**,
+`dart format` clean. (Test count dropped 31→28 because the three demo-mode tests
+were removed with the feature.)
+
+**Dead code removed**
+- **Demo mode deleted entirely** — `DemoModeService` and `DemoFacilityRepository`
+  (plus its hardcoded sample facilities) are gone, along with the ~8 branch sites
+  that referenced them. `setDemoMode` was never wired to any UI, so `isDemoMode`
+  could only ever be `false`; the branches were unreachable and the sample data
+  was a liability in a production build.
+- **`AuthGate` collapsed to a `StatelessWidget`** — with demo mode gone its only
+  job is routing on `hasCompletedOnboarding`; the demo splash screen and its
+  `authSigningIn` ARB key were removed (all three locales).
+
+**Debug / correctness cleanup**
+- `UrlLauncherService` rewritten: dropped a stray `debugPrint`, routed the catch
+  through `ErrorReporter` (matching every other catch site), collapsed four
+  branches that were three-quarters identical, and replaced a **hardcoded
+  English snackbar that leaked the raw URL** with the localized
+  `commonLinkFailed` key (en/es/zh).
+- Duplicated `TODO(Android)` comment in `login_page.dart` collapsed to one line.
+- Stale doc comment in `facility_model.dart` referencing the retired
+  `facilities_il` / `facilities_il_full` objects corrected to `FCT_Supabase` /
+  `fct_supabase_full`.
+- Comments trimmed across the app so they explain **why**, not **what** —
+  section-marker comments (`// Parse phones`) and restatements of the following
+  line were removed; the non-obvious ones (ink-over-background asserts, the
+  no-auto-query-on-pan rule, gesture-arena notes, the height math) were kept and
+  condensed.
+
+**Verified clean:** no hardcoded secrets/API keys, no `print()`, no placeholder
+or lorem text, no `http://` URLs, no leftover FIXME/HACK markers.
+
+**iOS submission config** (details in §3.2)
+- `PrivacyInfo.xcprivacy` — **`NSPrivacyCollectedDataTypes` was an empty array**
+  while the app collects email, user ID, location, crash data, and user content.
+  Now declares all six types (linked/tracking flags + app-functionality purpose),
+  matching the nutrition label. This is a **hard reject** if it ships mismatched.
+- `Info.plist` — added **`ITSAppUsesNonExemptEncryption = false`** so every
+  upload skips the manual export-compliance prompt.
+- **`TARGETED_DEVICE_FAMILY` 1,2 → 1 (iPhone-only)** for 1.0, since iPad layouts
+  are post-MVP and untested — the common 2.4.1/4.0 rejection. The now-moot
+  `UISupportedInterfaceOrientations~ipad` block was removed. Revisit when iPad
+  layout work lands.
+
+### 2.13 Category Taxonomy Migration (planned — awaiting data)
+
+A database dev added **`category_broad`** and **`category_detail`** (both `text`)
+to `FCT_Supabase`. These are intended to replace the current
+`category_level_1`/`category_level_2` scheme, whose 12 `category_level_2` values
+the app hand-maps into 4 icon groups (§2.6).
+
+**Status: not started — blocked on seeing the distinct values.** Run the
+extraction queries in §3.3, then the app changes are scoped to:
+`facility_categories.dart` (the value list + `groupFor` switch), the
+`fct_supabase_full` view and `facilities_near` RPC (expose the new columns), and
+`facility_model.dart` (`categoryLevel2` → the new field). The map filter, marker
+icons, and Home quick-actions all read through `FacilityCategories`, so they
+follow automatically.
+
+**Do not migrate until** `category_broad` is confirmed non-null across the
+launched state(s) — a null-heavy column would silently empty the Category filter.
+
 ## 3. Pre-Launch Checklist
 
-All MVP **code** is done and the app uploads to TestFlight. The work below is
-split into **§3.1 engineering/backend** (dev-owned) and **§3.2 non-functional**
-(hand-off to non-dev team). The single biggest gate is **device QA**.
+All MVP **app code** is done (§2.1–§2.11) and the app uploads to TestFlight.
+Everything below is **not app code**. It's split into **§3.1 engineering/backend**
+(dev-owned), **§3.2 App Store submission** (dev-owned, technical), **§3.3**
+the category-column extraction SQL, and **§3.4 non-functional** (hand-off to
+the non-dev team). The single biggest gate is
+**device QA**.
 
 ### 3.1 Engineering & Backend (dev-owned)
 
 **Code — done**
-- [x] §2.1–§2.7 + §2.9 implemented; `flutter analyze` clean (0 issues); `flutter test` 31/31
-- [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods). Re-verify after §2.9 (Info.plist changed).
-- [x] `pubspec.yaml` at `1.0.0+2` (bump `+N` for each TestFlight upload)
+- [x] §2.1–§2.12 implemented; `flutter analyze` clean (0 issues); `flutter test` 28/28; `dart format` clean
+- [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods)
+- [x] `pubspec.yaml` at `1.0.0+2` — marketing version `1.0.0`; CI sets the build number to `1000 + github.run_number`, so TestFlight/App Store uploads never collide
 - [ ] Widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, `RecentFacilitiesService` (post-launch follow-up)
 
-**Supabase SQL to run** (copy-paste → Dashboard → SQL Editor)
-- [x] §2.6 PostGIS schema: lat/lng→`double precision`, `geom` + GiST index, `fct_supabase_full` view, `facilities_near` RPC
-- [ ] **§2.7 unique constraint** on `facility_feedback (user_id, facility_id)` — backs the upsert (without it, edits duplicate)
-- [ ] **§2.8 state allow-list:** create `launched_states`, seed `'IL'`, re-run the full `facilities_near` in §2.8
-- [ ] **§2.9 `visited_on` column** on `facility_feedback` — rating submits **fail** without it
-- [ ] **§2.9 `facility_requests` table** + RLS — the request flow fails without it
-- [ ] Verify **RLS** (read-only `anon`) on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
+**Supabase SQL runbook** — run once, **in this order**, via Dashboard → SQL
+Editor. Each block is copy-paste from the linked section; the app already matches
+the columns exactly.
+- [ ] **1. Base schema** (if not already live): `user_favorites`, `facility_feedback`, `user_settings` tables + RLS — see the **§2.x DDL reference**
+- [ ] **2. §2.6 PostGIS:** lat/lng→`double precision`, `geom` + GiST index, `fct_supabase_full` view, `facilities_near` RPC
+- [ ] **3. §2.7 unique constraint** on `facility_feedback (user_id, facility_id)` — backs the rating upsert (without it, edits insert duplicates)
+- [ ] **4. §2.9 `visited_on` column** on `facility_feedback` — rating submits **fail** without it
+- [ ] **5. §2.9 `facility_requests` table** + RLS — the request flow fails without it
+- [ ] **6. §2.11 correction columns** on `facility_requests` (`request_type`, `facility_id`, `website`, `hours`) — the corrections dialog fails without them
+- [ ] **7. §2.8 state allow-list:** create `launched_states`, seed `'IL'`, then re-run the **full** `facilities_near` (with the state gate) from §2.8
+- [ ] **8. Verify RLS:** read-only `anon` SELECT on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
 
 **Device QA — the main gate** (smoke test on ≥2 iOS devices, different sizes)
 - [ ] Auth/onboarding: Apple sign-in, location grant/deny, guest mode, sign-out
 - [ ] §2.6 map: ZIP search, pan + "Search this area" (fixed 5 mi), sparse rural area, cluster tap, Favorites across regions
-- [ ] §2.7/§2.9 ratings: rate from a map card ("Already visited?"), date picker (past-only), tags optional, re-open (pre-filled), edit, **Remove**, Settings → "Your Ratings"
-- [ ] §2.9 requests: empty map area → "Request a facility" dialog → row appears under Settings → "Your Requests" (status `pending`)
+- [ ] §2.7/§2.9 ratings: rate from a map card ("Already visited?"), date picker (past-only), tags optional, re-open (pre-filled), edit, **Remove**, Profile → "Your Ratings"
+- [ ] §2.9/§2.11 requests & corrections: empty map area → "Request a facility" (name + website) → row under Profile → "Your Requests"; "Incorrect info? Submit corrections here" → pre-filled correction dialog → row tagged **Correction**
 - [ ] §2.9 UX: my-location button in the resources search bar; search matches description/services; tap-anywhere card expansion; description preview on collapsed rows; Services above Next Steps/Hours; swipe-down dismisses the single-facility card; two same-address facilities render side-by-side
+- [ ] §2.10/§2.11 Profile & eligibility: gated for guests (sign-in CTA); required eligibility onboarding step (signed-in only); Profile eligibility parent toggle disables the child gates; eligibility auto-applies to map results; "At a Glance" renders above Services; single-card expand/collapse via the handle bar; list-row tap re-centers the map
 - [ ] §2.9 directions: first "Get directions" shows the chooser (Google Maps/Waze listed only if installed), choice remembered, changeable in Settings → "Directions app"
-- [ ] §2.9 i18n: switch to Spanish and Chinese — home sections, Settings toggles, map filter bar/modal, facility card labels, and both dialogs all translate (facility data + rating tags stay English by design)
+- [ ] §2.9 i18n: switch to Spanish and Chinese — home sections, Settings/Profile toggles, map filter bar/modal, facility card labels, and all dialogs translate (facility data + rating tags stay English by design)
 - [ ] §2.8: confirm **only Illinois** facilities appear until more states are added
 
-**Technical console config** (dev/admin access)
+**Technical console config** (dev/admin access) — Apple Developer / Xcode
+signing lives in §3.2.
 - *Google Cloud:* [ ] restrict Maps key to `org.beaconhealth.app` + Maps SDK for iOS; [ ] **enable billing** (else tiles fail silently → uniform grey map despite a success log — check Billing → Account management); [ ] confirm "Maps SDK for iOS" is enabled in the API Library
-- *Apple Developer:* [ ] Service ID for Sign in with Apple; [ ] configure Sign in with Apple for `org.beaconhealth.app`; [ ] iOS Distribution certificate; [ ] App Store provisioning profile
-- *Xcode:* [x] entitlements wired; [x] pure CocoaPods (SPM disabled — re-migrates if SPM is enabled globally, keep it off in CI); [ ] add **Sign in with Apple capability** (Signing & Capabilities — the entitlement file alone isn't enough); [ ] `cd ios && pod install` after pulling; [ ] always open **`Runner.xcworkspace`** (not the bare project); [ ] upload via `flutter build ipa --dart-define-from-file=config/dart_defines.json` or Archive → Transporter/Fastlane
 - *Supabase auth:* [x] Apple provider enabled (Client IDs incl. bundle ID; OAuth secret **not** needed for native iOS); [ ] confirm Google provider (post-MVP Android)
 - *Crash reporting:* [ ] confirm Sentry (or pick an alternative — §8); [ ] create sentry.io project (free 5K errors/mo); [ ] add `SENTRY_DSN` GitHub secret + pass via `--dart-define`
 
-### 3.2 Non-Functional — Hand-off to Non-Dev Team
+### 3.2 App Store Submission — Technical Requirements (dev-owned)
+
+TestFlight already works; these are the **engineering** gates to move a green
+TestFlight build through App Review to the public App Store. (Listing copy,
+screenshots, and the privacy nutrition label are non-dev — see §3.4.)
+
+**Signing & capabilities**
+- [x] Distribution signing via App Store Connect **API-key cloud-managed signing** (§2.10) — the same path produces the App Store distribution certificate + provisioning profile, not just TestFlight. The API key must have **App Manager** access.
+- [ ] Apple Developer portal: **Service ID** for Sign in with Apple configured; **Sign in with Apple** enabled on the `org.beaconhealth.app` App ID; distribution profile regenerated after enabling it.
+- [ ] **Sign in with Apple capability** added to the Runner target in Xcode → Signing & Capabilities (the entitlement file alone isn't enough — App Review rejects if the capability isn't on the App ID + profile).
+- [x] Pure CocoaPods (SPM disabled — re-migrates if SPM is enabled globally; keep it off in CI). Always open **`Runner.xcworkspace`**; run `cd ios && pod install` after pulling.
+- [ ] Upload via CI (`bundle exec fastlane beta`) or `flutter build ipa --dart-define-from-file=config/dart_defines.json` → Transporter.
+
+**Info.plist / build settings**
+- [x] **`ITSAppUsesNonExemptEncryption = false`** in `Info.plist` (§2.12) — standard HTTPS only, so this skips the manual export-compliance prompt on **every** upload.
+- [x] `NSLocationWhenInUseUsageDescription` present with a user-facing purpose string (App Review 5.1.1 gate) (§2.2).
+- [x] `LSApplicationQueriesSchemes` for `comgooglemaps` / `waze` (directions-chooser detection) (§2.9).
+- [x] **`TARGETED_DEVICE_FAMILY = 1`** (iPhone-only for 1.0) (§2.12) — keeps App Review off untested iPad layouts.
+- [ ] Marketing version `1.0.0` set for the first public submission; build number monotonic (CI handles this).
+- [ ] Launch screen storyboard + app-icon asset catalog complete; the 1024² marketing icon has **no alpha channel** (binary validation rejects otherwise).
+
+**Privacy manifest** (Apple-required)
+- [x] `ios/Runner/PrivacyInfo.xcprivacy` declares **required-reason API** usage (`UserDefaults` CA92.1, file timestamp C617.1, boot time 35F9.1, disk space E174.1).
+- [x] **Collected data types declared** (§2.12) — email, user ID, precise + coarse location, crash data, user content. This array was **empty** before the scrub, which contradicts the nutrition label and is a hard reject.
+- [ ] **Keep the manifest and the App Store Connect App Privacy answers identical** — if either changes, update both (source of truth: the nutrition label in `Non-Functional_Checklist.md`).
+- [ ] Confirm bundled third-party SDKs ship their own privacy manifests (`google_maps_flutter_ios`, `sign_in_with_apple`, `sentry_flutter`); bump the pod if any lacks one. Tracking domains: **none** (the app does not track).
+- [ ] **Legal URLs are on a `*.vercel.app` preview-style domain** (`beacon-website-pied.vercel.app`, see `lib/core/constants/legal_urls.dart`). Apple requires a reachable, stable Privacy Policy URL — move these to the production domain before submitting.
+
+**Crash symbolication**
+- [ ] Build with **DWARF with dSYM** (Release default) and **upload dSYMs to Sentry** so release crash reports symbolicate (wire the Sentry Fastlane plugin, or upload manually from the Xcode archive / App Store Connect).
+
+**Submit for review**
+- [ ] In App Store Connect, create the **1.0.0** App Store version, attach the processed TestFlight build, and fill the metadata (§3.4).
+- [ ] Paste the **App Review notes** (§5) — the guest path lets the reviewer test without an Apple ID handoff.
+- [ ] Answer the **App Privacy** questionnaire from the nutrition label (§3.4), the **age-rating** questionnaire, and the **export-compliance** declaration (exempt — standard HTTPS).
+- [ ] Submit; consider **phased release** (7-day staged rollout) for the first version.
+
+### 3.3 Category Column Extraction SQL (§2.13)
+
+Run these to inventory the new `category_broad` / `category_detail` columns
+before wiring them into the app. Paste the results back and the taxonomy in
+`facility_categories.dart` can be rebuilt against real values.
+
+```sql
+-- 1. Distinct category_broad values + row counts (this becomes the icon/group
+--    dimension if the cardinality is small — today's grouping has 4).
+select
+  coalesce(category_broad, '(null)') as category_broad,
+  count(*)                          as facilities
+from public."FCT_Supabase"
+group by 1
+order by facilities desc;
+
+-- 2. Distinct category_detail values + row counts (the filter dimension —
+--    today's category_level_2 has 12 values).
+select
+  coalesce(category_detail, '(null)') as category_detail,
+  count(*)                            as facilities
+from public."FCT_Supabase"
+group by 1
+order by facilities desc;
+
+-- 3. The broad → detail mapping. This is the important one: it defines the
+--    grouping the app currently hardcodes in FacilityCategories.groupFor().
+select
+  coalesce(category_broad,  '(null)') as category_broad,
+  coalesce(category_detail, '(null)') as category_detail,
+  count(*)                            as facilities
+from public."FCT_Supabase"
+group by 1, 2
+order by 1, facilities desc;
+```
+
+**Coverage check — run before committing to the migration.** If the new columns
+are sparsely populated, switching would silently empty the Category filter.
+Illinois is what matters first (§2.8):
+
+```sql
+select
+  count(*)                                                        as total,
+  count(*) filter (where category_broad  is not null)             as has_broad,
+  count(*) filter (where category_detail is not null)             as has_detail,
+  count(*) filter (where category_level_2 is not null)            as has_level_2,
+  round(100.0 * count(*) filter (where category_broad is not null)
+        / nullif(count(*), 0), 1)                                 as pct_broad
+from public."FCT_Supabase"
+where state = 'IL';   -- drop this line for the nationwide picture
+```
+
+```sql
+-- How the new columns line up against the old ones — catches cases where
+-- category_broad splits or merges the existing 12 level_2 values.
+select
+  coalesce(category_level_2, '(null)') as category_level_2,
+  coalesce(category_broad,   '(null)') as category_broad,
+  count(*)                             as facilities
+from public."FCT_Supabase"
+group by 1, 2
+order by 1, facilities desc;
+```
+
+> Once the values are known: expose both columns in `fct_supabase_full` **and**
+> in the `facilities_near` RPC (adding columns changes the RPC's return type, so
+> that one needs `drop function` + re-create, not `create or replace` — see the
+> §2.8 note about `42P13`).
+
+### 3.4 Non-Functional — Hand-off to Non-Dev Team
 
 The non-engineering launch prep (App Store Connect listing, visual assets,
 compliance/legal) **and the Privacy Nutrition Label** now live in a standalone,
@@ -804,16 +1000,16 @@ Enter those answers in App Store Connect → App Privacy.
 ## 5. App Review Notes Template
 
 ```
-This app helps users find free and low-cost healthcare facilities.
+This app helps users find free and low-cost healthcare and social-services facilities.
 
 To test:
 1. Launch the app — sign in with Apple, or tap "Continue as Guest"
-2. Choose "Enable Location-Based Search" or enter a US zip code (e.g., 60613)
-3. Browse the map, search for facilities, and use filters
-4. Signed-in users can save Favorites, set Eligibility/Preferences filters, and submit facility feedback (and review/edit it under Settings → "Your Feedback")
-5. Guest users see a lock icon on Favorites, Eligibility, Preferences — tapping shows a sign-in prompt
-6. The "Recently Viewed Facilities" section on the home page shows the last 3 facilities tapped on the map — tapping one opens a feedback dialog (requires sign-in to submit)
-7. GPS location is available via the location button on the map (requires location permission)
+2. Choose "Enable Location-Based Search" or enter an Illinois zip code (e.g., 60613). The launch is gated to Illinois, so zip codes in other states intentionally return no facilities.
+3. Browse the map, search by name/service, tap a facility card to expand it, and use the filters
+4. Signed-in users can save Favorites, set Eligibility (Profile tab — auto-applied to search) and Preferences filters, rate a facility ("Already visited? Rate your experience"), and submit info corrections ("Incorrect info? Submit corrections here") — all reviewable/editable under the Profile tab ("Your Ratings" / "Your Requests")
+5. Guest users see a lock icon on Favorites and the Profile tab — tapping shows a sign-in prompt
+6. The "Recently Viewed" section on the home page lists the last 3 facilities opened — tapping one opens the rating dialog (requires sign-in to submit)
+7. GPS location is available via the location button on the map (requires location permission); "Get directions" opens Apple Maps, Google Maps, or Waze
 
 Demo account: Not required — Sign in with Apple uses the reviewer's Apple ID. Guest mode is fully functional for browsing.
 ```

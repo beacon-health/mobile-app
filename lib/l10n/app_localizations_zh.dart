@@ -373,9 +373,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authSelectLanguage => '选择语言 🌐';
 
   @override
-  String get authSigningIn => '正在登录...';
-
-  @override
   String get authSignInPromptTitle => '请登录以使用此功能';
 
   @override
@@ -441,6 +438,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonSave => '保存';
+
+  @override
+  String get commonLinkFailed => '无法打开该链接。';
 
   @override
   String get onboardingEligibilityTitle => '您的资格';

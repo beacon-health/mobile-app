@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -30,7 +29,6 @@ class UserSettingsService {
 
   /// Starts listening to auth state changes. Idempotent.
   Future<void> init() async {
-    if (DemoModeService().isDemoMode) return;
     try {
       final client = Supabase.instance.client;
       if (client.auth.currentUser != null) {
@@ -181,7 +179,6 @@ class UserSettingsService {
   }
 
   String? _currentUserId() {
-    if (DemoModeService().isDemoMode) return null;
     try {
       return Supabase.instance.client.auth.currentUser?.id;
     } catch (_) {

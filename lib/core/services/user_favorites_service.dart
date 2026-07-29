@@ -1,4 +1,3 @@
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -79,11 +78,10 @@ class UserFavoritesService {
     }
   }
 
-  /// The signed-in user's ID, or null in demo / unauthenticated / pre-init states.
+  /// The signed-in user's ID, or null when unauthenticated / pre-init.
   String? get currentUserId => _currentUserId();
 
   String? _currentUserId() {
-    if (DemoModeService().isDemoMode) return null;
     try {
       return Supabase.instance.client.auth.currentUser?.id;
     } catch (_) {

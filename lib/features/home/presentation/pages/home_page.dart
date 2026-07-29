@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
@@ -10,7 +9,6 @@ import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
-import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
@@ -49,9 +47,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    final isDemoMode = DemoModeService().isDemoMode;
-    _facilityRepository =
-        isDemoMode ? DemoFacilityRepository() : FacilityRepository();
+    _facilityRepository = FacilityRepository();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
       _refreshLocationPermission();
@@ -89,7 +85,6 @@ class _HomePageState extends State<HomePage>
     try {
       facilityProvider.setLoading(true);
 
-      // Use zip-based coordinates from onboarding; fall back to defaults.
       final zipService = ZipCodeService();
       final double latitude = zipService.latitude;
       final double longitude = zipService.longitude;
@@ -115,9 +110,8 @@ class _HomePageState extends State<HomePage>
 
       facilityProvider.setFacilities(facilities);
 
-      // Build custom markers matching the map page style. The marker
-      // factory yields inside this loop, so we must re-check `mounted`
-      // before calling `setState` at the end.
+      // The marker factory yields inside this loop, so `mounted` must be
+      // re-checked before the trailing setState.
       final markers = <Marker>{};
       for (final facility in facilities) {
         if (facility.location.latitude == 0.0 &&
@@ -153,7 +147,6 @@ class _HomePageState extends State<HomePage>
             CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
           );
         } catch (e, stackTrace) {
-          // Camera animation failure is non-critical.
           ErrorReporter.instance.report(
             e,
             stackTrace,
@@ -201,7 +194,6 @@ class _HomePageState extends State<HomePage>
           CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
         );
       } catch (e, stackTrace) {
-        // Camera animation failure is non-critical — report but don't throw.
         ErrorReporter.instance.report(
           e,
           stackTrace,
@@ -237,9 +229,8 @@ class _HomePageState extends State<HomePage>
     final isGuest = context.watch<GuestModeService>().isGuest;
 
     return Scaffold(
-      // Page-level scrolling: when Recently Viewed and Favorites are both
-      // populated, neither needs its own scroll view — the whole home scrolls
-      // as a single column. This avoids nested-scroll conflicts.
+      // One page-level scroll view avoids nested-scroll conflicts between
+      // Recently Viewed and Favorites.
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -290,9 +281,8 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildMapAndCategories() {
-    // The four high-level groups, driven entirely off the shared taxonomy so
-    // labels, icons, colors, and the resulting map filter all stay in sync with
-    // the marker icons.
+    // Driven off the shared taxonomy so labels, icons, and the resulting map
+    // filter stay in sync with the markers.
     const groups = [
       FacilityCategories.groupHealthCare,
       FacilityCategories.groupMentalHealth,
@@ -472,8 +462,7 @@ class _HomePageState extends State<HomePage>
           );
         }
 
-        // Populated state — render rows inline so the whole home page can
-        // scroll as a single unit (no nested scroll views).
+        // Rows render inline so the whole page scrolls as one unit.
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardTheme.color,
@@ -488,9 +477,8 @@ class _HomePageState extends State<HomePage>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            // Transparent Material so the ListTile rows paint their ink/tap
-            // splashes here, above the Container's colored background (which
-            // would otherwise hide them — Flutter asserts on this).
+            // Transparent Material so ListTile ink paints above the
+            // Container's background, which would otherwise hide it.
             child: Material(
               type: MaterialType.transparency,
               child: Column(
@@ -611,10 +599,8 @@ class _HomePageState extends State<HomePage>
         final favoriteFacilities = facilityProvider.favoriteFacilities;
 
         if (favoriteFacilities.isEmpty) {
-          // Compact, scroll-safe empty state. The available height shrinks
-          // significantly when the "Recently Viewed" section above is
-          // populated, so we keep this card short and let it scroll if it
-          // can't fit.
+          // Kept short: available height shrinks a lot when Recently Viewed
+          // is populated above.
           return Center(
             child: SingleChildScrollView(
               child: Container(
@@ -665,12 +651,8 @@ class _HomePageState extends State<HomePage>
           );
         }
 
-        // Cap Favorites height. As favorites grow past ~4 items the inner
-        // ListView starts scrolling instead of pushing the rest of the home
-        // page down forever. The outer SingleChildScrollView still works:
-        // ListView is wrapped in PrimaryScrollController.none-style
-        // semantics, so swiping inside the box scrolls the favorites and
-        // swiping outside scrolls the home page.
+        // Cap the height so favorites scroll internally past ~4 items
+        // instead of pushing the rest of the page down indefinitely.
         return Container(
           constraints: const BoxConstraints(maxHeight: 280),
           decoration: BoxDecoration(
@@ -686,8 +668,8 @@ class _HomePageState extends State<HomePage>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            // Transparent Material so the ListTile rows paint their ink/tap
-            // splashes above the Container's colored background.
+            // Transparent Material so ListTile ink paints above the
+            // Container's background, which would otherwise hide it.
             child: Material(
               type: MaterialType.transparency,
               child: ListView.separated(

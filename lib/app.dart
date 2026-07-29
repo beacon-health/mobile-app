@@ -1,5 +1,4 @@
 import 'package:beacon_app/core/constants/app_routes.dart';
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -25,9 +24,6 @@ class BeaconApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<FacilityProvider>(
           create: (_) => FacilityProvider(),
-        ),
-        ChangeNotifierProvider<DemoModeService>.value(
-          value: DemoModeService(),
         ),
         ChangeNotifierProvider<GuestModeService>.value(
           value: GuestModeService(),

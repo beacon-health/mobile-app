@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:beacon_app/core/services/demo_mode_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
@@ -15,7 +14,6 @@ import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
-import 'package:beacon_app/features/map/data/demo_facility_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
@@ -79,10 +77,8 @@ class MapPageState extends State<MapPage>
   double _previousZoom = MapConstants.defaultZoom;
   bool get _showFacilityNames => _currentZoom >= MapConstants.detailZoom;
   final Set<String> _selectedCategories = {};
-  // Eligibility is no longer a map filter — it auto-applies from the user's
-  // Profile (EligibilityPreferencesService), gated by that page's parent
-  // "apply to search" toggle. See [_eligibilityFilter]. Preferences remain a
-  // manual map filter.
+  // Eligibility auto-applies from the Profile tab rather than being a map
+  // filter (see [_eligibilityFilter]); Preferences stays a manual filter.
   Map<PreferenceRequirement, bool?> _selectedPreferenceRequirements = {};
   bool _showFavoritesOnly = false;
   bool _showOpenNowOnly = false;
@@ -119,11 +115,8 @@ class MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
-    final isDemoMode = DemoModeService().isDemoMode;
-    _facilityRepository =
-        isDemoMode ? DemoFacilityRepository() : FacilityRepository();
+    _facilityRepository = FacilityRepository();
 
-    // Initialise location from ZipCodeService (set during onboarding).
     final zipService = ZipCodeService();
     _currentLatitude = zipService.latitude;
     _currentLongitude = zipService.longitude;
@@ -172,7 +165,6 @@ class MapPageState extends State<MapPage>
     });
 
     if (coordsChanged) {
-      // Reload facilities around the new coords and re-center the camera.
       unawaited(_loadFacilities());
       final controller = _googleMapController;
       if (controller != null) {
@@ -718,8 +710,7 @@ class MapPageState extends State<MapPage>
         _expandedFacilityId = null;
       });
 
-      // Track view for the "Recently Viewed Facilities" section on Home.
-      // `read` (vs. `watch`) — we don't need a rebuild here.
+      // `read`, not `watch` — recording a view must not trigger a rebuild.
       context.read<RecentFacilitiesService>().addFacility(facility);
 
       await _animateToFacility(facility);
@@ -1219,14 +1210,12 @@ class MapPageState extends State<MapPage>
         onVerticalDragEnd: (details) {
           final velocity = details.primaryVelocity ?? 0;
           if (velocity > MapConstants.minFlickVelocity) {
-            // Swipe down.
             if (_singleCardExpanded) {
               setState(() => _singleCardExpanded = false);
             } else {
               _dismissSingleFacilityAnimated(showPanel: false);
             }
           } else if (velocity < -MapConstants.minFlickVelocity) {
-            // Swipe up → expand.
             if (!_singleCardExpanded) {
               setState(() => _singleCardExpanded = true);
             }
@@ -1237,9 +1226,8 @@ class MapPageState extends State<MapPage>
           curve: MapConstants.animationCurve,
           margin: const EdgeInsets.all(16.0),
           height: cardHeight,
-          // No background color of its own — the FacilityCard fills the wrapper
-          // (zero margin, matching corner radius) and carries the drag handle on
-          // its own background, so there's no separate chrome strip behind it.
+          // No background of its own: FacilityCard fills the wrapper and
+          // carries the handle, so there's no separate chrome strip behind it.
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
             boxShadow: [

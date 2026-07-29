@@ -179,12 +179,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ),
-                          // TODO(Android): re-enable Continue with Google when
-                          // Android release ships. OAuth path already tested in
-                          // dev; UI is gated to iOS-only for MVP.
-                          // TODO(Android): re-enable Continue with Google
-                          // when Android release ships. OAuth path already
-                          // tested in dev; UI is gated to iOS-only for MVP.
+                          // Google sign-in is hidden on iOS for the MVP; the
+                          // OAuth path is tested and ships with Android.
                           if (!kIsWeb &&
                               defaultTargetPlatform != TargetPlatform.iOS)
                             Padding(

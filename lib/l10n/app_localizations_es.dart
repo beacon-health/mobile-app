@@ -392,9 +392,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authSelectLanguage => 'Seleccionar un idioma 🌐';
 
   @override
-  String get authSigningIn => 'Iniciando sesión...';
-
-  @override
   String get authSignInPromptTitle => 'Inicia sesión para usar esta función';
 
   @override
@@ -468,6 +465,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonSave => 'Guardar';
+
+  @override
+  String get commonLinkFailed => 'No se pudo abrir el enlace.';
 
   @override
   String get onboardingEligibilityTitle => 'Tu elegibilidad';
