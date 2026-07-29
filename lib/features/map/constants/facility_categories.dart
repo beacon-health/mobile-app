@@ -1,26 +1,33 @@
 /// Category taxonomy for the map.
 ///
-/// Filtering is driven by `category_level_2` (12 known values; null also occurs
-/// in the data), while marker icons / colors consolidate those into the four
-/// high-level groups shown on the Home page. Keeping both in one place means the
-/// filter list and the icon grouping never drift apart.
+/// Two dimensions, both sourced from `FCT_Supabase`:
+/// * **`category_broad`** (13 values) drives the map's Category filter. The
+///   values are already user-facing prose, so they render as-is.
+/// * **`category_detail`** (21 values) is the finer grain beneath it. It isn't
+///   a filter dimension (21 chips is too many) but it is searchable and
+///   available for display.
+///
+/// Marker icons and colors consolidate the 13 broad values into the four
+/// high-level groups shown on the Home page, plus a neutral fallback. Keeping
+/// the filter list and the icon grouping in one place means they can't drift.
 class FacilityCategories {
-  /// The 12 distinct `category_level_2` values, used as the map's Category
-  /// filter options. (A facility may also have a null value — it simply won't
-  /// match any selected category.)
-  static const List<String> categoryLevel2Values = [
-    'Hospital- ACUTE',
-    'Hospital- CHILD',
-    'Hospital- LTACH',
-    'Hospital- PSYCH',
-    'Hospital- REHAB',
-    'Hospital- RELIGIOUS NON-MED',
-    'Nonprofit - Health Care',
-    'Nonprofit - Housing and Shelter',
-    'Nonprofit - Human Services',
-    'Nonprofit - Mental Health and Crisis Intervention',
-    'Nonprofit - Public and Societal Benefit',
-    'Treatment Facility',
+  /// The 13 distinct `category_broad` values, used as the Category filter
+  /// options. A facility may have a null value — it simply won't match any
+  /// selected category.
+  static const List<String> categoryBroadValues = [
+    'Addiction Recovery',
+    'Basic Needs',
+    'Children and Families',
+    'Community Services',
+    'Disability Services',
+    'Health Charities',
+    'Home Care',
+    'Hospitals',
+    'Housing',
+    'Medical Care',
+    'Mental Health',
+    'Seniors',
+    'Veterans',
   ];
 
   // The four consolidated groups (+ a neutral fallback) that drive marker
@@ -31,35 +38,39 @@ class FacilityCategories {
   static const String groupHousingShelter = 'Housing & Shelter';
   static const String groupOther = 'Community Resource';
 
-  /// Consolidates a `category_level_2` value (or null) into a high-level group
+  /// Consolidates a `category_broad` value (or null) into a high-level group
   /// for marker icon/color selection.
-  static String groupFor(String? categoryLevel2) {
-    switch (categoryLevel2) {
-      case 'Hospital- ACUTE':
-      case 'Hospital- CHILD':
-      case 'Hospital- LTACH':
-      case 'Hospital- REHAB':
-      case 'Hospital- RELIGIOUS NON-MED':
-      case 'Nonprofit - Health Care':
+  ///
+  /// 'Community Services' is deliberately left in [groupOther]: it's the
+  /// generic community-nonprofit bucket and the single largest category, so
+  /// giving it a neutral pin keeps the specific groups legible on the map.
+  static String groupFor(String? categoryBroad) {
+    switch (categoryBroad) {
+      case 'Medical Care':
+      case 'Hospitals':
+      case 'Home Care':
+      case 'Health Charities':
         return groupHealthCare;
-      case 'Hospital- PSYCH':
-      case 'Nonprofit - Mental Health and Crisis Intervention':
-      case 'Treatment Facility':
+      case 'Mental Health':
+      case 'Addiction Recovery':
         return groupMentalHealth;
-      case 'Nonprofit - Housing and Shelter':
+      case 'Housing':
         return groupHousingShelter;
-      case 'Nonprofit - Human Services':
-      case 'Nonprofit - Public and Societal Benefit':
+      case 'Basic Needs':
+      case 'Children and Families':
+      case 'Seniors':
+      case 'Veterans':
+      case 'Disability Services':
         return groupBasicNeeds;
       default:
         return groupOther;
     }
   }
 
-  /// The `category_level_2` values that roll up into [group] — used by the Home
+  /// The `category_broad` values that roll up into [group] — used by the Home
   /// quick-action buttons to translate a tapped group into a map filter.
   static List<String> valuesForGroup(String group) {
-    return categoryLevel2Values.where((v) => groupFor(v) == group).toList();
+    return categoryBroadValues.where((v) => groupFor(v) == group).toList();
   }
 
   /// True if [value] is one of the four consolidated group names.

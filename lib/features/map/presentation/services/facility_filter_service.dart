@@ -5,7 +5,8 @@ import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 class FacilityFilterService {
   /// Filters facilities based on search text, categories, and other filters.
   ///
-  /// [selectedCategories] contains app category strings (e.g., "Health Care").
+  /// [selectedCategories] contains `category_broad` values (e.g. "Medical
+  /// Care") — the Home quick-actions expand a group into its members first.
   static List<Facility> filterFacilities(
     List<Facility> allFacilities, {
     required String searchText,
@@ -28,8 +29,8 @@ class FacilityFilterService {
             (s) => s.toLowerCase().contains(q),
           ) ||
           (facility.servicesSummary?.toLowerCase().contains(q) ?? false) ||
-          (facility.categoryLevel2?.toLowerCase().contains(q) ?? false) ||
-          facility.appCategory.toLowerCase().contains(q) ||
+          (facility.categoryBroad?.toLowerCase().contains(q) ?? false) ||
+          (facility.categoryDetail?.toLowerCase().contains(q) ?? false) ||
           facility.city.toLowerCase().contains(q);
 
       // Favorites filter
@@ -38,10 +39,10 @@ class FacilityFilterService {
       // Open Now filter
       final matchesOpenNow = !showOpenNowOnly || facility.isOpenNow;
 
-      // Category filter — match on category_level_2 (the map's filter dimension)
+      // Category filter — match on category_broad (the filter dimension).
       final matchesCategory = selectedCategories.isEmpty ||
-          (facility.categoryLevel2 != null &&
-              selectedCategories.contains(facility.categoryLevel2));
+          (facility.categoryBroad != null &&
+              selectedCategories.contains(facility.categoryBroad));
 
       // Eligibility requirements filter
       // null values are unset and always pass through.
@@ -83,7 +84,7 @@ class FacilityFilterService {
     }).toList();
   }
 
-  /// Returns the distinct `category_level_2` values present in [facilities].
+  /// Returns the distinct `category_broad` values present in [facilities].
   ///
   /// The map's Category filter uses the fixed `FacilityCategories` list rather
   /// than this (so all options show regardless of region), but this stays
@@ -93,7 +94,7 @@ class FacilityFilterService {
   ) {
     final categories = <String>{};
     for (final facility in facilities) {
-      final c = facility.categoryLevel2;
+      final c = facility.categoryBroad;
       if (c != null && c.isNotEmpty) categories.add(c);
     }
     return categories;

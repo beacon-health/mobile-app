@@ -111,13 +111,14 @@ class Facility {
   /// List of service names offered by this facility.
   final List<String> services;
 
-  /// Raw category_level_1 value (kept for display; many distinct values).
-  final String appCategory;
-
-  /// category_level_2 value (12 known values + null) — the dimension the map's
+  /// `category_broad` (13 known values + null) — the dimension the map's
   /// Category filter operates on. Consolidated into a high-level group by
   /// [primaryCategory] for icons/colors.
-  final String? categoryLevel2;
+  final String? categoryBroad;
+
+  /// `category_detail` (21 known values + null) — the finer grain beneath
+  /// [categoryBroad]. Not a filter dimension, but it is searchable.
+  final String? categoryDetail;
 
   /// Structured eligibility data from DM_Supabase_Eligibility.
   final FacilityEligibility? eligibility;
@@ -184,21 +185,9 @@ class Facility {
   }
 
   /// Consolidated high-level group used for marker icons/colors and the small
-  /// category icon on cards/lists. Derived from [categoryLevel2] so the four
-  /// Home-page groups stay consistent across the app. [appCategory]
-  /// (category_level_1) is retained for any raw-category display needs.
-  ///
-  /// Falls back to [appCategory] when category_level_2 doesn't map to a known
-  /// group but appCategory itself is one — keeps demo-mode data (which only
-  /// carries category_level_1) showing the right icons.
-  String get primaryCategory {
-    final group = FacilityCategories.groupFor(categoryLevel2);
-    if (group == FacilityCategories.groupOther &&
-        FacilityCategories.isGroup(appCategory)) {
-      return appCategory;
-    }
-    return group;
-  }
+  /// category icon on cards/lists. Derived from [categoryBroad] so the four
+  /// Home-page groups stay consistent across the app.
+  String get primaryCategory => FacilityCategories.groupFor(categoryBroad);
 
   const Facility({
     required this.id,
@@ -214,8 +203,8 @@ class Facility {
     this.phones = const [],
     this.hours = const [],
     this.services = const [],
-    this.appCategory = 'Health Care',
-    this.categoryLevel2,
+    this.categoryBroad,
+    this.categoryDetail,
     this.eligibility,
     this.eligibilityRequirements = const {},
     this.servicesSummary,
@@ -243,8 +232,6 @@ class Facility {
     final state = data['state'] as String? ?? '';
     final postalCode = data['postal_code'] as String?;
     final address = _formatAddress(street, city, state, postalCode);
-
-    final appCategory = data['app_category'] as String? ?? 'Health Care';
 
     FacilityEligibility? eligibility;
     if (data['operational'] != null || data['proof_of_income'] != null) {
@@ -276,8 +263,8 @@ class Facility {
       phones: phones,
       hours: hours,
       services: services,
-      appCategory: appCategory,
-      categoryLevel2: data['category_level_2'] as String?,
+      categoryBroad: data['category_broad'] as String?,
+      categoryDetail: data['category_detail'] as String?,
       eligibility: eligibility,
       eligibilityRequirements: eligReqs,
       servicesSummary: eligibility?.servicesSummary,
@@ -467,8 +454,8 @@ class Facility {
       phones: phones,
       hours: hours,
       services: services,
-      appCategory: appCategory,
-      categoryLevel2: categoryLevel2,
+      categoryBroad: categoryBroad,
+      categoryDetail: categoryDetail,
       eligibility: eligibility,
       eligibilityRequirements: eligibilityRequirements,
       servicesSummary: servicesSummary,

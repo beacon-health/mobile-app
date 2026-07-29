@@ -911,7 +911,7 @@ class MapPageState extends State<MapPage>
       backgroundColor: Colors.transparent,
       builder: (context) => FilterModal(
         selectedCategories: _selectedCategories,
-        availableCategories: FacilityCategories.categoryLevel2Values,
+        availableCategories: FacilityCategories.categoryBroadValues,
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,

@@ -4,8 +4,8 @@
 >
 > **Last updated:** 2026-07-29 · **Target:** iOS App Store (TestFlight ✅ working → public) · **Version:** `1.0.0+2` · **Toolchain:** Flutter 3.44.2 (stable) / Dart 3.12.2
 >
-> **Status:** All MVP **app code** (§2.1 – §2.12) is **code-complete** — `flutter
-> analyze` clean, **28/28 tests** pass, `dart format` clean. The app builds and
+> **Status:** All MVP **app code** (§2.1 – §2.13) is **code-complete** — `flutter
+> analyze` clean, **30/30 tests** pass, `dart format` clean. The app builds and
 > uploads to TestFlight. Everything left is **not app code**: (1) a set of
 > copy-paste **Supabase SQL** migrations, (2) **device QA** on real hardware,
 > and (3) the **App Store submission** steps (signing / capabilities / privacy
@@ -19,8 +19,7 @@
 >   **`FCT_Supabase`** (162,937 rows, geocoded). PostGIS `facilities_near` RPC +
 >   `fct_supabase_full` view; **server-side per-region** queries, a **"Search
 >   this area"** control, **marker clustering**, **region-independent
->   Favorites**, category filter on **`category_level_2`** (12 values → 4 icon
->   groups), dark-mode map, overflow-safe empty states.
+>   Favorites**, category filter (now on `category_broad` — see §2.13), dark-mode map, overflow-safe empty states.
 > - **§2.7 view & edit ratings:** ratings are read/write — a **"Your Ratings"**
 >   list + in-place editing (dialog pre-fills, **upsert**, **Remove**) via
 >   `FacilityFeedbackService`.
@@ -48,6 +47,9 @@
 >   code); `UrlLauncherService` debug/i18n fixes; comments trimmed to the
 >   non-obvious; **privacy manifest data types filled in**, export-compliance
 >   key added, target set to **iPhone-only** for 1.0.
+> - **§2.13 category taxonomy:** moved onto **`category_broad`** (13 readable
+>   filter values) / **`category_detail`**, replacing the raw
+>   `category_level_1`/`level_2` strings. **Needs the §3.3 SQL to take effect.**
 >
 > **⏳ Remaining before App Store (no app code — all in §3)**
 > - **Supabase SQL** — one consolidated run-order in §3.1 (base schema + §2.6
@@ -78,7 +80,7 @@
 | **Localization** | en, es, zh via `flutter_localizations` + ARB |
 | **Secrets** | `--dart-define` for Supabase URL/key; `Secrets.xcconfig` for Google Maps key. No secrets in source. |
 | **Linting** | `very_good_analysis` — 0 issues (`flutter analyze` clean) |
-| **Tests** | 28 unit tests (all passing) |
+| **Tests** | 30 unit tests (all passing) |
 | **CI/CD** | GitHub Actions (`ci.yml` + `ios-build.yml`), Fastlane skeleton |
 | **Repo** | `github.com/beacon-health/mobile-app` · Data pipeline: `github.com/beacon-health/beacon-data` |
 
@@ -156,8 +158,8 @@
 
 ## 2. Code Work
 
-**All app code (§2.1 – §2.12) is complete.** `flutter analyze` is clean (0
-issues), `flutter test` passes (28/28), and `dart format` is clean. What's left
+**All app code (§2.1 – §2.13) is complete.** `flutter analyze` is clean (0
+issues), `flutter test` passes (30/30), and `dart format` is clean. What's left
 is the consolidated Supabase SQL runbook (§3.1), device QA (§3.1), and the
 technical App Store submission steps (§3.2). The subsections below are kept as
 the implementation record.
@@ -331,25 +333,25 @@ RPC, DDL below) applied. What shipped:
 
 #### Category taxonomy (filter vs. icon)
 
+> ⚠️ **Superseded by §2.13.** The `category_level_2` scheme described here was
+> replaced by `category_broad` / `category_detail`. The *structure* below still
+> holds — two dimensions, one source of truth in `facility_categories.dart`,
+> icons consolidating into 4 groups + a fallback — only the column names and
+> values changed. See §2.13 for the current mapping.
+
 Two dimensions, one source of truth in
 `lib/features/map/constants/facility_categories.dart`:
-- **Filtering** is by **`category_level_2`** — the map Category filter lists the
-  12 known values (`FacilityCategories.categoryLevel2Values`);
-  `FacilityFilterService` matches a facility's `categoryLevel2` against the
-  selection (null never matches, so it's excluded when a category is chosen).
-- **Icons / colors** consolidate those 12 into **4 high-level groups** (Health
-  Care, Mental Health, Basic Needs, Housing & Shelter) + a neutral fallback,
-  via `FacilityCategories.groupFor(...)`. `Facility.primaryCategory` returns the
-  group, so every marker, list icon, and card icon is consistent. Hospitals →
-  Health Care (except `Hospital- PSYCH` → Mental Health); `Treatment Facility`
-  and the mental-health nonprofit → Mental Health; housing nonprofit → Housing
-  & Shelter; human-services / public-benefit nonprofits → Basic Needs.
+- **Filtering** was by **`category_level_2`** (12 values); the map Category
+  filter listed them and `FacilityFilterService` matched a facility's value
+  against the selection (null never matches, so it's excluded when a category
+  is chosen). **Now `category_broad`, 13 values.**
+- **Icons / colors** consolidate into **4 high-level groups** (Health Care,
+  Mental Health, Basic Needs, Housing & Shelter) + a neutral fallback, via
+  `FacilityCategories.groupFor(...)`. `Facility.primaryCategory` returns the
+  group, so every marker, list icon, and card icon is consistent. **This part is
+  unchanged** — only the values feeding it moved.
 - Home quick-action buttons pass a group; `MapPage.filterByCategory` expands it
-  to that group's `category_level_2` values so the filter still works.
-- Grouping choices for `Hospital- RELIGIOUS NON-MED` and `Treatment Facility`
-  are best-guess — adjust the switch in `facility_categories.dart` if the data
-  owner wants different buckets. `category_level_1` (`appCategory`) is retained
-  on the model for any raw-value display.
+  to that group's underlying values so the filter still works.
 
 #### DDL / RPC reference (applied)
 
@@ -366,7 +368,9 @@ alter table public."FCT_Supabase"
   alter column longitude type double precision using nullif(longitude,'')::double precision;
 ```
 
-**Wrapping view (the model reads its columns; both options use it):**
+**Wrapping view** — ⚠️ **superseded: use the §3.3 version**, which swaps the
+`category_level_*` columns for `category_broad` / `category_detail`. Kept here as
+the original record.
 ```sql
 create or replace view public.fct_supabase_full as
 select
@@ -484,6 +488,10 @@ alter table public.launched_states enable row level security;
 create policy "Anyone can read launched states" on public.launched_states
   for select using (true);
 ```
+> ⚠️ **The RPC body below is superseded by §3.3** (category columns changed, so
+> the return type changed). Use §3.3's version, which keeps the same state gate.
+> This block remains the record of how the gate was introduced.
+
 Then re-run `facilities_near` **in its entirety** with the state-gate clause
 added to the `where`. This is the **live deployed definition** (verified via
 `pg_get_functiondef`) — it returns `contact_phones` as `jsonb` (via the
@@ -614,7 +622,7 @@ gained `LSApplicationQueriesSchemes` (Google Maps / Waze detection).
   "Map area") are stored canonically and translated at display time, so
   language switches can't break placeholder-clearing logic.
   **Deliberately not translated (data, not chrome):** facility
-  names/descriptions/services from the DB, `category_level_2` filter values,
+  names/descriptions/services from the DB, `category_broad` filter values,
   and the rating **tag phrases** (stored verbatim in the `comment` column —
   localizing them would break round-tripping; a display-map is a post-MVP
   follow-up alongside the §7 professional-localization review).
@@ -809,23 +817,61 @@ or lorem text, no `http://` URLs, no leftover FIXME/HACK markers.
   `UISupportedInterfaceOrientations~ipad` block was removed. Revisit when iPad
   layout work lands.
 
-### 2.13 Category Taxonomy Migration (planned — awaiting data)
+### 2.13 Category Taxonomy Migration ✅ CODE-COMPLETE (SQL pending)
 
-A database dev added **`category_broad`** and **`category_detail`** (both `text`)
-to `FCT_Supabase`. These are intended to replace the current
-`category_level_1`/`category_level_2` scheme, whose 12 `category_level_2` values
-the app hand-maps into 4 icon groups (§2.6).
+Moved the app off `category_level_1`/`category_level_2` onto the new
+**`category_broad`** (13 values) / **`category_detail`** (21 values) columns.
+`flutter analyze` clean, **30/30 tests**, `dart format` clean.
 
-**Status: not started — blocked on seeing the distinct values.** Run the
-extraction queries in §3.3, then the app changes are scoped to:
-`facility_categories.dart` (the value list + `groupFor` switch), the
-`fct_supabase_full` view and `facilities_near` RPC (expose the new columns), and
-`facility_model.dart` (`categoryLevel2` → the new field). The map filter, marker
-icons, and Home quick-actions all read through `FacilityCategories`, so they
-follow automatically.
+**Why this is strictly better:** the old `category_level_2` values were raw data
+strings — `Hospital- ACUTE`, `Nonprofit - Public and Societal Benefit` — rendered
+**verbatim as filter chips**. The new `category_broad` values are already
+user-facing prose ("Veterans", "Housing", "Medical Care"), so the filter reads
+like a product instead of a data dump. Coverage is also better: in Illinois
+**3,055 / 3,055 rows** have both new columns vs 3,045 for `category_level_2`.
 
-**Do not migrate until** `category_broad` is confirmed non-null across the
-launched state(s) — a null-heavy column would silently empty the Category filter.
+**The taxonomy is a strict hierarchy** — every `category_detail` rolls up to
+exactly one `category_broad` (verified across all 21 values), so the two can be
+treated as a clean two-level tree.
+
+**Design decisions**
+- **Filter dimension = `category_broad`** (13 chips). `category_detail` (21) is
+  too many to show as chips, so it is **searchable** and available for display,
+  but is not a filter.
+- **Icon/color groups stay at 4 + neutral fallback**, so the Home quick-actions
+  grid and every existing marker color are unchanged. The 13 broad values map:
+
+  | Icon group | `category_broad` values | Facilities |
+  |---|---|---|
+  | **Health Care** | Medical Care, Hospitals, Home Care, Health Charities | 31,470 |
+  | **Mental Health** | Mental Health, Addiction Recovery | 38,664 |
+  | **Housing & Shelter** | Housing | 16,121 |
+  | **Basic Needs** | Basic Needs, Children and Families, Seniors, Veterans, Disability Services | 16,338 |
+  | **Community Resource** (fallback) | Community Services | 41,632 |
+
+- **`Community Services` is deliberately left in the neutral fallback group.**
+  It's the generic community-nonprofit bucket and the single largest category
+  (41,632); giving it its own pin color would flood the map and drown out the
+  specific groups.
+- **`appCategory` (`category_level_1`) was dropped from the model entirely.** It
+  only existed as a fallback for demo-mode data (§2.12) and for "raw-category
+  display needs" that never materialized.
+
+**Files changed:** `facility_categories.dart` (value list + `groupFor`),
+`facility_model.dart` (`categoryBroad`/`categoryDetail` replace
+`categoryLevel2`/`appCategory`; `primaryCategory` simplifies to a single call),
+`facility_filter_service.dart` (filter + search), `map_page.dart` (filter
+options), `recent_facilities_service.dart` (persisted JSON), plus the tests.
+
+> ⚠️ **The app shows no categories until the SQL in §3.3 is applied** — the RPC
+> doesn't return the new columns yet. Marker icons fall back to the neutral pin
+> and the Category filter matches nothing. Run the SQL before the next QA pass.
+
+**Open data question:** query 1 sums to **144,225** facilities with no `(null)`
+bucket, but this doc has recorded **162,937** rows since §2.6. Worth confirming
+with `select count(*) from public."FCT_Supabase";` — if the table really did
+shrink by ~18.7k, that's a data-pipeline change worth knowing about, and the row
+count in §1 / §2.6 needs updating.
 
 ## 3. Pre-Launch Checklist
 
@@ -839,7 +885,7 @@ the non-dev team). The single biggest gate is
 ### 3.1 Engineering & Backend (dev-owned)
 
 **Code — done**
-- [x] §2.1–§2.12 implemented; `flutter analyze` clean (0 issues); `flutter test` 28/28; `dart format` clean
+- [x] §2.1–§2.13 implemented; `flutter analyze` clean (0 issues); `flutter test` 30/30; `dart format` clean
 - [x] `flutter build ios --release` compiles (verified `--no-codesign`; SPM disabled → pure CocoaPods)
 - [x] `pubspec.yaml` at `1.0.0+2` — marketing version `1.0.0`; CI sets the build number to `1000 + github.run_number`, so TestFlight/App Store uploads never collide
 - [ ] Widget tests for `AppleSignInButton`, `_ZipEditDialog`, `EligibilityPreferencesService`, `RecentFacilitiesService` (post-launch follow-up)
@@ -854,7 +900,8 @@ the columns exactly.
 - [ ] **5. §2.9 `facility_requests` table** + RLS — the request flow fails without it
 - [ ] **6. §2.11 correction columns** on `facility_requests` (`request_type`, `facility_id`, `website`, `hours`) — the corrections dialog fails without them
 - [ ] **7. §2.8 state allow-list:** create `launched_states`, seed `'IL'`, then re-run the **full** `facilities_near` (with the state gate) from §2.8
-- [ ] **8. Verify RLS:** read-only `anon` SELECT on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
+- [ ] **8. §2.13 category taxonomy** — rebuild `fct_supabase_full` + `facilities_near` for `category_broad`/`category_detail` (**§3.3**). Until this runs, the Category filter matches nothing.
+- [ ] **9. Verify RLS:** read-only `anon` SELECT on `FCT_Supabase`, `fct_supabase_full`, `DM_Supabase_Eligibility`, `launched_states`; confirm `SUPABASE_ANON_KEY` is the **publishable** key (not service role)
 
 **Device QA — the main gate** (smoke test on ≥2 iOS devices, different sizes)
 - [ ] Auth/onboarding: Apple sign-in, location grant/deny, guest mode, sign-out
@@ -910,74 +957,132 @@ screenshots, and the privacy nutrition label are non-dev — see §3.4.)
 - [ ] Answer the **App Privacy** questionnaire from the nutrition label (§3.4), the **age-rating** questionnaire, and the **export-compliance** declaration (exempt — standard HTTPS).
 - [ ] Submit; consider **phased release** (7-day staged rollout) for the first version.
 
-### 3.3 Category Column Extraction SQL (§2.13)
+### 3.3 Category Taxonomy Migration SQL (§2.13)
 
-Run these to inventory the new `category_broad` / `category_detail` columns
-before wiring them into the app. Paste the results back and the taxonomy in
-`facility_categories.dart` can be rebuilt against real values.
+**Run this before the next QA pass** — the app code is already on
+`category_broad` / `category_detail`, so until this ships the Category filter
+matches nothing and every marker uses the neutral pin.
 
-```sql
--- 1. Distinct category_broad values + row counts (this becomes the icon/group
---    dimension if the cardinality is small — today's grouping has 4).
-select
-  coalesce(category_broad, '(null)') as category_broad,
-  count(*)                          as facilities
-from public."FCT_Supabase"
-group by 1
-order by facilities desc;
-
--- 2. Distinct category_detail values + row counts (the filter dimension —
---    today's category_level_2 has 12 values).
-select
-  coalesce(category_detail, '(null)') as category_detail,
-  count(*)                            as facilities
-from public."FCT_Supabase"
-group by 1
-order by facilities desc;
-
--- 3. The broad → detail mapping. This is the important one: it defines the
---    grouping the app currently hardcodes in FacilityCategories.groupFor().
-select
-  coalesce(category_broad,  '(null)') as category_broad,
-  coalesce(category_detail, '(null)') as category_detail,
-  count(*)                            as facilities
-from public."FCT_Supabase"
-group by 1, 2
-order by 1, facilities desc;
-```
-
-**Coverage check — run before committing to the migration.** If the new columns
-are sparsely populated, switching would silently empty the Category filter.
-Illinois is what matters first (§2.8):
+**Step 1 — rebuild the view.** `create or replace view` can only *append*
+columns, and this removes three, so the view must be dropped first. Nothing
+depends on it (the RPC reads `FCT_Supabase` directly), so this is safe:
 
 ```sql
+drop view if exists public.fct_supabase_full;
+
+create view public.fct_supabase_full as
 select
-  count(*)                                                        as total,
-  count(*) filter (where category_broad  is not null)             as has_broad,
-  count(*) filter (where category_detail is not null)             as has_detail,
-  count(*) filter (where category_level_2 is not null)            as has_level_2,
-  round(100.0 * count(*) filter (where category_broad is not null)
-        / nullif(count(*), 0), 1)                                 as pct_broad
-from public."FCT_Supabase"
-where state = 'IL';   -- drop this line for the nationwide picture
+  f.id, f.facility_name, f.facility_description,
+  f.website_url, f.contact_email, f.contact_phones,
+  f.street_address, f.city, f.state, f.postal_code,
+  f.latitude, f.longitude, f.hours, f.services,
+  f.category_broad, f.category_detail,
+  -- eligibility (LEFT join — null for most facilities until backfilled)
+  e.operational, e.proof_of_income, e.proof_of_residency,
+  e.insurance_required, e.referral_required, e.accepts_walkins,
+  e.appointment_only, e.open_to_immigrants, e.free_services_available,
+  e.sliding_scale_available, e.other_languages, e.telehealth_available,
+  e.wheelchair_accessible, e.serves_outside_area,
+  e.operating_hours, e.other_eligibility_summary, e.services_summary
+from public."FCT_Supabase" f
+left join public."DM_Supabase_Eligibility" e on e.master_id = f.id;
 ```
+
+**Step 2 — rebuild the RPC.** Swapping `app_category` + `category_level_2` for
+`category_broad` + `category_detail` **changes the return type**, so this needs
+`drop function` first — `create or replace` alone raises `42P13` (see §2.8).
+The `launched_states` gate from §2.8 is retained:
 
 ```sql
--- How the new columns line up against the old ones — catches cases where
--- category_broad splits or merges the existing 12 level_2 values.
-select
-  coalesce(category_level_2, '(null)') as category_level_2,
-  coalesce(category_broad,   '(null)') as category_broad,
-  count(*)                             as facilities
-from public."FCT_Supabase"
-group by 1, 2
-order by 1, facilities desc;
+drop function if exists public.facilities_near(double precision, double precision, double precision, integer);
+
+CREATE OR REPLACE FUNCTION public.facilities_near(lat double precision, lng double precision, radius_m double precision, max_results integer DEFAULT 250)
+ RETURNS TABLE(id text, facility_name text, facility_description text, website_url text, contact_email text, contact_phones jsonb, street_address text, city text, state text, postal_code text, latitude double precision, longitude double precision, hours text, services text, category_broad text, category_detail text, operational text, proof_of_income text, proof_of_residency text, insurance_required text, referral_required text, accepts_walkins text, appointment_only text, open_to_immigrants text, free_services_available text, sliding_scale_available text, other_languages text, telehealth_available text, wheelchair_accessible text, serves_outside_area text, operating_hours text, other_eligibility_summary text, services_summary text)
+ LANGUAGE sql
+ STABLE
+AS $function$
+  select
+    f.id,
+    f.facility_name,
+    f.facility_description,
+    f.website_url,
+    f.contact_email,
+    public.to_phone_jsonb(f.contact_phones),
+    f.street_address,
+    f.city,
+    f.state,
+    f.postal_code,
+    f.latitude,
+    f.longitude,
+    f.hours,
+    f.services,
+    f.category_broad,
+    f.category_detail,
+    e.operational,
+    e.proof_of_income,
+    e.proof_of_residency,
+    e.insurance_required,
+    e.referral_required,
+    e.accepts_walkins,
+    e.appointment_only,
+    e.open_to_immigrants,
+    e.free_services_available,
+    e.sliding_scale_available,
+    e.other_languages,
+    e.telehealth_available,
+    e.wheelchair_accessible,
+    e.serves_outside_area,
+    e.operating_hours,
+    e.other_eligibility_summary,
+    e.services_summary
+  from public."FCT_Supabase" f
+  left join public."DM_Supabase_Eligibility" e on e.master_id = f.id
+  where f.geom is not null
+    and st_dwithin(f.geom, st_setsrid(st_point(lng, lat), 4326)::geography, radius_m)
+    -- §2.8 state gate: 'ALL' = nationwide; otherwise restrict to launched states.
+    and (
+      exists (select 1 from public.launched_states where state_code = 'ALL')
+      or f.state in (select state_code from public.launched_states)
+    )
+  order by f.geom <-> st_setsrid(st_point(lng, lat), 4326)::geography
+  limit greatest(1, least(max_results, 1000));
+$function$
 ```
 
-> Once the values are known: expose both columns in `fct_supabase_full` **and**
-> in the `facilities_near` RPC (adding columns changes the RPC's return type, so
-> that one needs `drop function` + re-create, not `create or replace` — see the
-> §2.8 note about `42P13`).
+**Step 3 — index the filter column.** The Category filter runs client-side over
+the ≤250-row region pool, so this isn't needed for the app, but it helps any
+future server-side category query and costs nothing:
+
+```sql
+create index if not exists fct_supabase_category_broad_idx
+  on public."FCT_Supabase" (category_broad);
+```
+
+**Step 4 — verify.** Both should return rows with the new columns populated:
+
+```sql
+select id, facility_name, category_broad, category_detail
+from public.fct_supabase_full
+where state = 'IL' limit 5;
+
+select facility_name, category_broad, category_detail
+from public.facilities_near(41.8781, -87.6298, 8047, 5);
+```
+
+> **Retiring the old columns:** `category_level_1` / `category_level_2` are no
+> longer referenced by the app or by these objects. Leave them on
+> `FCT_Supabase` for now as a rollback path; drop them once the new taxonomy has
+> survived a full QA pass.
+
+**Re-run these any time the taxonomy changes** — if the distinct
+`category_broad` values ever drift from the 13 hardcoded in
+`facility_categories.dart`, the filter silently loses options. The
+`facility_categories_test.dart` test asserting `hasLength(13)` is the tripwire:
+
+```sql
+select coalesce(category_broad, '(null)') as category_broad, count(*) as facilities
+from public."FCT_Supabase" group by 1 order by facilities desc;
+```
 
 ### 3.4 Non-Functional — Hand-off to Non-Dev Team
 

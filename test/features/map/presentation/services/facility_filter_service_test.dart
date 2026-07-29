@@ -9,22 +9,22 @@ void main() {
       createTestFacility(
         id: '1',
         name: 'Free Clinic',
-        categoryLevel2: 'Nonprofit - Health Care',
+        categoryBroad: 'Medical Care',
       ),
       createTestFacility(
         id: '2',
         name: 'Food Pantry A',
-        categoryLevel2: 'Nonprofit - Human Services',
+        categoryBroad: 'Community Services',
       ),
       createTestFacility(
         id: '3',
         name: 'Shelter B',
-        categoryLevel2: 'Nonprofit - Housing and Shelter',
+        categoryBroad: 'Housing',
       ),
       createTestFacility(
         id: '4',
         name: 'Mental Health Center',
-        categoryLevel2: 'Nonprofit - Mental Health and Crisis Intervention',
+        categoryBroad: 'Mental Health',
         isFavorite: true,
       ),
     ];
@@ -56,7 +56,7 @@ void main() {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: '',
-        selectedCategories: {'Nonprofit - Human Services'},
+        selectedCategories: {'Community Services'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -80,7 +80,7 @@ void main() {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: 'pantry',
-        selectedCategories: {'Nonprofit - Human Services'},
+        selectedCategories: {'Community Services'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -101,15 +101,15 @@ void main() {
   });
 
   group('FacilityFilterService.getAvailableCategories', () {
-    test('returns unique category_level_2 values', () {
+    test('returns unique category_broad values', () {
       final facilities = [
-        createTestFacility(categoryLevel2: 'Nonprofit - Health Care'),
-        createTestFacility(categoryLevel2: 'Nonprofit - Health Care'),
-        createTestFacility(categoryLevel2: 'Treatment Facility'),
+        createTestFacility(categoryBroad: 'Medical Care'),
+        createTestFacility(categoryBroad: 'Medical Care'),
+        createTestFacility(categoryBroad: 'Addiction Recovery'),
       ];
       final categories =
           FacilityFilterService.getAvailableCategories(facilities);
-      expect(categories, {'Nonprofit - Health Care', 'Treatment Facility'});
+      expect(categories, {'Medical Care', 'Addiction Recovery'});
     });
   });
 }

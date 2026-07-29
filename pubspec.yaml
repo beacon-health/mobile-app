@@ -45,7 +45,6 @@ flutter:
     - assets/app_icon_final.jpg
     - assets/tiny_icon.png
     - assets/map_styles/
-    - assets/demo/demo_facilities.json
 
 flutter_launcher_icons:
   android: true

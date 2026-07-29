@@ -15,7 +15,8 @@ void main() {
         'city': 'Chicago',
         'state': 'IL',
         'postal_code': '60601',
-        'app_category': 'Health Care',
+        'category_broad': 'Medical Care',
+        'category_detail': 'Community Clinic',
       };
 
       final facility = Facility.fromSupabase(data);
@@ -26,7 +27,7 @@ void main() {
       expect(facility.location.latitude, 41.8781);
       expect(facility.location.longitude, -87.6298);
       expect(facility.city, 'Chicago');
-      expect(facility.appCategory, 'Health Care');
+      expect(facility.categoryBroad, 'Medical Care');
     });
 
     test('handles null optional fields gracefully', () {
