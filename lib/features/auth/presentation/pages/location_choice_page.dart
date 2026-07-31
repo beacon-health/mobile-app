@@ -39,8 +39,6 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
       await ZipCodeService().setCurrentLocation(
         latitude: result.latitude,
         longitude: result.longitude,
-        displayName: AppLocalizations.of(context)?.locationCurrentLocation ??
-            'Current Location',
       );
       if (!mounted) return;
       _goToMain();

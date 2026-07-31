@@ -1012,6 +1012,42 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get onboardingContinue;
 
+  /// No description provided for @onboardingTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Find free and low-cost resources near you.'**
+  String get onboardingTagline;
+
+  /// No description provided for @onboardingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health care, housing, food assistance, and more — all in one place.'**
+  String get onboardingSubtitle;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @zipEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your zip code?'**
+  String get zipEntryTitle;
+
+  /// No description provided for @zipEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll use this to show resources near you.'**
+  String get zipEntrySubtitle;
+
+  /// No description provided for @zipEntryInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a 5-digit zip code'**
+  String get zipEntryInvalid;
+
   /// No description provided for @requestFieldWebsite.
   ///
   /// In en, this message translates to:

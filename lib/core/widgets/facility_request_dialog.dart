@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
+import 'package:beacon_app/core/widgets/dialog_text_field.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -88,29 +89,6 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
     );
   }
 
-  Widget _field(
-    TextEditingController controller,
-    String label, {
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        enabled: !_isSubmitting,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
-        ),
-        style: const TextStyle(fontSize: 14),
-        validator: validator,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -137,16 +115,18 @@ class _FacilityRequestDialogState extends State<_FacilityRequestDialog> {
                   ),
                 ),
               ),
-              _field(
-                _nameController,
-                l10n.requestFieldName,
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _nameController,
+                label: l10n.requestFieldName,
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? l10n.requestFieldNameError
                     : null,
               ),
-              _field(
-                _websiteController,
-                l10n.requestFieldWebsite,
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _websiteController,
+                label: l10n.requestFieldWebsite,
                 keyboardType: TextInputType.url,
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? l10n.requestFieldWebsiteError

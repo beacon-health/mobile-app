@@ -4,6 +4,7 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +19,7 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -34,10 +36,10 @@ class OnboardingPage extends StatelessWidget {
                   children: [
                     Image.asset('assets/beacon-logo.png', width: 240),
                     const SizedBox(height: 32),
-                    const Text(
-                      'Find free and low-cost resources near you.',
+                    Text(
+                      l10n.onboardingTagline,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
@@ -46,8 +48,7 @@ class OnboardingPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Health care, housing, food assistance, and more — '
-                      'all in one place.',
+                      l10n.onboardingSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
@@ -76,7 +77,7 @@ class OnboardingPage extends StatelessWidget {
                             fontSize: 15,
                           ),
                         ),
-                        child: const Text('Get Started'),
+                        child: Text(l10n.onboardingGetStarted),
                       ),
                     ),
                   ],
@@ -87,14 +88,14 @@ class OnboardingPage extends StatelessWidget {
                 child: Builder(
                   builder: (innerContext) => Text.rich(
                     TextSpan(
-                      text: 'By continuing, you agree to our ',
+                      text: l10n.authTermsPrefix,
                       style: const TextStyle(
                         color: Colors.black54,
                         fontSize: 12,
                       ),
                       children: [
                         TextSpan(
-                          text: 'Terms of Service',
+                          text: l10n.authTermsOfService,
                           style: const TextStyle(
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.bold,
@@ -105,9 +106,9 @@ class OnboardingPage extends StatelessWidget {
                                   innerContext,
                                 ),
                         ),
-                        const TextSpan(text: ' and '),
+                        TextSpan(text: l10n.authAnd),
                         TextSpan(
-                          text: 'Privacy Policy',
+                          text: l10n.authPrivacyPolicy,
                           style: const TextStyle(
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.bold,

@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage>
         radiusMiles: MapConstants.defaultRadiusMiles,
       )
           .timeout(
-        const Duration(seconds: 30),
+        MapConstants.facilityQueryTimeout,
         onTimeout: () {
           return [];
         },

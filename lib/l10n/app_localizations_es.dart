@@ -498,6 +498,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onboardingContinue => 'Continuar';
 
   @override
+  String get onboardingTagline =>
+      'Encuentra recursos gratuitos y de bajo costo cerca de ti.';
+
+  @override
+  String get onboardingSubtitle =>
+      'Atención médica, vivienda, ayuda alimentaria y más, todo en un solo lugar.';
+
+  @override
+  String get onboardingGetStarted => 'Comenzar';
+
+  @override
+  String get zipEntryTitle => '¿Cuál es tu código postal?';
+
+  @override
+  String get zipEntrySubtitle =>
+      'Lo usaremos para mostrarte recursos cercanos.';
+
+  @override
+  String get zipEntryInvalid => 'Ingresa un código postal de 5 dígitos';
+
+  @override
   String get requestFieldWebsite => 'Sitio web del centro *';
 
   @override

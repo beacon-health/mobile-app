@@ -11,6 +11,11 @@ class ZipCodeService extends ChangeNotifier {
   factory ZipCodeService() => _instance;
   ZipCodeService._();
 
+  /// Canonical, never-translated label stored in place of a ZIP when the user
+  /// is on GPS. Stored verbatim so equality checks stay language-independent;
+  /// the UI translates it at display time via `locationCurrentLocation`.
+  static const String currentLocationSentinel = 'Current Location';
+
   static const _keyZip = 'user_zip_code';
   static const _keyLat = 'user_latitude';
   static const _keyLng = 'user_longitude';
@@ -116,7 +121,7 @@ class ZipCodeService extends ChangeNotifier {
   Future<void> setCurrentLocation({
     required double latitude,
     required double longitude,
-    String displayName = 'Current Location',
+    String displayName = currentLocationSentinel,
     bool syncToCloud = true,
   }) async {
     final prefs = await SharedPreferences.getInstance();

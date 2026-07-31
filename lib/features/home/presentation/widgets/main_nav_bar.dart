@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/home/presentation/pages/home_page.dart';
+import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/pages/map_page.dart';
 import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
@@ -45,17 +46,17 @@ class _MainNavBarState extends State<MainNavBar> {
     });
 
     if (facility != null) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(MapConstants.navSettleDelay, () {
         _mapPageKey.currentState?.showFacility(facility);
       });
     } else if (categoryFilter != null) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(MapConstants.navSettleDelay, () {
         _mapPageKey.currentState?.filterByCategory(categoryFilter);
       });
     } else {
       // Plain "open the map" (e.g. the Home map cutout) — re-center on the
       // user's saved location.
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(MapConstants.navSettleDelay, () {
         _mapPageKey.currentState?.recenterOnUserLocation();
       });
     }

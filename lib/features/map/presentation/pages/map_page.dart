@@ -122,7 +122,7 @@ class MapPageState extends State<MapPage>
     _currentLongitude = zipService.longitude;
     _currentLocation = zipService.zipCode?.isNotEmpty == true
         ? zipService.zipCode!
-        : MapConstants.currentLocationSentinel;
+        : ZipCodeService.currentLocationSentinel;
 
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -148,7 +148,7 @@ class MapPageState extends State<MapPage>
     final zipService = ZipCodeService();
     final newLabel = zipService.zipCode?.isNotEmpty == true
         ? zipService.zipCode!
-        : MapConstants.currentLocationSentinel;
+        : ZipCodeService.currentLocationSentinel;
     final newLat = zipService.latitude;
     final newLng = zipService.longitude;
 
@@ -365,7 +365,7 @@ class MapPageState extends State<MapPage>
         radiusMiles: MapConstants.defaultRadiusMiles,
       )
           .timeout(
-        const Duration(seconds: 30),
+        MapConstants.facilityQueryTimeout,
         onTimeout: () {
           throw Exception('Timeout loading facilities');
         },
@@ -403,9 +403,7 @@ class MapPageState extends State<MapPage>
     double? longitude,
   ) async {
     if (latitude == null || longitude == null) return;
-    final isCurrent = displayName.toLowerCase().contains('current') ||
-        displayName ==
-            (AppLocalizations.of(context)?.locationCurrentLocation ?? '');
+    final isCurrent = displayName == ZipCodeService.currentLocationSentinel;
 
     setState(() {
       _currentLatitude = latitude;
@@ -451,7 +449,7 @@ class MapPageState extends State<MapPage>
     if (result.status == LocationStatus.granted) {
       // Store the canonical sentinel; it's translated at display time.
       await _onLocationChanged(
-        MapConstants.currentLocationSentinel,
+        ZipCodeService.currentLocationSentinel,
         result.latitude,
         result.longitude,
       );
@@ -775,7 +773,7 @@ class MapPageState extends State<MapPage>
       _currentLongitude = lng;
       _currentLocation = zipService.zipCode?.isNotEmpty == true
           ? zipService.zipCode!
-          : MapConstants.currentLocationSentinel;
+          : ZipCodeService.currentLocationSentinel;
       _showSingleFacility = false;
       _selectedFacility = null;
     });
@@ -1194,8 +1192,9 @@ class MapPageState extends State<MapPage>
         kToolbarHeight -
         MapConstants.panelBottomOffset -
         16;
-    final cardHeight =
-        _singleCardExpanded ? expandedHeight : screenHeight * 0.45;
+    final cardHeight = _singleCardExpanded
+        ? expandedHeight
+        : screenHeight * MapConstants.singleCardDefaultHeightRatio;
     // The handle-bar swipe drives both height and dismissal, mirroring the
     // list panel: swipe up expands (default → expanded); swipe down collapses
     // (expanded → default) or, from default, dismisses with a slide-down.

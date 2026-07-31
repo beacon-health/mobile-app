@@ -3,6 +3,7 @@ import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -66,6 +67,7 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -85,16 +87,16 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   padding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  "What's your zip code?",
-                  style: TextStyle(
+                Text(
+                  l10n.zipEntryTitle,
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "We'll use this to show resources near you.",
+                  l10n.zipEntrySubtitle,
                   style: TextStyle(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.onSurfaceSecondary,
@@ -137,7 +139,7 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   validator: (value) {
                     final trimmed = (value ?? '').trim();
                     if (trimmed.length != 5) {
-                      return 'Please enter a 5-digit zip code';
+                      return l10n.zipEntryInvalid;
                     }
                     return null;
                   },
@@ -173,7 +175,7 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Continue'),
+                        : Text(l10n.onboardingContinue),
                   ),
                 ),
               ],

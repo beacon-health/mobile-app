@@ -54,7 +54,7 @@ class LocationService {
       return LocationResult(
         latitude: position.latitude,
         longitude: position.longitude,
-        locationName: 'Current Location',
+        locationName: ZipCodeService.currentLocationSentinel,
         status: LocationStatus.granted,
       );
     } catch (e, stackTrace) {
@@ -113,7 +113,7 @@ class LocationResult {
     return LocationResult(
       latitude: zip.latitude,
       longitude: zip.longitude,
-      locationName: zip.zipCode ?? 'Current Location',
+      locationName: zip.zipCode ?? ZipCodeService.currentLocationSentinel,
       status: status,
     );
   }

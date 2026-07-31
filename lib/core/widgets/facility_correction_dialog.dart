@@ -1,6 +1,7 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
 import 'package:beacon_app/core/utils/phone_format.dart';
+import 'package:beacon_app/core/widgets/dialog_text_field.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
@@ -125,29 +126,6 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
     );
   }
 
-  Widget _field(
-    TextEditingController controller,
-    String label, {
-    int maxLines = 1,
-    TextInputType? keyboardType,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        enabled: !_isSubmitting,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
-        ),
-        style: const TextStyle(fontSize: 14),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -174,21 +152,33 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
                   ),
                 ),
               ),
-              _field(_nameController, l10n.correctionFieldName),
-              _field(
-                _websiteController,
-                l10n.correctionFieldWebsite,
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _nameController,
+                label: l10n.correctionFieldName,
+              ),
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _websiteController,
+                label: l10n.correctionFieldWebsite,
                 keyboardType: TextInputType.url,
               ),
-              _field(
-                _phoneController,
-                l10n.correctionFieldPhone,
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _phoneController,
+                label: l10n.correctionFieldPhone,
                 keyboardType: TextInputType.phone,
               ),
-              _field(_hoursController, l10n.correctionFieldHours, maxLines: 2),
-              _field(
-                _addressController,
-                l10n.correctionFieldAddress,
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _hoursController,
+                label: l10n.correctionFieldHours,
+                maxLines: 2,
+              ),
+              DialogTextField(
+                enabled: !_isSubmitting,
+                controller: _addressController,
+                label: l10n.correctionFieldAddress,
                 maxLines: 2,
               ),
             ],

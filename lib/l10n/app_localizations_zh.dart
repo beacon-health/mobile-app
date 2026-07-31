@@ -471,6 +471,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingContinue => '继续';
 
   @override
+  String get onboardingTagline => '查找您附近的免费和低价资源。';
+
+  @override
+  String get onboardingSubtitle => '医疗、住房、食品援助等，尽在一处。';
+
+  @override
+  String get onboardingGetStarted => '开始使用';
+
+  @override
+  String get zipEntryTitle => '您的邮政编码是什么？';
+
+  @override
+  String get zipEntrySubtitle => '我们将用它为您显示附近的资源。';
+
+  @override
+  String get zipEntryInvalid => '请输入 5 位邮政编码';
+
+  @override
   String get requestFieldWebsite => '机构网站 *';
 
   @override

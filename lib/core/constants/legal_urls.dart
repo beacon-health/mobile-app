@@ -5,9 +5,8 @@
 class LegalUrls {
   LegalUrls._();
 
-  static const String termsOfUse =
-      'https://beacon-website-pied.vercel.app/terms-of-use';
+  static const String termsOfUse = 'https://www.beacon-health.com/terms-of-use';
 
   static const String privacyPolicy =
-      'https://beacon-website-pied.vercel.app/privacy-policy';
+      'https://www.beacon-health.com/privacy-policy';
 }

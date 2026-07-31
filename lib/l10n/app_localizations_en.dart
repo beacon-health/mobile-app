@@ -488,6 +488,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingContinue => 'Continue';
 
   @override
+  String get onboardingTagline => 'Find free and low-cost resources near you.';
+
+  @override
+  String get onboardingSubtitle =>
+      'Health care, housing, food assistance, and more — all in one place.';
+
+  @override
+  String get onboardingGetStarted => 'Get Started';
+
+  @override
+  String get zipEntryTitle => 'What\'s your zip code?';
+
+  @override
+  String get zipEntrySubtitle => 'We\'ll use this to show resources near you.';
+
+  @override
+  String get zipEntryInvalid => 'Please enter a 5-digit zip code';
+
+  @override
   String get requestFieldWebsite => 'Facility website *';
 
   @override
