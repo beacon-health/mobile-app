@@ -8,19 +8,12 @@ import 'package:beacon_app/features/map/presentation/services/location_service.d
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Asks the user how they want to locate facilities: GPS or zip code.
-///
-/// Shown after sign-in / guest-continue. If the user picks GPS and grants
-/// permission, we store coordinates via [ZipCodeService.setCurrentLocation]
-/// and head straight to [MainNavBar]. If permission is denied, we navigate to
-/// [ZipEntryPage] as the fallback.
+/// Asks how to locate facilities: GPS or ZIP. Granting GPS goes straight to
+/// [MainNavBar]; denial falls back to [ZipEntryPage].
 class LocationChoicePage extends StatefulWidget {
   const LocationChoicePage({super.key, this.prefilledZip});
 
-  /// Optional ZIP code to pre-fill the [ZipEntryPage] when chosen.
-  ///
-  /// Used during the guest → signed-in upgrade flow so the user doesn't have
-  /// to re-enter their ZIP.
+  /// Pre-fills [ZipEntryPage] during the guest → signed-in upgrade.
   final String? prefilledZip;
 
   @override

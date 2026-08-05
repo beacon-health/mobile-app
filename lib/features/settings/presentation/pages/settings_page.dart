@@ -381,14 +381,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-/// Standalone dialog for editing the user's ZIP code.
-///
-/// Owns the [TextEditingController] so its lifecycle is bound to the dialog's
-/// own [State] (rather than being shared across an async/StatefulBuilder
-/// boundary, which previously caused "used after dispose" crashes when
-/// ZipCodeService.notifyListeners fired mid-dispose).
-///
-/// Pops with `true` on a successful update so the caller can show feedback.
+/// ZIP editing dialog. Owns its [TextEditingController] so the lifecycle is
+/// bound to this [State] — sharing one across a StatefulBuilder boundary
+/// caused "used after dispose" crashes. Pops `true` on success.
 class _ZipEditDialog extends StatefulWidget {
   const _ZipEditDialog({this.initialZip});
 

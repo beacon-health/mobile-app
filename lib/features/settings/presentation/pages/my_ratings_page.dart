@@ -8,12 +8,8 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-/// Lists the ratings the signed-in user has submitted, and lets them edit or
-/// remove each one.
-///
-/// Rating rows store only a `facility_id`, so facility names are resolved by
-/// id from the view (region-independent, same path as Favorites). Tapping a
-/// row re-opens [showFacilityRatingDialog] pre-filled for in-place editing.
+/// The user's submitted ratings, editable in place. Rows store only a
+/// `facility_id`, so names are resolved by id from the view.
 class MyRatingsPage extends StatefulWidget {
   const MyRatingsPage({super.key});
 

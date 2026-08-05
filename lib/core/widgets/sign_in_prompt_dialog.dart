@@ -4,11 +4,8 @@ import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Shows a centered modal dialog prompting guest users to sign in.
-///
-/// The dialog is barrier-dismissible: tapping outside or pressing the X
-/// button closes it. Tapping the "Sign In" button closes the dialog and
-/// pushes [LoginPage] in guest-upgrade mode.
+/// Barrier-dismissible modal prompting guests to sign in; "Sign In" pushes
+/// [LoginPage] in guest-upgrade mode.
 void showSignInPromptDialog(BuildContext context) {
   showDialog<void>(
     context: context,

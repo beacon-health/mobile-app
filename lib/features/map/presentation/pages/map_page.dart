@@ -77,8 +77,6 @@ class MapPageState extends State<MapPage>
   double _previousZoom = MapConstants.defaultZoom;
   bool get _showFacilityNames => _currentZoom >= MapConstants.detailZoom;
   final Set<String> _selectedCategories = {};
-  // Eligibility auto-applies from the Profile tab rather than being a map
-  // filter (see [_eligibilityFilter]); Preferences stays a manual filter.
   Map<PreferenceRequirement, bool?> _selectedPreferenceRequirements = {};
   bool _showFavoritesOnly = false;
   bool _showOpenNowOnly = false;
@@ -133,15 +131,10 @@ class MapPageState extends State<MapPage>
     _isPanelOpen = true;
     _searchFocusNode.addListener(_onSearchFocusChange);
 
-    // Stay in sync with ZipCodeService — when the user toggles GPS on/off
-    // or edits ZIP in Settings, that fires notifyListeners(). Without this,
-    // MapPage keeps the value from initState (and uses AutomaticKeepAlive
-    // so initState only runs once), causing Settings and Map to drift.
+    // AutomaticKeepAlive means initState runs once, so both of these must be
+    // listened to or Map drifts from Settings and Profile.
     zipService.addListener(_onZipServiceChanged);
-    // Eligibility auto-applies to search; re-filter when the user edits it on
-    // the Profile tab.
     EligibilityPreferencesService().addListener(_onEligibilityChanged);
-    // Map style is loaded in didChangeDependencies so it reacts to theme changes.
   }
 
   void _onZipServiceChanged() {
@@ -306,15 +299,11 @@ class MapPageState extends State<MapPage>
         _updateMarkers();
 
         if (_pendingFacility != null) {
-          // The user tapped a Home Favorite before the map existed — center on
-          // it now.
           final pending = _pendingFacility!;
           _pendingFacility = null;
           await _animateToFacility(pending);
         } else if (_currentLatitude != MapConstants.defaultLatitude ||
             _currentLongitude != MapConstants.defaultLongitude) {
-          // Center on the user's search location (GPS / ZIP / map area),
-          // regardless of the label.
           controller.animateCamera(
             CameraUpdate.newLatLngZoom(
               LatLng(_currentLatitude, _currentLongitude),
@@ -345,9 +334,8 @@ class MapPageState extends State<MapPage>
   Future<void> _loadFacilities() async {
     final facilityProvider = context.read<FacilityProvider>();
 
-    // No short-circuit on the provider cache: at nationwide scale `facilities`
-    // means "the current region," not "everything," so each location/distance
-    // change must re-query. The service-level region cache dedupes repeats.
+    // Deliberately no provider-cache short-circuit: `facilities` holds the
+    // current region, not everything, so each location change must re-query.
     setState(() {
       _isLoading = true;
       _error = null;
@@ -447,7 +435,6 @@ class MapPageState extends State<MapPage>
     setState(() => _isLocatingUser = false);
 
     if (result.status == LocationStatus.granted) {
-      // Store the canonical sentinel; it's translated at display time.
       await _onLocationChanged(
         ZipCodeService.currentLocationSentinel,
         result.latitude,
@@ -478,7 +465,6 @@ class MapPageState extends State<MapPage>
     final last = _lastQueryCenter;
     if (center == null || last == null) return;
 
-    // Threshold scales with the fixed search radius (~35% of it).
     const radiusMeters = MapConstants.defaultRadiusMiles * 1609.34;
     final thresholdMeters = (radiusMeters * 0.35).clamp(300.0, 40000.0);
     final drifted = _distanceMeters(last, center) > thresholdMeters;
@@ -488,10 +474,8 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  /// Re-queries facilities around the current map center using the selected
-  /// distance, then hides the button. Does not move the camera — the user
-  /// panned here intentionally. Kept local (does not touch ZipCodeService) so
-  /// it doesn't overwrite the user's saved ZIP / GPS preference.
+  /// Re-queries around the current map center. Deliberately does not move the
+  /// camera or touch ZipCodeService, so the user's saved location survives.
   Future<void> _searchThisArea() async {
     final center = _mapCenter;
     if (center == null || _isSearchingArea) return;
@@ -708,7 +692,6 @@ class MapPageState extends State<MapPage>
         _expandedFacilityId = null;
       });
 
-      // `read`, not `watch` — recording a view must not trigger a rebuild.
       context.read<RecentFacilitiesService>().addFacility(facility);
 
       await _animateToFacility(facility);
@@ -729,11 +712,8 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  /// Applies a category filter and triggers search from external navigation.
-  ///
-  /// Home quick-actions pass a high-level group ("Health Care", …); we expand
-  /// it to the underlying `category_level_2` values the filter matches on. A
-  /// raw category_level_2 value is used as-is.
+  /// Home quick-actions pass a group ("Health Care", …), which expands to its
+  /// `category_broad` values; a raw category_broad value is used as-is.
   void filterByCategory(String category) {
     final values = FacilityCategories.isGroup(category)
         ? FacilityCategories.valuesForGroup(category)
@@ -984,11 +964,7 @@ class MapPageState extends State<MapPage>
     final facility =
         _allFacilities.where((f) => f.id == facilityId).firstOrNull;
     if (facility != null) {
-      // Treat expanding a row as a "view" — that's when the user is reading
-      // details and might rate/correct.
       context.read<RecentFacilitiesService>().addFacility(facility);
-      // Center the map on the expanded facility at a moderate zoom — closer
-      // than the default region view, but not the tight single-card zoom.
       _googleMapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
           facility.location,
@@ -1128,10 +1104,6 @@ class MapPageState extends State<MapPage>
                       isLocatingUser: _isLocatingUser,
                     ),
                   ),
-                  // No ZIP/location search bar here by design — users move
-                  // the query with the my-location button and "Search this
-                  // area". ZIP edits still flow in from Settings via
-                  // ZipCodeService.
                   const SizedBox(height: 6),
                   _buildFilterBar(),
                   _buildSearchAreaButton(),
@@ -1183,9 +1155,8 @@ class MapPageState extends State<MapPage>
 
     final screenHeight = MediaQuery.of(context).size.height;
     final topPadding = MediaQuery.of(context).padding.top;
-    // Expanded height stops below the search + filter bars (same top budget as
-    // the list panel), minus the card's own 16px top margin, so it never
-    // overlaps that chrome. Default height is ~45% of the screen.
+    // Expanded height stops below the search + filter bars, minus the card's
+    // own 16px top margin, so it never overlaps that chrome.
     final expandedHeight = screenHeight -
         MapConstants.searchBarAreaHeight -
         topPadding -
@@ -1195,11 +1166,8 @@ class MapPageState extends State<MapPage>
     final cardHeight = _singleCardExpanded
         ? expandedHeight
         : screenHeight * MapConstants.singleCardDefaultHeightRatio;
-    // The handle-bar swipe drives both height and dismissal, mirroring the
-    // list panel: swipe up expands (default → expanded); swipe down collapses
-    // (expanded → default) or, from default, dismisses with a slide-down.
-    // The card's internal scroll view wins the gesture arena while scrolling,
-    // so the handle bar is the always-available drag target.
+    // The card's scroll view wins the gesture arena while scrolling, so the
+    // handle bar is the always-available drag target.
     return AnimatedSlide(
       offset: _cardDismissing ? const Offset(0, 1.2) : Offset.zero,
       duration: MapConstants.animationDuration,
@@ -1224,8 +1192,6 @@ class MapPageState extends State<MapPage>
           curve: MapConstants.animationCurve,
           margin: const EdgeInsets.all(16.0),
           height: cardHeight,
-          // No background of its own: FacilityCard fills the wrapper and
-          // carries the handle, so there's no separate chrome strip behind it.
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
             boxShadow: [

@@ -34,10 +34,7 @@ enum EligibilityValue {
   }
 }
 
-/// Structured eligibility data for a facility.
-///
-/// Sourced from the `DM_Supabase_Eligibility` table, joined via
-/// the `facilities_il_full` view.
+/// Structured eligibility data, joined into the `fct_supabase_full` view.
 class FacilityEligibility {
   final EligibilityValue operational;
   final EligibilityValue proofOfIncome;
@@ -90,10 +87,7 @@ class FacilityEligibility {
     this.extractionDate,
   });
 
-  /// Creates a [FacilityEligibility] from a flat Supabase row.
-  ///
-  /// Expects column names from the `facilities_il_full` view
-  /// (snake_case, matching DM_Supabase_Eligibility columns).
+  /// Creates a [FacilityEligibility] from a flat `fct_supabase_full` row.
   factory FacilityEligibility.fromSupabase(Map<String, dynamic> data) {
     return FacilityEligibility(
       operational: EligibilityValue.fromString(
@@ -156,10 +150,8 @@ class FacilityEligibility {
     );
   }
 
-  /// Returns a map of eligibility field keys to nullable bools.
-  ///
-  /// Used by the filter system. Keys use snake_case matching DB columns.
-  /// Unknown values are omitted (null passes through all filters).
+  /// Eligibility field keys (snake_case, matching DB columns) to nullable
+  /// bools. Unknown values are omitted, so null passes every filter.
   Map<String, bool> toFilterMap() {
     final map = <String, bool>{};
     _addIfKnown(map, 'proof_of_income', proofOfIncome);

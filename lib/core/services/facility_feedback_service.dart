@@ -1,9 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// A single feedback row the signed-in user has submitted for a facility.
-///
-/// Tags are stored comma-joined in the text `comment` column, so this entry
-/// parses them back into a list for display/editing.
+/// A feedback row the user submitted. Tags are stored comma-joined in the
+/// text `comment` column and parsed back into a list here.
 class FacilityFeedbackEntry {
   const FacilityFeedbackEntry({
     required this.facilityId,
@@ -46,13 +44,9 @@ class FacilityFeedbackEntry {
   static String tagsToComment(Iterable<String> tags) => tags.join(', ');
 }
 
-/// Reads and writes the current user's facility feedback.
-///
-/// One row per (user, facility): [submit] upserts, so editing replaces the
-/// existing rating instead of duplicating it — backed by the
-/// `facility_feedback_user_facility_uniq` unique constraint. Routing every
-/// write through this service also gives a future offline mode a single seam
-/// to wrap with an outbox.
+/// Reads and writes the current user's facility feedback. One row per
+/// (user, facility): [submit] upserts against the
+/// `facility_feedback_user_facility_uniq` constraint.
 class FacilityFeedbackService {
   FacilityFeedbackService({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;

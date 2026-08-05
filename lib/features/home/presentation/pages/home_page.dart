@@ -144,7 +144,10 @@ class _HomePageState extends State<HomePage>
 
         try {
           await _mapController!.animateCamera(
-            CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
+            CameraUpdate.newLatLngZoom(
+              _currentLocation,
+              MapConstants.homeCutoutZoom,
+            ),
           );
         } catch (e, stackTrace) {
           ErrorReporter.instance.report(
@@ -160,7 +163,9 @@ class _HomePageState extends State<HomePage>
       if (mounted) {
         facilityProvider.setLoading(false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Couldn't load facilities — try again")),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.mapLoadFailed),
+          ),
         );
       }
     }
@@ -191,7 +196,10 @@ class _HomePageState extends State<HomePage>
     if (_currentLocation.latitude != MapConstants.defaultLatitude) {
       try {
         await controller.animateCamera(
-          CameraUpdate.newLatLngZoom(_currentLocation, 10.0),
+          CameraUpdate.newLatLngZoom(
+            _currentLocation,
+            MapConstants.homeCutoutZoom,
+          ),
         );
       } catch (e, stackTrace) {
         ErrorReporter.instance.report(
@@ -336,7 +344,7 @@ class _HomePageState extends State<HomePage>
                       style: _mapStyle,
                       initialCameraPosition: CameraPosition(
                         target: _currentLocation,
-                        zoom: 14.0,
+                        zoom: MapConstants.homeCutoutZoom,
                       ),
                       markers: _markers,
                       myLocationEnabled: _locationGranted,
@@ -344,7 +352,7 @@ class _HomePageState extends State<HomePage>
                       zoomControlsEnabled: false,
                       mapToolbarEnabled: false,
                       compassEnabled: false,
-                      minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
+                      minMaxZoomPreference: const MinMaxZoomPreference(12, 18),
                     ),
                   ),
                 ),
@@ -397,11 +405,9 @@ class _HomePageState extends State<HomePage>
               const SizedBox(height: 2),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
-                // Tiles are only ~58pt wide on the smallest supported device
-                // and translations vary a lot in length (es "especializados"
-                // is 14 characters). The SizedBox pins the width so the label
-                // wraps to two lines first; FittedBox then shrinks it only if
-                // it still doesn't fit, so nothing is ever cut mid-word.
+                // Tiles are ~58pt wide on the smallest device. The SizedBox
+                // pins the width so the label wraps to two lines first;
+                // FittedBox only shrinks it if that still overflows.
                 child: LayoutBuilder(
                   builder: (context, constraints) => FittedBox(
                     fit: BoxFit.scaleDown,
@@ -429,12 +435,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// "Recently Viewed Facilities" section.
-  ///
-  /// Reads the in-memory list from [RecentFacilitiesService]. Tapping an entry
-  /// opens the feedback dialog (or the sign-in prompt for guests). Capped at
-  /// 3 items by the service; the container height is bounded so this section
-  /// never pushes the Favorites section off-screen.
+  /// "Recently Viewed Facilities". Height is bounded so this never pushes the
+  /// Favorites section off-screen.
   Widget _buildRecentlyViewedSection({required bool isGuest}) {
     return Consumer<RecentFacilitiesService>(
       builder: (context, service, _) {

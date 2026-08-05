@@ -8,23 +8,14 @@ import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-/// Service for creating and managing map markers for facilities.
-///
-/// At nationwide scale a single region query can return up to 250 facilities,
-/// so markers are clustered when zoomed out (see [createMarkersClustered]) and
-/// rendered individually once the user zooms in past
-/// [MapConstants.clusterZoomThreshold].
+/// Builds map markers. A region query can return up to 250 facilities, so
+/// markers cluster below [MapConstants.clusterZoomThreshold].
 class MarkerManagementService {
   /// Pixel-grid cell size used to bucket facilities into clusters.
   static const double _clusterGridPx = 90.0;
 
-  /// Creates markers for [facilities], clustering nearby ones when zoomed out.
-  ///
-  /// Above [MapConstants.clusterZoomThreshold] this defers to
-  /// [createMarkersForFacilities] (individual markers). Below it, facilities
-  /// are bucketed by a screen-pixel grid at [zoom]; single-occupancy buckets
-  /// render a normal marker, multi-occupancy buckets render a count bubble that
-  /// calls [onClusterTap] (used to zoom in).
+  /// Buckets facilities into a screen-pixel grid at [zoom]; multi-occupancy
+  /// buckets render a count bubble wired to [onClusterTap].
   static Future<Set<Marker>> createMarkersClustered(
     List<Facility> facilities,
     BuildContext context, {
@@ -124,11 +115,8 @@ class MarkerManagementService {
     );
   }
 
-  /// Creates markers for all facilities.
-  ///
-  /// Facilities that share the exact same coordinates (e.g. two providers at
-  /// one address) are fanned out in a small circle so both markers stay
-  /// visible and tappable instead of stacking into one unreadable pin.
+  /// Creates individual markers, fanning co-located facilities out in a small
+  /// circle so they stay separately tappable.
   static Future<Set<Marker>> createMarkersForFacilities(
     List<Facility> facilities,
     BuildContext context,
@@ -162,13 +150,8 @@ class MarkerManagementService {
     return markers;
   }
 
-  /// Fixed geographic fan-out radius for co-located facilities.
-  ///
-  /// Deliberately constant (not zoom-scaled): the offset positions never
-  /// change, so markers behave like two real adjacent addresses instead of
-  /// sliding closer/apart as the user zooms. ~25 m reads as clearly separate
-  /// at street-level zooms and merges back into a cluster bubble below the
-  /// clustering threshold.
+  /// Deliberately constant, not zoom-scaled, so fanned markers behave like two
+  /// real adjacent addresses instead of sliding apart as the user zooms.
   static const double _fanOutRadiusMeters = 25.0;
 
   /// Returns adjusted positions for facilities that share exact coordinates:

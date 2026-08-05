@@ -25,13 +25,9 @@ extension MapAppInfo on MapApp {
   String _storageKey() => name;
 }
 
-/// Opens directions in the user's preferred map app.
-///
-/// iOS exposes no API for the system default navigation app, so we approximate
-/// it: the first "Get Directions" tap shows a chooser of *installed* map apps,
-/// the pick is remembered (SharedPreferences), and it can be changed any time
-/// from Settings → Directions app. If only Apple Maps is installed, no chooser
-/// is shown.
+/// Opens directions in the user's preferred map app. iOS exposes no API for
+/// the system default, so the first tap shows a chooser of installed apps and
+/// remembers the pick (changeable in Settings → Directions app).
 class MapLauncherService {
   MapLauncherService._();
 
@@ -75,10 +71,8 @@ class MapLauncherService {
     return apps;
   }
 
-  /// Opens directions to [address], resolving the preferred app first.
-  ///
-  /// Falls back through: remembered choice (if still installed) → single
-  /// installed app → chooser sheet (remembering the pick).
+  /// Resolves through: remembered choice (if still installed) → single
+  /// installed app → chooser sheet.
   static Future<void> openDirections(
     BuildContext context, {
     required String address,

@@ -8,17 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Shows a modal dialog where an authenticated user can rate (or edit their
-/// rating of) [facility]: thumbs up/down + visit date required, quick-select
-/// tags optional.
-///
-/// On open it loads any rating the user already submitted for this facility
-/// and pre-fills the form, so re-opening edits in place (writes go through
-/// [FacilityFeedbackService.submit], an upsert keyed on
-/// `(user_id, facility_id)`). Existing ratings get a **Remove** action.
-///
-/// Guests should not reach this — call `showSignInPromptDialog` instead.
-/// (Callers enforce this gate.)
+/// Modal for rating [facility] — thumbs up/down and visit date required, tags
+/// optional. Pre-fills any existing rating so re-opening edits in place.
+/// Callers gate guests with `showSignInPromptDialog`.
 Future<void> showFacilityRatingDialog(
   BuildContext context, {
   required Facility facility,
@@ -148,9 +140,8 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
 
     final supabase = Supabase.instance.client;
     if (supabase.auth.currentUser?.id == null) {
-      // Belt-and-suspenders: callers already block this for guests, but if we
-      // got here without a user, surface a snackbar rather than letting the
-      // write fail silently with a 401.
+      // Callers already gate guests; this keeps a stray call from failing
+      // silently with a 401.
       _showSnack(
         AppLocalizations.of(context)!.ratingSignInRequired,
         isError: true,
@@ -168,9 +159,8 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
         visitedOn: _visitedOn,
         tags: _selectedTags,
       );
-      // A fresh rating means "I'm done with this one" — drop it from
-      // Recently Viewed. Edits come from the Your Ratings list, where the
-      // facility usually isn't in Recently Viewed anyway (no-op if absent).
+      // A fresh rating means the user is done with it; drop it from Recently
+      // Viewed (no-op if absent).
       if (!wasEditing) {
         RecentFacilitiesService().removeFacility(widget.facility.id);
       }

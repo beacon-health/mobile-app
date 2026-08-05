@@ -50,10 +50,8 @@ class FacilityRequestEntry {
   bool get isCorrection => requestType == 'correction';
 }
 
-/// Writes and reads the current user's facility requests (adds + corrections).
-///
-/// Backed by the `facility_requests` staging table. Owner-only RLS: users see
-/// and manage only their own requests; the review workflow happens in the
+/// Reads and writes the user's facility requests (adds + corrections) in the
+/// `facility_requests` staging table. Owner-only RLS; review happens in the
 /// Supabase dashboard.
 class FacilityRequestService {
   FacilityRequestService({SupabaseClient? client})

@@ -1,7 +1,4 @@
-/// External URLs for legal documents.
-///
-/// Used by onboarding, login, and Settings to point at the same canonical
-/// Terms / Privacy pages.
+/// Canonical Terms / Privacy URLs used by onboarding, login, and Settings.
 class LegalUrls {
   LegalUrls._();
 

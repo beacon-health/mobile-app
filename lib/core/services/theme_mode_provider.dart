@@ -4,10 +4,7 @@ import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Manages the app's theme mode (light/dark/system) and persists the choice.
-///
-/// Provided at the app root. [MaterialApp.themeMode] reads from this provider
-/// so that theme changes take effect immediately.
+/// Manages and persists theme mode; read by [MaterialApp.themeMode].
 class ThemeModeProvider extends ChangeNotifier {
   static const String _key = 'app_theme_mode';
 
@@ -22,9 +19,7 @@ class ThemeModeProvider extends ChangeNotifier {
     ThemeMode.dark: 'Dark',
   };
 
-  // Default to light mode for first-launch / signed-out users. The user can
-  // switch to dark or system via Settings; that choice persists in prefs and
-  // also syncs to `user_settings.theme_mode` for signed-in users.
+  // Light for first-launch / signed-out users; Settings can change it.
   ThemeMode _themeMode = ThemeMode.light;
 
   /// The currently active theme mode.
@@ -39,11 +34,8 @@ class ThemeModeProvider extends ChangeNotifier {
     }
   }
 
-  /// Changes the app theme mode and persists the choice.
-  ///
-  /// When [syncToCloud] is true (the default), pushes the change to the
-  /// signed-in user's `user_settings` row. Set to false when applying a value
-  /// that just came from the cloud to avoid a redundant write.
+  /// Set [syncToCloud] false when applying a value that came from the cloud,
+  /// to avoid a redundant write back.
   Future<void> setThemeMode(ThemeMode mode, {bool syncToCloud = true}) async {
     if (_themeMode == mode) return;
     _themeMode = mode;

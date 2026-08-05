@@ -8,12 +8,8 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/// First-launch welcome screen. Surfaces the app value proposition and a
-/// single CTA to the auth flow.
-///
-/// Shown by [AuthGate] when `hasCompletedOnboarding` is false. Tapping
-/// "Get Started" pushes [LoginPage]; after sign-in (or guest continue), the
-/// user reaches [LocationChoicePage] and ultimately [MainNavBar].
+/// First-launch welcome screen, shown by [AuthGate] when
+/// `hasCompletedOnboarding` is false.
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
 

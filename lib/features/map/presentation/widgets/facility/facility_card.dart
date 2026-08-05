@@ -85,10 +85,8 @@ class _FacilityCardState extends State<FacilityCard> {
     super.dispose();
   }
 
-  /// Collapsed rows preview what the facility offers so users can judge
-  /// relevance before opening; expanded rows show "city, state" here (the full
-  /// text renders in the body). Description is preferred but currently null
-  /// across the dataset, so the services summary is the working preview.
+  /// Collapsed rows preview services so users can judge relevance; expanded
+  /// rows show "city, state" (the full text renders in the body).
   String get _subtitleText {
     final locationLine = '${widget.facility.city}, ${widget.facility.state}';
     if (widget.isExpanded) return locationLine;
@@ -110,9 +108,8 @@ class _FacilityCardState extends State<FacilityCard> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // The whole card toggles expansion; the chevron is just an
-          // affordance. GestureDetector rather than InkWell so the tap doesn't
-          // fire a circular ripple across the card.
+          // GestureDetector, not InkWell — an InkWell ripple would fire across
+          // the whole card.
           GestureDetector(
             onTap: widget.showExpandButton ? widget.onToggleExpand : null,
             behavior: HitTestBehavior.opaque,
@@ -494,6 +491,15 @@ class _FacilityCardState extends State<FacilityCard> {
           style: TextStyle(
             fontSize: 13,
             height: 1.4,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          AppLocalizations.of(context)!.cardServicesAiDisclaimer,
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),

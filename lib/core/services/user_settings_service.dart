@@ -8,16 +8,9 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Bridges local user preferences (ZIP, theme, locale, location-search opt-in)
-/// with the Supabase `user_settings` row for the signed-in user.
-///
-/// Listens to Supabase auth state changes:
-///  - On `signedIn`: fetches the user's row and applies it to local providers,
-///    or inserts a row using current local values if none exists.
-///  - On `signedOut`: stops syncing; local providers retain their last values.
-///
-/// Once a user is signed in, [pushLocal] should be called after any local
-/// settings change so the row stays in sync.
+/// Bridges local preferences (ZIP, theme, locale, location opt-in) with the
+/// signed-in user's `user_settings` row. On sign-in it applies the remote row
+/// locally (inserting one if absent); call [pushLocal] after any local change.
 class UserSettingsService {
   UserSettingsService._();
   static final UserSettingsService instance = UserSettingsService._();
@@ -119,13 +112,11 @@ class UserSettingsService {
     final eligibilityJson = row['eligibility'];
     final preferencesJson = row['preferences'];
 
-    // Lat/lng are no longer stored in the cloud — we re-derive them locally
-    // by geocoding the ZIP on apply. This keeps the cloud row free of
-    // device-derived coordinates and avoids stale coords if a user moves.
+    // Lat/lng are re-derived by geocoding the ZIP, so the cloud row holds no
+    // device-derived coordinates that could go stale.
     if (zip != null && zip.isNotEmpty) {
-      // `setZipCode` performs geocoding + persistence. It calls
-      // notifyListeners() and (when syncToCloud is true) re-uploads.
-      // We don't want that uploadback here.
+      // syncToCloud false: this value came from the cloud, so re-uploading it
+      // would be a redundant write.
       final ok = await ZipCodeService().setZipCode(zip, syncToCloud: false);
       if (!ok) {
         ErrorReporter.instance.report(

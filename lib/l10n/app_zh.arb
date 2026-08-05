@@ -56,6 +56,7 @@
   "cardNextSteps": "下一步",
   "cardHours": "营业时间",
   "cardServices": "服务",
+  "cardServicesAiDisclaimer": "摘要由 AI 生成，可能存在不准确之处",
   "cardAtAGlance": "一览",
   "cardVisitWebsite": "访问网站",
   "cardWebsiteNotAvailable": "网站不可用",

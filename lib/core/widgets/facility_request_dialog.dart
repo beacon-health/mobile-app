@@ -6,12 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Shows a modal dialog where an authenticated user can request a facility be
-/// added to Beacon. Requires **name + website**.
-///
-/// Submissions land in the `facility_requests` staging table (`request_type =
-/// 'new'`) for internal review. Guests should not reach this — callers gate
-/// with `showSignInPromptDialog`.
+/// Modal for requesting a new facility (name + website required). Lands in
+/// `facility_requests` as `request_type = 'new'`. Callers gate guests with
+/// `showSignInPromptDialog`.
 Future<void> showFacilityRequestDialog(BuildContext context) {
   return showDialog<void>(
     context: context,

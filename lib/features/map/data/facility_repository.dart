@@ -33,11 +33,8 @@ abstract class FacilityRepositoryBase {
   Future<Facility?> getFacilityById(String id);
 }
 
-/// Repository for facility data backed by Supabase.
-///
-/// Every method degrades to an empty result rather than throwing: the map and
-/// home surfaces render their own empty states, and a transient query failure
-/// shouldn't take a page down. Failures are still reported to [ErrorReporter].
+/// Facility data from Supabase. Every method degrades to an empty result
+/// rather than throwing; failures still reach [ErrorReporter].
 class FacilityRepository implements FacilityRepositoryBase {
   FacilityRepository({SupabaseFacilityService? service})
       : _service = service ?? SupabaseFacilityService();
@@ -64,12 +61,8 @@ class FacilityRepository implements FacilityRepositoryBase {
     }
   }
 
-  /// Loads a bounded slice of facilities (no proximity filter).
-  ///
-  /// The nationwide table is far too large to load wholesale, so this returns
-  /// at most a capped page from the view. Real queries should use
-  /// [loadFacilitiesWithDistance]; this exists only to satisfy the interface
-  /// and the (unused) stream path.
+  /// A capped page with no proximity filter. Real queries should use
+  /// [loadFacilitiesWithDistance]; this only satisfies the interface.
   @override
   Future<List<Facility>> loadFacilities() =>
       _guard('loadFacilities', () => _service.searchFacilities(''), const []);

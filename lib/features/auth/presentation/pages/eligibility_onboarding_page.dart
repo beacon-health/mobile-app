@@ -22,10 +22,9 @@ void finishLocationOnboarding(BuildContext context) {
   );
 }
 
-/// Required onboarding step (signed-in users only): pick the eligibility gates
-/// that apply to you. These auto-filter the map and are editable later on the
-/// Profile tab. The user can continue with none selected, but must proceed
-/// through this screen.
+/// Required onboarding step for signed-in users: pick eligibility gates. They
+/// auto-filter the map and stay editable on the Profile tab; selecting none is
+/// allowed, skipping the screen is not.
 class EligibilityOnboardingPage extends StatefulWidget {
   const EligibilityOnboardingPage({super.key});
 

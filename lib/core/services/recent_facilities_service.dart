@@ -6,17 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Tracks the last few facilities the user has viewed.
-///
-/// Persists to [SharedPreferences] so the list survives app restarts.
-/// We only serialize the fields actually rendered in the home "Recently
-/// Viewed" list (id, name, address, category, lat/lng) and the feedback
-/// dialog (id, name). Full Facility objects (with hours, services,
-/// eligibility, …) are not persisted — they're recovered from Supabase on
-/// demand when the user opens the map.
-///
-/// Stored most-recent-first, capped at [maxItems]. Re-viewing an existing
-/// facility moves it to the front rather than duplicating.
+/// Tracks the last few facilities viewed, most-recent-first and capped at
+/// [maxItems], in [SharedPreferences]. Only the fields the Home row and
+/// feedback dialog render are serialized; the rest come back from Supabase.
 class RecentFacilitiesService extends ChangeNotifier {
   factory RecentFacilitiesService() => _instance;
 
@@ -64,11 +56,8 @@ class RecentFacilitiesService extends ChangeNotifier {
     }
   }
 
-  /// Records a facility view.
-  ///
-  /// If [facility] is already in the list, it's moved to the front;
-  /// otherwise it's inserted at the front and the list is trimmed to
-  /// [maxItems].
+  /// Records a view, moving an existing entry to the front rather than
+  /// duplicating it.
   void addFacility(Facility facility) {
     final existingIndex = _recent.indexWhere((f) => f.id == facility.id);
     if (existingIndex == 0) {
@@ -123,10 +112,8 @@ class RecentFacilitiesService extends ChangeNotifier {
         'longitude': f.location.longitude,
       };
 
-  /// Reconstructs the minimal Facility needed to render the row and open
-  /// the feedback dialog. Fields not persisted (hours, services, …) come
-  /// back as their defaults — that's fine because the home row only uses
-  /// name/address/category, and the feedback dialog only uses name/id.
+  /// Reconstructs the minimal Facility the Home row and feedback dialog need;
+  /// unpersisted fields come back as defaults.
   Facility? _facilityFromJson(Map<String, dynamic> json) {
     final id = json['id'];
     final name = json['name'];

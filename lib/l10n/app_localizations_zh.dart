@@ -158,6 +158,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cardServices => '服务';
 
   @override
+  String get cardServicesAiDisclaimer => '摘要由 AI 生成，可能存在不准确之处';
+
+  @override
   String get cardAtAGlance => '一览';
 
   @override

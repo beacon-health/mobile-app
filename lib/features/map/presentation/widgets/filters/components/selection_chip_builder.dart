@@ -2,11 +2,8 @@ import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:flutter/material.dart';
 
-/// Builds the selection-chip rows used inside the Filter modal.
-///
-/// Always builds via the static helpers below — they accept a [BuildContext]
-/// so chip text and borders can pick up the active theme (avoids hardcoded
-/// `Colors.black87` rendering invisibly on a dark surface).
+/// Selection-chip rows for the Filter modal. The helpers take a [BuildContext]
+/// so chips theme correctly instead of rendering invisibly on dark surfaces.
 class SelectionChipBuilder<T> {
   static Widget buildSingleSelection<T>({
     required BuildContext context,

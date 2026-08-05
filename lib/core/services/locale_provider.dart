@@ -5,10 +5,7 @@ import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Manages the current app locale and persists the user's language choice.
-///
-/// Provided at the app root. [MaterialApp.locale] reads from this provider
-/// so that language changes take effect immediately.
+/// Manages and persists the app locale; read by [MaterialApp.locale].
 class LocaleProvider extends ChangeNotifier {
   static const String _key = 'app_locale';
 
@@ -46,11 +43,8 @@ class LocaleProvider extends ChangeNotifier {
     }
   }
 
-  /// Changes the app locale and persists the choice.
-  ///
-  /// When [syncToCloud] is true (the default), pushes the change to the
-  /// signed-in user's `user_settings` row. Set to false when applying a value
-  /// that just came from the cloud to avoid a redundant write.
+  /// Set [syncToCloud] false when applying a value that came from the cloud,
+  /// to avoid a redundant write back.
   Future<void> setLocale(Locale locale, {bool syncToCloud = true}) async {
     if (_locale == locale) return;
     _locale = locale;

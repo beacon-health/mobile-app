@@ -4,10 +4,8 @@ import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Eligibility (hard-gate) toggles surfaced in the Settings screen.
-///
-/// "Hard gate" = something the user *needs* from a facility. Used to filter
-/// out facilities that demand more than the user can provide.
+/// Eligibility hard-gates — things the user *needs* from a facility. Filters
+/// out facilities demanding more than the user can provide.
 class EligibilityState {
   const EligibilityState({
     this.proofOfIncome = false,
@@ -22,10 +20,8 @@ class EligibilityState {
   final bool insuranceRequired;
   final bool referralRequired;
 
-  /// Parent toggle: when true, the eligibility gates above are auto-applied to
-  /// map search. When false, they're kept (not reset) but not applied — the
-  /// user sees all facilities regardless of their eligibility criteria.
-  /// Defaults to true so eligibility filtering is on out of the box.
+  /// When false the gates are kept but not applied, so the user sees
+  /// everything. Defaults to true.
   final bool applyToSearch;
 
   EligibilityState copyWith({
@@ -140,12 +136,8 @@ class PreferencesState {
   }
 }
 
-/// Stores the user's eligibility-gate and service-preference toggles.
-///
-/// Backed by SharedPreferences locally (individual boolean keys, so we don't
-/// have to deal with JSON migration on read). When the user is signed in,
-/// writes are also synced up to `user_settings.eligibility` and
-/// `user_settings.preferences` via [UserSettingsService.pushLocal].
+/// Stores eligibility-gate and service-preference toggles in SharedPreferences
+/// as individual boolean keys, synced to `user_settings` when signed in.
 class EligibilityPreferencesService extends ChangeNotifier {
   factory EligibilityPreferencesService() => _instance;
 

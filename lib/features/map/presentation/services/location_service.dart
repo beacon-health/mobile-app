@@ -20,11 +20,8 @@ enum LocationStatus {
   error,
 }
 
-/// Provides GPS-based location lookup backed by the OS permission flow.
-///
-/// On denial / failure, [getCurrentLocation] returns a [LocationResult] backed
-/// by the user's current [ZipCodeService] coordinates so callers always have
-/// usable lat/lng to fall back to.
+/// GPS lookup backed by the OS permission flow. On denial or failure it falls
+/// back to [ZipCodeService] coordinates, so callers always get usable lat/lng.
 class LocationService {
   static const String _logContext = 'LocationService';
 

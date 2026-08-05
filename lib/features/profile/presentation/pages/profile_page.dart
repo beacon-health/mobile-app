@@ -15,12 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Account + eligibility hub. Gated: guests see a sign-in prompt only.
-///
-/// Signed-in users get their identity, Ratings, Requests, sign-out, and the
-/// Eligibility gates (with a parent "apply to search" toggle). Eligibility is
-/// the search-affecting profile data; service Preferences live on the Map as
-/// filters, and app settings (ZIP, GPS, language, theme) live under Settings.
+/// Account + eligibility hub; guests see a sign-in prompt only. Eligibility is
+/// the search-affecting profile data — service Preferences live on the Map and
+/// app settings under Settings.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 

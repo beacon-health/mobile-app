@@ -3,10 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Tracks whether the current user is in guest (unauthenticated) mode.
-///
-/// Listens to Supabase auth state changes and calls [notifyListeners] so
-/// Provider-watching widgets rebuild reactively when the user signs in or out.
+/// Tracks guest (unauthenticated) mode, notifying listeners on auth changes.
 class GuestModeService extends ChangeNotifier {
   static final GuestModeService _instance = GuestModeService._();
   factory GuestModeService() => _instance;

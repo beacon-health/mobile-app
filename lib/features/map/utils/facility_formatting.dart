@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class FacilityCategoryIcons {
   /// Builds a category icon widget for the given category string.
   ///
-  /// [category] should be a categoryLevel1 value like "Health Care".
+  /// [category] should be a `category_broad` value like "Medical Care".
   static Widget buildCategoryIcon(String? category) {
     final icon = MarkerUtils.getIconForCategory(category);
     final color = MarkerUtils.getColorForCategory(category);

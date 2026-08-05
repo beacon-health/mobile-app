@@ -1,4 +1,4 @@
-.PHONY: run run-demo test analyze clean
+.PHONY: run test analyze format l10n clean
 
 DEFINES_FILE := config/dart_defines.json
 
@@ -9,15 +9,17 @@ DEFINES_FILE := config/dart_defines.json
 run:
 	flutter run --dart-define-from-file=$(DEFINES_FILE)
 
-# Run in demo mode (no Supabase keys required)
-run-demo:
-	flutter run --dart-define=DEMO_MODE=true
-
 test:
 	flutter test
 
 analyze:
-	flutter analyze
+	flutter analyze --fatal-infos
+
+format:
+	dart format .
+
+l10n:
+	flutter gen-l10n
 
 clean:
 	flutter clean

@@ -63,11 +63,8 @@ class FacilityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Optimistically flips the in-memory favorite state, then syncs to Supabase
-  /// for signed-in users. If the remote call fails, reverts the flip.
-  ///
-  /// Guest users keep purely in-memory favorites; the Supabase calls no-op
-  /// when no user is signed in.
+  /// Optimistically flips the favorite, syncing to Supabase for signed-in
+  /// users and reverting on failure. Guests stay in-memory only.
   Future<void> toggleFavorite(String facilityId) async {
     final index = _facilities.indexWhere((f) => f.id == facilityId);
     if (index == -1) return;
@@ -104,10 +101,8 @@ class FacilityProvider extends ChangeNotifier {
     }
   }
 
-  /// Replaces in-memory `isFavorite` flags by intersecting with [favoriteIds].
-  ///
-  /// Called after loading remote favorites on sign-in or after a facility
-  /// list refresh.
+  /// Replaces in-memory `isFavorite` flags by intersecting with
+  /// [favoriteIds].
   void applyFavoriteIds(Set<String> favoriteIds) {
     var changed = false;
     for (var i = 0; i < _facilities.length; i++) {

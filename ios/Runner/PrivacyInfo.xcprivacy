@@ -10,9 +10,9 @@
 	<array/>
 
 	<!--
-		Must stay in sync with the App Privacy answers in App Store Connect (the
-		nutrition label in Non-Functional_Checklist.md). Nothing here is used for
-		tracking, so NSPrivacyCollectedDataTypeTracking is false throughout.
+		Must stay in sync with the App Privacy answers in App Store Connect.
+		Nothing here is used for tracking, so NSPrivacyCollectedDataTypeTracking
+		is false throughout.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>

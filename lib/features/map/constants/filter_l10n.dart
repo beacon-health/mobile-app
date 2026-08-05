@@ -1,11 +1,8 @@
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 
-/// Localized display names for the filter requirement enums.
-///
-/// Kept apart from `filter_constants.dart` so the constants file stays free of
-/// l10n imports (it's used by pure logic/services and tests). The English
-/// `displayName` getters remain as non-context fallbacks.
+/// Localized display names for the filter enums. Kept out of
+/// `filter_constants.dart` so that file stays free of l10n imports for tests.
 extension EligibilityRequirementL10n on EligibilityRequirement {
   String localizedName(AppLocalizations l10n) {
     switch (this) {

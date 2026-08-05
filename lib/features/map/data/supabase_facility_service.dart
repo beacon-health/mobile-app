@@ -6,14 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// pan/zoom/re-query cheap, short enough that data edits surface quickly.
 const Duration _kRegionCacheTtl = Duration(minutes: 5);
 
-/// Service for querying nationwide healthcare facilities from Supabase.
-///
-/// Backed by the `facilities_near` PostGIS RPC (see
-/// `supabase/migrations/0002_facilities_postgis.sql`), which returns only the
-/// facilities within a radius of a point — sorted by true distance and capped
-/// server-side. This replaces the old "fetch the whole table, filter in Dart"
-/// model, which did not scale past the ~691-row Illinois view to the 162,937-row
-/// `FCT_Supabase` table.
+/// Queries facilities via the `facilities_near` PostGIS RPC, which bounds and
+/// sorts by true distance server-side — the table is far too large to fetch
+/// wholesale and filter in Dart.
 class SupabaseFacilityService {
   SupabaseFacilityService({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;
@@ -61,11 +56,8 @@ class SupabaseFacilityService {
     return facilities;
   }
 
-  /// Fetches multiple facilities by id from the view.
-  ///
-  /// Used to render the user's Favorites (stored in `user_favorites` as bare
-  /// ids) independent of the current map region — a favorite 500 mi away is
-  /// still resolvable here.
+  /// Fetches facilities by id, independent of the current map region — a
+  /// favorite 500 mi away is still resolvable.
   Future<List<Facility>> getFacilitiesByIds(List<String> ids) async {
     if (ids.isEmpty) return const [];
     final response = await _client.from(_viewName).select().inFilter('id', ids);

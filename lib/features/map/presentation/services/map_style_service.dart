@@ -2,12 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// Loads custom Google Maps JSON styles, branched by [Brightness].
-///
-/// Light/system → `minimal_style.json`; dark → `dark_style.json` (Google's
-/// night-mode template — legible roads + labels). Styles are cached per
-/// brightness so toggling the theme returns the correct one (a single shared
-/// cache would pin whichever style loaded first).
+/// Loads Google Maps JSON styles by [Brightness]. Cached per brightness — a
+/// single shared cache would pin whichever style loaded first.
 class MapStyleService {
   static final Map<Brightness, String> _cache = {};
 

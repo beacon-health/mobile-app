@@ -45,9 +45,8 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Debug builds deliberately skip Sentry so hot-reload exceptions don't burn
-  // the free-tier quota; when skipped, `Sentry.isEnabled` is false and
-  // `ErrorReporter` no-ops its release path.
+  // Debug skips Sentry so hot-reload exceptions don't burn the free-tier
+  // quota; ErrorReporter no-ops its release path when disabled.
   final shouldEnableSentry = !kDebugMode && _sentryDsn.isNotEmpty;
   if (shouldEnableSentry) {
     await SentryFlutter.init(

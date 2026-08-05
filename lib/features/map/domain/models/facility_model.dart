@@ -339,10 +339,7 @@ class Facility {
         .toList();
   }
 
-  /// Safely parses a value to double.
-  ///
-  /// Handles both num (from double precision columns) and String
-  /// (legacy text columns or demo data).
+  /// Parses num (double precision columns) or String (legacy text columns).
   static double _parseDouble(dynamic value) {
     if (value == null) return 0.0;
     if (value is num) return value.toDouble();
@@ -350,11 +347,8 @@ class Facility {
     return 0.0;
   }
 
-  /// Parses an eligibility operating hours string into structured
-  /// [OperatingHours].
-  ///
-  /// Expected format: "M: 9:00AM-5:00PM, T: Closed, ...".
-  /// Day abbreviations: M, T, W, Th, F, Sa, Su.
+  /// Parses "M: 9:00AM-5:00PM, T: Closed, …" (days M/T/W/Th/F/Sa/Su) into
+  /// structured [OperatingHours].
   static List<OperatingHours> _parseOperatingHoursString(String raw) {
     if (raw.isEmpty || raw.toUpperCase() == 'N') return [];
 

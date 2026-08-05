@@ -1,10 +1,8 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Thin wrapper around the Supabase `user_favorites` table.
-///
-/// Guest users never reach this service — [FacilityProvider] short-circuits
-/// to local-only state when no user is signed in.
+/// Wrapper around the `user_favorites` table. Guests never reach it —
+/// [FacilityProvider] short-circuits to local-only state.
 class UserFavoritesService {
   UserFavoritesService._();
   static final UserFavoritesService instance = UserFavoritesService._();

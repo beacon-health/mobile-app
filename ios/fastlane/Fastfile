@@ -24,6 +24,9 @@ platform :ios do
       export_method: "app-store",
       output_directory: "../build/ios",
       xcargs: "-allowProvisioningUpdates",
+      # Required: -allowProvisioningUpdates needs these credentials to mint
+      # the distribution profile.
+      api_key: api_key,
       export_options: {
         signingStyle: "automatic",
         teamID: "3VY6L9SG6K",
@@ -52,6 +55,12 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "../build/ios",
+      xcargs: "-allowProvisioningUpdates",
+      api_key: api_key,
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "3VY6L9SG6K",
+      },
     )
 
     upload_to_app_store(

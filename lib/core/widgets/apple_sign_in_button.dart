@@ -4,14 +4,9 @@ import 'package:beacon_app/features/auth/presentation/pages/location_choice_page
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Reusable "Continue with Apple" button used by in-app sign-in CTAs
-/// (Settings Account row, locked overlays, locked-favorites card, sign-in
-/// prompt dialog).
-///
-/// Tapping it triggers the native Apple flow. On success, the user is sent
-/// to [LocationChoicePage] with their previously-entered ZIP pre-filled so
-/// they "restart onboarding from the location preference page". On cancel or
-/// failure, the button just stops loading — the caller stays in place.
+/// Reusable "Continue with Apple" button. On success routes to
+/// [LocationChoicePage] with the guest's ZIP pre-filled; on cancel or failure
+/// it just stops loading and the caller stays put.
 class AppleSignInButton extends StatefulWidget {
   const AppleSignInButton({
     super.key,

@@ -28,15 +28,9 @@ class AppleSignInResult {
   bool get isCancelled => outcome == AppleSignInOutcome.cancelled;
 }
 
-/// Native Sign in with Apple flow.
-///
-/// Uses Apple's `ASAuthorizationAppleIDProvider` (via the `sign_in_with_apple`
-/// package) to fetch an identity token directly on-device, then hands it to
-/// Supabase via [GoTrueClient.signInWithIdToken]. This avoids the Supabase
-/// Apple OAuth redirect/secret machinery entirely — the only credential
-/// Supabase ever sees is the Apple-signed JWT, which it validates against
-/// Apple's public keys. Configuration in the Supabase dashboard requires
-/// only the Client IDs (bundle ID); no secret key JWT is needed.
+/// Native Sign in with Apple: fetches an identity token on-device and hands
+/// it to Supabase via [GoTrueClient.signInWithIdToken], so the dashboard needs
+/// only the bundle ID — no OAuth redirect or secret key JWT.
 class AppleSignInService {
   AppleSignInService._();
 
@@ -48,11 +42,10 @@ class AppleSignInService {
       final rawNonce = Supabase.instance.client.auth.generateRawNonce();
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
 
+      // `fullName` is deliberately not requested — nothing reads a user's
+      // name, and Supabase would persist it to auth.users.raw_user_meta_data.
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
+        scopes: [AppleIDAuthorizationScopes.email],
         nonce: hashedNonce,
       );
 

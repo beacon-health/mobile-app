@@ -18,12 +18,8 @@ class MarkerUtils {
 
   static final Map<String, BitmapDescriptor> _markerCache = {};
 
-  /// Creates a custom marker for a facility.
-  ///
-  /// [name] is the facility name to display.
-  /// [isFavorite] indicates if the facility is marked as favorite.
-  /// [primaryCategory] is the main category from categoryLevel1.
-  /// [showName] controls whether the facility name is shown below the marker.
+  /// Creates a custom marker for a facility. [primaryCategory] is a
+  /// `category_broad` value; [showName] draws the label beneath the pin.
   static Future<BitmapDescriptor> createFacilityMarker(
     String name,
     bool isFavorite,

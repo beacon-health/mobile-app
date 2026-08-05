@@ -13,12 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Sign-in entry point. Apple OAuth for iOS MVP + Continue as Guest.
-///
-/// Pass [isGuestUpgrade] = true when shown from within an already-running
-/// guest session (e.g. from a locked-feature sign-in prompt). The completed
-/// sign-in then routes through [LocationChoicePage] with the guest's existing
-/// ZIP pre-filled, and the previous navigation stack is replaced.
+/// Sign-in entry point: Apple OAuth + Continue as Guest. [isGuestUpgrade]
+/// routes through [LocationChoicePage] with the guest's ZIP pre-filled and
+/// replaces the navigation stack.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, this.isGuestUpgrade = false});
 

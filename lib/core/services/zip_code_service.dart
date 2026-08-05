@@ -21,9 +21,8 @@ class ZipCodeService extends ChangeNotifier {
   static const _keyLng = 'user_longitude';
   static const _keyOnboarded = 'has_completed_onboarding';
   static const _keyLocationSearchEnabled = 'location_search_enabled';
-  // Stores the user's last-entered ZIP so we can restore it if they toggle
-  // GPS off later (otherwise we'd lose it when `_zipCode` is overwritten
-  // with the "Current Location" displayName).
+  // Snapshot so a GPS toggle-off can restore it — `_zipCode` gets overwritten
+  // with the Current Location sentinel.
   static const _keyPreviousZip = 'user_previous_zip_code';
   static const _keyPreviousLat = 'user_previous_latitude';
   static const _keyPreviousLng = 'user_previous_longitude';
@@ -111,13 +110,8 @@ class ZipCodeService extends ChangeNotifier {
     }
   }
 
-  /// Stores GPS coordinates as the active location source.
-  ///
-  /// [displayName] is used in place of a ZIP code (e.g. "Current Location").
-  ///
-  /// If the current `_zipCode` is a real 5-digit ZIP, it gets snapshotted into
-  /// `_previousZipCode` so the user can fall back to it later by toggling GPS
-  /// off — see [disableLocationSearch].
+  /// Stores GPS coordinates as the active location source. A real 5-digit ZIP
+  /// is snapshotted first so [disableLocationSearch] can restore it.
   Future<void> setCurrentLocation({
     required double latitude,
     required double longitude,
@@ -169,12 +163,8 @@ class ZipCodeService extends ChangeNotifier {
     }
   }
 
-  /// Turns GPS-based search off.
-  ///
-  /// If a previously-stored ZIP exists, restores it as the active location and
-  /// returns `true`. If no prior ZIP exists, the toggle is still flipped off
-  /// but the caller is expected to prompt the user to enter a ZIP — returns
-  /// `false` to signal that.
+  /// Turns GPS search off, restoring the previous ZIP if there is one.
+  /// Returns false when there isn't — the caller must then prompt for a ZIP.
   Future<bool> disableLocationSearch({bool syncToCloud = true}) async {
     final hasPrevious = _isRealZip(_previousZipCode) &&
         _previousLatitude != null &&
@@ -192,9 +182,8 @@ class ZipCodeService extends ChangeNotifier {
       await prefs.setDouble(_keyLat, _previousLatitude!);
       await prefs.setDouble(_keyLng, _previousLongitude!);
     } else {
-      // No fallback ZIP. Clear the "Current Location" stub so the UI shows
-      // an empty/prompt state, but keep the last known coords so the map
-      // still has something to render until the user enters a ZIP.
+      // Keep the last known coords so the map still renders while the UI
+      // prompts for a ZIP.
       _zipCode = null;
       await prefs.remove(_keyZip);
     }

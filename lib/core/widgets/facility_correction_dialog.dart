@@ -8,13 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Shows a modal where an authenticated user can submit corrections to an
-/// existing [facility] — name, website, phone, hours, address. Fields are
-/// pre-filled with current values; the user edits what's wrong.
-///
-/// Submissions land in `facility_requests` (`request_type = 'correction'`,
-/// `facility_id` set) for internal review. Guests should not reach
-/// this — callers gate with `showSignInPromptDialog`.
+/// Modal for submitting corrections to [facility], pre-filled with current
+/// values. Lands in `facility_requests` as `request_type = 'correction'`.
+/// Callers gate guests with `showSignInPromptDialog`.
 Future<void> showFacilityCorrectionDialog(
   BuildContext context, {
   required Facility facility,

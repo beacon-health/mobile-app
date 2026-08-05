@@ -1,9 +1,9 @@
 name: beacon_app
-description: A new Flutter project.
+description: Find free and low-cost healthcare and social services near you.
 
 publish_to: "none"
 
-version: 1.0.0+2
+version: 1.0.0+1000
 
 environment:
   sdk: ^3.6.0
@@ -42,8 +42,6 @@ flutter:
 
   assets:
     - assets/beacon-logo.png
-    - assets/app_icon_final.jpg
-    - assets/tiny_icon.png
     - assets/map_styles/
 
 flutter_launcher_icons:

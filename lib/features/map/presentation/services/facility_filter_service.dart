@@ -1,12 +1,10 @@
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 
-/// Service for filtering facilities based on various criteria.
 class FacilityFilterService {
-  /// Filters facilities based on search text, categories, and other filters.
-  ///
-  /// [selectedCategories] contains `category_broad` values (e.g. "Medical
-  /// Care") — the Home quick-actions expand a group into its members first.
+  /// Filters by search text, categories, and preferences.
+  /// [selectedCategories] holds `category_broad` values; Home quick-actions
+  /// expand a group into its members first.
   static List<Facility> filterFacilities(
     List<Facility> allFacilities, {
     required String searchText,
@@ -17,10 +15,8 @@ class FacilityFilterService {
     required bool showOpenNowOnly,
   }) {
     return allFacilities.where((facility) {
-      // Search filter — matches across name, description, services (list +
-      // plain-language summary), and category values, not just the title.
-      // Runs client-side over the loaded region pool (≤250 rows), so widening
-      // the match set costs nothing server-side.
+      // Client-side over the loaded region pool (≤250 rows), so matching
+      // across every field costs nothing server-side.
       final q = searchText.toLowerCase();
       final matchesSearch = q.isEmpty ||
           facility.name.toLowerCase().contains(q) ||
@@ -84,11 +80,9 @@ class FacilityFilterService {
     }).toList();
   }
 
-  /// Returns the distinct `category_broad` values present in [facilities].
-  ///
-  /// The map's Category filter uses the fixed `FacilityCategories` list rather
-  /// than this (so all options show regardless of region), but this stays
-  /// available for any region-scoped needs.
+  /// Distinct `category_broad` values present in [facilities]. The Category
+  /// filter uses the fixed `FacilityCategories` list instead, so every option
+  /// shows regardless of region.
   static Set<String> getAvailableCategories(
     List<Facility> facilities,
   ) {

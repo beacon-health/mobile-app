@@ -7,9 +7,8 @@
 ///   a filter dimension (21 chips is too many) but it is searchable and
 ///   available for display.
 ///
-/// Marker icons and colors consolidate the 13 broad values into the four
-/// high-level groups shown on the Home page, plus a neutral fallback. Keeping
-/// the filter list and the icon grouping in one place means they can't drift.
+/// Marker icons and colors consolidate the 13 broad values into the six Home
+/// quick-action groups, plus a neutral fallback.
 class FacilityCategories {
   /// The 13 distinct `category_broad` values, used as the Category filter
   /// options. A facility may have a null value — it simply won't match any

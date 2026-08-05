@@ -1,9 +1,5 @@
-/// Formats raw phone strings for consistent display.
-///
-/// The dataset stores phones in mixed shapes — `xxx-xxx-xxxx`, `xxxxxxxxxx`,
-/// `(xxx) xxx-xxxx`, sometimes with a leading 1. Everything 10-digit
-/// normalizes to `(xxx) xxx-xxxx`; anything else (extensions, international,
-/// short codes) is returned as-is rather than mangled.
+/// Normalizes the dataset's mixed phone shapes to `(xxx) xxx-xxxx`. Anything
+/// not 10-digit (extensions, international, short codes) is returned as-is.
 String formatPhoneForDisplay(String raw) {
   final digits = raw.replaceAll(RegExp(r'\D'), '');
   final national = (digits.length == 11 && digits.startsWith('1'))

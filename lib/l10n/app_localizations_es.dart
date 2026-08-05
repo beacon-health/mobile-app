@@ -163,6 +163,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cardServices => 'Servicios';
 
   @override
+  String get cardServicesAiDisclaimer =>
+      'Resumen generado por IA; puede contener imprecisiones';
+
+  @override
   String get cardAtAGlance => 'De un vistazo';
 
   @override

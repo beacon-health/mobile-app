@@ -36,6 +36,11 @@ class MapConstants {
   /// the default region view, but below the tight single-card [markerZoom].
   static const double listExpandZoom = 14.0;
 
+  /// Zoom for the Home page map cutout. The cutout renders markers unclustered
+  /// in a ~160pt-wide frame, so it needs a tight neighborhood view — anything
+  /// wider stacks pins into an unreadable pile.
+  static const double homeCutoutZoom = 14.0;
+
   /// Canonical (locale-independent) location labels. Stored/compared
   /// internally so language switches can't break the "is this a placeholder
   /// label?" logic; widgets translate them at display time.

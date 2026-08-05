@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Shared linear-gradient backgrounds used on the onboarding / auth pages.
-///
-/// Using a single helper keeps the light/dark palette in sync across the
-/// onboarding, ZIP entry, and login screens.
+/// Shared gradient backgrounds for the onboarding, ZIP entry, and login
+/// screens, so their light/dark palettes stay in sync.
 class AppGradients {
   const AppGradients._();
 
