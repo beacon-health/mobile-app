@@ -65,23 +65,25 @@ class _FacilitySearchState extends State<FacilitySearch> {
               widget.onClear();
             },
           ),
-        if (widget.onUseMyLocation != null)
-          widget.isLocatingUser
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.my_location, color: Colors.blue),
-                  onPressed: widget.onUseMyLocation,
-                  tooltip: AppLocalizations.of(context)
-                          ?.locationUseMyLocationTooltip ??
+        if (widget.onUseMyLocation != null) ...[
+          if (widget.isLocatingUser)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.my_location, color: Colors.blue),
+              onPressed: widget.onUseMyLocation,
+              tooltip:
+                  AppLocalizations.of(context)?.locationUseMyLocationTooltip ??
                       'Use my location',
-                ),
+            ),
+        ],
       ],
     );
   }

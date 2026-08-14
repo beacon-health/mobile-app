@@ -1,4 +1,26 @@
+require "shellwords"
+require "tmpdir"
+
 default_platform(:ios)
+
+# `build_app` has no api_key option, so the archive step can't be handed a
+# fastlane key object. Materialize the base64 secret as a .p8 and pass
+# xcodebuild its own auth flags — without these, `-allowProvisioningUpdates`
+# has no credentials and fails with "No profiles for 'org.beaconhealth.app'".
+def asc_signing_xcargs
+  key_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ID")
+  issuer_id = ENV.fetch("APP_STORE_CONNECT_API_KEY_ISSUER_ID")
+  key_path = File.join(Dir.mktmpdir("asc"), "AuthKey_#{key_id}.p8")
+  File.write(key_path, ENV.fetch("APP_STORE_CONNECT_API_KEY_CONTENT").unpack1("m"))
+  File.chmod(0o600, key_path)
+
+  [
+    "-allowProvisioningUpdates",
+    "-authenticationKeyPath", key_path.shellescape,
+    "-authenticationKeyID", key_id.shellescape,
+    "-authenticationKeyIssuerID", issuer_id.shellescape,
+  ].join(" ")
+end
 
 platform :ios do
   desc "Build and upload to TestFlight"
@@ -16,17 +38,13 @@ platform :ios do
 
     # Automatic ("cloud-managed") signing: Xcode fetches/creates the App Store
     # distribution certificate + provisioning profile via the App Store Connect
-    # API key. `-allowProvisioningUpdates` authorizes that at archive time, so
-    # no certs repo (Match) is required. The API key needs App Manager access.
+    # API key, so no certs repo (Match) is required. Needs App Manager access.
     build_app(
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "../build/ios",
-      xcargs: "-allowProvisioningUpdates",
-      # Required: -allowProvisioningUpdates needs these credentials to mint
-      # the distribution profile.
-      api_key: api_key,
+      xcargs: asc_signing_xcargs,
       export_options: {
         signingStyle: "automatic",
         teamID: "3VY6L9SG6K",
@@ -55,8 +73,7 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "../build/ios",
-      xcargs: "-allowProvisioningUpdates",
-      api_key: api_key,
+      xcargs: asc_signing_xcargs,
       export_options: {
         signingStyle: "automatic",
         teamID: "3VY6L9SG6K",
