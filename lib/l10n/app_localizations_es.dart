@@ -366,6 +366,33 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Estás seguro de que deseas cerrar sesión?';
 
   @override
+  String get settingsDeleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountTitle => '¿Eliminar tu cuenta?';
+
+  @override
+  String get deleteAccountBody =>
+      'Esto elimina permanentemente tu cuenta, tus favoritos guardados, tus respuestas de elegibilidad y tu configuración. Las valoraciones y correcciones que enviaste permanecen en el directorio, pero ya no estarán vinculadas a ti. Esta acción no se puede deshacer.';
+
+  @override
+  String get deleteAccountConfirm => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountInProgress => 'Eliminando tu cuenta…';
+
+  @override
+  String get deleteAccountSuccess => 'Tu cuenta ha sido eliminada';
+
+  @override
+  String get deleteAccountFailed =>
+      'No se pudo eliminar tu cuenta. Inténtalo de nuevo.';
+
+  @override
+  String get coverageNotice =>
+      'Beacon muestra actualmente centros en Illinois. Estamos añadiendo más estados con el tiempo.';
+
+  @override
   String get profileTitle => 'Perfil';
 
   @override

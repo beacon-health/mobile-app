@@ -239,6 +239,33 @@ class EligibilityPreferencesService extends ChangeNotifier {
     }
   }
 
+  /// Resets to defaults and drops the stored keys, so the next person to use
+  /// the device doesn't inherit the previous account's answers.
+  Future<void> clear() async {
+    _eligibility = const EligibilityState();
+    _preferences = const PreferencesState();
+    final prefs = await SharedPreferences.getInstance();
+    for (final key in const [
+      _keyProofOfIncome,
+      _keyProofOfResidency,
+      _keyInsuranceRequired,
+      _keyReferralRequired,
+      _keyApplyToSearch,
+      _keyAcceptsWalkIns,
+      _keyAppointmentOnly,
+      _keyOpenToImmigrants,
+      _keyFreeServices,
+      _keySlidingScale,
+      _keyOtherLanguages,
+      _keyTelehealthPreference,
+      _keyWheelchairAccessible,
+      _keyServesOutsideArea,
+    ]) {
+      await prefs.remove(key);
+    }
+    notifyListeners();
+  }
+
   /// Applies a snapshot pulled from Supabase. Does NOT re-upload (we just
   /// downloaded these values — uploading them back would be wasteful and
   /// could ping-pong if another device wrote concurrently).

@@ -359,6 +359,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSignOutConfirm => 'Are you sure you want to sign out?';
 
   @override
+  String get settingsDeleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'This permanently deletes your account, saved favorites, eligibility answers, and settings. Ratings and corrections you submitted stay in the directory but are no longer linked to you. This cannot be undone.';
+
+  @override
+  String get deleteAccountConfirm => 'Delete Account';
+
+  @override
+  String get deleteAccountInProgress => 'Deleting your account…';
+
+  @override
+  String get deleteAccountSuccess => 'Your account has been deleted';
+
+  @override
+  String get deleteAccountFailed =>
+      'Couldn\'t delete your account. Please try again.';
+
+  @override
+  String get coverageNotice =>
+      'Beacon currently shows facilities in Illinois. We\'re adding more states over time.';
+
+  @override
   String get profileTitle => 'Profile';
 
   @override

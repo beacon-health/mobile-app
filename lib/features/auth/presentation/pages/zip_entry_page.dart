@@ -2,6 +2,7 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -178,6 +179,8 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                         : Text(l10n.onboardingContinue),
                   ),
                 ),
+                const SizedBox(height: 20),
+                const CoverageNotice(),
               ],
             ),
           ),

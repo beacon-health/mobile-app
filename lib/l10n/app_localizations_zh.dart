@@ -346,6 +346,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSignOutConfirm => '确定要退出登录吗？';
 
   @override
+  String get settingsDeleteAccount => '删除账户';
+
+  @override
+  String get deleteAccountTitle => '确定删除账户？';
+
+  @override
+  String get deleteAccountBody =>
+      '此操作将永久删除您的账户、已保存的收藏、资格信息和设置。您提交的评价和信息更正会保留在目录中，但不再与您关联。此操作无法撤销。';
+
+  @override
+  String get deleteAccountConfirm => '删除账户';
+
+  @override
+  String get deleteAccountInProgress => '正在删除您的账户…';
+
+  @override
+  String get deleteAccountSuccess => '您的账户已删除';
+
+  @override
+  String get deleteAccountFailed => '无法删除您的账户，请重试。';
+
+  @override
+  String get coverageNotice => 'Beacon 目前收录伊利诺伊州的服务机构，我们会逐步添加更多州。';
+
+  @override
   String get profileTitle => '个人资料';
 
   @override

@@ -766,6 +766,54 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to sign out?'**
   String get settingsSignOutConfirm;
 
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your account, saved favorites, eligibility answers, and settings. Ratings and corrections you submitted stay in the directory but are no longer linked to you. This cannot be undone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account…'**
+  String get deleteAccountInProgress;
+
+  /// No description provided for @deleteAccountSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted'**
+  String get deleteAccountSuccess;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete your account. Please try again.'**
+  String get deleteAccountFailed;
+
+  /// No description provided for @coverageNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Beacon currently shows facilities in Illinois. We\'re adding more states over time.'**
+  String get coverageNotice;
+
   /// No description provided for @profileTitle.
   ///
   /// In en, this message translates to:

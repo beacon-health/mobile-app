@@ -49,7 +49,16 @@ jobs:
           flutter build ios --release --no-codesign \
             --build-number=$(( 1000 + ${{ github.run_number }} )) \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      # Symbolicates release crashes. `secrets` isn't readable from a step-level
+      # `if`, hence the env hop; skipped entirely when the token is absent.
+      - name: Upload debug symbols to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        if: ${{ env.SENTRY_AUTH_TOKEN != '' }}
+        run: dart run sentry_dart_plugin
 
       - name: Upload to TestFlight
         env:

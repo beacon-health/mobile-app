@@ -2,6 +2,7 @@ import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
@@ -111,6 +112,8 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
                 description: l10n.locationChoiceEnterZipDesc,
                 onTap: _isResolvingLocation ? null : _onEnterZip,
               ),
+              const SizedBox(height: 24),
+              const CoverageNotice(),
               const Spacer(),
             ],
           ),

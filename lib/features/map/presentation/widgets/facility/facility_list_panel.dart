@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
@@ -270,6 +271,8 @@ class FacilityListPanel extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: 16),
+            const CoverageNotice(),
             if (onRequestFacility != null) ...[
               const SizedBox(height: 12),
               TextButton.icon(

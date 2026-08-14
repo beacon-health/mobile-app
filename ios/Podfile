@@ -4,6 +4,11 @@ platform :ios, '15.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# Silences warnings from dependency source only — the Runner target is unaffected,
+# so our own warnings stay visible. Nearly all of them are sentry-cocoa's
+# `@_implementationOnly` notices, which we can't fix from here.
+inhibit_all_warnings!
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -55,6 +60,10 @@ post_install do |installer|
     # Basic iOS build settings
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+
+      # `inhibit_all_warnings!` only emits the Swift flag; this covers the
+      # Objective-C pods (Google Maps, geolocator) too.
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       
       # Fix for gRPC/Abseil linking issues
       if target.name.include?('gRPC') || target.name.include?('GRPC') || target.name.include?('abseil')

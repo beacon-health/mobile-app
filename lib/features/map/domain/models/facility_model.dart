@@ -128,7 +128,7 @@ class Facility {
   /// Y → true, N → false, U → omitted. Used by the filter system.
   final Map<String, bool> eligibilityRequirements;
 
-  /// Plain-language summary of services from eligibility scrape.
+  /// Plain-language summary of the facility's services.
   final String? servicesSummary;
 
   /// Plain-language summary of other eligibility details.

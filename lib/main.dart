@@ -30,7 +30,7 @@ void main() async {
   }
   await Supabase.initialize(
     url: _supabaseUrl,
-    anonKey: _supabaseAnonKey,
+    publishableKey: _supabaseAnonKey,
     debug: kDebugMode,
   );
 

@@ -184,7 +184,7 @@ class FacilityEligibility {
     return value;
   }
 
-  /// Cleans a free-text summary field: trims, and treats single-letter scrape
+  /// Cleans a free-text summary field: trims, and treats single-letter
   /// sentinels (Y/N/U) and "none"-like placeholders as absent so they aren't
   /// rendered as if they were a real summary (e.g. the stray italic "N").
   static String? _cleanSummary(String? value) {

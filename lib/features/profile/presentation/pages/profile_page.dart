@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/account_deletion_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
-import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/services/local_user_data.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
 import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
@@ -26,6 +27,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  bool _isDeleting = false;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -41,6 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildAccountLinksSection(l10n),
                 _buildEligibilitySection(l10n),
                 _buildSignOutButton(l10n),
+                _buildDeleteAccountButton(l10n),
                 const SizedBox(height: 32),
               ],
             ),
@@ -404,7 +408,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(vertical: 14),
             side: const BorderSide(color: AppTheme.paynesGray),
           ),
-          onPressed: () => _confirmSignOut(l10n),
+          onPressed: _isDeleting ? null : () => _confirmSignOut(l10n),
         ),
       ),
     );
@@ -443,10 +447,95 @@ class _ProfilePageState extends State<ProfilePage> {
         context: 'ProfilePage.signOut',
       );
     }
-    await ZipCodeService().clear();
+    await clearLocalUserData(logContext: 'ProfilePage.signOut');
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.settingsSignOutSuccess)),
+    );
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
+  }
+
+  // --- Delete account ------------------------------------------------------
+
+  Widget _buildDeleteAccountButton(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton.icon(
+          icon: _isDeleting
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.bittersweet,
+                  ),
+                )
+              : const Icon(Icons.delete_outline, color: AppTheme.bittersweet),
+          label: Text(
+            _isDeleting
+                ? l10n.deleteAccountInProgress
+                : l10n.settingsDeleteAccount,
+            style: const TextStyle(
+              color: AppTheme.bittersweet,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onPressed: _isDeleting ? null : () => _confirmDeleteAccount(l10n),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteAccount(AppLocalizations l10n) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteAccountTitle),
+        content: Text(l10n.deleteAccountBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.bittersweet,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.deleteAccountConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true || !mounted) return;
+    await _performDeleteAccount(l10n);
+  }
+
+  Future<void> _performDeleteAccount(AppLocalizations l10n) async {
+    setState(() => _isDeleting = true);
+    final result = await AccountDeletionService().deleteAccount();
+    if (!mounted) return;
+
+    if (!result.isSuccess) {
+      setState(() => _isDeleting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.deleteAccountFailed)),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.deleteAccountSuccess)),
     );
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const LoginPage()),

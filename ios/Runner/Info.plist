@@ -49,7 +49,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Beacon uses your location to find healthcare facilities near you.</string>
+	<string>Beacon uses your location to show nearby healthcare and social-service facilities — for example, listing free clinics within a few miles of you, sorted by distance. You can skip this and search by ZIP code instead.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

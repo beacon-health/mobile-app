@@ -18,11 +18,11 @@ PODS:
   - GoogleMaps/Maps (9.4.0)
   - package_info_plus (0.4.5):
     - Flutter
-  - Sentry/HybridSDK (8.58.2)
-  - sentry_flutter (9.20.0):
+  - Sentry/HybridSDK (8.58.4)
+  - sentry_flutter (9.27.0):
     - Flutter
     - FlutterMacOS
-    - Sentry/HybridSDK (= 8.58.2)
+    - Sentry/HybridSDK (= 8.58.4)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -80,12 +80,12 @@ SPEC CHECKSUMS:
   google_maps_flutter_ios: 17552876e72723da1d41accc22f03b5f7afbde69
   GoogleMaps: 0608099d4870cac8754bdba9b6953db543432438
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
-  Sentry: de29b881e83bd91cf99a927f82f1fd86bfb39db2
-  sentry_flutter: cbb414ef141b64f901bc1ba32daa871349510ce4
+  Sentry: 5321d74bdd28d6f6f8beaa1ca06f1fdc746bff49
+  sentry_flutter: b392decea911dcd74891cc4aef402c73abf065b1
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
 
-PODFILE CHECKSUM: d94f560f068a70bcd7d565b72fcc4aa5eca9f2b2
+PODFILE CHECKSUM: 2b9a3fc6f465df3efce80ddad46469606d85c66c
 
 COCOAPODS: 1.16.2
