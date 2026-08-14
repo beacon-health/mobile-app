@@ -1072,18 +1072,6 @@ abstract class AppLocalizations {
   /// **'Find free and low-cost resources near you.'**
   String get onboardingTagline;
 
-  /// No description provided for @onboardingSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Health care, housing, food assistance, and more — all in one place.'**
-  String get onboardingSubtitle;
-
-  /// No description provided for @onboardingGetStarted.
-  ///
-  /// In en, this message translates to:
-  /// **'Get Started'**
-  String get onboardingGetStarted;
-
   /// No description provided for @zipEntryTitle.
   ///
   /// In en, this message translates to:

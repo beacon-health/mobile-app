@@ -533,13 +533,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Encuentra recursos gratuitos y de bajo costo cerca de ti.';
 
   @override
-  String get onboardingSubtitle =>
-      'Atención médica, vivienda, ayuda alimentaria y más, todo en un solo lugar.';
-
-  @override
-  String get onboardingGetStarted => 'Comenzar';
-
-  @override
   String get zipEntryTitle => '¿Cuál es tu código postal?';
 
   @override

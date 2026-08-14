@@ -74,6 +74,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _mapController?.dispose();
+    _mapController = null;
     super.dispose();
   }
 
@@ -139,23 +140,27 @@ class _HomePageState extends State<HomePage>
         _currentLocation = newLocation;
       });
 
-      if (_mapController != null && mounted) {
-        await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 300));
+      // Re-checked after the delay, not before: the user can leave the tab
+      // while it's pending, disposing the controller mid-flight.
+      if (!mounted || _mapController == null) return;
 
-        try {
-          await _mapController!.animateCamera(
-            CameraUpdate.newLatLngZoom(
-              _currentLocation,
-              MapConstants.homeCutoutZoom,
-            ),
-          );
-        } catch (e, stackTrace) {
-          ErrorReporter.instance.report(
-            e,
-            stackTrace,
-            context: 'HomePage.cameraAnimate',
-          );
-        }
+      try {
+        await _mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            _currentLocation,
+            MapConstants.homeCutoutZoom,
+          ),
+        );
+      } catch (e, stackTrace) {
+        // A dispose mid-flight throws here; that race is expected, so only
+        // report if the widget is somehow still alive.
+        if (!mounted) return;
+        ErrorReporter.instance.report(
+          e,
+          stackTrace,
+          context: 'HomePage.cameraAnimate',
+        );
       }
     } catch (e, stackTrace) {
       ErrorReporter.instance
@@ -202,6 +207,7 @@ class _HomePageState extends State<HomePage>
           ),
         );
       } catch (e, stackTrace) {
+        if (!mounted) return;
         ErrorReporter.instance.report(
           e,
           stackTrace,

@@ -176,8 +176,6 @@
   "onboardingEligibilitySubtitle": "告诉我们哪些适用于您，以便显示您符合条件的机构。您可以随时在个人资料中更改。",
   "onboardingContinue": "继续",
   "onboardingTagline": "查找您附近的免费和低价资源。",
-  "onboardingSubtitle": "医疗、住房、食品援助等，尽在一处。",
-  "onboardingGetStarted": "开始使用",
   "zipEntryTitle": "您的邮政编码是什么？",
   "zipEntrySubtitle": "我们将用它为您显示附近的资源。",
   "zipEntryInvalid": "请输入 5 位邮政编码",

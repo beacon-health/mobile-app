@@ -1,5 +1,5 @@
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/features/auth/presentation/pages/onboarding_page.dart';
+import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +15,6 @@ class AuthGate extends StatelessWidget {
     if (zipService.hasCompletedOnboarding) {
       return const MainNavBar();
     }
-    return const OnboardingPage();
+    return const LoginPage();
   }
 }

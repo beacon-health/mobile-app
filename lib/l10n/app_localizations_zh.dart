@@ -502,12 +502,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingTagline => '查找您附近的免费和低价资源。';
 
   @override
-  String get onboardingSubtitle => '医疗、住房、食品援助等，尽在一处。';
-
-  @override
-  String get onboardingGetStarted => '开始使用';
-
-  @override
   String get zipEntryTitle => '您的邮政编码是什么？';
 
   @override

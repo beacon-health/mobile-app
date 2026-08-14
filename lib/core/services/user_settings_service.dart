@@ -113,8 +113,11 @@ class UserSettingsService {
     final preferencesJson = row['preferences'];
 
     // Lat/lng are re-derived by geocoding the ZIP, so the cloud row holds no
-    // device-derived coordinates that could go stale.
-    if (zip != null && zip.isNotEmpty) {
+    // device-derived coordinates that could go stale. The GPS sentinel is not
+    // a ZIP — rows written before that was fixed still carry it.
+    if (zip != null &&
+        zip.isNotEmpty &&
+        zip != ZipCodeService.currentLocationSentinel) {
       // syncToCloud false: this value came from the cloud, so re-uploading it
       // would be a redundant write.
       final ok = await ZipCodeService().setZipCode(zip, syncToCloud: false);
@@ -156,9 +159,14 @@ class UserSettingsService {
     final zip = ZipCodeService();
     final ep = EligibilityPreferencesService();
     final now = DateTime.now().toUtc().toIso8601String();
+    // While GPS is in use, zipCode holds the sentinel rather than a real ZIP.
+    // Storing it would fail to geocode on the next sign-in.
+    final zipCode = zip.zipCode == ZipCodeService.currentLocationSentinel
+        ? null
+        : zip.zipCode;
     return {
       'user_id': userId,
-      'zip_code': zip.zipCode,
+      'zip_code': zipCode,
       'theme_mode': _themeModeName(ThemeModeProvider().themeMode),
       'locale': LocaleProvider().locale.languageCode,
       'location_search_enabled': zip.locationSearchEnabled,

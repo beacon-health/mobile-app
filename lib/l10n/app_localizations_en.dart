@@ -522,13 +522,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTagline => 'Find free and low-cost resources near you.';
 
   @override
-  String get onboardingSubtitle =>
-      'Health care, housing, food assistance, and more — all in one place.';
-
-  @override
-  String get onboardingGetStarted => 'Get Started';
-
-  @override
   String get zipEntryTitle => 'What\'s your zip code?';
 
   @override

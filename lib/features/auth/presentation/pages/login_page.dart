@@ -156,7 +156,18 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           const SizedBox(height: 32),
                           Image.asset('assets/beacon-logo.png', width: 240),
-                          const SizedBox(height: 160),
+                          const SizedBox(height: 24),
+                          Text(
+                            l10n.onboardingTagline,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                              color: AppTheme.paynesGray,
+                            ),
+                          ),
+                          const SizedBox(height: 72),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
