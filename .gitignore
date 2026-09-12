@@ -75,6 +75,8 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+# NDK/CMake build cache — machine-specific absolute paths, never shareable
+**/android/**/.cxx/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
