@@ -1,6 +1,6 @@
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
-import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -74,7 +74,7 @@ class _SignInPromptDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: Builder(
-                builder: (innerContext) => AppleSignInButton(
+                builder: (innerContext) => NativeSignInButton(
                   onFailure: (msg) {
                     if (!innerContext.mounted) return;
                     ScaffoldMessenger.of(innerContext).showSnackBar(

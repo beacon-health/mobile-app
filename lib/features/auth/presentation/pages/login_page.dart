@@ -1,19 +1,18 @@
 import 'package:beacon_app/core/constants/legal_urls.dart';
-import 'package:beacon_app/core/services/apple_sign_in_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/app_gradients.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Sign-in entry point: Apple OAuth + Continue as Guest. [isGuestUpgrade]
+/// Sign-in entry point: the platform's native provider (Apple on iOS, Google
+/// on Android) + Continue as Guest. [isGuestUpgrade]
 /// routes through [LocationChoicePage] with the guest's ZIP pre-filled and
 /// replaces the navigation stack.
 class LoginPage extends StatefulWidget {
@@ -28,35 +27,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String? _errorMessage;
-  final SupabaseClient _supabase = Supabase.instance.client;
-
-  Future<void> _signInWithApple() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final result = await AppleSignInService.signIn();
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
-      _goToLocationChoice();
-      return;
-    }
-
-    if (result.isCancelled) {
-      // User cancelled the system Apple sheet — no error, no nav.
-      return;
-    }
-
-    setState(() {
-      _errorMessage = result.errorMessage ??
-          AppLocalizations.of(context)?.authSignInError ??
-          'Sign-in failed. Please try again.';
-    });
-  }
 
   void _continueAsGuest() {
     _goToLocationChoice();
@@ -126,13 +96,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  String _redirectUri() {
-    if (kIsWeb) {
-      return Uri.base.replace(path: '/').toString();
-    }
-    return 'io.supabase.flutter://login-callback';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -168,63 +131,15 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 72),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _signInWithApple,
-                              icon: const Icon(Icons.apple, size: 24),
-                              label: Text(l10n.authContinueWithApple),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                textStyle: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
+                          NativeSignInButton(
+                            onSuccess: _goToLocationChoice,
+                            onFailure: (message) =>
+                                setState(() => _errorMessage = message),
+                            onLoadingChanged: (loading) => setState(() {
+                              _isLoading = loading;
+                              if (loading) _errorMessage = null;
+                            }),
                           ),
-                          // Google sign-in is hidden on iOS for the MVP; the
-                          // OAuth path is tested and ships with Android.
-                          if (!kIsWeb &&
-                              defaultTargetPlatform != TargetPlatform.iOS)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () {
-                                          _signInWithProvider(
-                                            OAuthProvider.google,
-                                          );
-                                        },
-                                  icon: const Icon(
-                                    Icons.g_mobiledata,
-                                    size: 24,
-                                  ),
-                                  label: Text(l10n.authContinueWithGoogle),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black87,
-                                    textStyle: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                    ),
-                                    side: const BorderSide(
-                                      color: Colors.black12,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 12),
                             Text(
@@ -345,35 +260,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _signInWithProvider(OAuthProvider provider) async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    try {
-      if (kIsWeb) {
-        await _supabase.auth.signInWithOAuth(
-          provider,
-          redirectTo: _redirectUri(),
-        );
-      } else {
-        await _supabase.auth.signInWithOAuth(provider);
-      }
-      if (!mounted) return;
-      _goToLocationChoice();
-    } on AuthException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.message);
-    } catch (_) {
-      if (mounted) {
-        setState(
-          () => _errorMessage = AppLocalizations.of(context)?.authSignInError ??
-              'Sign-in failed. Please try again.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 }
