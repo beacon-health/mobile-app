@@ -1,6 +1,6 @@
 # Beacon
 
-A Flutter iOS app that helps people find free and low-cost healthcare and
+A Flutter app that helps people find free and low-cost healthcare and
 social-services facilities near them — clinics, mental health and addiction
 services, housing and shelter, food assistance, and more.
 
@@ -10,8 +10,8 @@ allow-list, so new states go live with a single SQL `insert` and no app release.
 
 | | |
 |---|---|
-| **Platform** | iOS only (Android is post-MVP; the Google sign-in path exists but is not shipped) |
-| **Flutter / Dart** | 3.44.2 stable / 3.12.2 (SDK constraint `^3.6.0`) |
+| **Platform** | iOS shipping; Android in bring-up — MVP is a simultaneous launch on both |
+| **Flutter / Dart** | 3.47.0 stable / 3.13.0 (SDK constraint `^3.6.0`) |
 | **Backend** | Supabase — Postgres + PostGIS, RLS, Apple OAuth |
 | **State management** | `provider` + `ChangeNotifier` singletons |
 | **Maps** | `google_maps_flutter` (Maps SDK for iOS) |
@@ -22,10 +22,19 @@ allow-list, so new states go live with a single SQL `insert` and no app release.
 
 ## Prerequisites
 
-- **Flutter 3.44.2** (stable channel) — check with `flutter --version`
-- **Xcode 15+** with the iOS 15.0+ SDK, and CocoaPods (`sudo gem install cocoapods`)
+- **Flutter 3.47.0** (stable channel) — check with `flutter --version`. Match
+  this exactly: both CI workflows pin it, and a newer analyzer will fail the
+  build with no code change.
+- **Xcode 15+** with the iOS 15.0+ SDK, and CocoaPods (`brew install cocoapods`)
+- **JDK 17** and the Android SDK, for Android builds
 - Access to the **Supabase project** (URL + publishable anon key)
-- A **Google Maps API key** restricted to iOS + the Maps SDK for iOS
+- **Two Google Maps API keys** — one restricted to iOS + the Maps SDK for iOS,
+  one restricted to Android + the Maps SDK for Android. They are separate APIs;
+  a single key cannot serve both.
+
+> CocoaPods needs a UTF-8 locale. If `pod install` dies with
+> `Encoding::CompatibilityError` in `unicode_normalize`, your shell has `LANG`
+> unset — export `LANG=en_US.UTF-8` and retry.
 
 > This project uses **CocoaPods, not Swift Package Manager**. If you have SPM
 > enabled globally in Flutter, turn it off for this repo
