@@ -7,7 +7,7 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/local_user_data.dart';
 import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/core/theme/color_scheme_ext.dart';
-import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
@@ -111,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 16),
                 Builder(
-                  builder: (innerContext) => AppleSignInButton(
+                  builder: (innerContext) => NativeSignInButton(
                     onFailure: (msg) {
                       if (!innerContext.mounted) return;
                       ScaffoldMessenger.of(innerContext).showSnackBar(
