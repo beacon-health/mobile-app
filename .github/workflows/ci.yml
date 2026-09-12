@@ -15,7 +15,7 @@ jobs:
     name: Analyze & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Pinned: on `channel: stable` alone, a new Flutter release can fail the
       # build with no code change — a newer analyzer flags new lints.
@@ -42,7 +42,7 @@ jobs:
   #   name: Secrets Scan
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v6
+  #     - uses: actions/checkout@v7
   #       with:
   #         fetch-depth: 0
   #     - uses: gitleaks/gitleaks-action@v2
