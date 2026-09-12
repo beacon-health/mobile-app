@@ -1,4 +1,4 @@
-package com.example.beacon_app
+package org.beaconhealth.app
 
 import io.flutter.embedding.android.FlutterActivity
 

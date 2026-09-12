@@ -1,9 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- geolocator deliberately does not declare these; the app must, because
+         only the app knows whether it needs fine/coarse and foreground/background.
+         Foreground-only, matching iOS's NSLocationWhenInUseUsageDescription —
+         ACCESS_BACKGROUND_LOCATION is intentionally absent, as Beacon never
+         needs location while backgrounded and it triggers extra Play review. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
    <application
         android:label="Beacon"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
