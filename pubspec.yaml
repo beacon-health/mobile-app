@@ -43,6 +43,7 @@ flutter:
 
   assets:
     - assets/beacon-logo.png
+    - assets/google-g-logo.png
     - assets/map_styles/
 
 flutter_launcher_icons:

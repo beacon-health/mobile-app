@@ -129,10 +129,12 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
                 valueColor: AlwaysStoppedAnimation<Color>(foreground),
               ),
             )
-          : Icon(
-              isApple ? Icons.apple : Icons.g_mobiledata,
-              size: isApple ? 22 : 28,
-            ),
+          : isApple
+              ? const Icon(Icons.apple, size: 22)
+              // Google's branding guidelines require their own "G" mark on a
+              // Sign in with Google button; Material's `g_mobiledata` glyph is
+              // a different letterform and not licensed for this use.
+              : Image.asset('assets/google-g-logo.png', height: 18),
       label: Text(
         isApple
             ? l10n?.authContinueWithApple ?? 'Continue with Apple'
