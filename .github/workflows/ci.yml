@@ -37,6 +37,35 @@ jobs:
       - name: Run tests
         run: flutter test
 
+  android:
+    name: Android Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Pinned to match the analyze job and both release workflows.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.0
+          channel: stable
+          cache: true
+
+      # Matches the JVM target in android/app/build.gradle.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Compile-only, and deliberately secret-free: the Maps key is a manifest
+      # placeholder that defaults to empty and a debug build self-signs. This
+      # job exists to catch Gradle / AGP / Kotlin breakage on the PR, which the
+      # analyze job cannot see and which otherwise only surfaces on main.
+      - name: Build debug APK
+        run: flutter build apk --debug
+
   # Uncomment when gitleaks is desired — requires GitHub Advanced Security or public repo
   # secrets-scan:
   #   name: Secrets Scan
