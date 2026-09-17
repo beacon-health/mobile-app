@@ -77,6 +77,8 @@ unlinked_spec.ds
 *.jks
 # NDK/CMake build cache — machine-specific absolute paths, never shareable
 **/android/**/.cxx/
+# Kotlin 2.x session/build cache — regenerated per build, never shareable
+**/android/.kotlin/
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
