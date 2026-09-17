@@ -26,7 +26,7 @@ dependencies:
   provider: ^6.1.2
   sentry_flutter: ^9.6.0
   shared_preferences: ^2.5.5
-  sign_in_with_apple: ^7.0.1
+  sign_in_with_apple: ^8.2.0
   supabase_flutter: ^2.12.2
   url_launcher: ^6.1.11
 
