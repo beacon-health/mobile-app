@@ -1,5 +1,9 @@
 package_name("org.beaconhealth.app")
 
-# Play service-account JSON — never stored in the repo; supplied by CI as the
-# PLAY_SERVICE_ACCOUNT_JSON secret (the whole JSON document, not a path).
-json_key_data(ENV["PLAY_SERVICE_ACCOUNT_JSON"])
+# Play credentials come from Workload Identity Federation, not a stored key:
+# google-github-actions/auth writes a short-lived external_account credentials
+# file and exports its path. fastlane's json_key accepts Application Default,
+# Workload Identity, or Service Account credentials, so the same parameter
+# works for all three. Left unset locally, where supply is not used.
+key_path = ENV["PLAY_JSON_KEY_PATH"] || ENV["GOOGLE_APPLICATION_CREDENTIALS"]
+json_key(key_path) if key_path && !key_path.empty?

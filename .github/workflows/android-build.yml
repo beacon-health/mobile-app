@@ -18,6 +18,11 @@ jobs:
     name: Build & Upload to Play (internal)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # id-token lets the runner mint the OIDC token that Workload Identity
+    # Federation exchanges for Google credentials — no service-account key.
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v6
 
@@ -84,9 +89,22 @@ jobs:
         if: ${{ env.SENTRY_AUTH_TOKEN != '' }}
         run: dart run sentry_dart_plugin
 
+      # Keyless: GitHub's OIDC token is exchanged for short-lived Google
+      # credentials. Writes an external_account credentials file and exports
+      # GOOGLE_APPLICATION_CREDENTIALS, which fastlane's json_key accepts.
+      # Service-account JSON keys are blocked by the
+      # iam.disableServiceAccountKeyCreation org policy, and this is the
+      # recommended alternative anyway — nothing long-lived to leak or rotate.
+      - name: Authenticate to Google Cloud
+        id: gcp-auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PLAY_PUBLISHER_SA }}
+
       - name: Upload to Play internal track
         env:
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_JSON_KEY_PATH: ${{ steps.gcp-auth.outputs.credentials_file_path }}
         run: |
           cd android
           bundle exec fastlane beta

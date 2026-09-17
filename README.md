@@ -275,8 +275,9 @@ fail on those builds.
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test` |
+| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, and a debug Android build |
 | `.github/workflows/ios-build.yml` | push to `main` (docs ignored), or manual | builds and uploads to TestFlight via Fastlane |
+| `.github/workflows/android-build.yml` | push to `main` (docs ignored), or manual | builds a signed AAB and uploads to the Play internal track via Fastlane |
 
 TestFlight uses **App Store Connect API-key cloud-managed signing** — no
 Fastlane Match, no certificates repo. The API key must have **App Manager**
@@ -284,9 +285,27 @@ access so Xcode can create the distribution certificate and provisioning profile
 at build time. The build number is `1000 + github.run_number`, so uploads never
 collide.
 
-Required GitHub secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
-`GOOGLE_MAPS_API_KEY`, `SENTRY_DSN`, `APP_STORE_CONNECT_API_KEY_ID`,
-`APP_STORE_CONNECT_API_KEY_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`.
+Android releases are signed in CI from secrets, because the keystore and
+`android/key.properties` are gitignored: the workflow rebuilds both, then deletes them.
+Play uploads authenticate with **Workload Identity Federation** rather than a
+service-account key — GitHub's OIDC token is exchanged for short-lived Google
+credentials, so nothing long-lived is stored. (Key creation is also blocked by
+the `iam.disableServiceAccountKeyCreation` org policy.)
+
+Required GitHub secrets:
+
+| Secret | Used by |
+|---|---|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | both release workflows |
+| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | both (symbol upload is skipped when the token is absent) |
+| `GOOGLE_MAPS_API_KEY` | iOS |
+| `GOOGLE_MAPS_API_KEY_ANDROID`, `GOOGLE_WEB_CLIENT_ID` | Android |
+| `APP_STORE_CONNECT_API_KEY_ID`, `..._ISSUER_ID`, `..._CONTENT` | iOS / TestFlight |
+| `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
+
+> Play rejects the **first** upload of a new app over the API — that one has to
+> go through the Play Console by hand. The workflow handles every build after.
 
 ---
 
