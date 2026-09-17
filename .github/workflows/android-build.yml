@@ -24,7 +24,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Pinned to match ci.yml and ios-build.yml — keep all three in step.
       - uses: subosito/flutter-action@v2
@@ -119,6 +119,9 @@ jobs:
       # The bundle is the thing you upload by hand for the first release, so
       # publish it regardless of whether the automated upload ran.
       - name: Upload AAB artifact
+        # Runs even if the Play upload failed — a failed upload is exactly when
+        # someone needs the bundle to submit by hand.
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: beacon-release-aab
@@ -129,4 +132,4 @@ jobs:
       # Keeps the signing material out of any cached layer or artifact.
       - name: Clean up signing material
         if: always()
-        run: rm -f android/upload-keystore.jks android/key.properties
+        run: rm -f android/upload-keystore.jks android/key.properties android/local.properties

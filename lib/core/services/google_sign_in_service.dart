@@ -31,10 +31,15 @@ class GoogleSignInService {
   /// session via `signInWithIdToken`. Safe to call only on Android.
   static Future<SignInResult> signIn() async {
     if (_webClientId.isEmpty) {
-      return const SignInResult(
-        SignInOutcome.failed,
-        errorMessage: 'Google sign-in is not configured for this build.',
+      // A build-configuration mistake, not something a user can act on — and
+      // this layer has no BuildContext to localize with. Report the specifics
+      // and let NativeSignInButton show the localized authSignInError.
+      ErrorReporter.instance.report(
+        StateError('GOOGLE_WEB_CLIENT_ID dart-define is missing'),
+        StackTrace.current,
+        context: 'GoogleSignInService.signIn/notConfigured',
       );
+      return const SignInResult(SignInOutcome.failed);
     }
 
     try {
@@ -42,10 +47,12 @@ class GoogleSignInService {
       final account = await GoogleSignIn.instance.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null) {
-        return const SignInResult(
-          SignInOutcome.failed,
-          errorMessage: 'Google did not return an identity token.',
+        ErrorReporter.instance.report(
+          StateError('Google returned no identity token'),
+          StackTrace.current,
+          context: 'GoogleSignInService.signIn/noIdToken',
         );
+        return const SignInResult(SignInOutcome.failed);
       }
 
       await Supabase.instance.client.auth.signInWithIdToken(
