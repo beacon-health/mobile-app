@@ -304,6 +304,30 @@ Required GitHub secrets:
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
 
+Setting federation up once, from `gcloud` (project **ID** `beacon-health`; the
+`principalSet` member uses the project **number** `336940310100`):
+
+```bash
+gcloud iam workload-identity-pools create github --location=global
+gcloud iam workload-identity-pools providers create-oidc beacon-mobile-app \
+  --location=global --workload-identity-pool=github \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository=='beacon-health/mobile-app'"
+gcloud iam service-accounts create beacon-play-publisher
+gcloud iam service-accounts add-iam-policy-binding \
+  beacon-play-publisher@beacon-health.iam.gserviceaccount.com \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/336940310100/locations/global/workloadIdentityPools/github/attribute.repository/beacon-health/mobile-app"
+```
+
+> The member path is `attribute.repository` — **singular**. `attributes.repository`
+> fails with `INVALID_ARGUMENT: Invalid principalSet member`, which reads like a
+> problem with the repository name rather than the spelling.
+
+The `--attribute-condition` is not optional in spirit: without it, any GitHub
+repository could mint tokens for this service account.
+
 > Play rejects the **first** upload of a new app over the API — that one has to
 > go through the Play Console by hand. The workflow handles every build after.
 
