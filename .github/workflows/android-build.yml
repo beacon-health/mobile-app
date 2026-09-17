@@ -122,7 +122,7 @@ jobs:
         # Runs even if the Play upload failed — a failed upload is exactly when
         # someone needs the bundle to submit by hand.
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: beacon-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
