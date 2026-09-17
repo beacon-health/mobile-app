@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/sign_in_result.dart';
 import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -41,21 +42,37 @@ class AppleSignInService {
       );
 
       return const SignInResult(SignInOutcome.success);
-    } on SignInWithAppleAuthorizationException catch (e) {
-      // Cancelled / unknown / not-handled / invalid response / failed.
+    } on SignInWithAppleAuthorizationException catch (e, stack) {
+      // Unlike Credential Manager on Android, Apple's cancellation code is
+      // trustworthy, so a bare cancel stays silent and unreported.
       if (e.code == AuthorizationErrorCode.canceled) {
         return const SignInResult(SignInOutcome.cancelled);
       }
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
       return SignInResult(
         SignInOutcome.failed,
         errorMessage: e.message,
       );
-    } on AuthException catch (e) {
+    } on AuthException catch (e, stack) {
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
       return SignInResult(
         SignInOutcome.failed,
         errorMessage: e.message,
       );
-    } catch (e) {
+    } catch (e, stack) {
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
       return SignInResult(
         SignInOutcome.failed,
         errorMessage: e.toString(),

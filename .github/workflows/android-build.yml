@@ -97,17 +97,34 @@ jobs:
       # recommended alternative anyway — nothing long-lived to leak or rotate.
       - name: Authenticate to Google Cloud
         id: gcp-auth
+        if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_PLAY_PUBLISHER_SA }}
 
+      # Play rejects an app's first upload over the API — that one goes through
+      # the Console by hand. Until that has happened and the publisher service
+      # account has been granted access, this step cannot succeed, so it stays
+      # off behind a repo variable rather than turning main red on every push.
+      # Flip PLAY_UPLOAD_ENABLED to 'true' once the Console side is ready.
       - name: Upload to Play internal track
+        if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
         env:
           PLAY_JSON_KEY_PATH: ${{ steps.gcp-auth.outputs.credentials_file_path }}
         run: |
           cd android
           bundle exec fastlane beta
+
+      # The bundle is the thing you upload by hand for the first release, so
+      # publish it regardless of whether the automated upload ran.
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beacon-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
 
       # Keeps the signing material out of any cached layer or artifact.
       - name: Clean up signing material
