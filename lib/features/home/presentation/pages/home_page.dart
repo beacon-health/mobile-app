@@ -4,8 +4,8 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/widgets/apple_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
@@ -599,7 +599,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 const SizedBox(height: 14),
                 Builder(
-                  builder: (innerContext) => AppleSignInButton(
+                  builder: (innerContext) => NativeSignInButton(
                     onFailure: (msg) {
                       if (!innerContext.mounted) return;
                       ScaffoldMessenger.of(innerContext).showSnackBar(

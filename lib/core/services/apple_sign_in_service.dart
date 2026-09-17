@@ -1,32 +1,10 @@
 import 'dart:convert';
 
+import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/core/services/sign_in_result.dart';
 import 'package:crypto/crypto.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-/// Possible outcomes from a Sign in with Apple attempt.
-enum AppleSignInOutcome {
-  /// User completed the Apple flow AND Supabase accepted the identity token.
-  success,
-
-  /// User explicitly cancelled the system Apple sheet.
-  cancelled,
-
-  /// Apple returned an error other than cancellation, or Supabase rejected
-  /// the identity token (network/secret/config issues).
-  failed,
-}
-
-/// Result of an Apple sign-in attempt.
-class AppleSignInResult {
-  const AppleSignInResult(this.outcome, {this.errorMessage});
-
-  final AppleSignInOutcome outcome;
-  final String? errorMessage;
-
-  bool get isSuccess => outcome == AppleSignInOutcome.success;
-  bool get isCancelled => outcome == AppleSignInOutcome.cancelled;
-}
 
 /// Native Sign in with Apple: fetches an identity token on-device and hands
 /// it to Supabase via [GoTrueClient.signInWithIdToken], so the dashboard needs
@@ -37,7 +15,7 @@ class AppleSignInService {
   /// Triggers the system Sign in with Apple sheet and, on success, completes
   /// the Supabase session via `signInWithIdToken`. Safe to call only from
   /// platforms where Sign in with Apple is supported (iOS / macOS).
-  static Future<AppleSignInResult> signIn() async {
+  static Future<SignInResult> signIn() async {
     try {
       final rawNonce = Supabase.instance.client.auth.generateRawNonce();
       final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
@@ -51,8 +29,8 @@ class AppleSignInService {
 
       final idToken = credential.identityToken;
       if (idToken == null) {
-        return const AppleSignInResult(
-          AppleSignInOutcome.failed,
+        return const SignInResult(
+          SignInOutcome.failed,
           errorMessage: 'Apple did not return an identity token.',
         );
       }
@@ -63,24 +41,40 @@ class AppleSignInService {
         nonce: rawNonce,
       );
 
-      return const AppleSignInResult(AppleSignInOutcome.success);
-    } on SignInWithAppleAuthorizationException catch (e) {
-      // Cancelled / unknown / not-handled / invalid response / failed.
+      return const SignInResult(SignInOutcome.success);
+    } on SignInWithAppleAuthorizationException catch (e, stack) {
+      // Unlike Credential Manager on Android, Apple's cancellation code is
+      // trustworthy, so a bare cancel stays silent and unreported.
       if (e.code == AuthorizationErrorCode.canceled) {
-        return const AppleSignInResult(AppleSignInOutcome.cancelled);
+        return const SignInResult(SignInOutcome.cancelled);
       }
-      return AppleSignInResult(
-        AppleSignInOutcome.failed,
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
+      return SignInResult(
+        SignInOutcome.failed,
         errorMessage: e.message,
       );
-    } on AuthException catch (e) {
-      return AppleSignInResult(
-        AppleSignInOutcome.failed,
+    } on AuthException catch (e, stack) {
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
+      return SignInResult(
+        SignInOutcome.failed,
         errorMessage: e.message,
       );
-    } catch (e) {
-      return AppleSignInResult(
-        AppleSignInOutcome.failed,
+    } catch (e, stack) {
+      ErrorReporter.instance.report(
+        e,
+        stack,
+        context: 'AppleSignInService.signIn',
+      );
+      return SignInResult(
+        SignInOutcome.failed,
         errorMessage: e.toString(),
       );
     }

@@ -1,0 +1,135 @@
+name: Android Build & Play Internal
+
+on:
+  push:
+    branches: [main]
+    # Mirrors ios-build.yml — don't build on doc-only commits.
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  workflow_dispatch: # also allow manual runs
+
+concurrency:
+  group: android-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Upload to Play (internal)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # id-token lets the runner mint the OIDC token that Workload Identity
+    # Federation exchanges for Google credentials — no service-account key.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+
+      # Pinned to match ci.yml and ios-build.yml — keep all three in step.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.0
+          channel: stable
+          cache: true
+
+      # Matches the JVM target in android/app/build.gradle.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: android
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # key.properties and local.properties are gitignored, so CI recreates
+      # them. Gradle reads the upload key from the first and injects the Maps
+      # key as a manifest placeholder from the second; without either, the
+      # build silently falls back to debug keys and a blank map.
+      - name: Materialize signing and Maps config
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          MAPS_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY_ANDROID }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/android/upload-keystore.jks"
+          {
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyPassword=$KEY_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "storeFile=$GITHUB_WORKSPACE/android/upload-keystore.jks"
+          } > "$GITHUB_WORKSPACE/android/key.properties"
+          echo "GOOGLE_MAPS_API_KEY=$MAPS_KEY" >> "$GITHUB_WORKSPACE/android/local.properties"
+
+      - name: Build App Bundle
+        # Build number = a monotonic, unique value so Play never rejects a
+        # duplicate versionCode. Offset by 1000 to stay above any manually
+        # uploaded builds, matching the iOS workflow.
+        run: |
+          flutter build appbundle --release \
+            --build-number=$(( 1000 + ${{ github.run_number }} )) \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+
+      # Symbolicates release crashes. `secrets` isn't readable from a step-level
+      # `if`, hence the env hop; skipped entirely when the token is absent.
+      - name: Upload debug symbols to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        if: ${{ env.SENTRY_AUTH_TOKEN != '' }}
+        run: dart run sentry_dart_plugin
+
+      # Keyless: GitHub's OIDC token is exchanged for short-lived Google
+      # credentials. Writes an external_account credentials file and exports
+      # GOOGLE_APPLICATION_CREDENTIALS, which fastlane's json_key accepts.
+      # Service-account JSON keys are blocked by the
+      # iam.disableServiceAccountKeyCreation org policy, and this is the
+      # recommended alternative anyway — nothing long-lived to leak or rotate.
+      - name: Authenticate to Google Cloud
+        id: gcp-auth
+        if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PLAY_PUBLISHER_SA }}
+
+      # Play rejects an app's first upload over the API — that one goes through
+      # the Console by hand. Until that has happened and the publisher service
+      # account has been granted access, this step cannot succeed, so it stays
+      # off behind a repo variable rather than turning main red on every push.
+      # Flip PLAY_UPLOAD_ENABLED to 'true' once the Console side is ready.
+      - name: Upload to Play internal track
+        if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
+        env:
+          PLAY_JSON_KEY_PATH: ${{ steps.gcp-auth.outputs.credentials_file_path }}
+        run: |
+          cd android
+          bundle exec fastlane beta
+
+      # The bundle is the thing you upload by hand for the first release, so
+      # publish it regardless of whether the automated upload ran.
+      - name: Upload AAB artifact
+        # Runs even if the Play upload failed — a failed upload is exactly when
+        # someone needs the bundle to submit by hand.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: beacon-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      # Keeps the signing material out of any cached layer or artifact.
+      - name: Clean up signing material
+        if: always()
+        run: rm -f android/upload-keystore.jks android/key.properties android/local.properties

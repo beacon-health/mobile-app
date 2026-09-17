@@ -12,9 +12,9 @@ allow-list, so new states go live with a single SQL `insert` and no app release.
 |---|---|
 | **Platform** | iOS shipping; Android in bring-up — MVP is a simultaneous launch on both |
 | **Flutter / Dart** | 3.47.0 stable / 3.13.0 (SDK constraint `^3.6.0`) |
-| **Backend** | Supabase — Postgres + PostGIS, RLS, Apple OAuth |
+| **Backend** | Supabase — Postgres + PostGIS, RLS, native Sign in with Apple (iOS) / Google (Android) |
 | **State management** | `provider` + `ChangeNotifier` singletons |
-| **Maps** | `google_maps_flutter` (Maps SDK for iOS) |
+| **Maps** | `google_maps_flutter` (Maps SDK for iOS and for Android — separate keys) |
 | **Languages** | English, Spanish, Chinese |
 | **Bundle ID** | `org.beaconhealth.app` |
 
@@ -51,10 +51,12 @@ cd mobile-app
 flutter pub get
 ```
 
-**1. Add the Google Maps key** (gitignored — never commit it):
+**1. Add the Google Maps keys** (gitignored — never commit them). iOS and
+Android each need their own platform-restricted key:
 
 ```bash
 echo "GOOGLE_MAPS_API_KEY=<your-ios-maps-key>" > ios/Flutter/Secrets.xcconfig
+echo "GOOGLE_MAPS_API_KEY=<your-android-maps-key>" >> android/local.properties
 ```
 
 **2. Install the iOS pods:**
@@ -78,7 +80,10 @@ initializes in **release** builds with a DSN present, so debug runs never send
 events.
 
 To avoid retyping the defines, put them in a JSON file and use
-`--dart-define-from-file=config/dart_defines.json` (that path is gitignored).
+`--dart-define-from-file=config/dart_defines.json` (that path is gitignored). Copy
+`config/dart_defines.json.example` for the full key list — `make run` and the VS Code
+launch configs read that file. Android sign-in additionally needs
+`GOOGLE_WEB_CLIENT_ID` (see "Key services").
 
 > Always open **`ios/Runner.xcworkspace`** in Xcode, never `Runner.xcodeproj`.
 
@@ -112,7 +117,7 @@ test/                          Unit tests mirroring lib/
 
 ### Architecture at a glance
 
-**Entry flow:** `AuthGate` → `OnboardingPage` → `LoginPage` (Apple / guest) →
+**Entry flow:** `AuthGate` → `OnboardingPage` → `LoginPage` (Apple on iOS, Google on Android, or guest) →
 `LocationChoicePage` (GPS or ZIP) → eligibility step (signed-in only) →
 `MainNavBar`. Returning users go straight to `MainNavBar`; the
 `hasCompletedOnboarding` flag in `SharedPreferences` decides.
@@ -143,7 +148,8 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | Service | Responsibility |
 |---|---|
 | `GuestModeService` | Tracks signed-in vs guest from the Supabase session |
-| `AppleSignInService` | Native Sign in with Apple → `signInWithIdToken` |
+| `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
+| `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
 | `ZipCodeService` | ZIP ↔ coordinates, GPS toggle, onboarding flag |
 | `EligibilityPreferencesService` | Eligibility gates + map preferences; auto-applies to search |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |
@@ -156,6 +162,14 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 
 **Error handling convention:** never `print` or `debugPrint`. Every catch site
 calls `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
+
+**One sign-in provider per platform:** Sign in with Apple on iOS, Sign in with
+Google on Android — never both. `nativeSignInProviderFor` is the only place the
+rule lives (unit-tested), and every sign-in surface uses `NativeSignInButton`.
+Google needs the **Web** OAuth client ID as the `GOOGLE_WEB_CLIENT_ID`
+dart-define (also listed first under Client IDs on the Supabase Google
+provider), plus an **Android** OAuth client in Google Cloud for
+`org.beaconhealth.app` carrying the SHA-1 of every key that signs a build.
 
 ---
 
@@ -228,12 +242,42 @@ a known gap.
 
 ---
 
+## Android release signing
+
+Release builds are signed with an **upload key** read from `android/key.properties`
+(gitignored). Without that file, release builds fall back to debug keys — they
+run locally but **cannot be uploaded to Play**.
+
+Create the keystore once, outside the repo, and back it up somewhere durable;
+losing it means going through Google's upload-key reset:
+
+```bash
+keytool -genkeypair -v -keystore ~/keystores/beacon-upload.jks \
+  -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then create `android/key.properties`:
+
+```properties
+storePassword=<password>
+keyPassword=<password>
+keyAlias=upload
+storeFile=/Users/<you>/keystores/beacon-upload.jks
+```
+
+With Play App Signing, Google re-signs releases with its own app-signing key.
+Add the SHA-1 of **every** key that signs a build people run — debug, upload,
+and Play's app-signing key (Play Console → App integrity) — to both the Android
+Maps key restriction and the Android OAuth client, or maps and Google sign-in
+fail on those builds.
+
 ## CI/CD
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test` |
+| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, and a debug Android build |
 | `.github/workflows/ios-build.yml` | push to `main` (docs ignored), or manual | builds and uploads to TestFlight via Fastlane |
+| `.github/workflows/android-build.yml` | push to `main` (docs ignored), or manual | builds a signed AAB and uploads to the Play internal track via Fastlane |
 
 TestFlight uses **App Store Connect API-key cloud-managed signing** — no
 Fastlane Match, no certificates repo. The API key must have **App Manager**
@@ -241,9 +285,51 @@ access so Xcode can create the distribution certificate and provisioning profile
 at build time. The build number is `1000 + github.run_number`, so uploads never
 collide.
 
-Required GitHub secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
-`GOOGLE_MAPS_API_KEY`, `SENTRY_DSN`, `APP_STORE_CONNECT_API_KEY_ID`,
-`APP_STORE_CONNECT_API_KEY_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`.
+Android releases are signed in CI from secrets, because the keystore and
+`android/key.properties` are gitignored: the workflow rebuilds both, then deletes them.
+Play uploads authenticate with **Workload Identity Federation** rather than a
+service-account key — GitHub's OIDC token is exchanged for short-lived Google
+credentials, so nothing long-lived is stored. (Key creation is also blocked by
+the `iam.disableServiceAccountKeyCreation` org policy.)
+
+Required GitHub secrets:
+
+| Secret | Used by |
+|---|---|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | both release workflows |
+| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | both (symbol upload is skipped when the token is absent) |
+| `GOOGLE_MAPS_API_KEY` | iOS |
+| `GOOGLE_MAPS_API_KEY_ANDROID`, `GOOGLE_WEB_CLIENT_ID` | Android |
+| `APP_STORE_CONNECT_API_KEY_ID`, `..._ISSUER_ID`, `..._CONTENT` | iOS / TestFlight |
+| `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
+
+Setting federation up once, from `gcloud` (project **ID** `beacon-health`; the
+`principalSet` member uses the project **number** `336940310100`):
+
+```bash
+gcloud iam workload-identity-pools create github --location=global
+gcloud iam workload-identity-pools providers create-oidc beacon-mobile-app \
+  --location=global --workload-identity-pool=github \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository=='beacon-health/mobile-app'"
+gcloud iam service-accounts create beacon-play-publisher
+gcloud iam service-accounts add-iam-policy-binding \
+  beacon-play-publisher@beacon-health.iam.gserviceaccount.com \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/336940310100/locations/global/workloadIdentityPools/github/attribute.repository/beacon-health/mobile-app"
+```
+
+> The member path is `attribute.repository` — **singular**. `attributes.repository`
+> fails with `INVALID_ARGUMENT: Invalid principalSet member`, which reads like a
+> problem with the repository name rather than the spelling.
+
+The `--attribute-condition` is not optional in spirit: without it, any GitHub
+repository could mint tokens for this service account.
+
+> Play rejects the **first** upload of a new app over the API — that one has to
+> go through the Play Console by hand. The workflow handles every build after.
 
 ---
 
@@ -251,10 +337,17 @@ Required GitHub secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
 
 **The map renders as a uniform grey rectangle.** Almost always Google Maps
 billing, not code — the SDK logs success and silently returns blank tiles. Check
-Google Cloud → Billing, and that "Maps SDK for iOS" is enabled.
+Google Cloud → Billing, that "Maps SDK for iOS" / "Maps SDK for Android" is
+enabled, and — on Android — that the key's package name and SHA-1 restriction
+match the signing key of the build you're running.
 
 **Startup throws about `SUPABASE_URL`.** You ran `flutter run` without the
 `--dart-define` flags. See "Getting started".
+
+**Android: the Google account picker closes instantly, or nothing happens.**
+Credential Manager reports misconfiguration as a user cancel. Check the Android
+OAuth client's package name and SHA-1 against the build, and that
+`GOOGLE_WEB_CLIENT_ID` is the **Web** client ID, not the Android one.
 
 **Ratings or requests fail to submit.** A required table, column, or unique
 constraint hasn't been applied to the Supabase project. A 42501 specifically

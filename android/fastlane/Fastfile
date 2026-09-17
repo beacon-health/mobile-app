@@ -1,0 +1,32 @@
+default_platform(:android)
+
+# Android counterpart to ios/fastlane/Fastfile. The AAB is built by
+# `flutter build appbundle` in the workflow, so these lanes only upload —
+# Gradle already signed it with the upload key from key.properties.
+platform :android do
+  desc "Upload the release bundle to the Play internal testing track"
+  lane :beta do
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      # The store listing is managed in the Play Console, not from this repo.
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Promote the current internal build to production"
+  lane :release do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+    )
+  end
+end
