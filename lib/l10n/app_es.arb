@@ -7,6 +7,8 @@
   "homeFavorites": "Tus favoritos",
   "homeNoFavorites": "Aún no tienes favoritos",
   "homeNoFavoritesHint": "Agrega favoritos desde el mapa para verlos aquí",
+  "homeFavoritesSignInTitle": "Inicia sesión para acceder a Favoritos",
+  "homeFavoritesSignInHint": "Inicia sesión para guardar tus centros favoritos.",
   "homeRecentlyViewed": "Centros vistos recientemente",
   "homeNoRecentlyViewed": "No hay centros vistos recientemente",
   "homeNoRecentlyViewedHint": "Toca un centro en el mapa para verlo aquí.",
@@ -164,6 +166,15 @@
   "navProfile": "Perfil",
   "profileApplyEligibility": "Aplicar criterios de elegibilidad a la búsqueda",
   "profileApplyEligibilityDesc": "Mostrar solo centros que coincidan con tu elegibilidad.",
+  "profileSignedIn": "Sesión iniciada",
+  "profileSignedInThrough": "Sesión iniciada con {provider}",
+  "@profileSignedInThrough": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "commonSave": "Guardar",
   "homeCategoryHealthCare": "Atención médica",
   "homeCategoryMentalHealth": "Salud mental",

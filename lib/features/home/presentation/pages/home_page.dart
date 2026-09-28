@@ -573,13 +573,13 @@ class _HomePageState extends State<HomePage>
                 Icon(Icons.lock_outline, size: AppIconSize.xxl, color: muted),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Sign in to access Favorites',
+                  l10n.homeFavoritesSignInTitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(color: muted),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Save your favorite facilities by signing in.',
+                  l10n.homeFavoritesSignInHint,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(color: muted),
                 ),

@@ -189,10 +189,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = _displayEmail(user);
     final name = _displayName(user);
 
+    final l10n = AppLocalizations.of(context)!;
     final primary = name ??
         (providerLabel != null
-            ? 'Signed in through $providerLabel'
-            : 'Signed in');
+            ? l10n.profileSignedInThrough(providerLabel)
+            : l10n.profileSignedIn);
 
     final theme = Theme.of(context);
     final secondaryStyle = theme.textTheme.bodyMedium?.copyWith(
@@ -216,7 +217,10 @@ class _ProfilePageState extends State<ProfilePage> {
             overflow: TextOverflow.ellipsis,
           )
         else if (name != null && providerLabel != null)
-          Text('Signed in through $providerLabel', style: secondaryStyle),
+          Text(
+            l10n.profileSignedInThrough(providerLabel),
+            style: secondaryStyle,
+          ),
       ],
     );
   }

@@ -31,6 +31,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Agrega favoritos desde el mapa para verlos aquí';
 
   @override
+  String get homeFavoritesSignInTitle =>
+      'Inicia sesión para acceder a Favoritos';
+
+  @override
+  String get homeFavoritesSignInHint =>
+      'Inicia sesión para guardar tus centros favoritos.';
+
+  @override
   String get homeRecentlyViewed => 'Centros vistos recientemente';
 
   @override
@@ -493,6 +501,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get profileApplyEligibilityDesc =>
       'Mostrar solo centros que coincidan con tu elegibilidad.';
+
+  @override
+  String get profileSignedIn => 'Sesión iniciada';
+
+  @override
+  String profileSignedInThrough(String provider) {
+    return 'Sesión iniciada con $provider';
+  }
 
   @override
   String get commonSave => 'Guardar';

@@ -7,6 +7,8 @@
   "homeFavorites": "Your Favorites",
   "homeNoFavorites": "No favorites yet",
   "homeNoFavoritesHint": "Add favorites from the map page to see them here",
+  "homeFavoritesSignInTitle": "Sign in to access Favorites",
+  "homeFavoritesSignInHint": "Save your favorite facilities by signing in.",
   "homeRecentlyViewed": "Recently Viewed Facilities",
   "homeNoRecentlyViewed": "No recently viewed facilities",
   "homeNoRecentlyViewedHint": "Tap a facility on the map to see it here.",
@@ -164,6 +166,15 @@
   "navProfile": "Profile",
   "profileApplyEligibility": "Apply eligibility criteria to search",
   "profileApplyEligibilityDesc": "Only show facilities that match your eligibility.",
+  "profileSignedIn": "Signed in",
+  "profileSignedInThrough": "Signed in through {provider}",
+  "@profileSignedInThrough": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "commonSave": "Save",
   "homeCategoryHealthCare": "Health Care",
   "homeCategoryMentalHealth": "Mental Health",

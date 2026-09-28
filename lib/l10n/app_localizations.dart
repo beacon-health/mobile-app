@@ -142,6 +142,18 @@ abstract class AppLocalizations {
   /// **'Add favorites from the map page to see them here'**
   String get homeNoFavoritesHint;
 
+  /// No description provided for @homeFavoritesSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access Favorites'**
+  String get homeFavoritesSignInTitle;
+
+  /// No description provided for @homeFavoritesSignInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your favorite facilities by signing in.'**
+  String get homeFavoritesSignInHint;
+
   /// No description provided for @homeRecentlyViewed.
   ///
   /// In en, this message translates to:
@@ -999,6 +1011,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only show facilities that match your eligibility.'**
   String get profileApplyEligibilityDesc;
+
+  /// No description provided for @profileSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in'**
+  String get profileSignedIn;
+
+  /// No description provided for @profileSignedInThrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in through {provider}'**
+  String profileSignedInThrough(String provider);
 
   /// No description provided for @commonSave.
   ///

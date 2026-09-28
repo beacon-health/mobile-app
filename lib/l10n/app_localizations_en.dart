@@ -31,6 +31,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add favorites from the map page to see them here';
 
   @override
+  String get homeFavoritesSignInTitle => 'Sign in to access Favorites';
+
+  @override
+  String get homeFavoritesSignInHint =>
+      'Save your favorite facilities by signing in.';
+
+  @override
   String get homeRecentlyViewed => 'Recently Viewed Facilities';
 
   @override
@@ -483,6 +490,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileApplyEligibilityDesc =>
       'Only show facilities that match your eligibility.';
+
+  @override
+  String get profileSignedIn => 'Signed in';
+
+  @override
+  String profileSignedInThrough(String provider) {
+    return 'Signed in through $provider';
+  }
 
   @override
   String get commonSave => 'Save';
