@@ -1,8 +1,7 @@
 import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_gradients.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -65,14 +64,16 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sheetGutter,
+                  AppSpacing.xs,
+                  AppSpacing.sheetGutter,
+                  AppSpacing.md,
+                ),
                 child: Text(
                   AppLocalizations.of(ctx)?.authSelectLanguage ??
                       'Select a language',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(ctx).textTheme.titleMedium,
                 ),
               ),
               for (final locale in LocaleProvider.supportedLocales)
@@ -82,7 +83,10 @@ class _LoginPageState extends State<LoginPage> {
                         locale.languageCode,
                   ),
                   trailing: locale.languageCode == currentCode
-                      ? const Icon(Icons.check, color: AppTheme.resedaGreen)
+                      ? Icon(
+                          Icons.check,
+                          color: Theme.of(ctx).colorScheme.primary,
+                        )
                       : null,
                   onTap: () => Navigator.pop(ctx, locale.languageCode),
                 ),
@@ -99,13 +103,17 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceMuted;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: AppGradients.onboarding(context),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.onboardingGutter,
+        ),
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -117,20 +125,22 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Column(
                         children: [
-                          const SizedBox(height: 32),
-                          Image.asset('assets/beacon-logo.png', width: 240),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AppSpacing.xxxl),
+                          Image.asset(
+                            'assets/beacon-logo.png',
+                            width: AppSizes.logoHero,
+                          ),
+                          const SizedBox(height: AppSpacing.xxl),
                           Text(
                             l10n.onboardingTagline,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                              color: AppTheme.paynesGray,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: theme.colorScheme.secondary,
                             ),
                           ),
-                          const SizedBox(height: 72),
+                          const SizedBox(
+                            height: AppSpacing.huge + AppSpacing.xxl,
+                          ),
                           NativeSignInButton(
                             onSuccess: _goToLocationChoice,
                             onFailure: (message) =>
@@ -141,55 +151,39 @@ class _LoginPageState extends State<LoginPage> {
                             }),
                           ),
                           if (_errorMessage != null) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Text(
                               _errorMessage!,
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 13,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ],
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AppSpacing.xxl),
                           Row(
                             children: [
-                              const Expanded(
-                                child: Divider(color: Colors.black26),
-                              ),
+                              const Expanded(child: Divider()),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                                  horizontal: AppSpacing.lg,
                                 ),
                                 child: Text(
                                   l10n.authOr,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: muted,
                                   ),
                                 ),
                               ),
-                              const Expanded(
-                                child: Divider(color: Colors.black26),
-                              ),
+                              const Expanded(child: Divider()),
                             ],
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AppSpacing.xxl),
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
+                            child: FilledButton(
                               onPressed: _isLoading ? null : _continueAsGuest,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                backgroundColor: AppTheme.paynesGray,
-                                foregroundColor: Colors.white,
-                                textStyle: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              style: AppTheme.secondaryFilledButton(context),
                               child: Text(l10n.authContinueAsGuest),
                             ),
                           ),
@@ -197,20 +191,19 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Column(
                         children: [
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           Text.rich(
                             TextSpan(
                               text: l10n.authTermsPrefix,
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontSize: 12,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: muted,
                               ),
                               children: [
                                 TextSpan(
                                   text: l10n.authTermsOfService,
                                   style: const TextStyle(
                                     decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () =>
@@ -224,7 +217,7 @@ class _LoginPageState extends State<LoginPage> {
                                   text: l10n.authPrivacyPolicy,
                                   style: const TextStyle(
                                     decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () =>
@@ -237,18 +230,12 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           TextButton(
                             onPressed: _isLoading ? null : _showLanguagePicker,
-                            child: Text(
-                              l10n.authSelectLanguage,
-                              style: const TextStyle(
-                                color: Colors.teal,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            child: Text(l10n.authSelectLanguage),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                         ],
                       ),
                     ],

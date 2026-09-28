@@ -98,7 +98,7 @@ lib/
   core/
     constants/                 Routes, legal URLs
     services/                  App-wide singletons (see "Key services")
-    theme/                     AppTheme, colors, gradients
+    theme/                     Design tokens + AppTheme (see design/README.md)
     utils/                     Formatting helpers
     widgets/                   Shared dialogs, sign-in button, gates
   features/
@@ -113,6 +113,7 @@ lib/
     settings/                  Settings, "Your Ratings", "Your Requests"
   l10n/                        ARB files (en/es/zh) + generated localizations
 test/                          Unit tests mirroring lib/
+design/                        Generated token export for Claude Design
 ```
 
 ### Architecture at a glance
@@ -215,6 +216,22 @@ dart format .                         # CI fails on unformatted code
 **Linting** is `very_good_analysis` with a few rules relaxed in
 `analysis_options.yaml`. Note that `require_trailing_commas` is **off**: it
 fights Dart 3.7+'s "tall style" formatter, which owns line breaking.
+
+### Design system
+
+Style with tokens, never literals: colors from `AppColors` or the
+`ColorScheme`, text from `Theme.of(context).textTheme`, and `AppSpacing`,
+`AppRadii`, `AppShadows` for layout. Import them all from
+`package:beacon_app/core/theme/theme.dart`.
+
+`test/design_system_lint_test.dart` fails CI on hardcoded styles. After changing
+a token, regenerate the Claude Design export:
+
+```bash
+flutter test test/design_tokens_test.dart --update-goldens
+```
+
+The full guide is in [`design/README.md`](design/README.md).
 
 ### Localization
 

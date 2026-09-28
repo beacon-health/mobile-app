@@ -5,13 +5,14 @@ import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
@@ -60,6 +61,15 @@ class BeaconApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
+            // Status/nav-bar icons follow the in-app theme (which can differ
+            // from the OS setting) on both platforms, including screens
+            // without an AppBar.
+            builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+              value: AppTheme.systemOverlayStyleFor(
+                Theme.of(context).brightness,
+              ),
+              child: child!,
+            ),
             home: const AuthGate(),
             routes: {
               AppRoutes.login: (context) => const LoginPage(),

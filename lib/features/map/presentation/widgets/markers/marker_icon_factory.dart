@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui show ImageByteFormat, PictureRecorder;
 
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -96,13 +96,13 @@ class MarkerUtils {
     canvas.drawCircle(
       center,
       radius * 1.18,
-      Paint()..color = AppTheme.resedaGreen.withValues(alpha: 0.35),
+      Paint()..color = AppColors.resedaGreen.withValues(alpha: 0.35),
     );
     // Main filled circle.
     canvas.drawCircle(
       center,
       radius,
-      Paint()..color = AppTheme.resedaGreen,
+      Paint()..color = AppColors.resedaGreen,
     );
     // White border.
     canvas.drawCircle(
@@ -119,9 +119,10 @@ class MarkerUtils {
       text: TextSpan(
         text: label,
         style: TextStyle(
+          fontFamily: AppTypography.fontFamily,
           color: Colors.white,
           fontSize: size * 0.34,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -154,10 +155,13 @@ class MarkerUtils {
   ) {
     if (text.isEmpty) return;
 
+    // Canvas-painted, so the family must be set explicitly — a bare
+    // TextStyle falls back to SF Pro on iOS and Roboto on Android.
     const textStyle = TextStyle(
+      fontFamily: AppTypography.fontFamily,
       color: Colors.black,
       fontSize: _baseFontSize,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w700,
       height: 1.1,
       shadows: [
         Shadow(
@@ -284,23 +288,23 @@ class MarkerUtils {
 
   /// Returns the color for one of the [FacilityCategories] group names.
   ///
-  /// Uses [AppTheme] category colors as the single source of truth.
+  /// Uses the [AppColors] category palette as the single source of truth.
   static Color getColorForCategory(String? category) {
     switch (category) {
       case FacilityCategories.groupHealthCare:
-        return AppTheme.healthCare;
+        return AppColors.healthCare;
       case FacilityCategories.groupMentalHealth:
-        return AppTheme.mentalHealth;
+        return AppColors.mentalHealth;
       case FacilityCategories.groupBasicNeeds:
-        return AppTheme.basicNeeds;
+        return AppColors.basicNeeds;
       case FacilityCategories.groupHousingShelter:
-        return AppTheme.housingShelter;
+        return AppColors.housingShelter;
       case FacilityCategories.groupCommunity:
-        return AppTheme.communityResources;
+        return AppColors.communityResources;
       case FacilityCategories.groupSpecialized:
-        return AppTheme.specializedServices;
+        return AppColors.specializedServices;
       default:
-        return AppTheme.paynesGray;
+        return AppColors.categoryFallback;
     }
   }
 

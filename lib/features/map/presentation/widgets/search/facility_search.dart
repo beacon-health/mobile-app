@@ -1,4 +1,4 @@
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -36,7 +36,7 @@ class _FacilitySearchState extends State<FacilitySearch> {
     return Row(
       children: [
         Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceFaded),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         Expanded(
           child: TextField(
             controller: widget.controller,
@@ -45,11 +45,11 @@ class _FacilitySearchState extends State<FacilitySearch> {
               hintText: AppLocalizations.of(context)?.mapSearchResourcesHint ??
                   'Search for resources...',
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.md,
+              ),
               filled: false,
-              fillColor: Colors.transparent,
             ),
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             textAlignVertical: TextAlignVertical.center,
             onChanged: (_) => widget.onChanged(),
           ),
@@ -68,16 +68,18 @@ class _FacilitySearchState extends State<FacilitySearch> {
         if (widget.onUseMyLocation != null) ...[
           if (widget.isLocatingUser)
             const Padding(
-              padding: EdgeInsets.all(12),
-              child: SizedBox(
-                width: 20,
-                height: 20,
+              padding: EdgeInsets.all(AppSpacing.md),
+              child: SizedBox.square(
+                dimension: AppIconSize.md,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             )
           else
             IconButton(
-              icon: const Icon(Icons.my_location, color: Colors.blue),
+              icon: const Icon(
+                Icons.my_location,
+                color: AppColors.userLocation,
+              ),
               onPressed: widget.onUseMyLocation,
               tooltip:
                   AppLocalizations.of(context)?.locationUseMyLocationTooltip ??

@@ -1,6 +1,9 @@
-import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 
+/// Pill in the map's horizontal filter bar. Selected chips fill with the
+/// secondary color; locked chips (guest-only features) render disabled with a
+/// lock icon.
 class CustomFilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -19,7 +22,8 @@ class CustomFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     final Color bgColor;
     final Color borderColor;
@@ -27,71 +31,55 @@ class CustomFilterChip extends StatelessWidget {
     final Color iconColor;
 
     if (isLocked) {
-      bgColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
-      borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
-      textColor = isDark ? Colors.grey.shade500 : Colors.grey.shade500;
+      bgColor = scheme.surfaceContainerHighest;
+      borderColor = scheme.outlineVariant;
+      textColor = scheme.onSurface.withValues(alpha: AppOpacity.disabled);
       iconColor = textColor;
     } else if (isSelected) {
-      bgColor = const Color(0xFF536878); // AppTheme.paynesGray
-      borderColor = const Color(0xFF536878);
-      textColor = Colors.white;
-      iconColor = Colors.white;
+      bgColor = scheme.secondary;
+      borderColor = scheme.secondary;
+      textColor = scheme.onSecondary;
+      iconColor = scheme.onSecondary;
     } else {
-      bgColor = isDark ? const Color(0xFF222240) : Colors.white;
-      borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
-      textColor = isDark ? Colors.white70 : Colors.black87;
-      iconColor = isDark ? Colors.white54 : Colors.black54;
+      bgColor = theme.cardTheme.color ?? scheme.surface;
+      borderColor = scheme.outlineVariant;
+      textColor = scheme.onSurface;
+      iconColor = scheme.onSurfaceMuted;
     }
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: FilterDesignTokens.chipPaddingHorizontal,
-          vertical: FilterDesignTokens.chipPaddingVertical,
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
           color: bgColor,
-          border: Border.all(
-            color: borderColor,
-            width: FilterDesignTokens.borderWidthNormal,
-          ),
-          borderRadius:
-              BorderRadius.circular(FilterDesignTokens.borderRadiusMedium),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black
-                  .withValues(alpha: FilterDesignTokens.shadowOpacity),
-              blurRadius: FilterDesignTokens.shadowBlurRadius,
-              offset: const Offset(0, FilterDesignTokens.shadowOffsetY),
-            ),
-          ],
+          border: Border.all(color: borderColor, width: AppSizes.border),
+          borderRadius: AppRadii.mdAll,
+          boxShadow: AppShadows.card,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isLocked) ...[
-              Icon(
-                Icons.lock_outline,
-                size: FilterDesignTokens.iconSizeSmall,
-                color: iconColor,
-              ),
-              const SizedBox(width: FilterDesignTokens.spacingXSmall),
+              Icon(Icons.lock_outline, size: AppIconSize.sm, color: iconColor),
+              const SizedBox(width: AppSpacing.xs),
             ],
             Text(
               label,
-              style: TextStyle(
+              style: theme.textTheme.labelMedium?.copyWith(
                 color: textColor,
                 fontWeight:
                     isSelected && !isLocked ? FontWeight.w600 : FontWeight.w500,
-                fontSize: FilterDesignTokens.fontSizeSmall,
               ),
             ),
             if (hasDropdown && !isLocked) ...[
-              const SizedBox(width: FilterDesignTokens.spacingXSmall),
+              const SizedBox(width: AppSpacing.xs),
               Icon(
                 Icons.keyboard_arrow_down,
-                size: FilterDesignTokens.iconSizeSmall,
+                size: AppIconSize.sm,
                 color: iconColor,
               ),
             ],

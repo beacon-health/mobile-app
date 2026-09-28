@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -133,40 +134,25 @@ class MapLauncherService {
     BuildContext context,
     List<MapApp> installed,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     return showModalBottomSheet<MapApp>(
       context: context,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sheetGutter,
+              ),
               child: Text(
                 AppLocalizations.of(context)?.directionsOpenWith ??
                     'Open directions with',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
+                style: theme.textTheme.titleMedium,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             for (final app in installed)
               ListTile(
                 leading: const Icon(Icons.directions_outlined),
@@ -174,13 +160,17 @@ class MapLauncherService {
                 onTap: () => Navigator.pop(ctx, app),
               ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sheetGutter,
+                0,
+                AppSpacing.sheetGutter,
+                AppSpacing.sm,
+              ),
               child: Text(
                 AppLocalizations.of(context)?.directionsChangeLater ??
                     'You can change this later in Settings.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.onSurfaceVariant,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ),

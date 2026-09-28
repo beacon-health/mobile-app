@@ -1,4 +1,3 @@
-import 'package:beacon_app/core/theme/app_theme.dart';
 import 'package:beacon_app/features/home/presentation/pages/home_page.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -81,14 +80,8 @@ class _MainNavBarState extends State<MainNavBar> {
       bottomNavigationBar: Builder(
         builder: (context) {
           final l10n = AppLocalizations.of(context);
-          final isDark = Theme.of(context).brightness == Brightness.dark;
+          // Colors, type, and label styles come from bottomNavigationBarTheme.
           return BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: isDark
-                ? Theme.of(context).bottomNavigationBarTheme.backgroundColor
-                : AppTheme.honeydew,
-            selectedItemColor: AppTheme.bittersweet,
-            unselectedItemColor: isDark ? Colors.grey : Colors.black,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: const Icon(Icons.home),

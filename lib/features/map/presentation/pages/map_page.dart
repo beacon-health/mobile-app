@@ -6,7 +6,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/facility_correction_dialog.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/facility_request_dialog.dart';
@@ -451,7 +451,7 @@ class MapPageState extends State<MapPage>
               'Location access denied. Enable it in Settings > Privacy > '
                   'Location Services.',
         ),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppColors.warning,
       ),
     );
   }
@@ -795,65 +795,57 @@ class MapPageState extends State<MapPage>
   /// center (Yelp / Google Maps pattern).
   Widget _buildSearchAreaButton() {
     final visible = _showSearchAreaButton && !_showSingleFacility;
+    final theme = Theme.of(context);
+    final onPrimary = theme.colorScheme.onPrimary;
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 200),
+      duration: AppMotion.fast,
       transitionBuilder: (child, animation) =>
           FadeTransition(opacity: animation, child: child),
       child: !visible
           ? const SizedBox.shrink()
           : Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
               child: Center(
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: AppRadii.pillAll,
                     onTap: _isSearchingArea ? null : _searchThisArea,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
+                        horizontal: AppSpacing.xl,
+                        vertical: AppSpacing.md,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.resedaGreen,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: theme.colorScheme.primary,
+                        borderRadius: AppRadii.pillAll,
+                        boxShadow: AppShadows.raised,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (_isSearchingArea)
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
+                            SizedBox.square(
+                              dimension: AppIconSize.sm,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                color: onPrimary,
                               ),
                             )
                           else
-                            const Icon(
+                            Icon(
                               Icons.refresh,
-                              color: Colors.white,
-                              size: 18,
+                              color: onPrimary,
+                              size: AppIconSize.md,
                             ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Text(
                             _isSearchingArea
                                 ? AppLocalizations.of(context)!.mapSearching
                                 : AppLocalizations.of(context)!
                                     .mapSearchThisArea,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: onPrimary,
                             ),
                           ),
                         ],
@@ -1005,14 +997,18 @@ class MapPageState extends State<MapPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
+          Icon(
+            Icons.error_outline,
+            size: AppIconSize.hero,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             AppLocalizations.of(context)?.mapLoadFailed ??
                 (_error ?? 'An error occurred'),
-            style: const TextStyle(fontSize: 16),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           ElevatedButton(
             onPressed: _loadFacilities,
             child: Text(AppLocalizations.of(context)?.mapRetry ?? 'Retry'),
@@ -1075,25 +1071,17 @@ class MapPageState extends State<MapPage>
                 children: [
                   Container(
                     margin: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4.0,
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 4.0,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF222240)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(25.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      color: Theme.of(context).cardTheme.color,
+                      borderRadius: AppRadii.pillAll,
+                      boxShadow: AppShadows.raised,
                     ),
                     child: FacilitySearch(
                       controller: _searchController,
@@ -1104,7 +1092,7 @@ class MapPageState extends State<MapPage>
                       isLocatingUser: _isLocatingUser,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs),
                   _buildFilterBar(),
                   _buildSearchAreaButton(),
                 ],
@@ -1190,27 +1178,14 @@ class MapPageState extends State<MapPage>
         child: AnimatedContainer(
           duration: MapConstants.animationDuration,
           curve: MapConstants.animationCurve,
-          margin: const EdgeInsets.all(16.0),
+          margin: const EdgeInsets.all(AppSpacing.lg),
           height: cardHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8.0,
-                spreadRadius: 1.0,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 3.0,
-                spreadRadius: 0.5,
-                offset: const Offset(0, 1),
-              ),
-            ],
+          decoration: const BoxDecoration(
+            borderRadius: AppRadii.xlAll,
+            boxShadow: AppShadows.raised,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(MapConstants.panelBorderRadius),
+            borderRadius: AppRadii.xlAll,
             child: FacilityCard(
               facility: _selectedFacility!,
               isExpanded: true,
@@ -1231,9 +1206,8 @@ class MapPageState extends State<MapPage>
               onRate: () => _onRateFacility(_selectedFacility!),
               onSubmitCorrection: () => _onCorrectFacility(_selectedFacility!),
               margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(MapConstants.panelBorderRadius),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadii.xlAll,
               ),
               showDragHandle: true,
             ),

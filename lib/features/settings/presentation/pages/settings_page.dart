@@ -3,8 +3,8 @@ import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -56,23 +56,8 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             _buildAppSection(l10n),
             _buildAboutSection(l10n),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.paynesGray,
-          letterSpacing: 0.5,
         ),
       ),
     );
@@ -90,20 +75,18 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(l10n.settingsApp),
+        SectionHeader(l10n.settingsApp),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: Column(
             children: [
               ListTile(
-                leading: const Icon(
-                  Icons.language,
-                  color: AppTheme.paynesGray,
-                ),
+                leading: const Icon(Icons.language),
                 title: Text(l10n.settingsLanguage),
                 trailing: DropdownButton<String>(
                   value: currentCode,
                   underline: const SizedBox.shrink(),
+                  style: Theme.of(context).textTheme.bodyMedium,
                   items: LocaleProvider.supportedLocales.map((locale) {
                     final code = locale.languageCode;
                     final name =
@@ -119,14 +102,12 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(
-                  Icons.brightness_6,
-                  color: AppTheme.paynesGray,
-                ),
+                leading: const Icon(Icons.brightness_6),
                 title: Text(l10n.settingsAppearance),
                 trailing: DropdownButton<ThemeMode>(
                   value: themeModeProvider.themeMode,
                   underline: const SizedBox.shrink(),
+                  style: Theme.of(context).textTheme.bodyMedium,
                   items: ThemeModeProvider.themeModeNames.entries
                       .map(
                         (e) => DropdownMenuItem(
@@ -145,12 +126,8 @@ class _SettingsPageState extends State<SettingsPage> {
               const Divider(height: 1),
               ListTile(
                 enabled: !locationEnabled,
-                leading: Icon(
-                  Icons.location_on_outlined,
-                  color: locationEnabled
-                      ? Theme.of(context).colorScheme.onSurfaceFaded
-                      : AppTheme.paynesGray,
-                ),
+                // ListTile fades the icon itself while disabled.
+                leading: const Icon(Icons.location_on_outlined),
                 title: Text(l10n.settingsZipCode),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -163,31 +140,24 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: Theme.of(context).colorScheme.onSurfaceMuted,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     if (!locationEnabled)
-                      const Icon(Icons.chevron_right, size: 20),
+                      const Icon(Icons.chevron_right, size: AppIconSize.md),
                   ],
                 ),
                 onTap: locationEnabled ? null : _showZipEditDialog,
               ),
               const Divider(height: 1),
               SwitchListTile(
-                secondary: const Icon(
-                  Icons.my_location,
-                  color: AppTheme.paynesGray,
-                ),
+                secondary: const Icon(Icons.my_location),
                 title: Text(l10n.settingsUseMyLocation),
                 subtitle: Text(l10n.settingsUseMyLocationDesc),
                 value: locationEnabled,
-                activeThumbColor: AppTheme.resedaGreen,
                 onChanged: (value) => _onUseMyLocationChanged(value, l10n),
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(
-                  Icons.directions_outlined,
-                  color: AppTheme.paynesGray,
-                ),
+                leading: const Icon(Icons.directions_outlined),
                 title: Text(l10n.settingsDirectionsApp),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -198,8 +168,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: Theme.of(context).colorScheme.onSurfaceMuted,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.chevron_right, size: 20),
+                    const SizedBox(width: AppSpacing.xs),
+                    const Icon(Icons.chevron_right, size: AppIconSize.md),
                   ],
                 ),
                 onTap: _pickDirectionsApp,
@@ -215,45 +185,31 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _pickDirectionsApp() async {
     final installed = await MapLauncherService.installedApps();
     if (!mounted) return;
-    final colorScheme = Theme.of(context).colorScheme;
+    final selectedIcon = Icon(
+      Icons.check,
+      color: Theme.of(context).colorScheme.primary,
+    );
     final choice = await showModalBottomSheet<Object>(
       context: context,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 12),
             for (final app in installed)
               ListTile(
                 leading: const Icon(Icons.directions_outlined),
                 title: Text(app.displayName),
-                trailing: _preferredMapApp == app
-                    ? const Icon(Icons.check, color: AppTheme.resedaGreen)
-                    : null,
+                trailing: _preferredMapApp == app ? selectedIcon : null,
                 onTap: () => Navigator.pop(ctx, app),
               ),
             ListTile(
               leading: const Icon(Icons.help_outline),
               title: Text(AppLocalizations.of(context)!.settingsAskEachTime),
-              trailing: _preferredMapApp == null
-                  ? const Icon(Icons.check, color: AppTheme.resedaGreen)
-                  : null,
+              trailing: _preferredMapApp == null ? selectedIcon : null,
               onTap: () => Navigator.pop(ctx, 'ask'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
           ],
         ),
       ),
@@ -341,9 +297,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(l10n.settingsAbout),
+        SectionHeader(l10n.settingsAbout),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: Column(
             children: [
               ListTile(
@@ -432,6 +388,7 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.settingsUpdateZipTitle),
       content: Form(
@@ -449,16 +406,14 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: '00000',
-                hintStyle: TextStyle(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.35),
-                  letterSpacing: 4,
+                hintStyle: AppTypography.zipInput.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(
+                    alpha: AppOpacity.disabled,
+                  ),
                 ),
                 labelText: AppLocalizations.of(context)!.settingsZipCode,
               ),
-              style: const TextStyle(fontSize: 18, letterSpacing: 4),
+              style: AppTypography.zipInput,
               validator: (value) {
                 if ((value ?? '').trim().length != 5) {
                   return AppLocalizations.of(context)!.settingsZipValidation;
@@ -467,10 +422,12 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
               },
             ),
             if (_errorMessage != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 13),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
               ),
             ],
           ],
@@ -484,9 +441,8 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
         FilledButton(
           onPressed: _isLoading ? null : _onSave,
           child: _isLoading
-              ? const SizedBox(
-                  height: 16,
-                  width: 16,
+              ? const SizedBox.square(
+                  dimension: AppIconSize.sm,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(AppLocalizations.of(context)!.commonSave),

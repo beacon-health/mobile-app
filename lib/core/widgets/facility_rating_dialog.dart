@@ -1,7 +1,7 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_feedback_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
@@ -224,7 +224,7 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red.shade700 : null,
+        backgroundColor: isError ? Theme.of(context).colorScheme.error : null,
       ),
     );
   }
@@ -233,38 +233,32 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
   Widget _buildDateRow(ColorScheme colorScheme) {
     final formatted =
         MaterialLocalizations.of(context).formatMediumDate(_visitedOn);
+    final textTheme = Theme.of(context).textTheme;
     return InkWell(
       onTap: _busy ? null : _pickVisitDate,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.smAll,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
             Icon(
               Icons.event_outlined,
-              size: 20,
+              size: AppIconSize.md,
               color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               AppLocalizations.of(context)!.ratingDateVisited,
-              style: TextStyle(
-                fontSize: 14,
+              style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
             const Spacer(),
-            Text(
-              formatted,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 4),
+            Text(formatted, style: textTheme.titleSmall),
+            const SizedBox(width: AppSpacing.xs),
             Icon(
               Icons.edit_outlined,
-              size: 16,
+              size: AppIconSize.sm,
               color: colorScheme.onSurfaceVariant,
             ),
           ],
@@ -278,12 +272,13 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
   Widget _buildTagSelector(ColorScheme colorScheme) {
     if (_isThumbsUp == null) return const SizedBox.shrink();
     final tags = _isThumbsUp! ? _positiveTags : _negativeTags;
-    final accent = _isThumbsUp! ? AppTheme.resedaGreen : AppTheme.bittersweet;
+    final accent = _isThumbsUp! ? colorScheme.primary : colorScheme.tertiary;
+    final labelStyle = Theme.of(context).textTheme.labelMedium;
     return Align(
       alignment: Alignment.centerLeft,
       child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
         children: [
           for (final tag in tags)
             FilterChip(
@@ -292,20 +287,19 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
               onSelected: _busy ? null : (_) => _toggleTag(tag),
               showCheckmark: false,
               backgroundColor: Colors.transparent,
-              selectedColor: accent.withValues(alpha: 0.18),
+              selectedColor: accent.tintStrong,
               side: BorderSide(
                 color: _selectedTags.contains(tag)
                     ? accent
                     : Theme.of(context).dividerColor,
               ),
-              labelStyle: TextStyle(
-                fontSize: 13,
+              labelStyle: labelStyle?.copyWith(
                 color: _selectedTags.contains(tag)
                     ? accent
                     : colorScheme.onSurface,
                 fontWeight: _selectedTags.contains(tag)
                     ? FontWeight.w600
-                    : FontWeight.normal,
+                    : FontWeight.w400,
               ),
             ),
         ],
@@ -317,10 +311,7 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text(
-        widget.facility.name,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
+      title: Text(widget.facility.name),
       content: _loadingExisting
           ? const SizedBox(
               height: 96,
@@ -333,13 +324,12 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
                 children: [
                   if (_hasExisting)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: Text(
                         AppLocalizations.of(context)!.ratingAlreadyRated,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ),
                   Row(
@@ -348,23 +338,23 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
                       _RatingButton(
                         icon: Icons.thumb_up,
                         outlinedIcon: Icons.thumb_up_outlined,
-                        activeColor: AppTheme.resedaGreen,
+                        activeColor: colorScheme.primary,
                         isActive: _isThumbsUp == true,
                         onTap: _busy ? null : () => _setRating(true),
                       ),
-                      const SizedBox(width: 24),
+                      const SizedBox(width: AppSpacing.xxl),
                       _RatingButton(
                         icon: Icons.thumb_down,
                         outlinedIcon: Icons.thumb_down_outlined,
-                        activeColor: AppTheme.bittersweet,
+                        activeColor: colorScheme.tertiary,
                         isActive: _isThumbsUp == false,
                         onTap: _busy ? null : () => _setRating(false),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   _buildDateRow(colorScheme),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   _buildTagSelector(colorScheme),
                 ],
               ),
@@ -376,12 +366,11 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
                 TextButton(
                   onPressed: _busy ? null : _remove,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.bittersweet,
+                    foregroundColor: colorScheme.tertiary,
                   ),
                   child: _isDeleting
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
+                      ? const SizedBox.square(
+                          dimension: AppIconSize.sm,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Text(AppLocalizations.of(context)!.ratingRemove),
@@ -393,9 +382,8 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
               FilledButton(
                 onPressed: _canSubmit ? _submit : null,
                 child: _isSubmitting
-                    ? const SizedBox(
-                        height: 16,
-                        width: 16,
+                    ? const SizedBox.square(
+                        dimension: AppIconSize.sm,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Text(
@@ -428,15 +416,15 @@ class _RatingButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(32),
+      borderRadius: AppRadii.pillAll,
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Icon(
           isActive ? icon : outlinedIcon,
-          size: 36,
+          size: AppIconSize.xxl,
           color: isActive
               ? activeColor
-              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              : Theme.of(context).colorScheme.onSurfaceSecondary,
         ),
       ),
     );

@@ -1,7 +1,5 @@
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_gradients.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
@@ -64,40 +62,42 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: AppGradients.onboarding(context),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.onboardingGutter,
+        ),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxxl),
               Center(
-                child: Image.asset('assets/beacon-logo.png', width: 180),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                l10n.locationChoiceTitle,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.paynesGray,
-                  height: 1.3,
+                child: Image.asset(
+                  'assets/beacon-logo.png',
+                  width: AppSizes.logoMedium,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.xxxl),
+              Text(
+                l10n.locationChoiceTitle,
+                style: textTheme.headlineMedium?.copyWith(
+                  color: colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 l10n.locationChoiceSubtitle,
-                style: TextStyle(
-                  fontSize: 15,
+                style: textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceSecondary,
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: AppSpacing.xxxl),
               _ChoiceCard(
                 icon: Icons.my_location,
                 title: l10n.locationChoiceUseLocation,
@@ -105,14 +105,14 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
                 onTap: _isResolvingLocation ? null : _onUseLocation,
                 isLoading: _isResolvingLocation,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               _ChoiceCard(
                 icon: Icons.location_on_outlined,
                 title: l10n.locationChoiceEnterZip,
                 description: l10n.locationChoiceEnterZipDesc,
                 onTap: _isResolvingLocation ? null : _onEnterZip,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               const CoverageNotice(),
               const Spacer(),
             ],
@@ -140,58 +140,56 @@ class _ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Material(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
+      color: theme.cardTheme.color,
+      borderRadius: AppRadii.lgAll,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.lgAll,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.honeydew,
-                  borderRadius: BorderRadius.circular(12),
+                width: AppSizes.avatar,
+                height: AppSizes.avatar,
+                decoration: const BoxDecoration(
+                  color: AppColors.honeydew,
+                  borderRadius: AppRadii.mdAll,
                 ),
-                child: Icon(icon, color: AppTheme.paynesGray, size: 26),
+                // Fixed pairing on the fixed honeydew tile, in both modes.
+                child: Icon(
+                  icon,
+                  color: AppColors.paynesGray,
+                  size: AppIconSize.xl,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.lg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
+                    Text(title, style: theme.textTheme.titleMedium),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       description,
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               if (isLoading)
-                const SizedBox(
-                  height: 20,
-                  width: 20,
+                const SizedBox.square(
+                  dimension: AppIconSize.md,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               else
-                const Icon(Icons.chevron_right, color: AppTheme.paynesGray),
+                Icon(Icons.chevron_right, color: colorScheme.secondary),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
@@ -241,53 +242,36 @@ class _HomePageState extends State<HomePage>
     final l10n = AppLocalizations.of(context)!;
     final statusBarHeight = MediaQuery.of(context).padding.top;
     final isGuest = context.watch<GuestModeService>().isGuest;
+    final sectionTitle = Theme.of(context).textTheme.titleLarge;
 
     return Scaffold(
       // One page-level scroll view avoids nested-scroll conflicts between
       // Recently Viewed and Favorites.
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: statusBarHeight + 8),
+            SizedBox(height: statusBarHeight + AppSpacing.sm),
             Center(
               child: Image.asset(
                 'assets/beacon-logo.png',
-                height: 70,
+                height: AppSizes.logoCompact,
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.homeGreeting,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.xxl),
+            Text(l10n.homeGreeting, style: sectionTitle),
+            const SizedBox(height: AppSpacing.lg),
             _buildMapAndCategories(),
-            const SizedBox(height: 20),
-            Text(
-              l10n.homeRecentlyViewed,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xl),
+            Text(l10n.homeRecentlyViewed, style: sectionTitle),
+            const SizedBox(height: AppSpacing.sm),
             _buildRecentlyViewedSection(isGuest: isGuest),
-            const SizedBox(height: 20),
-            Text(
-              l10n.homeFavorites,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xl),
+            Text(l10n.homeFavorites, style: sectionTitle),
+            const SizedBox(height: AppSpacing.sm),
             _buildFavoritesSection(l10n, isGuest: isGuest),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
@@ -333,15 +317,9 @@ class _HomePageState extends State<HomePage>
               onTap: _navigateToMapPage,
               child: Container(
                 clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                decoration: const BoxDecoration(
+                  borderRadius: AppRadii.lgAll,
+                  boxShadow: AppShadows.raised,
                 ),
                 child: IgnorePointer(
                   child: RepaintBoundary(
@@ -365,18 +343,18 @@ class _HomePageState extends State<HomePage>
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             flex: 3,
             child: Column(
               children: [
                 for (var row = 0; row < 2; row++) ...[
-                  if (row > 0) const SizedBox(height: 8),
+                  if (row > 0) const SizedBox(height: AppSpacing.sm),
                   Expanded(
                     child: Row(
                       children: [
                         for (var col = 0; col < 3; col++) ...[
-                          if (col > 0) const SizedBox(width: 6),
+                          if (col > 0) const SizedBox(width: AppSpacing.sm),
                           _buildCategoryButton(actions[row * 3 + col]),
                         ],
                       ],
@@ -397,20 +375,16 @@ class _HomePageState extends State<HomePage>
         onTap: () => _navigateToMapWithCategory(action.category),
         child: Container(
           decoration: BoxDecoration(
-            color: action.color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
+            color: action.color.tint,
+            borderRadius: AppRadii.mdAll,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                action.icon,
-                color: action.color,
-                size: 20,
-              ),
-              const SizedBox(height: 2),
+              Icon(action.icon, color: action.color, size: AppIconSize.md),
+              const SizedBox(height: AppSpacing.xxs),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
                 // Tiles are ~58pt wide on the smallest device. The SizedBox
                 // pins the width so the label wraps to two lines first;
                 // FittedBox only shrinks it if that still overflows.
@@ -422,10 +396,7 @@ class _HomePageState extends State<HomePage>
                       child: Text(
                         action.label,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 9,
-                          height: 1.15,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.quickActionLabel.copyWith(
                           color: action.color,
                         ),
                         maxLines: 2,
@@ -441,6 +412,64 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Icon + title + hint card shown when a Home list has nothing in it.
+  Widget _buildEmptyStateRow({
+    required IconData icon,
+    required String title,
+    required String hint,
+  }) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceMuted;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: AppRadii.mdAll,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: AppIconSize.lg, color: muted),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(color: muted),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  hint,
+                  style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Rounded, shadowed container for the populated Home lists. The
+  /// transparent Material lets ListTile ink paint above the background.
+  Widget _buildListCard({required Widget child, double? maxHeight}) {
+    return Container(
+      constraints:
+          maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: AppRadii.mdAll,
+        boxShadow: AppShadows.card,
+      ),
+      child: ClipRRect(
+        borderRadius: AppRadii.mdAll,
+        child: Material(type: MaterialType.transparency, child: child),
+      ),
+    );
+  }
+
   /// "Recently Viewed Facilities". Height is bounded so this never pushes the
   /// Favorites section off-screen.
   Widget _buildRecentlyViewedSection({required bool isGuest}) {
@@ -448,73 +477,29 @@ class _HomePageState extends State<HomePage>
       builder: (context, service, _) {
         final recent = service.recentFacilities;
         if (recent.isEmpty) {
-          return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.history, size: 24, color: Colors.grey),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.homeNoRecentlyViewed,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        AppLocalizations.of(context)!.homeNoRecentlyViewedHint,
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          final l10n = AppLocalizations.of(context)!;
+          return _buildEmptyStateRow(
+            icon: Icons.history,
+            title: l10n.homeNoRecentlyViewed,
+            hint: l10n.homeNoRecentlyViewedHint,
           );
         }
 
         // Rows render inline so the whole page scrolls as one unit.
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
+        return _buildListCard(
+          child: Column(
+            children: [
+              for (var i = 0; i < recent.length; i++) ...[
+                if (i > 0) const Divider(height: 1),
+                _buildFacilityRow(
+                  recent[i],
+                  onTap: () => _onRecentFacilityTap(
+                    recent[i],
+                    isGuest: isGuest,
+                  ),
+                ),
+              ],
             ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            // Transparent Material so ListTile ink paints above the
-            // Container's background, which would otherwise hide it.
-            child: Material(
-              type: MaterialType.transparency,
-              child: Column(
-                children: [
-                  for (var i = 0; i < recent.length; i++) ...[
-                    if (i > 0) Divider(height: 1, color: Colors.grey[200]),
-                    _buildRecentRow(recent[i], isGuest: isGuest),
-                  ],
-                ],
-              ),
-            ),
           ),
         );
       },
@@ -524,12 +509,13 @@ class _HomePageState extends State<HomePage>
   /// Single compact row used for both the Recently Viewed and Favorites
   /// populated lists. Kept dense so the Home page stays usable when both
   /// sections have items.
-  Widget _buildRecentRow(Facility facility, {required bool isGuest}) {
+  Widget _buildFacilityRow(Facility facility, {required VoidCallback onTap}) {
+    final theme = Theme.of(context);
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 2,
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xxs,
       ),
       visualDensity: VisualDensity.compact,
       leading: FacilityCategoryIcons.buildCategoryIcon(
@@ -537,18 +523,20 @@ class _HomePageState extends State<HomePage>
       ),
       title: Text(
         facility.name,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        style: theme.textTheme.titleSmall,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         facility.address,
-        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceMuted,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: const Icon(Icons.chevron_right, size: 20),
-      onTap: () => _onRecentFacilityTap(facility, isGuest: isGuest),
+      trailing: const Icon(Icons.chevron_right, size: AppIconSize.md),
+      onTap: onTap,
     );
   }
 
@@ -569,35 +557,33 @@ class _HomePageState extends State<HomePage>
   Widget _buildFavoritesSection(AppLocalizations l10n,
       {required bool isGuest}) {
     if (isGuest) {
+      final theme = Theme.of(context);
+      final muted = theme.colorScheme.onSurfaceMuted;
       return Center(
         child: SingleChildScrollView(
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(12),
+              color: theme.cardTheme.color,
+              borderRadius: AppRadii.mdAll,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.lock_outline, size: 40, color: Colors.grey),
-                const SizedBox(height: 10),
-                const Text(
+                Icon(Icons.lock_outline, size: AppIconSize.xxl, color: muted),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
                   'Sign in to access Favorites',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
+                  style: theme.textTheme.titleMedium?.copyWith(color: muted),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                const SizedBox(height: AppSpacing.xs),
+                Text(
                   'Save your favorite facilities by signing in.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  style: theme.textTheme.bodyMedium?.copyWith(color: muted),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.md),
                 Builder(
                   builder: (innerContext) => NativeSignInButton(
                     onFailure: (msg) {
@@ -626,116 +612,26 @@ class _HomePageState extends State<HomePage>
         if (favoriteFacilities.isEmpty) {
           // Kept short: available height shrinks a lot when Recently Viewed
           // is populated above.
-          return Center(
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardTheme.color,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.favorite_border,
-                      size: 28,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.homeNoFavorites,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.homeNoFavoritesHint,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          return _buildEmptyStateRow(
+            icon: Icons.favorite_border,
+            title: l10n.homeNoFavorites,
+            hint: l10n.homeNoFavoritesHint,
           );
         }
 
         // Cap the height so favorites scroll internally past ~4 items
         // instead of pushing the rest of the page down indefinitely.
-        return Container(
-          constraints: const BoxConstraints(maxHeight: 280),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            // Transparent Material so ListTile ink paints above the
-            // Container's background, which would otherwise hide it.
-            child: Material(
-              type: MaterialType.transparency,
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: favoriteFacilities.length,
-                separatorBuilder: (_, __) =>
-                    Divider(height: 1, color: Colors.grey[200]),
-                itemBuilder: (context, i) => ListTile(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 2,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  leading: FacilityCategoryIcons.buildCategoryIcon(
-                    favoriteFacilities[i].primaryCategory,
-                  ),
-                  title: Text(
-                    favoriteFacilities[i].name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    favoriteFacilities[i].address,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(Icons.chevron_right, size: 20),
-                  onTap: () => _navigateToFacility(favoriteFacilities[i]),
-                ),
-              ),
+        return _buildListCard(
+          maxHeight: 280,
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: favoriteFacilities.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, i) => _buildFacilityRow(
+              favoriteFacilities[i],
+              onTap: () => _navigateToFacility(favoriteFacilities[i]),
             ),
           ),
         );

@@ -1,4 +1,4 @@
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/category_filter.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/filter_widgets.dart';
@@ -34,60 +34,54 @@ class FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         SizedBox(
-          height: FilterDesignTokens.filterBarHeight,
+          height: FilterConstants.barHeight,
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(
-              left: FilterDesignTokens.spacingLarge,
-              right: FilterDesignTokens.spacingSmall,
+              left: AppSpacing.lg,
+              right: AppSpacing.sm,
             ),
             children: [
               GestureDetector(
                 onTap: onFiltersTap,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: FilterDesignTokens.spacingLarge,
+                    horizontal: AppSpacing.lg,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.resedaGreen,
-                    borderRadius: BorderRadius.circular(
-                      FilterDesignTokens.borderRadiusMedium,
-                    ),
+                    color: scheme.primary,
+                    borderRadius: AppRadii.mdAll,
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.tune,
-                        color: Colors.white,
-                        size: FilterDesignTokens.iconSizeMedium,
-                      ),
-                    ],
+                  child: Icon(
+                    Icons.tune,
+                    color: scheme.onPrimary,
+                    size: AppIconSize.md,
                   ),
                 ),
               ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              const SizedBox(width: AppSpacing.sm),
               ToggleFilter(
                 label: AppLocalizations.of(context)!.filterOpenNow,
                 isActive: showOpenNowOnly,
                 onTap: onOpenNowTap,
               ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              const SizedBox(width: AppSpacing.sm),
               ToggleFilter(
                 label: AppLocalizations.of(context)!.filterFavorites,
                 isActive: showFavoritesOnly,
                 isLocked: isGuestMode,
                 onTap: onFavoritesTap,
               ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              const SizedBox(width: AppSpacing.sm),
               CategoryFilter(
                 selectedCategories: selectedCategories,
                 onTap: onCategoryTap,
               ),
-              const SizedBox(width: FilterDesignTokens.spacingSmall),
+              const SizedBox(width: AppSpacing.sm),
               PreferencesFilter(
                 selectedRequirements: selectedPreferenceRequirements,
                 isLocked: isGuestMode,

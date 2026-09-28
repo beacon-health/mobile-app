@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/app_sizes.dart';
 import 'package:flutter/material.dart';
 
 class MapConstants {
@@ -50,18 +51,15 @@ class MapConstants {
   /// or error state, so a hung request can't spin forever.
   static const Duration facilityQueryTimeout = Duration(seconds: 30);
 
-  static const Duration animationDuration = Duration(milliseconds: 300);
+  static const Duration animationDuration = AppMotion.medium;
 
   /// Delay before driving the map after a tab switch, so the IndexedStack has
   /// swapped and the map controller exists.
   static const Duration navSettleDelay = Duration(milliseconds: 300);
-  static const Curve animationCurve = Curves.easeInOut;
+  static const Curve animationCurve = AppMotion.curve;
 
-  static const double panelBorderRadius = 20.0;
-  static const double panelHandleWidth = 40.0;
-  static const double panelHandleHeight = 4.0;
   static const double panelHeaderHeight = 50.0;
 
-  static const double markerSize = 40.0;
-  static const double selectedMarkerSize = 50.0;
+  /// Bottom padding in the facility list so the last card clears the nav bar.
+  static const double listBottomInset = 100.0;
 }

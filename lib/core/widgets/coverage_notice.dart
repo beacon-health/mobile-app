@@ -1,4 +1,4 @@
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -11,17 +11,18 @@ class CoverageNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurfaceSecondary;
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurfaceSecondary;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline, size: 16, color: color),
-        const SizedBox(width: 8),
+        Icon(Icons.info_outline, size: AppIconSize.sm, color: color),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             AppLocalizations.of(context)!.coverageNotice,
             textAlign: textAlign,
-            style: TextStyle(fontSize: 13, height: 1.35, color: color),
+            style: theme.textTheme.bodySmall?.copyWith(color: color),
           ),
         ),
       ],

@@ -1,7 +1,9 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/empty_state.dart';
 import 'package:beacon_app/core/widgets/facility_request_dialog.dart';
+import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -79,12 +81,16 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  /// Status chip color: pending → gray, approved → green, rejected → red.
-  Color _statusColor(String status) => switch (status) {
-        'approved' => AppTheme.resedaGreen,
-        'rejected' => AppTheme.bittersweet,
-        _ => AppTheme.paynesGray,
-      };
+  /// Status chip color: pending → secondary (gray), approved → primary
+  /// (green), rejected → tertiary (bittersweet).
+  Color _statusColor(String status) {
+    final scheme = Theme.of(context).colorScheme;
+    return switch (status) {
+      'approved' => scheme.primary,
+      'rejected' => scheme.tertiary,
+      _ => scheme.secondary,
+    };
+  }
 
   Widget _buildRow(FacilityRequestEntry entry) {
     final color = _statusColor(entry.status);
@@ -99,20 +105,21 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
         MaterialLocalizations.of(context).formatMediumDate(created),
     ].where((s) => s.isNotEmpty).join(' · ');
 
+    final theme = Theme.of(context);
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.15),
+        backgroundColor: color.tintStrong,
         child: Icon(
           entry.isCorrection
               ? Icons.edit_note_outlined
               : Icons.add_business_outlined,
           color: color,
-          size: 20,
+          size: AppIconSize.md,
         ),
       ),
       title: Text(
         entry.facilityName,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: theme.textTheme.titleMedium,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -122,26 +129,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
               parts,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          entry.status,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-      ),
+      trailing: TagChip(label: entry.status, color: color),
     );
   }
 
@@ -152,47 +144,15 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_business_outlined,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppLocalizations.of(context)!.requestsEmptyTitle,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)!.requestsEmptyHint,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.resedaGreen,
-                    ),
-                    onPressed: _newRequest,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: Text(
-                      AppLocalizations.of(context)!.mapRequestFacility,
-                    ),
-                  ),
-                ],
+          child: Center(
+            child: EmptyState(
+              icon: Icons.add_business_outlined,
+              title: AppLocalizations.of(context)!.requestsEmptyTitle,
+              message: AppLocalizations.of(context)!.requestsEmptyHint,
+              action: FilledButton.icon(
+                onPressed: _newRequest,
+                icon: const Icon(Icons.add, size: AppIconSize.md),
+                label: Text(AppLocalizations.of(context)!.mapRequestFacility),
               ),
             ),
           ),
