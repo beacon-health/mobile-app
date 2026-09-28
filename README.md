@@ -262,11 +262,15 @@ render widgets with the real theme, localizations, and providers.
   facility card, and the onboarding, login, settings, and guest-profile
   screens in light and dark. Screens without platform-specific pieces render
   under both iOS and Android against a single image, so the two platforms
-  can't drift apart. After an intentional visual change, regenerate and
-  review the images:
+  can't drift apart.
+
+  Golden images are canonical on **Linux**, because macOS rasterizes glyphs
+  differently. They run in CI and skip locally on macOS. After an intentional
+  visual change, push and let CI fail: it uploads the new renders and diffs as
+  the `golden-failures` artifact. Review them, then adopt them with:
 
   ```bash
-  flutter test test/goldens --update-goldens
+  tool/update_goldens_from_ci.sh
   ```
 
 Home and Map aren't widget-tested yet: they need Google Maps and a Supabase

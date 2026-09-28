@@ -159,6 +159,7 @@ void main() {
         );
       },
       variant: shippingPlatforms,
+      skip: goldensSkipped,
     );
 
     testWidgets(
@@ -203,6 +204,7 @@ void main() {
         );
       },
       variant: shippingPlatforms,
+      skip: goldensSkipped,
     );
   }
 }

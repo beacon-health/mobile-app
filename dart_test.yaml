@@ -1,5 +1,5 @@
 tags:
-  # Pixel comparisons against test/goldens/images. Regenerate after an
-  # intentional visual change with:
-  #   flutter test test/goldens --update-goldens
+  # Pixel comparisons against test/goldens/images. Canonical on Linux (CI);
+  # they skip on other OSes. After an intentional visual change, push, review
+  # the CI diffs, then adopt them with tool/update_goldens_from_ci.sh.
   golden:

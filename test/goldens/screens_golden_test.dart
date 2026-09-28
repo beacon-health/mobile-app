@@ -79,6 +79,7 @@ void main() {
           }
         },
         variant: shippingPlatforms,
+        skip: goldensSkipped,
       );
     }
   }

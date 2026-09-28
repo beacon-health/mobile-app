@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -14,6 +16,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Logical size of an iPhone 13/14 — the common phone size in Sentry data.
 const phoneSize = Size(390, 844);
+
+/// Golden images are canonical on Linux (CI's runner): macOS rasterizes
+/// glyphs with CoreText and Linux with FreeType, so the same widget differs
+/// by a few percent of pixels between them. Elsewhere golden tests skip —
+/// which also stops a local `--update-goldens` from writing macOS images.
+/// Refresh them from CI with `tool/update_goldens_from_ci.sh`.
+final bool goldensSkipped = !Platform.isLinux;
 
 /// Runs a test once per shipping platform. Pointing both runs at the same
 /// golden file is what enforces "iOS and Android look the same".
