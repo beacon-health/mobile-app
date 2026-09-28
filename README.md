@@ -253,9 +253,24 @@ column, so translating them would break round-tripping).
 
 Tests live in `test/`, mirroring `lib/`. Use `createTestFacility(...)` from
 `test/helpers/test_facility.dart` to build fixtures rather than hand-rolling
-`Facility` objects. Coverage is currently unit-level — services, models,
-filtering, and the category taxonomy. Widget tests need a Supabase mock and are
-a known gap.
+`Facility` objects, and `pumpThemed(...)` from `test/helpers/pump_app.dart` to
+render widgets with the real theme, localizations, and providers.
+
+- **Unit tests** cover services, models, filtering, and the category taxonomy.
+- **Widget tests** cover the shared design components and the facility card.
+- **Golden tests** (`test/goldens/`) snapshot the component gallery, the
+  facility card, and the onboarding, login, settings, and guest-profile
+  screens in light and dark. Screens without platform-specific pieces render
+  under both iOS and Android against a single image, so the two platforms
+  can't drift apart. After an intentional visual change, regenerate and
+  review the images:
+
+  ```bash
+  flutter test test/goldens --update-goldens
+  ```
+
+Home and Map aren't widget-tested yet: they need Google Maps and a Supabase
+client, which the app doesn't inject.
 
 ---
 

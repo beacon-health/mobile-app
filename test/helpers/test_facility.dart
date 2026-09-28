@@ -1,3 +1,4 @@
+import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -19,6 +20,10 @@ Facility createTestFacility({
   bool isOpenNow = false,
   List<OperatingHours> hours = const [],
   Map<String, bool> eligibilityRequirements = const {},
+  String? website,
+  FacilityEligibility? eligibility,
+  String? servicesSummary,
+  String? otherEligibilitySummary,
 }) {
   return Facility(
     id: id,
@@ -34,5 +39,9 @@ Facility createTestFacility({
     isFavorite: isFavorite,
     hours: hours,
     eligibilityRequirements: eligibilityRequirements,
+    website: website,
+    eligibility: eligibility,
+    servicesSummary: servicesSummary,
+    otherEligibilitySummary: otherEligibilitySummary,
   );
 }
