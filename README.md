@@ -115,7 +115,7 @@ lib/
   l10n/                        ARB files (en/es/zh) + generated localizations
 test/                          Unit, widget, and golden tests mirroring lib/
 design/                        Design-system guide + generated token export
-tool/                          Repo scripts (e.g. adopting golden renders from CI)
+tool/                          Repo scripts: golden adoption, Claude Design bundle
 ```
 
 ### Architecture at a glance
@@ -237,7 +237,9 @@ a token, regenerate the Claude Design export:
 flutter test test/design_tokens_test.dart --update-goldens
 ```
 
-The full guide is in [`design/README.md`](design/README.md).
+The full guide is in [`design/README.md`](design/README.md). The Claude Design
+project is built from these tokens with `dart run tool/build_design_bundle.dart`
+(see [`.design-sync/NOTES.md`](.design-sync/NOTES.md)).
 
 ### Localization
 

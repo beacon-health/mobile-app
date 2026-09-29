@@ -81,6 +81,9 @@ commands, or make text edits with the file tools instead of the shell.
   padding, gaps, alphas, or shadows.
 - Changed a token? Run `flutter test test/design_tokens_test.dart
   --update-goldens` and commit the regenerated `design/tokens.*`.
+- Changed tokens or a component's look? The Claude Design project is now
+  stale: rebuild with `dart run tool/build_design_bundle.dart` and re-sync
+  (`.design-sync/NOTES.md`).
 - `require_trailing_commas` is off; let `dart format` own line breaks.
 
 ## Tests
