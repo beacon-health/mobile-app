@@ -20,6 +20,7 @@ import 'dart:io';
 const _out = 'build/ds-bundle';
 const _renders = 'build/design_references';
 const _captures = '.design-sync/captures';
+const _mapKitCss = '.design-sync/map-kit.css';
 
 Future<void> main(List<String> args) async {
   if (!args.contains('--skip-render')) {
@@ -56,6 +57,29 @@ Future<void> main(List<String> args) async {
   _write('styles.css', _stylesCss);
   _write('guidelines/card.css', _cardCss);
 
+  // Map kit: real map backgrounds and pins, usable inside designs because
+  // styles.css imports map-kit.css (designs get only that import closure).
+  _copy(_mapKitCss, 'map/map-kit.css');
+  final pins = Directory('$_renders/map/pins');
+  final backgrounds = Directory(_captures)
+      .listSync()
+      .whereType<File>()
+      .where((f) => _name(f.path).startsWith('map_bg_'))
+      .toList();
+  if (!pins.existsSync() || backgrounds.isEmpty) {
+    stderr.writeln(
+      'Map kit assets missing — run without --skip-render, and '
+      'tool/design/capture_map_backgrounds.dart for the backgrounds.',
+    );
+    exit(1);
+  }
+  for (final pin in pins.listSync().whereType<File>()) {
+    _copy(pin.path, 'map/pins/${_name(pin.path)}');
+  }
+  for (final bg in backgrounds) {
+    _copy(bg.path, 'map/backgrounds/${_name(bg.path).substring(7)}');
+  }
+
   // Reference images: Flutter renders plus device captures.
   for (final dir in [_renders, _captures]) {
     if (!Directory(dir).existsSync()) {
@@ -74,6 +98,7 @@ Future<void> main(List<String> args) async {
     _typeCard(tokens),
     _spacingCard(tokens),
     ..._componentCards,
+    _mapKitCard,
     ..._screenCards,
   ];
   for (final card in cards) {
@@ -108,6 +133,7 @@ const _stylesCss = '''
    (lib/core/theme/) — see README.md. */
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 @import "./tokens/tokens.css";
+@import "./map/map-kit.css";
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; -webkit-font-smoothing: antialiased; }
@@ -429,6 +455,95 @@ final List<_Card> _componentCards = [
   ),
 ];
 
+final _Card _mapKitCard = _card(
+  path: 'guidelines/components/map-kit.html',
+  group: 'Map',
+  title: 'Map kit',
+  viewport: '1300x1200',
+  lede: 'Compose map screens from real parts: a background captured from the '
+      "app's Google Map in Beacon's map styles, the app's own pin bitmaps, and "
+      'overlays built from tokens. Position pins and clusters with '
+      '<code>left</code> / <code>top</code> inside a <code>.beacon-map</code>. '
+      'Keep the Google logo visible.',
+  body: '''
+<h2 class="text-title-medium">Composed example</h2>
+<div class="pair">
+<div class="beacon-map beacon-map--neighborhood"
+    style="border-radius: var(--radius-lg); --map-inset-bottom: 96px">
+  <span class="beacon-pin beacon-pin--community-resources" style="left:180px;top:250px"></span>
+  <span class="beacon-pin beacon-pin--mental-health" style="left:292px;top:292px"></span>
+  <span class="beacon-pin beacon-pin--health-care" style="left:118px;top:338px"></span>
+  <span class="beacon-pin-label" style="left:118px;top:338px">Near North Health Service</span>
+  <span class="beacon-pin beacon-pin--basic-needs" style="left:232px;top:402px"></span>
+  <span class="beacon-pin beacon-pin--housing-shelter" style="left:84px;top:470px"></span>
+  <span class="beacon-cluster beacon-cluster--medium" style="left:300px;top:500px">12</span>
+  <div style="position:absolute;left:var(--space-sm);right:var(--space-sm);top:54px;
+      height:48px;display:flex;align-items:center;gap:var(--space-md);
+      padding:0 var(--space-lg);background:var(--color-card);
+      border-radius:var(--radius-pill);box-shadow:var(--shadow-raised)">
+    <span class="material-icons" style="color:var(--color-on-surface-variant)">search</span>
+    <span class="text-body-large" style="color:var(--color-on-surface-variant)">Search for resources...</span>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;height:96px;
+      padding-top:var(--space-sm);text-align:center;
+      background:var(--color-background);box-shadow:var(--shadow-sheet);
+      border-radius:var(--radius-xl) var(--radius-xl) 0 0">
+    <div style="width:40px;height:4px;margin:0 auto var(--space-sm);
+        border-radius:var(--radius-pill);
+        background:color-mix(in srgb, var(--color-on-surface) 20%, transparent)"></div>
+    <span class="text-title-large">Resources near you</span>
+  </div>
+</div>
+<ul class="spec text-body-medium" style="max-width:520px">
+<li><code>.beacon-map</code> plus <code>--neighborhood</code> (the app's list
+zoom, 14) or <code>--city</code> (its default, 12). It is 390×844 and swaps
+to the dark map style with the theme.</li>
+<li><code>.beacon-pin .beacon-pin--&lt;category&gt;</code> is centered on its
+<code>left</code> / <code>top</code>. Categories: health-care, mental-health,
+basic-needs, housing-shelter, community-resources, specialized-services,
+fallback.</li>
+<li><code>.beacon-pin-label</code> takes the same <code>left</code> /
+<code>top</code> as its pin and sits under it; the app shows names from
+street zoom (15) in.</li>
+<li><code>.beacon-cluster</code> holds a count: default under 10,
+<code>--medium</code> for 10–99, <code>--large</code> for 100+.</li>
+<li>Overlays (search bar, filter chips, panels, facility cards) are built
+from tokens, as on the other cards. Under a bottom panel, set
+<code>--map-inset-bottom</code> to its height so the Google logo stays
+visible above it, as the app's map padding does.</li>
+</ul>
+</div>
+<h2 class="text-title-medium">Backgrounds</h2>
+<div class="pair phone">
+<figure><img src="../../map/backgrounds/light_neighborhood.jpg" alt=""><figcaption class="text-body-small">--neighborhood</figcaption></figure>
+<figure><img src="../../map/backgrounds/light_city.jpg" alt=""><figcaption class="text-body-small">--city</figcaption></figure>
+<figure><img src="../../map/backgrounds/dark_neighborhood.jpg" alt=""><figcaption class="text-body-small">--neighborhood, dark</figcaption></figure>
+<figure><img src="../../map/backgrounds/dark_city.jpg" alt=""><figcaption class="text-body-small">--city, dark</figcaption></figure>
+</div>
+<h2 class="text-title-medium">Pins and clusters</h2>
+<div class="pair" style="align-items:center">
+<img src="../../map/pins/pin_health-care.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_mental-health.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_basic-needs.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_housing-shelter.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_community-resources.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_specialized-services.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_fallback.png" alt="" style="width:34px;border:0">
+<img src="../../map/pins/pin_labeled_example.png" alt="" style="width:80px;border:0">
+</div>
+<p class="text-body-small" style="color:var(--color-on-surface-variant)">
+App bitmaps (left of each pair) vs. <code>.beacon-cluster</code> (right):</p>
+<div class="pair" style="align-items:center">
+<img src="../../map/pins/cluster_7.png" alt="" style="width:30px;border:0">
+<div style="position:relative;width:40px;height:40px"><span class="beacon-cluster" style="left:20px;top:20px">7</span></div>
+<img src="../../map/pins/cluster_42.png" alt="" style="width:37px;border:0">
+<div style="position:relative;width:44px;height:44px"><span class="beacon-cluster beacon-cluster--medium" style="left:22px;top:22px">42</span></div>
+<img src="../../map/pins/cluster_180.png" alt="" style="width:43px;border:0">
+<div style="position:relative;width:50px;height:50px"><span class="beacon-cluster beacon-cluster--large" style="left:25px;top:25px">180</span></div>
+</div>
+''',
+);
+
 final List<_Card> _screenCards = [
   _card(
     path: 'guidelines/screens/sign-in.html',
@@ -539,6 +654,9 @@ $header
 - `tokens/tokens.css` / `tokens/tokens.json` — every token, generated from the
   Flutter app's `lib/core/theme/`. Dark roles apply under
   `data-theme="dark"`.
+- `map/map-kit.css` — the map kit's classes (`.beacon-map`, `.beacon-pin`,
+  `.beacon-pin-label`, `.beacon-cluster`), with real map backgrounds in
+  `map/backgrounds/` and the app's pin bitmaps in `map/pins/`.
 - Cards:
 $index
 ''';
@@ -546,23 +664,45 @@ $index
 
 // --- Checks ----------------------------------------------------------------
 
+/// Custom-property prefixes design/tokens.css defines.
+const _tokenFamilies =
+    'color|space|radius|shadow|icon|size|opacity|motion|font|gradient';
+
 void _validate(List<_Card> cards) {
   final css = File('$_out/tokens/tokens.css').readAsStringSync();
   final defined =
       RegExp('(--[a-z0-9-]+):').allMatches(css).map((m) => m[1]!).toSet();
-  final classes =
-      RegExp(r'\.(text-[a-z-]+) \{').allMatches(css).map((m) => m[1]!).toSet();
+  final mapKit = File('$_out/map/map-kit.css').readAsStringSync();
+  final classes = {
+    ...RegExp(r'\.(text-[a-z-]+) \{').allMatches(css).map((m) => m[1]!),
+    ...RegExp(r'\.(beacon-[a-z-]+)\b').allMatches(mapKit).map((m) => m[1]!),
+  };
   final problems = <String>[];
 
   void check(String where, String text) {
-    for (final m in RegExp('--[a-z0-9]+(?:-[a-z0-9]+)*').allMatches(text)) {
+    // Only token families are checked: `--neighborhood` in
+    // `.beacon-map--neighborhood` is a class modifier, not a variable.
+    final tokenName = RegExp(
+      '(?<![\\w-])--(?:$_tokenFamilies)(?:-[a-z0-9]+)*',
+    );
+    for (final m in tokenName.allMatches(text)) {
       // A family written as "--color-category-*" is a pattern, not a name.
       final rest = text.substring(m.end);
       if (rest.startsWith('-*') || rest.startsWith('*')) continue;
       if (!defined.contains(m[0])) problems.add('$where: unknown ${m[0]}');
     }
-    for (final m in RegExp(r'\.(text-[a-z]+(?:-[a-z]+)*)').allMatches(text)) {
+    for (final m
+        in RegExp(r'\.((?:text|beacon)-[a-z]+(?:-[a-z]+)*)').allMatches(text)) {
       if (!classes.contains(m[1])) problems.add('$where: unknown .${m[1]}');
+    }
+    // Class attributes too (the map kit card uses the classes directly).
+    for (final m in RegExp('class="([^"]+)"').allMatches(text)) {
+      for (final name in m[1]!.split(' ')) {
+        if ((name.startsWith('beacon-') || name.startsWith('text-')) &&
+            !classes.contains(name)) {
+          problems.add('$where: unknown class $name');
+        }
+      }
     }
     for (final m in RegExp('src="([^"]+)"').allMatches(text)) {
       final ref = File(
@@ -579,6 +719,12 @@ void _validate(List<_Card> cards) {
     check(card.path, card.html);
   }
   check('README.md', File('$_out/README.md').readAsStringSync());
+  check('map/map-kit.css', mapKit);
+  for (final m in RegExp(r'url\("\./([^"]+)"\)').allMatches(mapKit)) {
+    if (!File('$_out/map/${m[1]}').existsSync()) {
+      problems.add('map/map-kit.css: missing ${m[1]}');
+    }
+  }
 
   if (problems.isNotEmpty) {
     stderr.writeln(problems.join('\n'));

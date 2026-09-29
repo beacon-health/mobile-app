@@ -69,6 +69,25 @@ Use these, never raw hex or pixel values:
   `--color-background`; a four-tab bottom bar (Home, Map, Profile, Settings)
   on `--color-nav-bar`, active tab `--color-brand-bittersweet`.
 
+## Map screens
+
+Never draw a map by hand. Compose it from the map kit (`map/map-kit.css`,
+already loaded by `styles.css`):
+
+- `<div class="beacon-map beacon-map--neighborhood">` (or `--city`) is a
+  390×844 real Google Map in Beacon's styles; it follows the theme.
+- Inside it, place `<span class="beacon-pin beacon-pin--health-care">` (any
+  facility category, or `--fallback`) with `left` / `top`; pins are centered
+  on that point. `.beacon-pin-label` at the same point adds the facility name
+  beneath (street zoom only). `<span class="beacon-cluster">12</span>` groups
+  facilities (`--medium` for 10–99, `--large` for 100+).
+- Build overlays from tokens on top: a `--radius-pill` search bar with
+  `--shadow-raised`, a row of filter chips, and a results panel with
+  `--radius-xl` top corners and `--shadow-sheet`.
+- Keep the Google logo (bottom left of the map) visible: under a bottom
+  panel, set `style="--map-inset-bottom: <panel height>px"` on the
+  `.beacon-map`, which lifts the map above the panel like the app does.
+
 ## Rules
 
 - Touch targets are at least 48px (`--size-min-touch-target`).

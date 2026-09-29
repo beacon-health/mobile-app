@@ -21,10 +21,12 @@ import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboardi
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
@@ -109,6 +111,43 @@ Future<void> _render(
     EditableText.debugDeterministicCursor = false;
   }
 }
+
+void _writePng(String name, Uint8List bytes) {
+  File('$_outDir/$name')
+    ..createSync(recursive: true)
+    ..writeAsBytesSync(bytes);
+}
+
+/// The circle of a facility pin bitmap, without the (empty) name area.
+Future<Uint8List> _cropPin(Uint8List png) async {
+  final codec = await ui.instantiateImageCodec(png);
+  final image = (await codec.getNextFrame()).image;
+  const side = MarkerUtils.facilityMarkerCircleSize;
+  final left = (image.width - side) / 2;
+  final recorder = ui.PictureRecorder();
+  Canvas(recorder).drawImageRect(
+    image,
+    Rect.fromLTWH(left, 0, side, side),
+    const Rect.fromLTWH(0, 0, side, side),
+    Paint(),
+  );
+  final cropped =
+      await recorder.endRecording().toImage(side.toInt(), side.toInt());
+  final bytes = await cropped.toByteData(format: ui.ImageByteFormat.png);
+  return bytes!.buffer.asUint8List();
+}
+
+/// The map's pin and cluster bitmaps, exactly as the app draws them, for the
+/// Claude Design map kit.
+const _pinCategories = <String, String?>{
+  'health-care': FacilityCategories.groupHealthCare,
+  'mental-health': FacilityCategories.groupMentalHealth,
+  'basic-needs': FacilityCategories.groupBasicNeeds,
+  'housing-shelter': FacilityCategories.groupHousingShelter,
+  'community-resources': FacilityCategories.groupCommunity,
+  'specialized-services': FacilityCategories.groupSpecialized,
+  'fallback': null,
+};
 
 /// A component sample on the page background, padded like a screen and
 /// shrink-wrapped to its content.
@@ -387,6 +426,29 @@ void main() {
     await _loadFonts();
   });
   setUp(mockPlatformServices);
+
+  testWidgets('map kit pins and clusters', (tester) async {
+    await tester.runAsync(() async {
+      for (final MapEntry(key: name, value: category)
+          in _pinCategories.entries) {
+        final pin = await MarkerUtils.facilityMarkerPng(category);
+        _writePng('map/pins/pin_$name.png', await _cropPin(pin));
+      }
+      _writePng(
+        'map/pins/pin_labeled_example.png',
+        await MarkerUtils.facilityMarkerPng(
+          FacilityCategories.groupHealthCare,
+          name: 'Near North Health Service',
+        ),
+      );
+      for (final count in const [7, 42, 180]) {
+        _writePng(
+          'map/pins/cluster_$count.png',
+          await MarkerUtils.clusterMarkerPng(count),
+        );
+      }
+    });
+  });
 
   for (final brightness in Brightness.values) {
     final suffix = brightness.name;
