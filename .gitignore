@@ -7,9 +7,13 @@ ios/Runner/GoogleService-Info.plist
 ios/Flutter/Secrets.xcconfig
 config/dart_defines.json
 
-# AI agent configuration
+# AI agent configuration. .claude/settings.json and .claude/hooks/ are shared
+# (permissions + the secret-read guard); personal overrides and worktrees stay
+# local.
 .windsurf/
-.claude/
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
 
 # macOS metadata files
 .DS_Store
