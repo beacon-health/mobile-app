@@ -82,13 +82,15 @@ Each failure names the token to use instead.
 
 ## Claude Design
 
-Claude Design builds with React/HTML, so it can't run these Flutter widgets. It
-consumes `tokens.css` (colors, type, spacing, radius, shadow, Inter) together
-with this file's rules. The workflow:
+Claude Design builds with React/HTML, so it can't run these Flutter widgets.
+Its design-system project ("Beacon Design System") holds the tokens, Inter,
+the design agent's instructions (`.design-sync/conventions.md`), and
+reference cards rendered from the real widgets and screens. Build it with
+`dart run tool/build_design_bundle.dart`; `.design-sync/NOTES.md` covers
+uploading and what can go stale.
 
-1. **Design → code:** mock the screen in Claude Design against these tokens,
-   then hand the link to Claude Code to implement in Flutter with the same
+1. **Design → code:** mock the screen in Claude Design against the project,
+   then hand the link to Claude Code to rebuild it in Flutter with the same
    tokens.
-2. **Code → Design:** when a PR changes `lib/core/theme/`, regenerate the
-   tokens (CI enforces it) and re-sync the Claude Design project from this
-   folder.
+2. **Code → Design:** when a PR changes `lib/core/theme/` or a component's
+   look, rebuild the bundle and re-sync the project.
