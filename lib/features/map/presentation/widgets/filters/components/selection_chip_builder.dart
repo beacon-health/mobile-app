@@ -1,59 +1,9 @@
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 /// Selection-chip rows for the Filter modal. The helpers take a [BuildContext]
 /// so chips theme correctly instead of rendering invisibly on dark surfaces.
 class SelectionChipBuilder<T> {
-  static Widget buildSingleSelection<T>({
-    required BuildContext context,
-    required List<T> options,
-    required T selectedValue,
-    required void Function(T) onSelected,
-    required String Function(T) getLabel,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Wrap(
-      spacing: FilterDesignTokens.spacingSmall,
-      runSpacing: FilterDesignTokens.spacingSmall,
-      children: options.map((option) {
-        final isSelected = selectedValue == option;
-        return GestureDetector(
-          onTap: () => onSelected(option),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: FilterDesignTokens.selectionChipPaddingHorizontal,
-              vertical: FilterDesignTokens.selectionChipPaddingVertical,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.resedaGreen.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              border: Border.all(
-                color: isSelected
-                    ? AppTheme.resedaGreen
-                    : Theme.of(context).dividerColor,
-                width: isSelected
-                    ? FilterDesignTokens.borderWidthSelected
-                    : FilterDesignTokens.borderWidthNormal,
-              ),
-              borderRadius:
-                  BorderRadius.circular(FilterDesignTokens.borderRadiusSmall),
-            ),
-            child: Text(
-              getLabel(option),
-              style: TextStyle(
-                color:
-                    isSelected ? AppTheme.resedaGreen : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   static Widget buildMultiSelection<T>({
     required BuildContext context,
     required List<T> options,
@@ -61,45 +11,65 @@ class SelectionChipBuilder<T> {
     required void Function(T, bool) onToggle,
     required String Function(T) getLabel,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Wrap(
-      spacing: FilterDesignTokens.spacingSmall,
-      runSpacing: FilterDesignTokens.spacingSmall,
-      children: options.map((option) {
-        final isSelected = selectedValues.contains(option);
-        return GestureDetector(
-          onTap: () => onToggle(option, !isSelected),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: FilterDesignTokens.selectionChipPaddingHorizontal,
-              vertical: FilterDesignTokens.selectionChipPaddingVertical,
-            ),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.resedaGreen.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              border: Border.all(
-                color: isSelected
-                    ? AppTheme.resedaGreen
-                    : Theme.of(context).dividerColor,
-                width: isSelected
-                    ? FilterDesignTokens.borderWidthSelected
-                    : FilterDesignTokens.borderWidthNormal,
-              ),
-              borderRadius:
-                  BorderRadius.circular(FilterDesignTokens.borderRadiusSmall),
-            ),
-            child: Text(
-              getLabel(option),
-              style: TextStyle(
-                color:
-                    isSelected ? AppTheme.resedaGreen : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: [
+        for (final option in options)
+          GestureDetector(
+            onTap: () => onToggle(option, !selectedValues.contains(option)),
+            child: SelectionTile(
+              label: getLabel(option),
+              selected: selectedValues.contains(option),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
               ),
             ),
           ),
-        );
-      }).toList(),
+      ],
+    );
+  }
+}
+
+/// Outlined option that tints with the primary color when [selected]. Shared
+/// by the Filter modal's category chips and its Yes / No toggles.
+class SelectionTile extends StatelessWidget {
+  const SelectionTile({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.padding,
+    this.center = false,
+  });
+
+  final String label;
+  final bool selected;
+  final EdgeInsetsGeometry padding;
+  final bool center;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final text = Text(
+      label,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: selected ? primary : theme.colorScheme.onSurface,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+      ),
+    );
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: selected ? primary.tint : Colors.transparent,
+        border: Border.all(
+          color: selected ? primary : theme.dividerColor,
+          width: selected ? AppSizes.borderSelected : AppSizes.border,
+        ),
+        borderRadius: AppRadii.smAll,
+      ),
+      child: center ? Center(child: text) : text,
     );
   }
 }

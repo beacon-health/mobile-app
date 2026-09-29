@@ -1,7 +1,5 @@
 import 'package:beacon_app/core/services/zip_code_service.dart';
-import 'package:beacon_app/core/theme/app_gradients.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -69,41 +67,42 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: AppGradients.onboarding(context),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.onboardingGutter,
+        ),
         child: SafeArea(
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 Text(
                   l10n.zipEntryTitle,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: theme.colorScheme.secondary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   l10n.zipEntrySubtitle,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Theme.of(context).colorScheme.onSurfaceSecondary,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceSecondary,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
                 TextFormField(
                   controller: _controller,
                   keyboardType: TextInputType.number,
@@ -114,29 +113,18 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   autofocus: true,
                   decoration: InputDecoration(
                     hintText: '00000',
-                    hintStyle: TextStyle(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.35),
-                      letterSpacing: 4,
+                    hintStyle: AppTypography.zipInput.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: AppOpacity.disabled,
+                      ),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    border: const OutlineInputBorder(
+                      borderRadius: AppRadii.smAll,
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
+                    contentPadding: const EdgeInsets.all(AppSpacing.lg),
                   ),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    letterSpacing: 4,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTypography.zipInput,
                   validator: (value) {
                     final trimmed = (value ?? '').trim();
                     if (trimmed.length != 5) {
@@ -147,39 +135,32 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
                   onFieldSubmitted: (_) => _isLoading ? null : _submit(),
                 ),
                 if (_errorMessage != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
                   ),
                 ],
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: AppTheme.paynesGray,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
+                    style: AppTheme.secondaryFilledButton(context),
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
+                        ? SizedBox.square(
+                            dimension: AppIconSize.md,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: theme.colorScheme.onSecondary,
                             ),
                           )
                         : Text(l10n.onboardingContinue),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 const CoverageNotice(),
               ],
             ),

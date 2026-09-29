@@ -7,6 +7,8 @@
   "homeFavorites": "您的收藏",
   "homeNoFavorites": "暂无收藏",
   "homeNoFavoritesHint": "从地图页面添加收藏即可在此查看",
+  "homeFavoritesSignInTitle": "登录以使用收藏",
+  "homeFavoritesSignInHint": "登录即可收藏您喜欢的机构。",
   "homeRecentlyViewed": "最近浏览的机构",
   "homeNoRecentlyViewed": "暂无最近浏览的机构",
   "homeNoRecentlyViewedHint": "在地图上点击机构即可在此查看。",
@@ -164,6 +166,15 @@
   "navProfile": "个人资料",
   "profileApplyEligibility": "将资格条件应用于搜索",
   "profileApplyEligibilityDesc": "仅显示符合您资格的机构。",
+  "profileSignedIn": "已登录",
+  "profileSignedInThrough": "已通过 {provider} 登录",
+  "@profileSignedInThrough": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "commonSave": "保存",
   "homeCategoryHealthCare": "医疗保健",
   "homeCategoryMentalHealth": "心理健康",

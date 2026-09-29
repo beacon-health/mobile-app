@@ -1,6 +1,7 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_feedback_service.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/empty_state.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/features/map/data/supabase_facility_service.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -101,8 +102,10 @@ class _MyRatingsPageState extends State<MyRatingsPage> {
 
   Widget _buildRow(FacilityFeedbackEntry entry) {
     final facility = _facilityFor(entry);
-    final accent =
-        entry.isThumbsUp ? AppTheme.resedaGreen : AppTheme.bittersweet;
+    final theme = Theme.of(context);
+    final accent = entry.isThumbsUp
+        ? theme.colorScheme.primary
+        : theme.colorScheme.tertiary;
     final date = entry.visitedOn ?? entry.submittedAt;
     final subtitle = [
       if (entry.tags.isNotEmpty) entry.tags.join(', '),
@@ -114,16 +117,16 @@ class _MyRatingsPageState extends State<MyRatingsPage> {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: accent.withValues(alpha: 0.15),
+        backgroundColor: accent.tintStrong,
         child: Icon(
           entry.isThumbsUp ? Icons.thumb_up : Icons.thumb_down,
           color: accent,
-          size: 20,
+          size: AppIconSize.md,
         ),
       ),
       title: Text(
         facility.name,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: theme.textTheme.titleMedium,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -133,12 +136,11 @@ class _MyRatingsPageState extends State<MyRatingsPage> {
               subtitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-      trailing: const Icon(Icons.edit_outlined, size: 20),
+      trailing: const Icon(Icons.edit_outlined, size: AppIconSize.md),
       onTap: () => _edit(entry),
     );
   }
@@ -150,38 +152,11 @@ class _MyRatingsPageState extends State<MyRatingsPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.thumbs_up_down_outlined,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppLocalizations.of(context)!.ratingsEmptyTitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)!.ratingsEmptyHint,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+          child: Center(
+            child: EmptyState(
+              icon: Icons.thumbs_up_down_outlined,
+              title: AppLocalizations.of(context)!.ratingsEmptyTitle,
+              message: AppLocalizations.of(context)!.ratingsEmptyHint,
             ),
           ),
         ),

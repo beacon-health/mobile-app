@@ -37,6 +37,19 @@ jobs:
       - name: Run tests
         run: flutter test
 
+      # Goldens are canonical on this Linux runner. On a mismatch, flutter
+      # writes the Linux render next to the diff; upload them so the change
+      # can be reviewed and, if intended, adopted with
+      # tool/update_goldens_from_ci.sh.
+      - name: Upload golden failures
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: golden-failures
+          path: test/goldens/failures/
+          if-no-files-found: ignore
+          retention-days: 7
+
   android:
     name: Android Build
     runs-on: ubuntu-latest

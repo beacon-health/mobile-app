@@ -12,12 +12,18 @@ class UrlLauncherService {
     try {
       // Map links must leave the app; anything else may use an in-app view.
       final isMapLink = url.startsWith('http') && url.contains('maps');
-      final launched = await launchUrl(
+      var launched = await launchUrl(
         uri,
         mode: isMapLink
             ? LaunchMode.externalApplication
             : LaunchMode.platformDefault,
       );
+      // iOS's in-app browser (SFSafariViewController) returns false when a
+      // page's first load fails, even for sites Safari opens fine
+      // (BEACON-8). Hand the link to the default browser before giving up.
+      if (!launched && !isMapLink) {
+        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
       if (!launched) {
         throw Exception('launchUrl returned false for $uri');
       }

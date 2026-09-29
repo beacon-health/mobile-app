@@ -1,5 +1,6 @@
-import 'package:beacon_app/core/theme/app_theme.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/coverage_notice.dart';
+import 'package:beacon_app/core/widgets/drag_handle.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
@@ -113,17 +114,8 @@ class FacilityListPanel extends StatelessWidget {
         height: targetHeight,
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(MapConstants.panelBorderRadius),
-            topRight: Radius.circular(MapConstants.panelBorderRadius),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10.0,
-              offset: Offset(0, -2),
-            ),
-          ],
+          borderRadius: AppRadii.sheetTop,
+          boxShadow: AppShadows.sheet,
         ),
         child: Column(
           children: [
@@ -136,37 +128,26 @@ class FacilityListPanel extends StatelessWidget {
   }
 
   Widget _buildPanelHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       height: MapConstants.panelHeaderHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          Container(
-            width: MapConstants.panelHandleWidth,
-            height: MapConstants.panelHandleHeight,
-            decoration: BoxDecoration(
-              color: Colors.grey[400],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
+          const DragHandle(),
+          const SizedBox(height: AppSpacing.sm),
           if (!isPanelOpen && !isFullyExpanded)
             Text(
               AppLocalizations.of(context)!.mapSwipeUpToView,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceMuted,
               ),
             )
           else
             Text(
               AppLocalizations.of(context)!.mapResourcesNearYou,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
+              style: theme.textTheme.titleLarge,
             ),
         ],
       ),
@@ -202,7 +183,7 @@ class FacilityListPanel extends StatelessWidget {
           child: isLoading
               ? const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32.0),
+                    padding: EdgeInsets.all(AppSpacing.xxxl),
                     child: CircularProgressIndicator(),
                   ),
                 )
@@ -215,7 +196,10 @@ class FacilityListPanel extends StatelessWidget {
                               parent: AlwaysScrollableScrollPhysics(),
                             )
                           : const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 100.0),
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: MapConstants.listBottomInset,
+                      ),
                       itemCount: facilities.length,
                       itemBuilder: (context, index) {
                         final facility = facilities[index];
@@ -246,41 +230,46 @@ class FacilityListPanel extends StatelessWidget {
   Widget _buildEmptyState(BuildContext context) {
     // Scrollable + top-aligned so it never overflows when the panel is short
     // (collapsed, or mid drag/animation the Expanded height can be ~0).
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xxl,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+          AppSpacing.xxl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 40, color: Colors.grey[400]),
-            const SizedBox(height: 12),
+            Icon(
+              Icons.search_off,
+              size: AppIconSize.xxl,
+              color: theme.colorScheme.onSurfaceMuted,
+            ),
+            const SizedBox(height: AppSpacing.md),
             Text(
               AppLocalizations.of(context)!.mapNoFacilitiesInArea,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
+              style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               AppLocalizations.of(context)!.mapCantFindFacility,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const CoverageNotice(),
             if (onRequestFacility != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextButton.icon(
                 onPressed: () => onRequestFacility!(),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.resedaGreen,
+                icon: const Icon(
+                  Icons.add_business_outlined,
+                  size: AppIconSize.md,
                 ),
-                icon: const Icon(Icons.add_business_outlined, size: 18),
                 label: Text(AppLocalizations.of(context)!.mapRequestFacility),
               ),
             ],

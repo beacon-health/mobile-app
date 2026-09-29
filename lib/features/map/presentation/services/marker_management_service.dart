@@ -26,13 +26,16 @@ class MarkerManagementService {
     required Function(LatLng) onClusterTap,
   }) async {
     if (zoom >= MapConstants.clusterZoomThreshold) {
-      return createMarkersForFacilities(
+      // Awaited into a local rather than `return await`: very_good_analysis 10
+      // flags unnecessary_await_in_return, 11 flags async_return_with_no_await.
+      final markers = await createMarkersForFacilities(
         facilities,
         context,
         showFacilityNames,
         markerIconCache,
         onFacilityTap,
       );
+      return markers;
     }
 
     final buckets = <String, List<Facility>>{};

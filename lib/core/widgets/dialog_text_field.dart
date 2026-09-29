@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 /// Compact outlined text field used by the facility request and correction
@@ -23,18 +24,14 @@ class DialogTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
         enabled: enabled,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
-        ),
-        style: const TextStyle(fontSize: 14),
+        decoration: InputDecoration(labelText: label, isDense: true),
+        style: Theme.of(context).textTheme.bodyMedium,
         validator: validator,
       ),
     );

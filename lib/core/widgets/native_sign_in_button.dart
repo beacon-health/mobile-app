@@ -1,6 +1,7 @@
 import 'package:beacon_app/core/services/apple_sign_in_service.dart';
 import 'package:beacon_app/core/services/google_sign_in_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
@@ -40,7 +41,7 @@ class NativeSignInButton extends StatefulWidget {
     this.onFailure,
     this.onLoadingChanged,
     this.expanded = true,
-    this.padding = const EdgeInsets.symmetric(vertical: 12),
+    this.padding = const EdgeInsets.symmetric(vertical: AppSpacing.md),
   });
 
   /// Optional hook fired after a successful sign-in. Default behavior is to
@@ -115,8 +116,10 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
 
     final l10n = AppLocalizations.of(context);
     final isApple = provider == NativeSignInProvider.apple;
-    final background = isApple ? Colors.black : Colors.white;
-    final foreground = isApple ? Colors.white : Colors.black87;
+    // Brand-mandated colors, not theme colors: Apple's button is black with
+    // white text, Google's is white with a hairline border.
+    final background = isApple ? AppColors.appleBlack : Colors.white;
+    final foreground = isApple ? Colors.white : AppColors.googleButtonText;
 
     final button = ElevatedButton.icon(
       onPressed: _isLoading ? null : () => _handleTap(provider),
@@ -146,11 +149,15 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
         foregroundColor: foreground,
         disabledBackgroundColor: background.withValues(alpha: 0.7),
         disabledForegroundColor: foreground,
-        side: isApple ? null : const BorderSide(color: Colors.black12),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
-        ),
+        side: isApple
+            ? null
+            : const BorderSide(color: AppColors.googleButtonBorder),
+        textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontFamily: isApple
+                  ? AppTypography.appleButtonFontFamily
+                  : AppTypography.googleButtonFontFamily,
+              fontWeight: FontWeight.w500,
+            ),
       ),
     );
 

@@ -5,9 +5,9 @@ import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/local_user_data.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
@@ -45,24 +45,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildEligibilitySection(l10n),
                 _buildSignOutButton(l10n),
                 _buildDeleteAccountButton(l10n),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.paynesGray,
-          letterSpacing: 0.5,
-        ),
-      ),
     );
   }
 
@@ -71,45 +56,45 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildGuestState(AppLocalizations l10n) {
     return ListView(
       children: [
-        _buildSectionHeader(l10n.settingsAccount),
+        SectionHeader(l10n.settingsAccount),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: AppSizes.avatar,
+                      height: AppSizes.avatar,
                       decoration: BoxDecoration(
                         color: Theme.of(context)
                             .colorScheme
                             .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadii.mdAll,
                       ),
                       child: Icon(
                         Icons.lock_outline,
-                        size: 26,
+                        size: AppIconSize.xl,
                         color: Theme.of(context).colorScheme.onSurfaceFaded,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Text(
                         l10n.settingsSignInHint,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceSecondary,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceSecondary,
+                            ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Builder(
                   builder: (innerContext) => NativeSignInButton(
                     onFailure: (msg) {
@@ -134,15 +119,15 @@ class _ProfilePageState extends State<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(l10n.settingsAccount),
+        SectionHeader(l10n.settingsAccount),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
                 _buildProviderBadge(),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.lg),
                 Expanded(child: _buildSignedInIdentity()),
               ],
             ),
@@ -161,29 +146,34 @@ class _ProfilePageState extends State<ProfilePage> {
     Color background;
     switch (provider) {
       case 'apple':
-        background = Colors.black;
-        child = const Icon(Icons.apple, size: 28, color: Colors.white);
+        background = AppColors.appleBlack;
+        child = const Icon(
+          Icons.apple,
+          size: AppIconSize.xl,
+          color: Colors.white,
+        );
       case 'google':
         background = Colors.white;
+        // The glyph carries its own padding, so it needs a larger box.
         child = const Icon(
           Icons.g_mobiledata,
-          size: 36,
-          color: Color(0xFF4285F4),
+          size: AppIconSize.xxl,
+          color: AppColors.googleBlue,
         );
       default:
-        background = AppTheme.honeydew;
+        background = AppColors.honeydew;
         child = const Icon(
           Icons.person,
-          size: 28,
-          color: AppTheme.paynesGray,
+          size: AppIconSize.xl,
+          color: AppColors.paynesGray,
         );
     }
     return Container(
-      width: 48,
-      height: 48,
+      width: AppSizes.avatar,
+      height: AppSizes.avatar,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.mdAll,
         border: provider == 'google'
             ? Border.all(color: Theme.of(context).dividerColor)
             : null,
@@ -199,38 +189,37 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = _displayEmail(user);
     final name = _displayName(user);
 
+    final l10n = AppLocalizations.of(context)!;
     final primary = name ??
         (providerLabel != null
-            ? 'Signed in through $providerLabel'
-            : 'Signed in');
+            ? l10n.profileSignedInThrough(providerLabel)
+            : l10n.profileSignedIn);
 
+    final theme = Theme.of(context);
+    final secondaryStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceMuted,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           primary,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         if (email != null)
           Text(
             email,
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceMuted,
-            ),
+            style: secondaryStyle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           )
         else if (name != null && providerLabel != null)
           Text(
-            'Signed in through $providerLabel',
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceMuted,
-            ),
+            l10n.profileSignedInThrough(providerLabel),
+            style: secondaryStyle,
           ),
       ],
     );
@@ -263,30 +252,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildAccountLinksSection(AppLocalizations l10n) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
         child: Column(
           children: [
             ListTile(
-              leading: const Icon(
-                Icons.thumbs_up_down_outlined,
-                color: AppTheme.paynesGray,
-              ),
+              leading: const Icon(Icons.thumbs_up_down_outlined),
               title: Text(l10n.settingsYourRatings),
-              trailing: const Icon(Icons.chevron_right, size: 20),
+              trailing: const Icon(Icons.chevron_right, size: AppIconSize.md),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const MyRatingsPage()),
               ),
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(
-                Icons.add_business_outlined,
-                color: AppTheme.paynesGray,
-              ),
+              leading: const Icon(Icons.add_business_outlined),
               title: Text(l10n.settingsYourRequests),
-              trailing: const Icon(Icons.chevron_right, size: 20),
+              trailing: const Icon(Icons.chevron_right, size: AppIconSize.md),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const MyRequestsPage()),
               ),
@@ -316,27 +299,23 @@ class _ProfilePageState extends State<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(l10n.settingsEligibility),
+        SectionHeader(l10n.settingsEligibility),
         // Parent toggle in its own card, visually separated from the gates
         // it governs below.
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: SwitchListTile(
             title: Text(l10n.profileApplyEligibility),
             subtitle: Text(l10n.profileApplyEligibilityDesc),
-            secondary: const Icon(
-              Icons.filter_alt_outlined,
-              color: AppTheme.paynesGray,
-            ),
+            secondary: const Icon(Icons.filter_alt_outlined),
             value: applyOn,
-            activeThumbColor: AppTheme.resedaGreen,
             onChanged: (v) =>
                 unawaited(epService.setApplyEligibilityToSearch(v)),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.xl),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: Column(
             children: [
               _eligToggle(
@@ -381,9 +360,8 @@ class _ProfilePageState extends State<ProfilePage> {
   ) {
     return SwitchListTile(
       title: Text(title),
-      secondary: Icon(icon, color: AppTheme.paynesGray),
+      secondary: Icon(icon),
       value: value,
-      activeThumbColor: AppTheme.resedaGreen,
       onChanged: onChanged,
     );
   }
@@ -391,22 +369,22 @@ class _ProfilePageState extends State<ProfilePage> {
   // --- Sign out ------------------------------------------------------------
 
   Widget _buildSignOutButton(AppLocalizations l10n) {
+    final secondary = Theme.of(context).colorScheme.secondary;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageGutter,
+        AppSpacing.xxl,
+        AppSpacing.pageGutter,
+        0,
+      ),
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          icon: const Icon(Icons.logout, color: AppTheme.paynesGray),
-          label: Text(
-            l10n.settingsSignOut,
-            style: const TextStyle(
-              color: AppTheme.paynesGray,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          icon: const Icon(Icons.logout),
+          label: Text(l10n.settingsSignOut),
           style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            side: const BorderSide(color: AppTheme.paynesGray),
+            foregroundColor: secondary,
+            side: BorderSide(color: secondary),
           ),
           onPressed: _isDeleting ? null : () => _confirmSignOut(l10n),
         ),
@@ -461,32 +439,34 @@ class _ProfilePageState extends State<ProfilePage> {
   // --- Delete account ------------------------------------------------------
 
   Widget _buildDeleteAccountButton(AppLocalizations l10n) {
+    final destructive = Theme.of(context).colorScheme.tertiary;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageGutter,
+        AppSpacing.md,
+        AppSpacing.pageGutter,
+        0,
+      ),
       child: SizedBox(
         width: double.infinity,
         child: TextButton.icon(
           icon: _isDeleting
-              ? const SizedBox(
-                  height: 18,
-                  width: 18,
+              ? SizedBox.square(
+                  dimension: AppIconSize.md,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppTheme.bittersweet,
+                    color: destructive,
                   ),
                 )
-              : const Icon(Icons.delete_outline, color: AppTheme.bittersweet),
+              : const Icon(Icons.delete_outline),
           label: Text(
             _isDeleting
                 ? l10n.deleteAccountInProgress
                 : l10n.settingsDeleteAccount,
-            style: const TextStyle(
-              color: AppTheme.bittersweet,
-              fontWeight: FontWeight.w600,
-            ),
           ),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            foregroundColor: destructive,
+            minimumSize: const Size.fromHeight(AppSizes.minTouchTarget),
           ),
           onPressed: _isDeleting ? null : () => _confirmDeleteAccount(l10n),
         ),
@@ -507,8 +487,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.bittersweet,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(ctx).colorScheme.tertiary,
+              foregroundColor: Theme.of(ctx).colorScheme.onTertiary,
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.deleteAccountConfirm),

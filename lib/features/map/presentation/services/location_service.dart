@@ -54,6 +54,14 @@ class LocationService {
         locationName: ZipCodeService.currentLocationSentinel,
         status: LocationStatus.granted,
       );
+    } on PermissionDeniedException {
+      // The OS can still refuse after the checks above — e.g. the user
+      // declines a prompt raised by getCurrentPosition itself, which is how
+      // iPad apps on Mac behave (BEACON-5). A user's choice, not a bug.
+      return LocationResult._fromFallback(LocationStatus.denied);
+    } on LocationServiceDisabledException {
+      // Services switched off between the check and the position request.
+      return LocationResult._fromFallback(LocationStatus.serviceDisabled);
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,

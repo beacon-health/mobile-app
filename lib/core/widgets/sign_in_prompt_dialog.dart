@@ -1,5 +1,4 @@
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +23,13 @@ class _SignInPromptDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
-      backgroundColor: Theme.of(context).cardTheme.color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 8, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xxl,
+          AppSpacing.sm,
+          AppSpacing.sm,
+          AppSpacing.xxl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -43,36 +43,34 @@ class _SignInPromptDialog extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.lock_outline,
-              size: 48,
-              color: AppTheme.paynesGray,
+              size: AppIconSize.hero,
+              color: colorScheme.secondary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
                 l10n.authSignInPromptTitle,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
                 l10n.authSignInPromptBody,
                 textAlign: TextAlign.center,
-                style: textTheme.bodySmall?.copyWith(
+                style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceMuted,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Builder(
                 builder: (innerContext) => NativeSignInButton(
                   onFailure: (msg) {

@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/utils/phone_format.dart';
 import 'package:beacon_app/core/widgets/dialog_text_field.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -117,7 +118,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red.shade700 : null,
+        backgroundColor: isError ? Theme.of(context).colorScheme.error : null,
       ),
     );
   }
@@ -127,10 +128,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(
-        l10n.correctionDialogTitle,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
+      title: Text(l10n.correctionDialogTitle),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -139,13 +137,12 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: Text(
                   l10n.correctionDialogIntro,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ),
               DialogTextField(

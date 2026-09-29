@@ -10,8 +10,9 @@ allow-list, so new states go live with a single SQL `insert` and no app release.
 
 | | |
 |---|---|
-| **Platform** | iOS shipping; Android in bring-up — MVP is a simultaneous launch on both |
+| **Platform** | iOS on the App Store; Android on Google Play (launch in progress) |
 | **Flutter / Dart** | 3.47.0 stable / 3.13.0 (SDK constraint `^3.6.0`) |
+| **Android toolchain** | Gradle 8.14.5 · AGP 8.11.1 · Kotlin 2.2.20 — Flutter's current minimums; the AGP 9 migration is still open |
 | **Backend** | Supabase — Postgres + PostGIS, RLS, native Sign in with Apple (iOS) / Google (Android) |
 | **State management** | `provider` + `ChangeNotifier` singletons |
 | **Maps** | `google_maps_flutter` (Maps SDK for iOS and for Android — separate keys) |
@@ -23,8 +24,8 @@ allow-list, so new states go live with a single SQL `insert` and no app release.
 ## Prerequisites
 
 - **Flutter 3.47.0** (stable channel) — check with `flutter --version`. Match
-  this exactly: both CI workflows pin it, and a newer analyzer will fail the
-  build with no code change.
+  this exactly: all three workflows in `.github/workflows/` pin it, and a newer
+  analyzer will fail the build with no code change. Bump all three together.
 - **Xcode 15+** with the iOS 15.0+ SDK, and CocoaPods (`brew install cocoapods`)
 - **JDK 17** and the Android SDK, for Android builds
 - Access to the **Supabase project** (URL + publishable anon key)
@@ -98,7 +99,7 @@ lib/
   core/
     constants/                 Routes, legal URLs
     services/                  App-wide singletons (see "Key services")
-    theme/                     AppTheme, colors, gradients
+    theme/                     Design tokens + AppTheme (see design/README.md)
     utils/                     Formatting helpers
     widgets/                   Shared dialogs, sign-in button, gates
   features/
@@ -112,7 +113,9 @@ lib/
     profile/                   Profile tab (account, ratings, eligibility)
     settings/                  Settings, "Your Ratings", "Your Requests"
   l10n/                        ARB files (en/es/zh) + generated localizations
-test/                          Unit tests mirroring lib/
+test/                          Unit, widget, and golden tests mirroring lib/
+design/                        Design-system guide + generated token export
+tool/                          Repo scripts (e.g. adopting golden renders from CI)
 ```
 
 ### Architecture at a glance
@@ -162,6 +165,10 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 
 **Error handling convention:** never `print` or `debugPrint`. Every catch site
 calls `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
+Report bugs, not user choices: expected outcomes such as a declined location
+prompt return a status instead of reaching Sentry. The deliberate exception is
+`GoogleSignInService`, which reports every Credential Manager `canceled`
+because configuration failures arrive with that same code.
 
 **One sign-in provider per platform:** Sign in with Apple on iOS, Sign in with
 Google on Android — never both. `nativeSignInProviderFor` is the only place the
@@ -216,6 +223,22 @@ dart format .                         # CI fails on unformatted code
 `analysis_options.yaml`. Note that `require_trailing_commas` is **off**: it
 fights Dart 3.7+'s "tall style" formatter, which owns line breaking.
 
+### Design system
+
+Style with tokens, never literals: colors from `AppColors` or the
+`ColorScheme`, text from `Theme.of(context).textTheme`, and `AppSpacing`,
+`AppRadii`, `AppShadows` for layout. Import them all from
+`package:beacon_app/core/theme/theme.dart`.
+
+`test/design_system_lint_test.dart` fails CI on hardcoded styles. After changing
+a token, regenerate the Claude Design export:
+
+```bash
+flutter test test/design_tokens_test.dart --update-goldens
+```
+
+The full guide is in [`design/README.md`](design/README.md).
+
 ### Localization
 
 User-facing strings must never be hardcoded. Add the key to **all three** ARB
@@ -236,9 +259,32 @@ column, so translating them would break round-tripping).
 
 Tests live in `test/`, mirroring `lib/`. Use `createTestFacility(...)` from
 `test/helpers/test_facility.dart` to build fixtures rather than hand-rolling
-`Facility` objects. Coverage is currently unit-level — services, models,
-filtering, and the category taxonomy. Widget tests need a Supabase mock and are
-a known gap.
+`Facility` objects, and `pumpThemed(...)` from `test/helpers/pump_app.dart` to
+render widgets with the real theme, localizations, and providers.
+
+- **Unit tests** cover services, models, filtering, and the category taxonomy.
+- **Widget tests** cover the shared design components and the facility card.
+- **Golden tests** (`test/goldens/`) snapshot the component gallery, the
+  facility card, and the onboarding, login, settings, and guest-profile
+  screens in light and dark. Screens without platform-specific pieces render
+  under both iOS and Android against a single image, so the two platforms
+  can't drift apart.
+
+  Golden images are canonical on **Linux**, because macOS rasterizes glyphs
+  differently. They run in CI and skip locally on macOS. After an intentional
+  visual change, push and let CI fail: it uploads the new renders and diffs as
+  the `golden-failures` artifact. Review them, then adopt them with:
+
+  ```bash
+  tool/update_goldens_from_ci.sh
+  ```
+
+Plugins are faked through their method channels (see
+`test/features/map/presentation/services/`), so no mocking packages are
+needed; `mockPlatformServices()` stubs the ones screens touch on first build.
+
+Home and Map aren't widget-tested yet: they need Google Maps and a Supabase
+client, which the app doesn't inject.
 
 ---
 
@@ -275,9 +321,20 @@ fail on those builds.
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, and a debug Android build |
+| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, and a debug Android build; uploads a `golden-failures` artifact when a golden test fails |
 | `.github/workflows/ios-build.yml` | push to `main` (docs ignored), or manual | builds and uploads to TestFlight via Fastlane |
 | `.github/workflows/android-build.yml` | push to `main` (docs ignored), or manual | builds a signed AAB and uploads to the Play internal track via Fastlane |
+
+- **PR CI never builds iOS.** Changes that touch native iOS code (plugin
+  bumps, the Podfile, Xcode settings) need a local
+  `flutter build ios --release --no-codesign` before merging.
+- **Every merge to `main` ships builds** to Play's internal track and to
+  TestFlight; only `**.md` / `docs/**` changes are skipped. Each workflow
+  cancels its in-progress run, so merge related PRs in one sitting and only
+  the last build completes.
+- **Each App Store release needs a version bump** in `pubspec.yaml`. Once a
+  version is approved, TestFlight rejects further builds on it (ITMS-90186, "the
+  pre-release train is closed"), so `ios-build.yml` fails until the bump lands.
 
 TestFlight uses **App Store Connect API-key cloud-managed signing** — no
 Fastlane Match, no certificates repo. The API key must have **App Manager**
@@ -333,6 +390,15 @@ repository could mint tokens for this service account.
 
 ---
 
+## Monitoring
+
+Crashes and errors go to **Sentry**: org `beacon-health-technologies`, project
+`beacon`. Only release builds report; debug builds log through
+`developer.log`. A commit message containing `Fixes BEACON-<n>` resolves that
+issue when the commit reaches `main`.
+
+---
+
 ## Troubleshooting
 
 **The map renders as a uniform grey rectangle.** Almost always Google Maps
@@ -348,6 +414,11 @@ match the signing key of the build you're running.
 Credential Manager reports misconfiguration as a user cancel. Check the Android
 OAuth client's package name and SHA-1 against the build, and that
 `GOOGLE_WEB_CLIENT_ID` is the **Web** client ID, not the Android one.
+
+**Android: Google sign-in works locally but fails on Play installs** with
+`[16] Account reauth failed`. Play re-signs releases with the Play App Signing
+key, and that key's SHA-1 isn't registered. Add it to an Android OAuth client
+and the Android Maps key restriction (see "Android release signing").
 
 **Ratings or requests fail to submit.** A required table, column, or unique
 constraint hasn't been applied to the Supabase project. A 42501 specifically

@@ -1,7 +1,5 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
-import 'package:beacon_app/core/theme/app_gradients.dart';
-import 'package:beacon_app/core/theme/app_theme.dart';
-import 'package:beacon_app/core/theme/color_scheme_ext.dart';
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +58,7 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: Container(
@@ -69,34 +68,37 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.onboardingGutter,
+                  AppSpacing.xxxl,
+                  AppSpacing.onboardingGutter,
+                  0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.onboardingEligibilityTitle,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.paynesGray,
-                        height: 1.3,
+                      style: textTheme.headlineMedium?.copyWith(
+                        color: colorScheme.secondary,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       l10n.onboardingEligibilitySubtitle,
-                      style: TextStyle(
-                        fontSize: 15,
+                      style: textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurfaceSecondary,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.onboardingGutter,
+                  ),
                   children: [
                     Card(
                       margin: EdgeInsets.zero,
@@ -147,27 +149,23 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.onboardingGutter,
+                  AppSpacing.sm,
+                  AppSpacing.onboardingGutter,
+                  AppSpacing.onboardingGutter,
+                ),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _saving ? null : _continue,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: AppTheme.paynesGray,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
+                    style: AppTheme.secondaryFilledButton(context),
                     child: _saving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
+                        ? SizedBox.square(
+                            dimension: AppIconSize.md,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: colorScheme.onSecondary,
                             ),
                           )
                         : Text(l10n.onboardingContinue),
@@ -189,9 +187,8 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
   ) {
     return SwitchListTile(
       title: Text(title),
-      secondary: Icon(icon, color: AppTheme.paynesGray),
+      secondary: Icon(icon),
       value: value,
-      activeThumbColor: AppTheme.resedaGreen,
       onChanged: onChanged,
     );
   }

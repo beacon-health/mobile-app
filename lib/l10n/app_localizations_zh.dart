@@ -30,6 +30,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeNoFavoritesHint => '从地图页面添加收藏即可在此查看';
 
   @override
+  String get homeFavoritesSignInTitle => '登录以使用收藏';
+
+  @override
+  String get homeFavoritesSignInHint => '登录即可收藏您喜欢的机构。';
+
+  @override
   String get homeRecentlyViewed => '最近浏览的机构';
 
   @override
@@ -463,6 +469,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profileApplyEligibilityDesc => '仅显示符合您资格的机构。';
+
+  @override
+  String get profileSignedIn => '已登录';
+
+  @override
+  String profileSignedInThrough(String provider) {
+    return '已通过 $provider 登录';
+  }
 
   @override
   String get commonSave => '保存';

@@ -1,3 +1,5 @@
+import 'package:beacon_app/core/theme/app_sizes.dart';
+
 /// Hard requirements that restrict which users can access a facility.
 enum EligibilityRequirement {
   proofOfIncome,
@@ -101,7 +103,10 @@ extension PreferenceRequirementExtension on PreferenceRequirement {
 
 class FilterConstants {
   static const double modalHeightRatio = 0.60;
-  static const Duration animationDuration = Duration(milliseconds: 200);
+  static const Duration animationDuration = AppMotion.fast;
+
+  /// Height of the map's horizontal filter-chip row.
+  static const double barHeight = 40;
 
   static const List<EligibilityRequirement> eligibilityRequirements = [
     EligibilityRequirement.proofOfIncome,
@@ -121,50 +126,4 @@ class FilterConstants {
     PreferenceRequirement.wheelchairAccessible,
     PreferenceRequirement.servesOutsideArea,
   ];
-}
-
-class FilterDesignTokens {
-  static const double filterBarHeight = 40.0;
-  static const double chipHeight = 32.0;
-
-  static const double spacingXSmall = 4.0;
-  static const double spacingSmall = 8.0;
-  static const double spacingMedium = 12.0;
-  static const double spacingLarge = 16.0;
-  static const double spacingXLarge = 20.0;
-  static const double spacingXXLarge = 32.0;
-
-  static const double paddingButton = 14.0;
-
-  static const double borderRadiusSmall = 8.0;
-  static const double borderRadiusMedium = 12.0;
-  static const double borderRadiusLarge = 20.0;
-
-  static const double borderWidthNormal = 1.0;
-  static const double borderWidthSelected = 2.0;
-
-  static const double fontSizeSmall = 13.0;
-  static const double fontSizeMedium = 14.0;
-  static const double fontSizeNormal = 16.0;
-  static const double fontSizeLarge = 18.0;
-  static const double fontSizeXLarge = 20.0;
-
-  static const double iconSizeSmall = 16.0;
-  static const double iconSizeMedium = 18.0;
-  static const double iconSizeLarge = 24.0;
-
-  static const double chipPaddingHorizontal = 12.0;
-  static const double chipPaddingVertical = 8.0;
-
-  static const double selectionChipPaddingHorizontal = 16.0;
-  static const double selectionChipPaddingVertical = 10.0;
-
-  static const double eligibilityOptionPaddingVertical = 12.0;
-
-  static const double shadowBlurRadius = 4.0;
-  static const double shadowOffsetY = 2.0;
-  static const double shadowOpacity = 0.05;
-
-  static const double modalShadowBlurRadius = 10.0;
-  static const double modalShadowOffsetY = -5.0;
 }
