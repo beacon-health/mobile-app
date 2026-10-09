@@ -2,8 +2,12 @@ package_name("org.beaconhealth.app")
 
 # Play credentials come from Workload Identity Federation, not a stored key:
 # google-github-actions/auth writes a short-lived external_account credentials
-# file and exports its path. fastlane's json_key accepts Application Default,
-# Workload Identity, or Service Account credentials, so the same parameter
-# works for all three. Left unset locally, where supply is not used.
+# file and exports its path. supply's json_key option accepts Application
+# Default, Workload Identity, or Service Account credentials, so the same
+# parameter works for all three. Left unset locally, where supply is not used.
+#
+# The Appfile setting that feeds that option is json_key_file, not json_key.
+# An unknown setting here raises, and fastlane then discards the whole file —
+# package_name included.
 key_path = ENV["PLAY_JSON_KEY_PATH"] || ENV["GOOGLE_APPLICATION_CREDENTIALS"]
-json_key(key_path) if key_path && !key_path.empty?
+json_key_file(key_path) if key_path && !key_path.empty?
