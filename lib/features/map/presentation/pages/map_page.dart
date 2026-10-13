@@ -323,6 +323,11 @@ class MapPageState extends State<MapPage>
         setState(() {
           _isKeyboardVisible = false;
         });
+        // Android's back button hides the keyboard but leaves the field
+        // focused, and a focused search pins the list at its default height
+        // where it can't be raised or scrolled. Once the keyboard is gone,
+        // the typing is over.
+        if (_searchFocusNode.hasFocus) _searchFocusNode.unfocus();
       }
     });
   }
