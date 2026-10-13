@@ -823,8 +823,8 @@ abstract class AppLocalizations {
   /// No description provided for @coverageNotice.
   ///
   /// In en, this message translates to:
-  /// **'Beacon currently shows facilities in Illinois. We\'re adding more states over time.'**
-  String get coverageNotice;
+  /// **'Beacon currently shows facilities in {states}. We\'re adding more states over time.'**
+  String coverageNotice(String states);
 
   /// No description provided for @profileTitle.
   ///
@@ -937,7 +937,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationChoiceEnterZipDesc.
   ///
   /// In en, this message translates to:
-  /// **'Search by ZIP code in the US.'**
+  /// **'Search by ZIP code.'**
   String get locationChoiceEnterZipDesc;
 
   /// No description provided for @locationCurrentLocation.
@@ -1215,6 +1215,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit corrections here'**
   String get cardCorrectionPromptAction;
+
+  /// No description provided for @zipOutsideCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Beacon isn\'t available in that area yet. It currently covers {states}.'**
+  String zipOutsideCoverage(String states);
+
+  /// No description provided for @stateName.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, AL{Alabama} AK{Alaska} AZ{Arizona} AR{Arkansas} CA{California} CO{Colorado} CT{Connecticut} DE{Delaware} DC{Washington, D.C.} FL{Florida} GA{Georgia} GU{Guam} HI{Hawaii} ID{Idaho} IL{Illinois} IN{Indiana} IA{Iowa} KS{Kansas} KY{Kentucky} LA{Louisiana} ME{Maine} MD{Maryland} MA{Massachusetts} MI{Michigan} MN{Minnesota} MS{Mississippi} MO{Missouri} MT{Montana} NE{Nebraska} NV{Nevada} NH{New Hampshire} NJ{New Jersey} NM{New Mexico} NY{New York} NC{North Carolina} ND{North Dakota} OH{Ohio} OK{Oklahoma} OR{Oregon} PA{Pennsylvania} PR{Puerto Rico} RI{Rhode Island} SC{South Carolina} SD{South Dakota} TN{Tennessee} TX{Texas} UT{Utah} VT{Vermont} VA{Virginia} VI{U.S. Virgin Islands} WA{Washington} WV{West Virginia} WI{Wisconsin} WY{Wyoming} other{{code}}}'**
+  String stateName(String code);
+
+  /// No description provided for @listTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {second}'**
+  String listTwo(String first, String second);
+
+  /// No description provided for @listTwoBeforeI.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {second}'**
+  String listTwoBeforeI(String first, String second);
+
+  /// No description provided for @listMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{rest}, and {last}'**
+  String listMany(String rest, String last);
+
+  /// No description provided for @listManyBeforeI.
+  ///
+  /// In en, this message translates to:
+  /// **'{rest}, and {last}'**
+  String listManyBeforeI(String rest, String last);
+
+  /// No description provided for @listSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get listSeparator;
+
+  /// No description provided for @mapResourcesInView.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 resource in this area} other{{count} resources in this area}}'**
+  String mapResourcesInView(int count);
+
+  /// No description provided for @eligAcceptsMedicaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepts Medicaid'**
+  String get eligAcceptsMedicaid;
+
+  /// No description provided for @chipMedicaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicaid'**
+  String get chipMedicaid;
+
+  /// No description provided for @cardIncomeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Income limit'**
+  String get cardIncomeLimit;
+
+  /// No description provided for @cardServiceArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Service area'**
+  String get cardServiceArea;
+
+  /// No description provided for @correctionFieldClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently closed'**
+  String get correctionFieldClosed;
+
+  /// No description provided for @correctionFieldClosedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this on if the location has shut down for good.'**
+  String get correctionFieldClosedHint;
+
+  /// No description provided for @requestTypeClosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported closed'**
+  String get requestTypeClosure;
 }
 
 class _AppLocalizationsDelegate

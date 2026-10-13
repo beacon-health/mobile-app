@@ -4,6 +4,7 @@ import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/utils/coverage_text.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -251,10 +252,11 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await LocationService.getCurrentLocation();
     if (!mounted) return;
     if (result.status == LocationStatus.granted) {
+      // No display name: the service stores its language-neutral sentinel, and
+      // a translated label here would later be mistaken for a ZIP.
       await zipService.setCurrentLocation(
         latitude: result.latitude,
         longitude: result.longitude,
-        displayName: l10n.locationCurrentLocation,
       );
       return;
     }
@@ -374,14 +376,14 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
       _errorMessage = null;
     });
 
-    final success = await ZipCodeService().setZipCode(_controller.text.trim());
+    final result = await ZipCodeService().setZipCode(_controller.text.trim());
     if (!mounted) return;
-    if (success) {
+    if (result == ZipResult.saved) {
       Navigator.pop(context, true);
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = AppLocalizations.of(context)!.settingsZipNotFoundError;
+        _errorMessage = zipErrorMessage(AppLocalizations.of(context)!, result);
       });
     }
   }

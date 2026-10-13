@@ -397,8 +397,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo eliminar tu cuenta. Inténtalo de nuevo.';
 
   @override
-  String get coverageNotice =>
-      'Beacon muestra actualmente centros en Illinois. Estamos añadiendo más estados con el tiempo.';
+  String coverageNotice(String states) {
+    return 'Beacon muestra actualmente centros en $states. Estamos añadiendo más estados con el tiempo.';
+  }
 
   @override
   String get profileTitle => 'Perfil';
@@ -458,8 +459,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get locationChoiceEnterZip => 'Ingresar código postal';
 
   @override
-  String get locationChoiceEnterZipDesc =>
-      'Buscar por código postal en EE. UU.';
+  String get locationChoiceEnterZipDesc => 'Buscar por código postal.';
 
   @override
   String get locationCurrentLocation => 'Ubicación actual';
@@ -611,4 +611,130 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardCorrectionPromptAction => 'Envía correcciones aquí';
+
+  @override
+  String zipOutsideCoverage(String states) {
+    return 'Beacon aún no está disponible en esa zona. Por ahora cubre $states.';
+  }
+
+  @override
+  String stateName(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'AL': 'Alabama',
+        'AK': 'Alaska',
+        'AZ': 'Arizona',
+        'AR': 'Arkansas',
+        'CA': 'California',
+        'CO': 'Colorado',
+        'CT': 'Connecticut',
+        'DE': 'Delaware',
+        'DC': 'Washington D. C.',
+        'FL': 'Florida',
+        'GA': 'Georgia',
+        'GU': 'Guam',
+        'HI': 'Hawái',
+        'ID': 'Idaho',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'IA': 'Iowa',
+        'KS': 'Kansas',
+        'KY': 'Kentucky',
+        'LA': 'Luisiana',
+        'ME': 'Maine',
+        'MD': 'Maryland',
+        'MA': 'Massachusetts',
+        'MI': 'Míchigan',
+        'MN': 'Minnesota',
+        'MS': 'Misisipi',
+        'MO': 'Misuri',
+        'MT': 'Montana',
+        'NE': 'Nebraska',
+        'NV': 'Nevada',
+        'NH': 'Nuevo Hampshire',
+        'NJ': 'Nueva Jersey',
+        'NM': 'Nuevo México',
+        'NY': 'Nueva York',
+        'NC': 'Carolina del Norte',
+        'ND': 'Dakota del Norte',
+        'OH': 'Ohio',
+        'OK': 'Oklahoma',
+        'OR': 'Oregón',
+        'PA': 'Pensilvania',
+        'PR': 'Puerto Rico',
+        'RI': 'Rhode Island',
+        'SC': 'Carolina del Sur',
+        'SD': 'Dakota del Sur',
+        'TN': 'Tennessee',
+        'TX': 'Texas',
+        'UT': 'Utah',
+        'VT': 'Vermont',
+        'VA': 'Virginia',
+        'VI': 'Islas Vírgenes de EE. UU.',
+        'WA': 'Washington',
+        'WV': 'Virginia Occidental',
+        'WI': 'Wisconsin',
+        'WY': 'Wyoming',
+        'other': '$code',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listTwo(String first, String second) {
+    return '$first y $second';
+  }
+
+  @override
+  String listTwoBeforeI(String first, String second) {
+    return '$first e $second';
+  }
+
+  @override
+  String listMany(String rest, String last) {
+    return '$rest y $last';
+  }
+
+  @override
+  String listManyBeforeI(String rest, String last) {
+    return '$rest e $last';
+  }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String mapResourcesInView(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recursos en esta zona',
+      one: '1 recurso en esta zona',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eligAcceptsMedicaid => 'Acepta Medicaid';
+
+  @override
+  String get chipMedicaid => 'Medicaid';
+
+  @override
+  String get cardIncomeLimit => 'Límite de ingresos';
+
+  @override
+  String get cardServiceArea => 'Área de servicio';
+
+  @override
+  String get correctionFieldClosed => 'Cerrado permanentemente';
+
+  @override
+  String get correctionFieldClosedHint =>
+      'Actívalo si el lugar cerró definitivamente.';
+
+  @override
+  String get requestTypeClosure => 'Cierre reportado';
 }

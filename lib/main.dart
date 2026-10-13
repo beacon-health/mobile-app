@@ -1,4 +1,5 @@
 import 'package:beacon_app/app.dart';
+import 'package:beacon_app/core/services/coverage_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -35,6 +36,7 @@ void main() async {
   );
 
   await GuestModeService().init();
+  await CoverageService().init();
   await ZipCodeService().init();
   await EligibilityPreferencesService().init();
   await RecentFacilitiesService().init();

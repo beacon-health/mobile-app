@@ -134,7 +134,14 @@
   "deleteAccountInProgress": "Deleting your account…",
   "deleteAccountSuccess": "Your account has been deleted",
   "deleteAccountFailed": "Couldn't delete your account. Please try again.",
-  "coverageNotice": "Beacon currently shows facilities in Illinois. We're adding more states over time.",
+  "coverageNotice": "Beacon currently shows facilities in {states}. We're adding more states over time.",
+  "@coverageNotice": {
+    "placeholders": {
+      "states": {
+        "type": "String"
+      }
+    }
+  },
   "profileTitle": "Profile",
   "authContinueWithGoogle": "Continue with Google",
   "authContinueWithApple": "Continue with Apple",
@@ -153,7 +160,7 @@
   "locationChoiceUseLocation": "Location-Based Search",
   "locationChoiceUseLocationDesc": "Use GPS for the most accurate results.",
   "locationChoiceEnterZip": "Enter Zip Code",
-  "locationChoiceEnterZipDesc": "Search by ZIP code in the US.",
+  "locationChoiceEnterZipDesc": "Search by ZIP code.",
   "locationCurrentLocation": "Current Location",
   "locationPermissionDenied": "Location access denied. Enable it in Settings > Privacy > Location Services.",
   "locationPermissionDeniedTitle": "Location Access Required",
@@ -206,5 +213,81 @@
   "cardRatePromptLead": "Already visited? ",
   "cardRatePromptAction": "Rate your experience",
   "cardCorrectionPromptLead": "Incorrect info? ",
-  "cardCorrectionPromptAction": "Submit corrections here"
+  "cardCorrectionPromptAction": "Submit corrections here",
+  "zipOutsideCoverage": "Beacon isn't available in that area yet. It currently covers {states}.",
+  "@zipOutsideCoverage": {
+    "placeholders": {
+      "states": {
+        "type": "String"
+      }
+    }
+  },
+  "stateName": "{code, select, AL{Alabama} AK{Alaska} AZ{Arizona} AR{Arkansas} CA{California} CO{Colorado} CT{Connecticut} DE{Delaware} DC{Washington, D.C.} FL{Florida} GA{Georgia} GU{Guam} HI{Hawaii} ID{Idaho} IL{Illinois} IN{Indiana} IA{Iowa} KS{Kansas} KY{Kentucky} LA{Louisiana} ME{Maine} MD{Maryland} MA{Massachusetts} MI{Michigan} MN{Minnesota} MS{Mississippi} MO{Missouri} MT{Montana} NE{Nebraska} NV{Nevada} NH{New Hampshire} NJ{New Jersey} NM{New Mexico} NY{New York} NC{North Carolina} ND{North Dakota} OH{Ohio} OK{Oklahoma} OR{Oregon} PA{Pennsylvania} PR{Puerto Rico} RI{Rhode Island} SC{South Carolina} SD{South Dakota} TN{Tennessee} TX{Texas} UT{Utah} VT{Vermont} VA{Virginia} VI{U.S. Virgin Islands} WA{Washington} WV{West Virginia} WI{Wisconsin} WY{Wyoming} other{{code}}}",
+  "@stateName": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "listTwo": "{first} and {second}",
+  "@listTwo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "listTwoBeforeI": "{first} and {second}",
+  "@listTwoBeforeI": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "listMany": "{rest}, and {last}",
+  "@listMany": {
+    "placeholders": {
+      "rest": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "listManyBeforeI": "{rest}, and {last}",
+  "@listManyBeforeI": {
+    "placeholders": {
+      "rest": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "listSeparator": ", ",
+  "mapResourcesInView": "{count, plural, =1{1 resource in this area} other{{count} resources in this area}}",
+  "@mapResourcesInView": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eligAcceptsMedicaid": "Accepts Medicaid",
+  "chipMedicaid": "Medicaid",
+  "cardIncomeLimit": "Income limit",
+  "cardServiceArea": "Service area",
+  "correctionFieldClosed": "Permanently closed",
+  "correctionFieldClosedHint": "Turn this on if the location has shut down for good.",
+  "requestTypeClosure": "Reported closed"
 }

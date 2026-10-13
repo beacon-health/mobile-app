@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/utils/coverage_text.dart';
 import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -47,14 +48,14 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
     });
 
     final zip = _controller.text.trim();
-    final success = await ZipCodeService().setZipCode(zip);
+    final result = await ZipCodeService().setZipCode(zip);
 
     if (!mounted) return;
 
-    if (!success) {
+    if (result != ZipResult.saved) {
       setState(() {
         _isLoading = false;
-        _errorMessage = "Couldn't find that zip code. Please try again.";
+        _errorMessage = zipErrorMessage(AppLocalizations.of(context)!, result);
       });
       return;
     }

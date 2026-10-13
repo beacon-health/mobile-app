@@ -374,7 +374,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteAccountFailed => '无法删除您的账户，请重试。';
 
   @override
-  String get coverageNotice => 'Beacon 目前收录伊利诺伊州的服务机构，我们会逐步添加更多州。';
+  String coverageNotice(String states) {
+    return 'Beacon 目前收录$states的服务机构，我们会逐步添加更多州。';
+  }
 
   @override
   String get profileTitle => '个人资料';
@@ -431,7 +433,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationChoiceEnterZip => '输入邮政编码';
 
   @override
-  String get locationChoiceEnterZipDesc => '按美国邮政编码搜索。';
+  String get locationChoiceEnterZipDesc => '按邮政编码搜索。';
 
   @override
   String get locationCurrentLocation => '当前位置';
@@ -574,4 +576,128 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cardCorrectionPromptAction => '在此提交更正';
+
+  @override
+  String zipOutsideCoverage(String states) {
+    return 'Beacon 暂未覆盖该地区，目前覆盖$states。';
+  }
+
+  @override
+  String stateName(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'AL': '阿拉巴马州',
+        'AK': '阿拉斯加州',
+        'AZ': '亚利桑那州',
+        'AR': '阿肯色州',
+        'CA': '加利福尼亚州',
+        'CO': '科罗拉多州',
+        'CT': '康涅狄格州',
+        'DE': '特拉华州',
+        'DC': '华盛顿特区',
+        'FL': '佛罗里达州',
+        'GA': '佐治亚州',
+        'GU': '关岛',
+        'HI': '夏威夷州',
+        'ID': '爱达荷州',
+        'IL': '伊利诺伊州',
+        'IN': '印第安纳州',
+        'IA': '艾奥瓦州',
+        'KS': '堪萨斯州',
+        'KY': '肯塔基州',
+        'LA': '路易斯安那州',
+        'ME': '缅因州',
+        'MD': '马里兰州',
+        'MA': '马萨诸塞州',
+        'MI': '密歇根州',
+        'MN': '明尼苏达州',
+        'MS': '密西西比州',
+        'MO': '密苏里州',
+        'MT': '蒙大拿州',
+        'NE': '内布拉斯加州',
+        'NV': '内华达州',
+        'NH': '新罕布什尔州',
+        'NJ': '新泽西州',
+        'NM': '新墨西哥州',
+        'NY': '纽约州',
+        'NC': '北卡罗来纳州',
+        'ND': '北达科他州',
+        'OH': '俄亥俄州',
+        'OK': '俄克拉荷马州',
+        'OR': '俄勒冈州',
+        'PA': '宾夕法尼亚州',
+        'PR': '波多黎各',
+        'RI': '罗得岛州',
+        'SC': '南卡罗来纳州',
+        'SD': '南达科他州',
+        'TN': '田纳西州',
+        'TX': '得克萨斯州',
+        'UT': '犹他州',
+        'VT': '佛蒙特州',
+        'VA': '弗吉尼亚州',
+        'VI': '美属维尔京群岛',
+        'WA': '华盛顿州',
+        'WV': '西弗吉尼亚州',
+        'WI': '威斯康星州',
+        'WY': '怀俄明州',
+        'other': '$code',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listTwo(String first, String second) {
+    return '$first和$second';
+  }
+
+  @override
+  String listTwoBeforeI(String first, String second) {
+    return '$first和$second';
+  }
+
+  @override
+  String listMany(String rest, String last) {
+    return '$rest和$last';
+  }
+
+  @override
+  String listManyBeforeI(String rest, String last) {
+    return '$rest和$last';
+  }
+
+  @override
+  String get listSeparator => '、';
+
+  @override
+  String mapResourcesInView(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '此区域有 $count 个资源',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eligAcceptsMedicaid => '接受 Medicaid（医疗补助）';
+
+  @override
+  String get chipMedicaid => 'Medicaid';
+
+  @override
+  String get cardIncomeLimit => '收入限制';
+
+  @override
+  String get cardServiceArea => '服务区域';
+
+  @override
+  String get correctionFieldClosed => '已永久关闭';
+
+  @override
+  String get correctionFieldClosedHint => '如果该机构已永久停业，请开启此项。';
+
+  @override
+  String get requestTypeClosure => '已报告关闭';
 }
