@@ -7,6 +7,25 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- "Get directions" asks which map apps are installed. Since Android 11
+         an app can only see the ones it declares here, so without these
+         entries every map app reports as missing. Keep in step with
+         MapLauncherService.probeUri. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="google.navigation" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="waze" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+    </queries>
+
    <application
         android:label="Beacon"
         android:icon="@mipmap/ic_launcher">
