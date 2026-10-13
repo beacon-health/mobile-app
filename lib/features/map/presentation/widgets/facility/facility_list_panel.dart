@@ -8,7 +8,14 @@ import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class FacilityListPanel extends StatelessWidget {
+  /// The facilities to list: the ones on screen, nearest the middle of the
+  /// map first.
   final List<Facility> facilities;
+
+  /// How many facilities match the current filters across the whole loaded
+  /// area. When this is above zero but [facilities] is empty, the matches are
+  /// simply off screen, and the panel says so instead of "no facilities".
+  final int totalMatches;
   final ScrollController scrollController;
   final bool isLoading;
   final bool isPanelOpen;
@@ -50,6 +57,7 @@ class FacilityListPanel extends StatelessWidget {
     required this.onToggleFavorite,
     required this.onLaunchUrl,
     required this.buildCategoryIcon,
+    this.totalMatches = 0,
     this.onPanelStateChange,
     this.canFavorite = true,
     this.onRequestFacility,
@@ -57,29 +65,34 @@ class FacilityListPanel extends StatelessWidget {
     this.onCorrectFacility,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
+  /// The panel's height in each of its states. Shared with the map, which
+  /// needs to know how much of itself the panel covers.
+  static double heightFor(
+    MediaQueryData mediaQuery, {
+    required bool isPanelOpen,
+    required bool isFullyExpanded,
+    required bool isSearchActive,
+  }) {
     final screenHeight = mediaQuery.size.height;
-    final topPadding = mediaQuery.padding.top;
-    const minHeight = MapConstants.panelMinHeight;
     final defaultHeight = screenHeight * MapConstants.panelDefaultHeightRatio;
-    final maxHeight = screenHeight -
+    if (isSearchActive) return defaultHeight;
+    if (!isPanelOpen) return MapConstants.panelMinHeight;
+    if (!isFullyExpanded) return defaultHeight;
+    return screenHeight -
         (MapConstants.searchBarAreaHeight +
-            topPadding +
+            mediaQuery.padding.top +
             kToolbarHeight +
             MapConstants.panelBottomOffset);
+  }
 
-    final double targetHeight;
-    if (isSearchActive) {
-      targetHeight = defaultHeight;
-    } else if (!isPanelOpen) {
-      targetHeight = minHeight;
-    } else if (isFullyExpanded) {
-      targetHeight = maxHeight;
-    } else {
-      targetHeight = defaultHeight;
-    }
+  @override
+  Widget build(BuildContext context) {
+    final targetHeight = heightFor(
+      MediaQuery.of(context),
+      isPanelOpen: isPanelOpen,
+      isFullyExpanded: isFullyExpanded,
+      isSearchActive: isSearchActive,
+    );
 
     return GestureDetector(
       onVerticalDragEnd: isSearchActive
@@ -146,7 +159,11 @@ class FacilityListPanel extends StatelessWidget {
             )
           else
             Text(
-              AppLocalizations.of(context)!.mapResourcesNearYou,
+              // The count ties the list to the map: it is what's on screen.
+              isLoading || facilities.isEmpty
+                  ? AppLocalizations.of(context)!.mapResourcesNearYou
+                  : AppLocalizations.of(context)!
+                      .mapResourcesInView(facilities.length),
               style: theme.textTheme.titleLarge,
             ),
         ],
@@ -188,7 +205,9 @@ class FacilityListPanel extends StatelessWidget {
                   ),
                 )
               : facilities.isEmpty
-                  ? _buildEmptyState(context)
+                  ? (totalMatches > 0
+                      ? _buildNothingInView(context)
+                      : _buildEmptyState(context))
                   : ListView.builder(
                       controller: scrollController,
                       physics: isFullyExpanded
@@ -222,6 +241,44 @@ class FacilityListPanel extends StatelessWidget {
                         );
                       },
                     ),
+        ),
+      ),
+    );
+  }
+
+  /// There are matches nearby, just none where the map is looking. Distinct
+  /// from [_buildEmptyState] so nobody is told to request a facility, or that
+  /// Beacon doesn't cover them, when all they need to do is zoom out.
+  Widget _buildNothingInView(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xxl,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+          AppSpacing.xxl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.zoom_out_map,
+              size: AppIconSize.xxl,
+              color: theme.colorScheme.onSurfaceMuted,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(l10n.mapNothingInView, style: theme.textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              l10n.mapNothingInViewHint,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ),
       ),
     );

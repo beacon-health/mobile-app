@@ -5,6 +5,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
+import 'package:beacon_app/features/map/utils/map_geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -14,55 +15,94 @@ class MarkerManagementService {
   /// Pixel-grid cell size used to bucket facilities into clusters.
   static const double _clusterGridPx = 90.0;
 
-  /// Buckets facilities into a screen-pixel grid at [zoom]; multi-occupancy
-  /// buckets render a count bubble wired to [onClusterTap].
+  /// Deliberately constant, not zoom-scaled, so fanned markers behave like two
+  /// real adjacent addresses instead of sliding apart as the user zooms.
+  static const double _fanOutRadiusMeters = 25.0;
+
+  /// How far, on screen, a fanned-out pin must sit from the point it shares
+  /// before the pins can be told apart and tapped one at a time.
+  static const double _minFanOutPx = 26.0;
+
+  /// The zoom from which facilities sharing one address are drawn as separate
+  /// fanned-out pins. Below it they would stack into what looks like a single
+  /// pin, so they stay a count bubble instead.
+  static double fanOutZoom(double latitude) => MapGeometry.zoomForScale(
+        meters: _fanOutRadiusMeters,
+        pixels: _minFanOutPx,
+        latitude: latitude,
+      );
+
+  /// Where to send the camera to open a same-address bubble: just past
+  /// [fanOutZoom], so rounding in the map's reported zoom can't leave it shut.
+  static double fanOutRevealZoom(double latitude) =>
+      fanOutZoom(latitude) + 0.25;
+
+  /// Splits [facilities] into what to draw at [zoom]: lone facilities, and
+  /// groups that share a marker. Pure, so the clustering rules can be tested
+  /// without a map.
+  ///
+  /// Below the cluster threshold, facilities bucket into a screen-pixel grid.
+  /// At or above it, only facilities at the same address group, and only until
+  /// [fanOutZoom] gives their fanned-out pins room.
+  static List<List<Facility>> groupForZoom(
+    List<Facility> facilities,
+    double zoom,
+  ) {
+    final located = [
+      for (final f in facilities)
+        if (f.location.latitude != 0.0 || f.location.longitude != 0.0) f,
+    ];
+
+    final buckets = <String, List<Facility>>{};
+    if (zoom < MapConstants.clusterZoomThreshold) {
+      for (final f in located) {
+        final key = _pixelBucketKey(
+          f.location.latitude,
+          f.location.longitude,
+          zoom,
+        );
+        (buckets[key] ??= []).add(f);
+      }
+      return buckets.values.toList();
+    }
+
+    for (final f in located) {
+      (buckets[_pointKey(f.location)] ??= []).add(f);
+    }
+    return [
+      for (final group in buckets.values)
+        if (group.length > 1 &&
+            zoom < fanOutZoom(group.first.location.latitude))
+          group
+        else
+          for (final f in group) [f],
+    ];
+  }
+
+  /// Draws [facilities] for [zoom]: one marker per lone facility and a count
+  /// bubble, wired to [onClusterTap], per group from [groupForZoom].
   static Future<Set<Marker>> createMarkersClustered(
     List<Facility> facilities,
     BuildContext context, {
     required double zoom,
     required bool showFacilityNames,
     required Map<String, BitmapDescriptor> markerIconCache,
-    required Function(Facility) onFacilityTap,
-    required Function(LatLng) onClusterTap,
+    required void Function(Facility) onFacilityTap,
+    required void Function(List<Facility>) onClusterTap,
   }) async {
-    if (zoom >= MapConstants.clusterZoomThreshold) {
-      // Awaited into a local rather than `return await`: very_good_analysis 10
-      // flags unnecessary_await_in_return, 11 flags async_return_with_no_await.
-      final markers = await createMarkersForFacilities(
-        facilities,
-        context,
-        showFacilityNames,
-        markerIconCache,
-        onFacilityTap,
-      );
-      return markers;
-    }
-
-    final buckets = <String, List<Facility>>{};
-    for (final facility in facilities) {
-      if (facility.location.latitude == 0.0 &&
-          facility.location.longitude == 0.0) {
-        continue;
-      }
-      final key = _pixelBucketKey(
-        facility.location.latitude,
-        facility.location.longitude,
-        zoom,
-      );
-      (buckets[key] ??= []).add(facility);
-    }
-
+    final fanned = _fannedOutPositions(facilities);
     final markers = <Marker>{};
-    for (final group in buckets.values) {
+    for (final group in groupForZoom(facilities, zoom)) {
       try {
         if (group.length == 1) {
           markers.add(
             await _createMarkerForFacility(
-              group.first,
+              group.single,
               context,
               showFacilityNames,
               markerIconCache,
               onFacilityTap,
+              positionOverride: fanned[group.single.id],
             ),
           );
         } else {
@@ -72,7 +112,7 @@ class MarkerManagementService {
         ErrorReporter.instance.report(
           e,
           stackTrace,
-          context: 'MarkerManagementService.cluster',
+          context: 'MarkerManagementService.marker',
         );
       }
     }
@@ -92,10 +132,16 @@ class MarkerManagementService {
     return '$gx:$gy';
   }
 
+  /// Identifies a coordinate to ~10 cm, so facilities geocoded to the same
+  /// address share a key.
+  static String _pointKey(LatLng point) =>
+      '${point.latitude.toStringAsFixed(6)}:'
+      '${point.longitude.toStringAsFixed(6)}';
+
   static Future<Marker> _createClusterMarker(
     List<Facility> facilities,
     BuildContext context,
-    Function(LatLng) onClusterTap,
+    void Function(List<Facility>) onClusterTap,
   ) async {
     var lat = 0.0;
     var lng = 0.0;
@@ -112,50 +158,11 @@ class MarkerManagementService {
           MarkerId('cluster_${center.latitude}_${center.longitude}_$count'),
       position: center,
       icon: icon,
-      onTap: () => onClusterTap(center),
+      onTap: () => onClusterTap(facilities),
       consumeTapEvents: true,
       anchor: const Offset(0.5, 0.5),
     );
   }
-
-  /// Creates individual markers, fanning co-located facilities out in a small
-  /// circle so they stay separately tappable.
-  static Future<Set<Marker>> createMarkersForFacilities(
-    List<Facility> facilities,
-    BuildContext context,
-    bool showFacilityNames,
-    Map<String, BitmapDescriptor> markerIconCache,
-    Function(Facility) onMarkerTap,
-  ) async {
-    final markers = <Marker>{};
-    final positions = _fannedOutPositions(facilities);
-
-    for (final facility in facilities) {
-      try {
-        final marker = await _createMarkerForFacility(
-          facility,
-          context,
-          showFacilityNames,
-          markerIconCache,
-          onMarkerTap,
-          positionOverride: positions[facility.id],
-        );
-        markers.add(marker);
-      } catch (e, stackTrace) {
-        ErrorReporter.instance.report(
-          e,
-          stackTrace,
-          context: 'MarkerManagementService.marker',
-        );
-      }
-    }
-
-    return markers;
-  }
-
-  /// Deliberately constant, not zoom-scaled, so fanned markers behave like two
-  /// real adjacent addresses instead of sliding apart as the user zooms.
-  static const double _fanOutRadiusMeters = 25.0;
 
   /// Returns adjusted positions for facilities that share exact coordinates:
   /// groups of n > 1 spread evenly on a circle around the shared point.
@@ -163,9 +170,7 @@ class MarkerManagementService {
   static Map<String, LatLng> _fannedOutPositions(List<Facility> facilities) {
     final groups = <String, List<Facility>>{};
     for (final f in facilities) {
-      final key = '${f.location.latitude.toStringAsFixed(6)}:'
-          '${f.location.longitude.toStringAsFixed(6)}';
-      (groups[key] ??= []).add(f);
+      (groups[_pointKey(f.location)] ??= []).add(f);
     }
 
     final overrides = <String, LatLng>{};
@@ -192,7 +197,7 @@ class MarkerManagementService {
     BuildContext context,
     bool showFacilityNames,
     Map<String, BitmapDescriptor> markerIconCache,
-    Function(Facility) onMarkerTap, {
+    void Function(Facility) onMarkerTap, {
     LatLng? positionOverride,
   }) async {
     final markerId = MarkerId(facility.id);
@@ -237,10 +242,5 @@ class MarkerManagementService {
           ? InfoWindow(title: facility.name)
           : InfoWindow.noText,
     );
-  }
-
-  /// Creates a debounce timer for marker updates.
-  static Timer createDebounceTimer(Duration delay, VoidCallback callback) {
-    return Timer(delay, callback);
   }
 }

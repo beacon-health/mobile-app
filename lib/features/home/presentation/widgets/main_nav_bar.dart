@@ -7,6 +7,14 @@ import 'package:beacon_app/features/settings/presentation/pages/settings_page.da
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+/// Index of each tab in the bottom bar.
+abstract final class NavTab {
+  static const int home = 0;
+  static const int map = 1;
+  static const int profile = 2;
+  static const int settings = 3;
+}
+
 class MainNavBar extends StatefulWidget {
   const MainNavBar({super.key});
 
@@ -67,8 +75,32 @@ class _MainNavBarState extends State<MainNavBar> {
     });
   }
 
+  /// A back press the system did not act on, because [PopScope] below said it
+  /// couldn't. The tabs aren't routes, so going "back one step" is ours to
+  /// define: first whatever is open on the map, then the Home tab.
+  void _onBackBlocked() {
+    if (_selectedIndex == NavTab.map &&
+        (_mapPageKey.currentState?.handleBack() ?? false)) {
+      return;
+    }
+    setState(() => _selectedIndex = NavTab.home);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Only Home lets a back press through, which is what leaves the app —
+    // Android's convention for the start tab. Dialogs, sheets, and pushed
+    // pages are routes above this one and pop before this is ever asked.
+    return PopScope<void>(
+      canPop: _selectedIndex == NavTab.home,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onBackBlocked();
+      },
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       body: PageStorage(
         bucket: _bucket,
@@ -132,6 +164,9 @@ class _MapPageWrapperState extends State<_MapPageWrapper> {
   void recenterOnUserLocation() {
     _mapPageKey.currentState?.recenterOnUserLocation();
   }
+
+  /// See [MapPageState.handleBack].
+  bool handleBack() => _mapPageKey.currentState?.handleBack() ?? false;
 
   @override
   Widget build(BuildContext context) {
