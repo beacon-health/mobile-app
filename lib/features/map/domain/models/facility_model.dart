@@ -154,22 +154,38 @@ class Facility {
   }
 
   /// Checks if the facility is currently open based on operating hours.
-  bool get isOpenNow {
+  bool get isOpenNow => isOpenAt(DateTime.now());
+
+  /// Whether the facility is open at [moment], by its listed hours. A
+  /// facility with no hours on file is never "open" — unknown isn't yes.
+  ///
+  /// Hours that close at or before they open run past midnight ("8:00PM to
+  /// 6:00AM"), so they count for the evening of their own day and the early
+  /// morning of the next.
+  bool isOpenAt(DateTime moment) {
     if (hours.isEmpty) return false;
 
-    final now = DateTime.now();
-    final currentDay = _getDayAbbreviation(now.weekday);
-    final currentMinutes = now.hour * 60 + now.minute;
+    final today = _getDayAbbreviation(moment.weekday);
+    final yesterday = _getDayAbbreviation(
+      moment.weekday == DateTime.monday ? DateTime.sunday : moment.weekday - 1,
+    );
+    final minutes = moment.hour * 60 + moment.minute;
 
     for (final h in hours) {
-      if (h.day.toLowerCase() == currentDay.toLowerCase()) {
-        final openMinutes = _parseTimeToMinutes(h.opensAt);
-        final closeMinutes = _parseTimeToMinutes(h.closesAt);
-        if (openMinutes != null && closeMinutes != null) {
-          if (currentMinutes >= openMinutes && currentMinutes <= closeMinutes) {
-            return true;
-          }
-        }
+      final open = _parseTimeToMinutes(h.opensAt);
+      final close = _parseTimeToMinutes(h.closesAt);
+      if (open == null || close == null) continue;
+
+      final day = h.day.toLowerCase();
+      final runsPastMidnight = close <= open;
+      if (day == today) {
+        final openNow = runsPastMidnight
+            ? minutes >= open
+            : minutes >= open && minutes <= close;
+        if (openNow) return true;
+      }
+      if (day == yesterday && runsPastMidnight && minutes <= close) {
+        return true;
       }
     }
     return false;

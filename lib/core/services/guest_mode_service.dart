@@ -14,19 +14,23 @@ class GuestModeService extends ChangeNotifier {
   /// Lets a widget test stand in for a signed-in user without a Supabase
   /// session. Null (the default) means "ask Supabase".
   @visibleForTesting
-  bool? debugIsGuest;
+  User? debugUser;
 
-  /// Whether the current user is a guest (not signed in). Defaults to `true`
-  /// when Supabase is not initialized (e.g. in tests or before [init]).
-  bool get isGuest {
-    final override = debugIsGuest;
+  /// The signed-in user, or null for a guest — and before Supabase is
+  /// initialized (in tests, or ahead of [init]). Screens ask here rather than
+  /// asking Supabase directly, which is what lets them be built in a test.
+  User? get currentUser {
+    final override = debugUser;
     if (override != null) return override;
     try {
-      return Supabase.instance.client.auth.currentUser == null;
+      return Supabase.instance.client.auth.currentUser;
     } catch (_) {
-      return true;
+      return null;
     }
   }
+
+  /// Whether the current user is a guest (not signed in).
+  bool get isGuest => currentUser == null;
 
   /// Subscribes to Supabase auth state changes so [isGuest] stays current.
   /// Must be called after [Supabase.initialize].

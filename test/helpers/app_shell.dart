@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 import 'fake_google_maps.dart';
 import 'pump_app.dart';
@@ -106,7 +107,24 @@ class PlatformLog {
   /// The latest answer to "will Flutter handle the back button?", which is
   /// how Android's predictive back decides between the app and the launcher.
   bool? frameworkHandlesBack;
+
+  /// Every URL handed to the OS to open, oldest first.
+  final List<String> launchedUrls = [];
+
+  /// Schemes the OS "fails" to open, for testing fallbacks.
+  final Set<String> unlaunchableSchemes = {};
 }
+
+/// A signed-in user for tests, as Supabase would describe one.
+User testUser({String provider = 'google', String? email, String? name}) =>
+    User(
+      id: 'user-1',
+      appMetadata: {'provider': provider},
+      userMetadata: {if (name != null) 'name': name},
+      aud: 'authenticated',
+      email: email,
+      createdAt: '2026-01-01T00:00:00Z',
+    );
 
 const _geolocator = MethodChannel('flutter.baseflow.com/geolocator');
 const _urlLauncher = MethodChannel('plugins.flutter.io/url_launcher');
@@ -120,7 +138,7 @@ Future<PlatformLog> resetAppState(
   Set<String> installedUrlSchemes = const {},
 }) async {
   mockPlatformServices();
-  GuestModeService().debugIsGuest = null;
+  GuestModeService().debugUser = null;
   CoverageService().debugReset();
   CoverageService().debugSetStates(['IL']);
   await EligibilityPreferencesService().clear();
@@ -150,12 +168,17 @@ Future<PlatformLog> resetAppState(
     })
     ..setMockMethodCallHandler(_urlLauncher, (call) async {
       final url = (call.arguments as Map<Object?, Object?>?)?['url'];
-      return switch (call.method) {
-        'canLaunch' =>
-          url is String && installedUrlSchemes.contains(Uri.parse(url).scheme),
-        'launch' => true,
-        _ => null,
-      };
+      switch (call.method) {
+        case 'canLaunch':
+          return url is String &&
+              installedUrlSchemes.contains(Uri.parse(url).scheme);
+        case 'launch':
+          final launched = url! as String;
+          log.launchedUrls.add(launched);
+          return !log.unlaunchableSchemes.contains(Uri.parse(launched).scheme);
+        default:
+          return null;
+      }
     })
     ..setMockMethodCallHandler(SystemChannels.platform, (call) async {
       switch (call.method) {
@@ -171,7 +194,7 @@ Future<PlatformLog> resetAppState(
       ..setMockMethodCallHandler(_geolocator, null)
       ..setMockMethodCallHandler(_urlLauncher, null)
       ..setMockMethodCallHandler(SystemChannels.platform, null);
-    GuestModeService().debugIsGuest = null;
+    GuestModeService().debugUser = null;
     CoverageService().debugReset();
   });
   return log;

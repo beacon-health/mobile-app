@@ -1,15 +1,15 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Finishes the location step of onboarding, routing to the required
 /// Eligibility step for **signed-in** users and straight to the app for guests
 /// (who can't set eligibility — the Profile tab is gated).
 void finishLocationOnboarding(BuildContext context) {
-  final isSignedIn = Supabase.instance.client.auth.currentUser != null;
+  final isSignedIn = !GuestModeService().isGuest;
   Navigator.pushAndRemoveUntil(
     context,
     MaterialPageRoute<void>(

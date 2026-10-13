@@ -473,7 +473,7 @@ void main() {
         (tester) async {
       await resetAppState(tester);
       await saveLocation(home);
-      GuestModeService().debugIsGuest = false;
+      GuestModeService().debugUser = testUser();
       repository = FakeFacilityRepository(everything);
       maps = await pumpAppShell(
         tester,

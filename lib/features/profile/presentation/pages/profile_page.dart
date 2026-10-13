@@ -139,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// Square badge showing the OAuth provider's logo (Apple/Google).
   Widget _buildProviderBadge() {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = GuestModeService().currentUser;
     final provider = user?.appMetadata['provider'] as String?;
 
     Widget child;
@@ -184,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildSignedInIdentity() {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = GuestModeService().currentUser;
     final providerLabel = _providerLabelFor(user);
     final email = _displayEmail(user);
     final name = _displayName(user);

@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/utils/phone_format.dart';
 import 'package:beacon_app/core/widgets/dialog_text_field.dart';
@@ -7,7 +8,6 @@ import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Modal for submitting corrections to [facility], pre-filled with current
 /// values. Lands in `facility_requests` as `request_type = 'correction'`.
@@ -79,7 +79,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (Supabase.instance.client.auth.currentUser?.id == null) {
+    if (GuestModeService().isGuest) {
       _showSnack(
         AppLocalizations.of(context)!.requestSignInRequired,
         isError: true,
