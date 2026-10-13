@@ -14,7 +14,6 @@ Future<void> _pumpCard(
   WidgetTester tester,
   Facility facility, {
   bool isExpanded = false,
-  bool canFavorite = true,
   VoidCallback? onToggleExpand,
   VoidCallback? onToggleFavorite,
   VoidCallback? onRate,
@@ -28,7 +27,6 @@ Future<void> _pumpCard(
         child: FacilityCard(
           facility: facility,
           isExpanded: isExpanded,
-          canFavorite: canFavorite,
           onToggleExpand: onToggleExpand ?? () {},
           onToggleFavorite: onToggleFavorite ?? () {},
           buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
@@ -53,7 +51,7 @@ void main() {
     );
     expect(find.text('Near North Health'), findsOneWidget);
     expect(find.text('Clinic'), findsOneWidget);
-    expect(find.text(_l10n(tester).cardNextSteps), findsNothing);
+    expect(find.text(_l10n(tester).cardDirections), findsNothing);
   });
 
   testWidgets('the expand control reports taps', (tester) async {
@@ -67,13 +65,57 @@ void main() {
     expect(toggles, 1);
   });
 
-  testWidgets('expanded card shows next steps and hours', (tester) async {
+  testWidgets('expanded card puts directions under the name, then hours',
+      (tester) async {
     await _pumpCard(tester, createTestFacility(), isExpanded: true);
     final l10n = _l10n(tester);
-    expect(find.text(l10n.cardNextSteps), findsOneWidget);
+    expect(find.text(l10n.cardDirections), findsOneWidget);
     expect(find.text(l10n.cardHours), findsOneWidget);
-    expect(find.text(l10n.cardWebsiteNotAvailable), findsOneWidget);
     expect(find.text(l10n.cardContactForHours), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text(l10n.cardDirections)).dy,
+      lessThan(tester.getTopLeft(find.text(l10n.cardHours)).dy),
+    );
+  });
+
+  testWidgets('call and website appear only when the facility has them',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility(), isExpanded: true);
+    var l10n = _l10n(tester);
+    expect(find.text(l10n.cardCall), findsNothing);
+    expect(find.text(l10n.cardWebsite), findsNothing);
+
+    final launched = <String>[];
+    final semantics = tester.ensureSemantics();
+    mockPlatformServices();
+    await pumpThemed(
+      tester,
+      Scaffold(
+        body: SingleChildScrollView(
+          child: FacilityCard(
+            facility: createTestFacility(
+              phones: const [PhoneContact(number: '3125550100')],
+              website: 'https://example.org',
+            ),
+            isExpanded: true,
+            onToggleExpand: () {},
+            onToggleFavorite: () {},
+            buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
+            onLaunchUrl: (url) async => launched.add(url),
+          ),
+        ),
+      ),
+    );
+    l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.cardCall));
+    await tester.tap(find.text(l10n.cardWebsite));
+    expect(launched, ['tel:3125550100', 'https://example.org']);
+    // A screen reader hears the number, not just "Call".
+    expect(
+      find.bySemanticsLabel(l10n.cardCallNumber('(312) 555-0100')),
+      findsOneWidget,
+    );
+    semantics.dispose();
   });
 
   testWidgets('only "yes" eligibility attributes become chips', (tester) async {
@@ -125,18 +167,33 @@ void main() {
     expect(find.byType(TagChip), findsNothing);
   });
 
-  testWidgets('guests see a disabled favorite button', (tester) async {
-    await _pumpCard(tester, createTestFacility(), canFavorite: false);
-    final button = tester.widget<IconButton>(
-      find.ancestor(
-        of: find.byIcon(Icons.favorite_border),
-        matching: find.byType(IconButton),
-      ),
-    );
-    expect(button.onPressed, isNull);
+  testWidgets('the heart and the expand control are full-size and named',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
+    final l10n = _l10n(tester);
+    for (final tooltip in [l10n.cardSave('CARPLS'), l10n.cardShowDetails]) {
+      final button = find.byTooltip(tooltip);
+      expect(button, findsOneWidget, reason: tooltip);
+      final size = tester.getSize(
+        find.ancestor(of: button, matching: find.byType(IconButton)).first,
+      );
+      expect(size.width, greaterThanOrEqualTo(48), reason: tooltip);
+      expect(size.height, greaterThanOrEqualTo(48), reason: tooltip);
+    }
   });
 
-  testWidgets('signed-in users can toggle the favorite', (tester) async {
+  testWidgets('a saved facility offers to remove it', (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS', isFavorite: true),
+    );
+    expect(
+      find.byTooltip(_l10n(tester).cardUnsave('CARPLS')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the heart reports taps', (tester) async {
     var toggles = 0;
     await _pumpCard(
       tester,

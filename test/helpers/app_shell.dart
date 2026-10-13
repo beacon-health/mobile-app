@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/coverage_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
@@ -142,6 +143,8 @@ Future<PlatformLog> resetAppState(
   CoverageService().debugReset();
   CoverageService().debugSetStates(['IL']);
   await EligibilityPreferencesService().clear();
+  await AccessibilitySettings().setOpenMapAsList(false);
+  await AccessibilitySettings().setLargerMapPins(false);
   RecentFacilitiesService().clear();
   final zip = ZipCodeService();
   await zip.clear();
@@ -251,6 +254,9 @@ Future<FakeGoogleMaps> pumpAppShell(
         ChangeNotifierProvider<EligibilityPreferencesService>.value(
           value: EligibilityPreferencesService(),
         ),
+        ChangeNotifierProvider<AccessibilitySettings>.value(
+          value: AccessibilitySettings(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -289,13 +295,12 @@ Future<void> pressBack(WidgetTester tester) async {
 Future<void> openTab(WidgetTester tester, String label) async {
   await tester.tap(
     find.descendant(
-      of: find.byType(BottomNavigationBar),
+      of: find.byType(NavigationBar),
       matching: find.text(label),
     ),
   );
   await settle(tester);
 }
 
-int selectedTab(WidgetTester tester) => tester
-    .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
-    .currentIndex;
+int selectedTab(WidgetTester tester) =>
+    tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex;

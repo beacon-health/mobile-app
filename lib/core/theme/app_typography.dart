@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Type scale. Inter is bundled (see `pubspec.yaml`) so iOS and Android render
 /// the same letterforms — without it iOS falls back to SF Pro and Android to
-/// Roboto. Chinese text still falls back to the platform's CJK font.
+/// Roboto. Inter has no Chinese glyphs, so [fontFamilyFallback] names each
+/// platform's Simplified Chinese font.
+///
+/// Nothing in the app is set smaller than 11pt.
 ///
 /// Style text through `Theme.of(context).textTheme.<role>` and `copyWith` only
 /// the color (or, sparingly, the weight). Raw `fontSize:` literals outside
@@ -22,6 +25,19 @@ import 'package:flutter/material.dart';
 /// | labelSmall | 11 / 600 | Badges, status pills, dense chips, hours |
 abstract final class AppTypography {
   static const String fontFamily = 'Inter';
+
+  /// Simplified Chinese faces, tried in order when Inter lacks a glyph:
+  /// PingFang on iOS, Noto Sans CJK on Android. Naming them stops the engine
+  /// from picking a Japanese or Traditional face for shared characters.
+  static const List<String> fontFamilyFallback = [
+    'PingFang SC',
+    'Noto Sans CJK SC',
+    'Noto Sans SC',
+  ];
+
+  /// Least line height for Chinese body text, whose full-height characters
+  /// crowd at the Latin ratios above.
+  static const double cjkMinLineHeight = 1.5;
 
   static const TextTheme textTheme = TextTheme(
     headlineMedium: TextStyle(
@@ -86,13 +102,15 @@ abstract final class AppTypography {
     ),
   );
 
-  /// The only sub-11pt text in the app: Home quick-action tile labels, which
-  /// must fit two lines inside a ~58pt-wide tile on the smallest phone.
-  static const TextStyle quickActionLabel = TextStyle(
-    fontSize: 9,
-    fontWeight: FontWeight.w600,
-    height: 1.15,
+  /// Bottom-bar tab labels. One size selected or not, so the label doesn't
+  /// jump on a tab change; the active tab takes [navLabelActiveWeight].
+  static const TextStyle navLabel = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    height: 1.33,
+    letterSpacing: 0,
   );
+  static const FontWeight navLabelActiveWeight = FontWeight.w700;
 
   /// Letter-spaced input text for the 5-digit ZIP fields.
   static const TextStyle zipInput = TextStyle(

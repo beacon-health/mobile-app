@@ -40,67 +40,84 @@ void main() {
       expect(find.byType(NativeSignInButton), findsNothing);
     });
 
-    testWidgets('has a Sign Out button, with a confirmation', (tester) async {
+    testWidgets('has a Sign out button, with a confirmation', (tester) async {
       // "I didn't see a sign out button": it is at the foot of this page.
       await pumpProfile(tester);
 
-      await scrollTo(tester, find.text('Sign Out'));
-      await tester.tap(find.text('Sign Out'));
+      await scrollTo(tester, find.text('Sign out'));
+      await tester.tap(find.text('Sign out'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Are you sure you want to sign out?'), findsOneWidget);
+      expect(find.text('Sign out?'), findsOneWidget);
+      // Says what happens to what they saved, not just "are you sure".
+      expect(
+        find.textContaining('stay with your account'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('has a Delete Account button', (tester) async {
+    testWidgets('Delete account reads as destructive, not as a link',
+        (tester) async {
       await pumpProfile(tester);
 
-      await scrollTo(tester, find.text('Delete Account'));
+      await scrollTo(tester, find.text('Delete account'));
 
-      expect(find.text('Delete Account'), findsOneWidget);
+      final button = tester.widget<TextButton>(
+        find.ancestor(
+          of: find.text('Delete account'),
+          matching: find.bySubtype<TextButton>(),
+        ),
+      );
+      final scheme =
+          Theme.of(tester.element(find.byType(ProfilePage))).colorScheme;
+      expect(button.style!.foregroundColor!.resolve({}), scheme.error);
     });
 
     testWidgets('links to ratings and requests', (tester) async {
       await pumpProfile(tester);
 
-      expect(find.text('Your Ratings'), findsOneWidget);
-      expect(find.text('Your Requests'), findsOneWidget);
+      expect(find.text('Your ratings'), findsOneWidget);
+      expect(find.text('Your requests'), findsOneWidget);
     });
 
-    testWidgets('the Medicaid gate saves like the others', (tester) async {
+    testWidgets('a checked box saves', (tester) async {
       await pumpProfile(tester);
+      await eligibility.setApplyEligibilityToSearch(true);
+      await tester.pumpAndSettle();
 
-      await scrollTo(tester, find.text('Accepts Medicaid'));
-      await tester.tap(find.text('Accepts Medicaid'));
+      await scrollTo(tester, find.text('Medicaid'));
+      await tester.tap(find.text('Medicaid'));
       await tester.pumpAndSettle();
 
       expect(eligibility.eligibility.acceptsMedicaid, isTrue);
       expect(eligibility.eligibility.insuranceRequired, isFalse);
     });
 
-    testWidgets('switching "apply to search" off disables the gates',
+    testWidgets(
+        'switching the filter off locks the answers without losing them',
         (tester) async {
       await pumpProfile(tester);
-
-      await tester.tap(find.text('Apply eligibility criteria to search'));
+      await eligibility.updateEligibility(
+        const EligibilityState(proofOfIncome: true, applyToSearch: true),
+      );
       await tester.pumpAndSettle();
-      await scrollTo(tester, find.text('Accepts Medicaid'));
 
-      final gates = tester
-          .widgetList<SwitchListTile>(find.byType(SwitchListTile))
-          .where((tile) => (tile.title! as Text).data != null)
-          .where(
-            (tile) =>
-                (tile.title! as Text).data !=
-                'Apply eligibility criteria to search',
-          );
-      expect(gates, isNotEmpty);
-      expect(gates.map((tile) => tile.onChanged), everyElement(isNull));
+      await scrollTo(tester, find.text(_filterSwitch));
+      await tester.tap(find.text(_filterSwitch));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.text('Medicaid'));
+
+      final boxes =
+          tester.widgetList<CheckboxListTile>(find.byType(CheckboxListTile));
+      expect(boxes, hasLength(5));
+      expect(boxes.map((tile) => tile.onChanged), everyElement(isNull));
       expect(eligibility.eligibility.applyToSearch, isFalse);
+      expect(eligibility.eligibility.proofOfIncome, isTrue);
     });
   });
 
@@ -110,8 +127,40 @@ void main() {
       await pumpProfile(tester, signedIn: false);
 
       expect(find.byType(NativeSignInButton), findsOneWidget);
-      expect(find.text('Sign Out'), findsNothing);
-      expect(find.text('Accepts Medicaid'), findsNothing);
+      expect(find.text('Sign out'), findsNothing);
+      expect(find.text('Delete account'), findsNothing);
+    });
+
+    testWidgets('can say what they can provide, kept on the device',
+        (tester) async {
+      // Onboarding promises this is editable in Profile; for a guest it used
+      // to be a sign-in card and nothing else.
+      await pumpProfile(tester, signedIn: false);
+
+      expect(find.text('What you can provide'), findsOneWidget);
+      expect(find.text('Saved on this device'), findsOneWidget);
+
+      // Off until they say so: nothing was hidden on their behalf.
+      expect(eligibility.eligibility.applyToSearch, isFalse);
+      await scrollTo(tester, find.text(_filterSwitch));
+      await tester.tap(find.text(_filterSwitch));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.text('Proof of address'));
+      await tester.tap(find.text('Proof of address'));
+      await tester.pumpAndSettle();
+
+      expect(eligibility.eligibility.applyToSearch, isTrue);
+      expect(eligibility.eligibility.proofOfResidency, isTrue);
+    });
+
+    testWidgets('signed-in users are not told it is on the device',
+        (tester) async {
+      await pumpProfile(tester);
+
+      expect(find.text('What you can provide'), findsOneWidget);
+      expect(find.text('Saved on this device'), findsNothing);
     });
   });
 }
+
+const _filterSwitch = 'Filter by what I can provide';

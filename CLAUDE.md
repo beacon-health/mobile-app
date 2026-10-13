@@ -94,9 +94,9 @@ commands, or make text edits with the file tools instead of the shell.
   close them on its own. Anything new that opens over a tab without being a
   route joins the chain in `MapPageState.handleBack()` / `mapBackTarget`, with
   a `pressBack` test (README → Architecture).
-- `FacilityCategories` is the single source of truth for the taxonomy, and
-  `FacilityFilterService.eligibilityGates` for what the eligibility switches
-  hide.
+- `FacilityCategories` is the single source of truth for the taxonomy,
+  `FacilityFilterService.eligibilityGates` for what the "what can you provide"
+  answers hide, and `EligibilityChecklist` for how the question is worded.
 - One sign-in provider per platform: the rule lives only in
   `nativeSignInProviderFor`, and every sign-in surface uses `NativeSignInButton`.
 - Anything else that differs by platform goes in a function that takes the
@@ -114,6 +114,22 @@ commands, or make text edits with the file tools instead of the shell.
   stale: rebuild with `dart run tool/build_design_bundle.dart` and re-sync
   (`.design-sync/NOTES.md`).
 - `require_trailing_commas` is off; let `dart format` own line breaks.
+
+## Accessibility (README → Accessibility)
+
+- **Text colors:** brand colors are for fills and icons. Text takes
+  `colorScheme.primaryText` / `tertiaryText`, destructive actions `error`
+  (`AppTheme.destructiveTextButton`). New pairings go in
+  `test/core/theme/contrast_test.dart`.
+- **No fixed heights around text**, and nothing tappable under 48×48: use
+  `minHeight` / `AppSizes.minTouchTarget`. A new screen joins
+  `test/accessibility/large_text_test.dart`.
+- **Icon-only controls get a `tooltip`** that names what they act on ("Save
+  CARPLS"), and state shows in shape as well as color.
+- **Animations take `AppMotion.of(context, …)`**; camera moves go through the
+  page's reduced-motion helper.
+- A control that needs an account stays full-contrast with a lock and opens
+  the sign-in prompt. Never disable it.
 
 ## Tests
 

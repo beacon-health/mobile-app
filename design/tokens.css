@@ -52,6 +52,7 @@
   --color-background: #FFFFFF;
   --color-card: #FFFFFF;
   --color-nav-bar: #F0FFF0;
+  --color-nav-indicator: #FE6F5E29;
   --color-primary: #6C7C59;
   --color-on-primary: #FFFFFF;
   --color-primary-container: #CCEDA5;
@@ -62,6 +63,11 @@
   --color-on-secondary-container: #D0E7FA;
   --color-tertiary: #FE6F5E;
   --color-on-tertiary: #FFFFFF;
+  --color-primary-text: #5C694C;
+  --color-tertiary-text: #A5483D;
+  --color-facility-card: #F0FFF0;
+  --color-focus-ring: #536878;
+  --color-scrim: #00000066;
   --color-error: #BA1A1A;
   --color-on-error: #FFFFFF;
   --color-surface: #FFFFFF;
@@ -76,6 +82,7 @@
   --opacity-tint-strong: 0.18; /* @kind other */
   --opacity-tint-border: 0.3; /* @kind other */
   --opacity-disabled: 0.38; /* @kind other */
+  --opacity-focus: 0.24; /* @kind other */
   --opacity-on-surface-faded: 0.5; /* @kind other */
   --opacity-on-surface-muted: 0.6; /* @kind other */
   --opacity-on-surface-secondary: 0.7; /* @kind other */
@@ -110,6 +117,8 @@
   --size-border-selected: 2px;
   --size-handle-width: 40px;
   --size-handle-height: 4px;
+  --size-focus-ring-width: 2px;
+  --size-focus-ring-gap: 2px;
   --shadow-card: 0px 2px 8px #0000000F;
   --shadow-raised: 0px 2px 8px #0000001F;
   --shadow-sheet: 0px -4px 10px #00000014;
@@ -119,9 +128,14 @@
 }
 
 :root[data-theme="dark"] {
+  --color-category-health-care: #829072;
+  --color-category-mental-health: #9184B7;
+  --color-category-specialized-services: #449995;
+  --color-category-fallback: #7E8E9A;
   --color-background: #1A1A2E;
-  --color-card: #222240;
-  --color-nav-bar: #222240;
+  --color-card: #242444;
+  --color-nav-bar: #2E2E52;
+  --color-nav-indicator: #536878;
   --color-primary: #B0D18B;
   --color-on-primary: #1E3702;
   --color-primary-container: #344E17;
@@ -132,6 +146,11 @@
   --color-on-secondary-container: #D0E7FA;
   --color-tertiary: #FE6F5E;
   --color-on-tertiary: #FFFFFF;
+  --color-primary-text: #B0D18B;
+  --color-tertiary-text: #FE6F5E;
+  --color-facility-card: #242444;
+  --color-focus-ring: #B3C9DC;
+  --color-scrim: #00000099;
   --color-error: #FFB4AB;
   --color-on-error: #690005;
   --color-surface: #1A1A2E;
@@ -231,11 +250,12 @@ body {
   letter-spacing: 0.1px;
 }
 
-.text-quick-action-label {
+.text-nav-label {
   font-family: var(--font-family);
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1.15;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.33;
+  letter-spacing: 0px;
 }
 
 .text-zip-input {

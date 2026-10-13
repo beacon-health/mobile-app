@@ -116,10 +116,28 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
 
     final l10n = AppLocalizations.of(context);
     final isApple = provider == NativeSignInProvider.apple;
-    // Brand-mandated colors, not theme colors: Apple's button is black with
-    // white text, Google's is white with a hairline border.
-    final background = isApple ? AppColors.appleBlack : Colors.white;
-    final foreground = isApple ? Colors.white : AppColors.googleButtonText;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Brand-mandated colors, not theme colors, in each brand's own light and
+    // dark styles. Apple: black with white text, and the reverse on a dark
+    // screen, where a black button would vanish. Google: white with a
+    // hairline border, or its near-black dark variant.
+    final Color background;
+    final Color foreground;
+    final BorderSide? side;
+    if (isApple) {
+      background = isDark ? Colors.white : AppColors.appleBlack;
+      foreground = isDark ? AppColors.appleBlack : Colors.white;
+      side = null;
+    } else {
+      background = isDark ? AppColors.googleDarkButton : Colors.white;
+      foreground =
+          isDark ? AppColors.googleDarkButtonText : AppColors.googleButtonText;
+      side = BorderSide(
+        color: isDark
+            ? AppColors.googleDarkButtonBorder
+            : AppColors.googleButtonBorder,
+      );
+    }
 
     final button = ElevatedButton.icon(
       onPressed: _isLoading ? null : () => _handleTap(provider),
@@ -149,9 +167,7 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
         foregroundColor: foreground,
         disabledBackgroundColor: background.withValues(alpha: 0.7),
         disabledForegroundColor: foreground,
-        side: isApple
-            ? null
-            : const BorderSide(color: AppColors.googleButtonBorder),
+        side: side,
         textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
               fontFamily: isApple
                   ? AppTypography.appleButtonFontFamily

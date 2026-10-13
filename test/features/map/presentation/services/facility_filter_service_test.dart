@@ -202,9 +202,9 @@ void main() {
             f.id,
         ];
 
-    test('a "required" switch that is on hides nothing', () {
-      // Switching "Insurance required" on used to hide every facility that
-      // doesn't require insurance — most of the map.
+    test('a checked box hides nothing', () {
+      // Having insurance used to hide every facility that doesn't require
+      // it — most of the map.
       for (final column in requiredColumns) {
         expect(
           shown(allOn(), column),
@@ -214,11 +214,22 @@ void main() {
       }
     });
 
-    test('a "required" switch that is off hides only what requires it', () {
+    test('an unchecked box hides only what requires it', () {
       for (final column in requiredColumns) {
         expect(
-          shown(const EligibilityState(), column),
+          shown(const EligibilityState(applyToSearch: true), column),
           ['open', 'unknown'],
+          reason: column,
+        );
+      }
+    });
+
+    test('someone who never answered has nothing hidden', () {
+      // The state of a fresh install, and of a guest who skipped the step.
+      for (final column in [...requiredColumns, 'accepts_medicaid']) {
+        expect(
+          shown(const EligibilityState(), column),
+          ['requires', 'open', 'unknown'],
           reason: column,
         );
       }

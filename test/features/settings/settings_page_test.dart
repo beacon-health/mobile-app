@@ -1,4 +1,6 @@
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/coverage_service.dart';
+import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
@@ -36,10 +38,18 @@ void main() {
   }
 
   Future<void> saveZip(WidgetTester tester, String zip) async {
-    await tester.tap(find.text('ZIP Code'));
+    await tester.tap(find.text('ZIP code'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField), zip);
     await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+  }
+
+  /// Flips "Use my location" (the page has other switches now).
+  Future<void> toggleLocation(WidgetTester tester, {String? label}) async {
+    await tester.tap(
+      find.widgetWithText(SwitchListTile, label ?? 'Use my location'),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -47,6 +57,16 @@ void main() {
     testWidgets('shows the saved ZIP', (tester) async {
       await pumpSettings(tester);
       expect(find.text('60601'), findsOneWidget);
+    });
+
+    testWidgets('says "Not set" when there is none', (tester) async {
+      // A dash is read aloud as "em dash".
+      await pumpSettings(tester);
+      await zipService.clear();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Not set'), findsOneWidget);
+      expect(find.text('—'), findsNothing);
     });
 
     testWidgets('saves a ZIP in a launched state', (tester) async {
@@ -99,8 +119,7 @@ void main() {
         locale: const Locale('es'),
       );
 
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+      await toggleLocation(tester, label: 'Usar mi ubicación');
 
       expect(zipService.locationSearchEnabled, isTrue);
       expect(zipService.zipCode, ZipCodeService.currentLocationSentinel);
@@ -114,13 +133,12 @@ void main() {
         locationPermission: LocationPermission.whileInUse,
       );
 
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('ZIP Code'));
+      await toggleLocation(tester);
+      await tester.tap(find.text('ZIP code'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
-      expect(find.text('Current Location'), findsOneWidget);
+      expect(find.text('Current location'), findsOneWidget);
     });
 
     testWidgets('switching off restores the earlier ZIP', (tester) async {
@@ -129,10 +147,8 @@ void main() {
         locationPermission: LocationPermission.whileInUse,
       );
 
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+      await toggleLocation(tester);
+      await toggleLocation(tester);
 
       expect(zipService.locationSearchEnabled, isFalse);
       expect(zipService.zipCode, '60601');
@@ -143,8 +159,7 @@ void main() {
         (tester) async {
       await pumpSettings(tester);
 
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+      await toggleLocation(tester);
 
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(zipService.locationSearchEnabled, isFalse);
@@ -226,13 +241,96 @@ void main() {
     );
   });
 
-  group('About', () {
-    testWidgets('shows the version and the legal links', (tester) async {
+  group('Language and appearance', () {
+    setUp(() => ThemeModeProvider().setThemeMode(ThemeMode.system));
+
+    Future<List<String>> optionsOf(WidgetTester tester, String row) async {
+      await tester.scrollUntilVisible(find.text(row), 100);
+      await tester.tap(find.text(row));
+      await tester.pumpAndSettle();
+      return [
+        for (final tile in tester.widgetList<ListTile>(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.byType(ListTile),
+          ),
+        ))
+          (tile.title! as Text).data!,
+      ];
+    }
+
+    testWidgets('appearance follows the phone unless told otherwise',
+        (tester) async {
       await pumpSettings(tester);
 
-      expect(find.text('1.0.0'), findsOneWidget);
-      expect(find.text('Privacy Policy'), findsOneWidget);
-      expect(find.text('Terms of Service'), findsOneWidget);
+      expect(find.text('Match device'), findsOneWidget);
+      expect(
+        await optionsOf(tester, 'Appearance'),
+        ['Match device', 'Light', 'Dark'],
+      );
+
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+
+      expect(ThemeModeProvider().themeMode, ThemeMode.dark);
+      expect(find.text('Dark'), findsOneWidget);
+      await ThemeModeProvider().setThemeMode(ThemeMode.system);
+    });
+
+    testWidgets('appearance options are translated', (tester) async {
+      await pumpSettings(tester, locale: const Locale('es'));
+
+      expect(
+        await optionsOf(tester, 'Apariencia'),
+        ['Igual que el dispositivo', 'Claro', 'Oscuro'],
+      );
+    });
+
+    testWidgets('languages are listed under their own names', (tester) async {
+      await pumpSettings(tester);
+
+      expect(
+        await optionsOf(tester, 'Language'),
+        ['English', 'Español', '中文'],
+      );
+    });
+  });
+
+  group('Accessibility', () {
+    testWidgets('offers the map as a list and larger pins', (tester) async {
+      await pumpSettings(tester);
+      final settings = AccessibilitySettings();
+      expect(settings.openMapAsList, isFalse);
+      expect(settings.largerMapPins, isFalse);
+
+      for (final label in ['Open Map as a list', 'Larger map pins']) {
+        await tester.scrollUntilVisible(find.text(label), 100);
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+
+      expect(settings.openMapAsList, isTrue);
+      expect(settings.largerMapPins, isTrue);
+      expect(settings.pinScale, greaterThan(1));
+    });
+  });
+
+  group('About', () {
+    testWidgets('shows the legal links, and the version as a footer',
+        (tester) async {
+      await pumpSettings(tester);
+      await tester.scrollUntilVisible(find.text('Beacon 1.0.0'), 100);
+
+      expect(find.text('Privacy policy'), findsOneWidget);
+      expect(find.text('Terms of service'), findsOneWidget);
+      // Information, not a row that looks tappable and isn't.
+      expect(
+        find.ancestor(
+          of: find.text('Beacon 1.0.0'),
+          matching: find.byType(ListTile),
+        ),
+        findsNothing,
+      );
     });
   });
 }

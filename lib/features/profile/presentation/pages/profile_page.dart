@@ -6,6 +6,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/local_user_data.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
@@ -16,9 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Account + eligibility hub; guests see a sign-in prompt only. Eligibility is
-/// the search-affecting profile data — service Preferences live on the Map and
-/// app settings under Settings.
+/// Account + "what you can provide". Guests get the sign-in card in place of
+/// the account, and the same checklist, saved on the device. Service
+/// Preferences live on the Map and app settings under Settings.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -78,17 +79,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Icon(
                         Icons.lock_outline,
                         size: AppIconSize.xl,
-                        color: Theme.of(context).colorScheme.onSurfaceFaded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Text(
                         l10n.settingsSignInHint,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .onSurfaceSecondary,
+                                  .onSurfaceVariant,
                             ),
                       ),
                     ),
@@ -109,6 +110,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
+        _buildEligibilitySection(l10n, savedOnDevice: true),
+        const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
@@ -282,94 +285,46 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // --- Eligibility ---------------------------------------------------------
 
-  Widget _buildEligibilitySection(AppLocalizations l10n) {
+  Widget _buildEligibilitySection(
+    AppLocalizations l10n, {
+    bool savedOnDevice = false,
+  }) {
     final epService = context.watch<EligibilityPreferencesService>();
     final state = epService.eligibility;
-    final applyOn = state.applyToSearch;
-    void update(EligibilityState next) {
-      unawaited(epService.updateEligibility(next));
-    }
-
-    // Child toggles are disabled (not reset) when the parent is off.
-    ValueChanged<bool>? child(EligibilityState Function(bool) build) {
-      if (!applyOn) return null;
-      return (v) => update(build(v));
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(l10n.settingsEligibility),
-        // Parent toggle in its own card, visually separated from the gates
-        // it governs below.
+        SectionHeader(
+          l10n.settingsEligibility,
+          note: savedOnDevice ? l10n.profileSavedOnDevice : null,
+        ),
+        // The switch in its own card, set apart from the answers it governs.
         Card(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: SwitchListTile(
             title: Text(l10n.profileApplyEligibility),
             subtitle: Text(l10n.profileApplyEligibilityDesc),
             secondary: const Icon(Icons.filter_alt_outlined),
-            value: applyOn,
+            value: state.applyToSearch,
             onChanged: (v) =>
                 unawaited(epService.setApplyEligibilityToSearch(v)),
           ),
         ),
-        const SizedBox(height: AppSpacing.xl),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
-          child: Column(
-            children: [
-              _eligToggle(
-                l10n.eligProofOfIncome,
-                Icons.attach_money,
-                state.proofOfIncome,
-                child((v) => state.copyWith(proofOfIncome: v)),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                l10n.eligProofOfResidency,
-                Icons.home_outlined,
-                state.proofOfResidency,
-                child((v) => state.copyWith(proofOfResidency: v)),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                l10n.eligInsuranceRequired,
-                Icons.health_and_safety,
-                state.insuranceRequired,
-                child((v) => state.copyWith(insuranceRequired: v)),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                l10n.eligReferralRequired,
-                Icons.assignment_ind_outlined,
-                state.referralRequired,
-                child((v) => state.copyWith(referralRequired: v)),
-              ),
-              const Divider(height: 1),
-              _eligToggle(
-                l10n.eligAcceptsMedicaid,
-                Icons.badge_outlined,
-                state.acceptsMedicaid,
-                child((v) => state.copyWith(acceptsMedicaid: v)),
-              ),
-            ],
+        const SizedBox(height: AppSpacing.md),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageGutter,
+          ),
+          // Locked, not reset, while the filter is off.
+          child: EligibilityChecklist(
+            value: state,
+            onChanged: state.applyToSearch
+                ? (next) => unawaited(epService.updateEligibility(next))
+                : null,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _eligToggle(
-    String title,
-    IconData icon,
-    bool value,
-    ValueChanged<bool>? onChanged,
-  ) {
-    return SwitchListTile(
-      title: Text(title),
-      secondary: Icon(icon),
-      value: value,
-      onChanged: onChanged,
     );
   }
 
@@ -403,7 +358,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final shouldSignOut = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsSignOut),
+        title: Text(l10n.settingsSignOutTitle),
         content: Text(l10n.settingsSignOutConfirm),
         actions: [
           TextButton(
@@ -446,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // --- Delete account ------------------------------------------------------
 
   Widget _buildDeleteAccountButton(AppLocalizations l10n) {
-    final destructive = Theme.of(context).colorScheme.tertiary;
+    final destructive = Theme.of(context).colorScheme.error;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageGutter,
@@ -471,10 +426,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ? l10n.deleteAccountInProgress
                 : l10n.settingsDeleteAccount,
           ),
-          style: TextButton.styleFrom(
-            foregroundColor: destructive,
-            minimumSize: const Size.fromHeight(AppSizes.minTouchTarget),
-          ),
+          style: AppTheme.destructiveTextButton(context),
           onPressed: _isDeleting ? null : () => _confirmDeleteAccount(l10n),
         ),
       ),
@@ -493,10 +445,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.tertiary,
-              foregroundColor: Theme.of(ctx).colorScheme.onTertiary,
-            ),
+            style: AppTheme.destructiveFilledButton(ctx),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.deleteAccountConfirm),
           ),

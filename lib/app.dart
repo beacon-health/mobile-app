@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/constants/app_routes.dart';
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -50,6 +51,9 @@ class BeaconApp extends StatelessWidget {
         ChangeNotifierProvider<EligibilityPreferencesService>.value(
           value: EligibilityPreferencesService(),
         ),
+        ChangeNotifierProvider<AccessibilitySettings>.value(
+          value: AccessibilitySettings(),
+        ),
       ],
       child: Consumer2<LocaleProvider, ThemeModeProvider>(
         builder: (context, localeProvider, themeModeProvider, _) {
@@ -58,6 +62,9 @@ class BeaconApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
+            // Picked by MaterialApp when the OS asks for more contrast.
+            highContrastTheme: AppTheme.highContrastLightTheme,
+            highContrastDarkTheme: AppTheme.highContrastDarkTheme,
             themeMode: themeModeProvider.themeMode,
             locale: localeProvider.locale,
             supportedLocales: LocaleProvider.supportedLocales,
@@ -69,12 +76,21 @@ class BeaconApp extends StatelessWidget {
             ],
             // Status/nav-bar icons follow the in-app theme (which can differ
             // from the OS setting) on both platforms, including screens
-            // without an AppBar.
-            builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-              value: AppTheme.systemOverlayStyleFor(
-                Theme.of(context).brightness,
+            // without an AppBar. The theme itself is fitted to the reader
+            // here, where the language and the OS's Bold Text setting are
+            // known.
+            builder: (context, child) => Theme(
+              data: AppTheme.adapted(
+                Theme.of(context),
+                locale: Localizations.localeOf(context),
+                boldText: MediaQuery.boldTextOf(context),
               ),
-              child: child!,
+              child: AnnotatedRegion<SystemUiOverlayStyle>(
+                value: AppTheme.systemOverlayStyleFor(
+                  Theme.of(context).brightness,
+                ),
+                child: child!,
+              ),
             ),
             home: const AuthGate(),
             routes: {

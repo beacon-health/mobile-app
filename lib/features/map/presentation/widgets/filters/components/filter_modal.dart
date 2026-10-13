@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/drag_handle.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/filter_l10n.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
@@ -13,12 +14,22 @@ enum FilterSection {
   preferences,
 }
 
+/// The filters as the sheet holds them before "Show results" commits them.
+typedef FilterSelection = ({
+  Set<String> categories,
+  Map<PreferenceRequirement, bool?> preferenceRequirements,
+  bool showFavoritesOnly,
+  bool showOpenNowOnly,
+});
+
 class FilterModal extends StatefulWidget {
   final Set<String> selectedCategories;
   final List<String> availableCategories;
   final Map<PreferenceRequirement, bool?> selectedPreferenceRequirements;
   final bool showFavoritesOnly;
   final bool showOpenNowOnly;
+
+  /// The section to scroll to on opening: the one whose chip was tapped.
   final FilterSection? expandedSection;
 
   /// Guests can't favorite or filter by preferences. Both controls render
@@ -28,6 +39,10 @@ class FilterModal extends StatefulWidget {
 
   /// Called when a guest taps a locked control (the sign-in prompt).
   final VoidCallback? onLockedTap;
+
+  /// How many facilities a selection would leave on the map, so the button
+  /// can say what tapping it will do. Null hides the count ("Apply").
+  final int Function(FilterSelection)? resultCount;
 
   const FilterModal({
     super.key,
@@ -39,6 +54,7 @@ class FilterModal extends StatefulWidget {
     this.expandedSection,
     this.isGuest = false,
     this.onLockedTap,
+    this.resultCount,
   });
 
   @override
@@ -51,7 +67,6 @@ class _FilterModalState extends State<FilterModal> {
   late bool _tempShowFavoritesOnly;
   late bool _tempShowOpenNowOnly;
 
-  FilterSection? _expandedSection;
   final ScrollController _scrollController = ScrollController();
   final Map<FilterSection, GlobalKey> _sectionKeys = {
     FilterSection.category: GlobalKey(),
@@ -67,8 +82,6 @@ class _FilterModalState extends State<FilterModal> {
         widget.isGuest ? {} : Map.from(widget.selectedPreferenceRequirements);
     _tempShowFavoritesOnly = !widget.isGuest && widget.showFavoritesOnly;
     _tempShowOpenNowOnly = widget.showOpenNowOnly;
-    _expandedSection =
-        _isLocked(widget.expandedSection) ? null : widget.expandedSection;
 
     if (widget.expandedSection != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -83,19 +96,22 @@ class _FilterModalState extends State<FilterModal> {
     super.dispose();
   }
 
-  bool _isLocked(FilterSection? section) =>
-      widget.isGuest && section == FilterSection.preferences;
-
   void _scrollToSection(FilterSection section) {
-    final key = _sectionKeys[section];
-    if (key?.currentContext != null) {
-      Scrollable.ensureVisible(
-        key!.currentContext!,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    final target = _sectionKeys[section]?.currentContext;
+    if (target == null) return;
+    Scrollable.ensureVisible(
+      target,
+      duration: AppMotion.of(context, AppMotion.medium),
+      curve: AppMotion.curve,
+    );
   }
+
+  FilterSelection get _selection => (
+        categories: _tempCategories,
+        preferenceRequirements: _tempPreferenceRequirements,
+        showFavoritesOnly: _tempShowFavoritesOnly,
+        showOpenNowOnly: _tempShowOpenNowOnly,
+      );
 
   void _clearAll() {
     Navigator.pop(context, {
@@ -119,210 +135,216 @@ class _FilterModalState extends State<FilterModal> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Container(
-      height:
-          MediaQuery.of(context).size.height * FilterConstants.modalHeightRatio,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: AppRadii.sheetTop,
+    final count = widget.resultCount?.call(_selection);
+
+    final sheetColor =
+        theme.bottomSheetTheme.backgroundColor ?? colorScheme.surface;
+
+    // A Material, not a colored box: the rows inside paint their ink on it.
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height *
+            FilterConstants.modalHeightRatio,
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sheetGutter,
-              vertical: AppSpacing.lg,
-            ),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.filterFilters,
-                  style: theme.textTheme.titleLarge,
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
+      child: Material(
+        color: sheetColor,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.sheetTop),
+        clipBehavior: Clip.antiAlias,
+        child: _buildContent(context, sheetColor, count),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Color sheetColor, int? count) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final clearButton = OutlinedButton(
+      onPressed: _clearAll,
+      child: Text(l10n.filterClearAll, textAlign: TextAlign.center),
+    );
+    // Says what will happen, not just "Apply".
+    final applyButton = FilledButton(
+      onPressed: _apply,
+      child: Text(
+        count == null ? l10n.filterApply : l10n.filterShowResults(count),
+        textAlign: TextAlign.center,
+      ),
+    );
+    // Side by side and pinned at ordinary text sizes. Past that each needs
+    // the full width, and pinned they would crowd out the filters — so they
+    // stack at the end of the list instead.
+    final stackButtons =
+        MediaQuery.textScalerOf(context).scale(100) / 100 >= 1.5;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: AppSpacing.sm),
+          child: DragHandle(),
+        ),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(
+            start: AppSpacing.sheetGutter,
+            end: AppSpacing.sm,
           ),
-          Expanded(
-            child: ListView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(AppSpacing.sheetGutter),
-              children: [
-                _buildToggleSection(
-                  AppLocalizations.of(context)!.filterOpenNow,
-                  _tempShowOpenNowOnly,
-                  (value) => setState(() => _tempShowOpenNowOnly = value),
+          child: Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.filterFilters,
+                    style: theme.textTheme.titleLarge,
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                _buildToggleSection(
-                  AppLocalizations.of(context)!.filterFavorites,
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+                tooltip: l10n.filterClose,
+              ),
+            ],
+          ),
+        ),
+        Flexible(
+          child: ListView(
+            controller: _scrollController,
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+            children: [
+              _switchRow(
+                l10n.filterOpenNow,
+                _tempShowOpenNowOnly,
+                (value) => setState(() => _tempShowOpenNowOnly = value),
+              ),
+              if (widget.isGuest)
+                _lockedRow(l10n.filterFavorites)
+              else
+                _switchRow(
+                  l10n.filterFavorites,
                   _tempShowFavoritesOnly,
                   (value) => setState(() => _tempShowFavoritesOnly = value),
-                  locked: widget.isGuest,
                 ),
-                const Divider(height: AppSpacing.xxxl),
-                _buildExpandableSection(
-                  FilterSection.category,
-                  AppLocalizations.of(context)!.filterCategory,
-                  _buildCategoryContent(),
+              _sectionTitle(FilterSection.category, l10n.filterCategory),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sheetGutter,
                 ),
-                const Divider(height: AppSpacing.xxxl),
-                _buildExpandableSection(
+                child: _buildCategoryContent(),
+              ),
+              if (widget.isGuest) ...[
+                const SizedBox(height: AppSpacing.lg),
+                KeyedSubtree(
+                  key: _sectionKeys[FilterSection.preferences],
+                  child: _lockedRow(l10n.filterPreferences),
+                ),
+              ] else ...[
+                _sectionTitle(
                   FilterSection.preferences,
-                  AppLocalizations.of(context)!.filterPreferences,
-                  _buildPreferencesContent(),
+                  l10n.filterOnlyShowPlacesThat,
                 ),
+                // A switch per attribute: on means "must have it". There is
+                // no "must not" — nobody searches for places that refuse
+                // walk-ins.
+                for (final requirement
+                    in FilterConstants.preferenceRequirements)
+                  _switchRow(
+                    requirement.localizedName(l10n),
+                    _tempPreferenceRequirements[requirement] ?? false,
+                    (value) => setState(
+                      () => _tempPreferenceRequirements[requirement] =
+                          value ? true : null,
+                    ),
+                  ),
               ],
-            ),
+              if (stackButtons)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sheetGutter,
+                    AppSpacing.xl,
+                    AppSpacing.sheetGutter,
+                    0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      applyButton,
+                      const SizedBox(height: AppSpacing.sm),
+                      clearButton,
+                    ],
+                  ),
+                ),
+            ],
           ),
+        ),
+        if (!stackButtons)
           Container(
             padding: EdgeInsets.only(
               left: AppSpacing.sheetGutter,
               right: AppSpacing.sheetGutter,
-              top: AppSpacing.sheetGutter,
-              bottom: AppSpacing.sheetGutter +
-                  MediaQuery.of(context).padding.bottom,
+              top: AppSpacing.md,
+              bottom: AppSpacing.md + MediaQuery.of(context).padding.bottom,
             ),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              color: sheetColor,
               boxShadow: AppShadows.sheet,
             ),
             child: Row(
               children: [
-                SizedBox(
-                  width: 110,
-                  child: OutlinedButton(
-                    onPressed: _clearAll,
-                    child: Text(AppLocalizations.of(context)!.filterClearAll),
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 110,
-                  child: ElevatedButton(
-                    onPressed: _apply,
-                    child: Text(AppLocalizations.of(context)!.filterApply),
-                  ),
-                ),
+                Expanded(flex: 2, child: clearButton),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(flex: 3, child: applyButton),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleSection(
-    String title,
-    bool value,
-    Function(bool) onChanged, {
-    bool locked = false,
-  }) {
-    final theme = Theme.of(context);
-    final row = Row(
-      children: [
-        if (locked) ...[
-          _lockIcon(theme),
-          const SizedBox(width: AppSpacing.sm),
-        ],
-        Expanded(
-          child: Text(
-            title,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: locked ? _lockedColor(theme) : null,
-            ),
-          ),
-        ),
-        // A null onChanged renders the switch disabled.
-        Switch(value: value, onChanged: locked ? null : onChanged),
       ],
     );
-    if (!locked) return row;
-    return InkWell(onTap: widget.onLockedTap, child: row);
   }
 
-  Color _lockedColor(ThemeData theme) =>
-      theme.colorScheme.onSurface.withValues(alpha: AppOpacity.disabled);
-
-  Widget _lockIcon(ThemeData theme) => Icon(
-        Icons.lock_outline,
-        size: AppIconSize.sm,
-        color: _lockedColor(theme),
-      );
-
-  Widget _buildExpandableSection(
-    FilterSection section,
-    String title,
-    Widget content,
-  ) {
-    final locked = _isLocked(section);
-    final isExpanded = !locked && _expandedSection == section;
+  Widget _sectionTitle(FilterSection section, String title) {
     final theme = Theme.of(context);
-
-    return Container(
+    return Padding(
       key: _sectionKeys[section],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: locked
-                ? widget.onLockedTap
-                : () {
-                    setState(() {
-                      _expandedSection = isExpanded ? null : section;
-                    });
-                  },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Row(
-                children: [
-                  if (locked) ...[
-                    _lockIcon(theme),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: locked ? _lockedColor(theme) : null,
-                      ),
-                    ),
-                  ),
-                  if (!locked)
-                    Icon(
-                      isExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: theme.colorScheme.onSurfaceMuted,
-                    ),
-                ],
-              ),
-            ),
-          ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox(width: double.infinity),
-            secondChild: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.md),
-              child: content,
-            ),
-            crossFadeState: isExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            duration: FilterConstants.animationDuration,
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sheetGutter,
+        AppSpacing.xl,
+        AppSpacing.sheetGutter,
+        AppSpacing.sm,
       ),
+      child: Semantics(
+        header: true,
+        child: Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.secondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _switchRow(String title, bool value, ValueChanged<bool> onChanged) {
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sheetGutter,
+      ),
+      title: Text(title),
+      value: value,
+      onChanged: onChanged,
+    );
+  }
+
+  /// Something that needs an account. Full contrast, with a lock: tapping it
+  /// does something (offers sign-in), so it mustn't look switched off.
+  Widget _lockedRow(String title) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sheetGutter,
+      ),
+      title: Text(title),
+      trailing: Icon(Icons.lock_outline, color: muted),
+      onTap: widget.onLockedTap,
     );
   }
 
@@ -341,85 +363,6 @@ class _FilterModalState extends State<FilterModal> {
         });
       },
       getLabel: FacilityCategoryIcons.getCategoryDisplayName,
-    );
-  }
-
-  Widget _buildPreferencesContent() {
-    for (final requirement in FilterConstants.preferenceRequirements) {
-      _tempPreferenceRequirements.putIfAbsent(requirement, () => null);
-    }
-
-    return _buildRequirementOptions<PreferenceRequirement>(
-      requirements: FilterConstants.preferenceRequirements,
-      getValue: (req) => _tempPreferenceRequirements[req],
-      getDisplayName: (req) => req.localizedName(AppLocalizations.of(context)!),
-      onSetTrue: (req) => setState(
-        () => _tempPreferenceRequirements[req] =
-            _tempPreferenceRequirements[req] == true ? null : true,
-      ),
-      onSetFalse: (req) => setState(
-        () => _tempPreferenceRequirements[req] =
-            _tempPreferenceRequirements[req] == false ? null : false,
-      ),
-    );
-  }
-
-  Widget _buildRequirementOptions<T>({
-    required List<T> requirements,
-    required bool? Function(T) getValue,
-    required String Function(T) getDisplayName,
-    required void Function(T) onSetTrue,
-    required void Function(T) onSetFalse,
-  }) {
-    return Column(
-      children: requirements.map((requirement) {
-        final value = getValue(requirement);
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                getDisplayName(requirement),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => onSetTrue(requirement),
-                      child: _optionButton(
-                        label: AppLocalizations.of(context)!.commonYes,
-                        active: value == true,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => onSetFalse(requirement),
-                      child: _optionButton(
-                        label: AppLocalizations.of(context)!.commonNo,
-                        active: value == false,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _optionButton({required String label, required bool active}) {
-    return SelectionTile(
-      label: label,
-      selected: active,
-      center: true,
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
     );
   }
 }

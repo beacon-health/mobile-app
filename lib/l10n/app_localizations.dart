@@ -121,13 +121,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeGreeting.
   ///
   /// In en, this message translates to:
-  /// **'Find Healthcare Resources'**
+  /// **'Find healthcare resources'**
   String get homeGreeting;
 
   /// No description provided for @homeFavorites.
   ///
   /// In en, this message translates to:
-  /// **'Your Favorites'**
+  /// **'Your favorites'**
   String get homeFavorites;
 
   /// No description provided for @homeNoFavorites.
@@ -145,7 +145,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeFavoritesSignInTitle.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to access Favorites'**
+  /// **'Sign in to save favorites'**
   String get homeFavoritesSignInTitle;
 
   /// No description provided for @homeFavoritesSignInHint.
@@ -157,7 +157,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeRecentlyViewed.
   ///
   /// In en, this message translates to:
-  /// **'Recently Viewed Facilities'**
+  /// **'Recently viewed'**
   String get homeRecentlyViewed;
 
   /// No description provided for @homeNoRecentlyViewed.
@@ -181,7 +181,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapSearchResourcesHint.
   ///
   /// In en, this message translates to:
-  /// **'Search for resources...'**
+  /// **'Search for resources'**
   String get mapSearchResourcesHint;
 
   /// No description provided for @mapAreaLabel.
@@ -247,19 +247,19 @@ abstract class AppLocalizations {
   /// No description provided for @mapInvalidZip.
   ///
   /// In en, this message translates to:
-  /// **'Please enter a valid 5-digit zip code (e.g., 60605)'**
+  /// **'Enter a 5-digit ZIP code.'**
   String get mapInvalidZip;
 
   /// No description provided for @mapZipNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Could not find location for zip code {zipCode}.'**
+  /// **'Couldn\'t find ZIP code {zipCode}.'**
   String mapZipNotFound(String zipCode);
 
   /// No description provided for @filterOpenNow.
   ///
   /// In en, this message translates to:
-  /// **'Open Now'**
+  /// **'Open now'**
   String get filterOpenNow;
 
   /// No description provided for @filterFavorites.
@@ -289,7 +289,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterClearAll.
   ///
   /// In en, this message translates to:
-  /// **'Clear All'**
+  /// **'Clear all'**
   String get filterClearAll;
 
   /// No description provided for @filterApply.
@@ -298,101 +298,83 @@ abstract class AppLocalizations {
   /// **'Apply'**
   String get filterApply;
 
-  /// No description provided for @commonYes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get commonYes;
-
-  /// No description provided for @commonNo.
-  ///
-  /// In en, this message translates to:
-  /// **'No'**
-  String get commonNo;
-
   /// No description provided for @eligProofOfIncome.
   ///
   /// In en, this message translates to:
-  /// **'Proof of income required'**
+  /// **'Proof of income'**
   String get eligProofOfIncome;
 
   /// No description provided for @eligProofOfResidency.
   ///
   /// In en, this message translates to:
-  /// **'Proof of residency required'**
+  /// **'Proof of address'**
   String get eligProofOfResidency;
 
   /// No description provided for @eligInsuranceRequired.
   ///
   /// In en, this message translates to:
-  /// **'Insurance required'**
+  /// **'Health insurance'**
   String get eligInsuranceRequired;
 
   /// No description provided for @eligReferralRequired.
   ///
   /// In en, this message translates to:
-  /// **'Referral required'**
+  /// **'A doctor\'s referral'**
   String get eligReferralRequired;
 
   /// No description provided for @prefAcceptsWalkIns.
   ///
   /// In en, this message translates to:
-  /// **'Accepts walk-ins'**
+  /// **'Take walk-ins'**
   String get prefAcceptsWalkIns;
 
   /// No description provided for @prefAppointmentOnly.
   ///
   /// In en, this message translates to:
-  /// **'Appointment only'**
+  /// **'Require an appointment'**
   String get prefAppointmentOnly;
 
   /// No description provided for @prefOpenToImmigrants.
   ///
   /// In en, this message translates to:
-  /// **'Open to immigrants'**
+  /// **'Are open to immigrants'**
   String get prefOpenToImmigrants;
 
   /// No description provided for @prefFreeServices.
   ///
   /// In en, this message translates to:
-  /// **'Free services available'**
+  /// **'Offer free services'**
   String get prefFreeServices;
 
   /// No description provided for @prefSlidingScale.
   ///
   /// In en, this message translates to:
-  /// **'Sliding scale available'**
+  /// **'Charge on a sliding scale'**
   String get prefSlidingScale;
 
   /// No description provided for @prefOtherLanguages.
   ///
   /// In en, this message translates to:
-  /// **'Other languages available'**
+  /// **'Offer other languages'**
   String get prefOtherLanguages;
 
   /// No description provided for @prefTelehealth.
   ///
   /// In en, this message translates to:
-  /// **'Telehealth available'**
+  /// **'Offer telehealth'**
   String get prefTelehealth;
 
   /// No description provided for @prefWheelchairAccessible.
   ///
   /// In en, this message translates to:
-  /// **'Wheelchair accessible'**
+  /// **'Are wheelchair accessible'**
   String get prefWheelchairAccessible;
 
   /// No description provided for @prefServesOutsideArea.
   ///
   /// In en, this message translates to:
-  /// **'Serves outside area'**
+  /// **'Serve people outside their area'**
   String get prefServesOutsideArea;
-
-  /// No description provided for @cardNextSteps.
-  ///
-  /// In en, this message translates to:
-  /// **'Next Steps'**
-  String get cardNextSteps;
 
   /// No description provided for @cardHours.
   ///
@@ -409,32 +391,14 @@ abstract class AppLocalizations {
   /// No description provided for @cardServicesAiDisclaimer.
   ///
   /// In en, this message translates to:
-  /// **'Summary generated by AI, there could be inaccuracies'**
+  /// **'Summary written by AI. It may contain mistakes.'**
   String get cardServicesAiDisclaimer;
 
   /// No description provided for @cardAtAGlance.
   ///
   /// In en, this message translates to:
-  /// **'At a Glance'**
+  /// **'At a glance'**
   String get cardAtAGlance;
-
-  /// No description provided for @cardVisitWebsite.
-  ///
-  /// In en, this message translates to:
-  /// **'Visit website'**
-  String get cardVisitWebsite;
-
-  /// No description provided for @cardWebsiteNotAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Website not available'**
-  String get cardWebsiteNotAvailable;
-
-  /// No description provided for @cardGetDirections.
-  ///
-  /// In en, this message translates to:
-  /// **'Get directions'**
-  String get cardGetDirections;
 
   /// No description provided for @cardContactForHours.
   ///
@@ -481,13 +445,13 @@ abstract class AppLocalizations {
   /// No description provided for @chipSlidingScale.
   ///
   /// In en, this message translates to:
-  /// **'Sliding Scale'**
+  /// **'Sliding scale'**
   String get chipSlidingScale;
 
   /// No description provided for @chipOtherLanguages.
   ///
   /// In en, this message translates to:
-  /// **'Other Languages'**
+  /// **'Other languages'**
   String get chipOtherLanguages;
 
   /// No description provided for @ratingAlreadyRated.
@@ -601,13 +565,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsYourRatings.
   ///
   /// In en, this message translates to:
-  /// **'Your Ratings'**
+  /// **'Your ratings'**
   String get settingsYourRatings;
 
   /// No description provided for @settingsYourRequests.
   ///
   /// In en, this message translates to:
-  /// **'Your Requests'**
+  /// **'Your requests'**
   String get settingsYourRequests;
 
   /// No description provided for @settingsDirectionsApp.
@@ -625,7 +589,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSignInHint.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to store favorites, filter by preferences, and more!'**
+  /// **'Sign in to save favorites and use them on any device.'**
   String get settingsSignInHint;
 
   /// No description provided for @settingsZipUpdated.
@@ -637,13 +601,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsUpdateZipTitle.
   ///
   /// In en, this message translates to:
-  /// **'Update ZIP Code'**
+  /// **'Update ZIP code'**
   String get settingsUpdateZipTitle;
 
   /// No description provided for @settingsZipValidation.
   ///
   /// In en, this message translates to:
-  /// **'Please enter a 5-digit ZIP code'**
+  /// **'Enter a 5-digit ZIP code.'**
   String get settingsZipValidation;
 
   /// No description provided for @settingsZipNotFoundError.
@@ -733,13 +697,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsEligibility.
   ///
   /// In en, this message translates to:
-  /// **'Eligibility'**
+  /// **'What you can provide'**
   String get settingsEligibility;
 
   /// No description provided for @settingsZipCode.
   ///
   /// In en, this message translates to:
-  /// **'ZIP Code'**
+  /// **'ZIP code'**
   String get settingsZipCode;
 
   /// No description provided for @settingsAbout.
@@ -748,40 +712,34 @@ abstract class AppLocalizations {
   /// **'About'**
   String get settingsAbout;
 
-  /// No description provided for @settingsVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Version'**
-  String get settingsVersion;
-
   /// No description provided for @settingsPrivacyPolicy.
   ///
   /// In en, this message translates to:
-  /// **'Privacy Policy'**
+  /// **'Privacy policy'**
   String get settingsPrivacyPolicy;
 
   /// No description provided for @settingsTermsOfService.
   ///
   /// In en, this message translates to:
-  /// **'Terms of Service'**
+  /// **'Terms of service'**
   String get settingsTermsOfService;
 
   /// No description provided for @settingsSignOut.
   ///
   /// In en, this message translates to:
-  /// **'Sign Out'**
+  /// **'Sign out'**
   String get settingsSignOut;
 
   /// No description provided for @settingsSignOutConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to sign out?'**
+  /// **'Your favorites and settings stay with your account. They\'re removed from this phone.'**
   String get settingsSignOutConfirm;
 
   /// No description provided for @settingsDeleteAccount.
   ///
   /// In en, this message translates to:
-  /// **'Delete Account'**
+  /// **'Delete account'**
   String get settingsDeleteAccount;
 
   /// No description provided for @deleteAccountTitle.
@@ -799,7 +757,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete Account'**
+  /// **'Delete account'**
   String get deleteAccountConfirm;
 
   /// No description provided for @deleteAccountInProgress.
@@ -847,7 +805,7 @@ abstract class AppLocalizations {
   /// No description provided for @authContinueAsGuest.
   ///
   /// In en, this message translates to:
-  /// **'Continue as Guest'**
+  /// **'Continue as guest'**
   String get authContinueAsGuest;
 
   /// No description provided for @authOr.
@@ -859,7 +817,7 @@ abstract class AppLocalizations {
   /// No description provided for @authTermsPrefix.
   ///
   /// In en, this message translates to:
-  /// **'By clicking continue, you agree to our '**
+  /// **'By continuing, you agree to our '**
   String get authTermsPrefix;
 
   /// No description provided for @authTermsOfService.
@@ -883,7 +841,7 @@ abstract class AppLocalizations {
   /// No description provided for @authSelectLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Select a language 🌐'**
+  /// **'Select a language'**
   String get authSelectLanguage;
 
   /// No description provided for @authSignInPromptTitle.
@@ -895,7 +853,7 @@ abstract class AppLocalizations {
   /// No description provided for @authSignInPromptBody.
   ///
   /// In en, this message translates to:
-  /// **'Create a free account to unlock Favorites, Eligibility filters, and more.'**
+  /// **'Sign in to save favorites, filter by preferences, and rate places.'**
   String get authSignInPromptBody;
 
   /// No description provided for @authSignInError.
@@ -919,49 +877,49 @@ abstract class AppLocalizations {
   /// No description provided for @locationChoiceUseLocation.
   ///
   /// In en, this message translates to:
-  /// **'Location-Based Search'**
+  /// **'Use my location'**
   String get locationChoiceUseLocation;
 
   /// No description provided for @locationChoiceUseLocationDesc.
   ///
   /// In en, this message translates to:
-  /// **'Use GPS for the most accurate results.'**
+  /// **'Most accurate. We\'ll ask for permission next.'**
   String get locationChoiceUseLocationDesc;
 
   /// No description provided for @locationChoiceEnterZip.
   ///
   /// In en, this message translates to:
-  /// **'Enter Zip Code'**
+  /// **'Enter a ZIP code'**
   String get locationChoiceEnterZip;
 
   /// No description provided for @locationChoiceEnterZipDesc.
   ///
   /// In en, this message translates to:
-  /// **'Search by ZIP code.'**
+  /// **'Search one area without sharing your location.'**
   String get locationChoiceEnterZipDesc;
 
   /// No description provided for @locationCurrentLocation.
   ///
   /// In en, this message translates to:
-  /// **'Current Location'**
+  /// **'Current location'**
   String get locationCurrentLocation;
 
   /// No description provided for @locationPermissionDenied.
   ///
   /// In en, this message translates to:
-  /// **'Location access denied. Enable it in Settings > Privacy > Location Services.'**
+  /// **'Location access is off. Turn it on for Beacon in your phone\'s settings.'**
   String get locationPermissionDenied;
 
   /// No description provided for @locationPermissionDeniedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Location Access Required'**
+  /// **'Location access needed'**
   String get locationPermissionDeniedTitle;
 
   /// No description provided for @locationPermissionDeniedBody.
   ///
   /// In en, this message translates to:
-  /// **'To use GPS-based search, enable location for Beacon in iOS Settings > Privacy > Location Services.'**
+  /// **'To search by your location, turn on location access for Beacon in your phone\'s settings.'**
   String get locationPermissionDeniedBody;
 
   /// No description provided for @locationUseMyLocationTooltip.
@@ -973,13 +931,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsUseMyLocation.
   ///
   /// In en, this message translates to:
-  /// **'Use My Location'**
+  /// **'Use my location'**
   String get settingsUseMyLocation;
 
   /// No description provided for @settingsUseMyLocationDesc.
   ///
   /// In en, this message translates to:
-  /// **'Use GPS instead of ZIP code'**
+  /// **'Instead of a ZIP code'**
   String get settingsUseMyLocationDesc;
 
   /// No description provided for @settingsSignOutSuccess.
@@ -1003,13 +961,13 @@ abstract class AppLocalizations {
   /// No description provided for @profileApplyEligibility.
   ///
   /// In en, this message translates to:
-  /// **'Apply eligibility criteria to search'**
+  /// **'Filter by what I can provide'**
   String get profileApplyEligibility;
 
   /// No description provided for @profileApplyEligibilityDesc.
   ///
   /// In en, this message translates to:
-  /// **'Only show facilities that match your eligibility.'**
+  /// **'Hides places that ask for something you haven\'t checked below.'**
   String get profileApplyEligibilityDesc;
 
   /// No description provided for @profileSignedIn.
@@ -1033,37 +991,37 @@ abstract class AppLocalizations {
   /// No description provided for @homeCategoryHealthCare.
   ///
   /// In en, this message translates to:
-  /// **'Health Care'**
+  /// **'Health care'**
   String get homeCategoryHealthCare;
 
   /// No description provided for @homeCategoryMentalHealth.
   ///
   /// In en, this message translates to:
-  /// **'Mental Health'**
+  /// **'Mental health'**
   String get homeCategoryMentalHealth;
 
   /// No description provided for @homeCategoryHousing.
   ///
   /// In en, this message translates to:
-  /// **'Housing & Shelter'**
+  /// **'Housing & shelter'**
   String get homeCategoryHousing;
 
   /// No description provided for @homeCategoryBasicNeeds.
   ///
   /// In en, this message translates to:
-  /// **'Basic Needs'**
+  /// **'Basic needs'**
   String get homeCategoryBasicNeeds;
 
   /// No description provided for @homeCategoryCommunity.
   ///
   /// In en, this message translates to:
-  /// **'Community Resources'**
+  /// **'Community resources'**
   String get homeCategoryCommunity;
 
   /// No description provided for @homeCategorySpecialized.
   ///
   /// In en, this message translates to:
-  /// **'Specialized Services'**
+  /// **'Specialized services'**
   String get homeCategorySpecialized;
 
   /// No description provided for @commonLinkFailed.
@@ -1075,13 +1033,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingEligibilityTitle.
   ///
   /// In en, this message translates to:
-  /// **'Your eligibility'**
+  /// **'What can you provide?'**
   String get onboardingEligibilityTitle;
 
   /// No description provided for @onboardingEligibilitySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Tell us what applies to you so we can show facilities you qualify for. You can change this anytime on your Profile.'**
+  /// **'We\'ll hide places you couldn\'t use. You can change this anytime in Profile.'**
   String get onboardingEligibilitySubtitle;
 
   /// No description provided for @onboardingContinue.
@@ -1099,7 +1057,7 @@ abstract class AppLocalizations {
   /// No description provided for @zipEntryTitle.
   ///
   /// In en, this message translates to:
-  /// **'What\'s your zip code?'**
+  /// **'What\'s your ZIP code?'**
   String get zipEntryTitle;
 
   /// No description provided for @zipEntrySubtitle.
@@ -1111,7 +1069,7 @@ abstract class AppLocalizations {
   /// No description provided for @zipEntryInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Please enter a 5-digit zip code'**
+  /// **'Enter a 5-digit ZIP code.'**
   String get zipEntryInvalid;
 
   /// No description provided for @requestFieldWebsite.
@@ -1279,7 +1237,7 @@ abstract class AppLocalizations {
   /// No description provided for @eligAcceptsMedicaid.
   ///
   /// In en, this message translates to:
-  /// **'Accepts Medicaid'**
+  /// **'Medicaid'**
   String get eligAcceptsMedicaid;
 
   /// No description provided for @chipMedicaid.
@@ -1323,6 +1281,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reported closed'**
   String get requestTypeClosure;
+
+  /// No description provided for @homeOpenMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Open map'**
+  String get homeOpenMap;
+
+  /// No description provided for @filterShowResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No results} =1{Show 1 result} other{Show {count} results}}'**
+  String filterShowResults(int count);
+
+  /// No description provided for @filterOnlyShowPlacesThat.
+  ///
+  /// In en, this message translates to:
+  /// **'Only show places that'**
+  String get filterOnlyShowPlacesThat;
+
+  /// No description provided for @filterClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close filters'**
+  String get filterClose;
+
+  /// No description provided for @filterCategoriesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 category} other{{count} categories}}'**
+  String filterCategoriesSelected(int count);
+
+  /// No description provided for @cardDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get cardDirections;
+
+  /// No description provided for @cardCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get cardCall;
+
+  /// No description provided for @cardCallNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Call {phone}'**
+  String cardCallNumber(String phone);
+
+  /// No description provided for @cardWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get cardWebsite;
+
+  /// No description provided for @cardSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {name}'**
+  String cardSave(String name);
+
+  /// No description provided for @cardUnsave.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from favorites'**
+  String cardUnsave(String name);
+
+  /// No description provided for @cardShowDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Show details'**
+  String get cardShowDetails;
+
+  /// No description provided for @cardHideDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide details'**
+  String get cardHideDetails;
+
+  /// No description provided for @eligProofOfIncomeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay stub, tax return, or benefits letter'**
+  String get eligProofOfIncomeHint;
+
+  /// No description provided for @eligProofOfResidencyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'ID, lease, or utility bill'**
+  String get eligProofOfResidencyHint;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String onboardingStep(int step, int total);
+
+  /// No description provided for @profileSavedOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device'**
+  String get profileSavedOnDevice;
+
+  /// No description provided for @authTermsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get authTermsSuffix;
+
+  /// No description provided for @authLanguageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Language: {language}. Change language'**
+  String authLanguageButton(String language);
+
+  /// No description provided for @zipEntryHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'5 digits'**
+  String get zipEntryHelper;
+
+  /// No description provided for @zipEntryLocationOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Location access is off, so enter a ZIP code instead.'**
+  String get zipEntryLocationOff;
+
+  /// No description provided for @settingsSignOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get settingsSignOutTitle;
+
+  /// No description provided for @settingsVersionFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Beacon {version}'**
+  String settingsVersionFooter(String version);
+
+  /// No description provided for @settingsAccessibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility'**
+  String get settingsAccessibility;
+
+  /// No description provided for @settingsMapAsList.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Map as a list'**
+  String get settingsMapAsList;
+
+  /// No description provided for @settingsMapAsListDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Easier with screen readers'**
+  String get settingsMapAsListDesc;
+
+  /// No description provided for @settingsLargerPins.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger map pins'**
+  String get settingsLargerPins;
+
+  /// No description provided for @settingsLargerPinsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bigger pins and names on the map'**
+  String get settingsLargerPinsDesc;
+
+  /// No description provided for @settingsAppearanceSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Match device'**
+  String get settingsAppearanceSystem;
+
+  /// No description provided for @settingsAppearanceLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsAppearanceLight;
+
+  /// No description provided for @settingsAppearanceDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsAppearanceDark;
+
+  /// No description provided for @commonNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get commonNotSet;
 }
 
 class _AppLocalizationsDelegate

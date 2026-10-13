@@ -1,28 +1,30 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
-import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
+import 'package:beacon_app/features/auth/presentation/widgets/onboarding_scaffold.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Finishes the location step of onboarding, routing to the required
-/// Eligibility step for **signed-in** users and straight to the app for guests
-/// (who can't set eligibility — the Profile tab is gated).
+/// Finishes the location step of onboarding by moving on to the last one,
+/// [EligibilityOnboardingPage]. Pushed rather than swapped in, so its back
+/// button returns to the location the person just gave.
 void finishLocationOnboarding(BuildContext context) {
-  final isSignedIn = !GuestModeService().isGuest;
-  Navigator.pushAndRemoveUntil(
+  Navigator.push(
     context,
     MaterialPageRoute<void>(
-      builder: (_) =>
-          isSignedIn ? const EligibilityOnboardingPage() : const MainNavBar(),
+      builder: (_) => const EligibilityOnboardingPage(),
     ),
-    (route) => false,
   );
 }
 
-/// Required onboarding step for signed-in users: pick eligibility gates. They
-/// auto-filter the map and stay editable on the Profile tab; selecting none is
-/// allowed, skipping the screen is not.
+/// Last onboarding step, for guests and signed-in users alike: what the
+/// person can provide. The answers filter the map and stay editable on the
+/// Profile tab — on the device for a guest, with the account otherwise.
+///
+/// "Continue" turns the filter on, even with nothing checked (that is an
+/// answer: I have none of these). "Skip for now" leaves it off, so nothing is
+/// hidden on the strength of a question nobody answered.
 class EligibilityOnboardingPage extends StatefulWidget {
   const EligibilityOnboardingPage({super.key});
 
@@ -41,11 +43,10 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
     _draft = EligibilityPreferencesService().eligibility;
   }
 
-  Future<void> _continue() async {
+  Future<void> _finish({required bool applyToSearch}) async {
     setState(() => _saving = true);
-    // Persist (and sync) the picks; eligibility applies to search by default.
     await EligibilityPreferencesService()
-        .updateEligibility(_draft.copyWith(applyToSearch: true));
+        .updateEligibility(_draft.copyWith(applyToSearch: applyToSearch));
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
@@ -58,148 +59,47 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: AppGradients.onboarding(context)),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.onboardingGutter,
-                  AppSpacing.xxxl,
-                  AppSpacing.onboardingGutter,
-                  0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.onboardingEligibilityTitle,
-                      style: textTheme.headlineMedium?.copyWith(
-                        color: colorScheme.secondary,
-                      ),
+    return OnboardingScaffold(
+      step: 2,
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilledButton(
+            onPressed: _saving ? null : () => _finish(applyToSearch: true),
+            style: AppTheme.secondaryFilledButton(context),
+            child: _saving
+                ? SizedBox.square(
+                    dimension: AppIconSize.md,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.onSecondary,
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      l10n.onboardingEligibilitySubtitle,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.onboardingGutter,
-                  ),
-                  children: [
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: Column(
-                        children: [
-                          _toggle(
-                            l10n.eligProofOfIncome,
-                            Icons.attach_money,
-                            _draft.proofOfIncome,
-                            (v) => setState(
-                              () => _draft = _draft.copyWith(proofOfIncome: v),
-                            ),
-                          ),
-                          const Divider(height: 1),
-                          _toggle(
-                            l10n.eligProofOfResidency,
-                            Icons.home_outlined,
-                            _draft.proofOfResidency,
-                            (v) => setState(
-                              () =>
-                                  _draft = _draft.copyWith(proofOfResidency: v),
-                            ),
-                          ),
-                          const Divider(height: 1),
-                          _toggle(
-                            l10n.eligInsuranceRequired,
-                            Icons.health_and_safety,
-                            _draft.insuranceRequired,
-                            (v) => setState(
-                              () => _draft =
-                                  _draft.copyWith(insuranceRequired: v),
-                            ),
-                          ),
-                          const Divider(height: 1),
-                          _toggle(
-                            l10n.eligReferralRequired,
-                            Icons.assignment_ind_outlined,
-                            _draft.referralRequired,
-                            (v) => setState(
-                              () =>
-                                  _draft = _draft.copyWith(referralRequired: v),
-                            ),
-                          ),
-                          const Divider(height: 1),
-                          _toggle(
-                            l10n.eligAcceptsMedicaid,
-                            Icons.badge_outlined,
-                            _draft.acceptsMedicaid,
-                            (v) => setState(
-                              () =>
-                                  _draft = _draft.copyWith(acceptsMedicaid: v),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.onboardingGutter,
-                  AppSpacing.sm,
-                  AppSpacing.onboardingGutter,
-                  AppSpacing.onboardingGutter,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _saving ? null : _continue,
-                    style: AppTheme.secondaryFilledButton(context),
-                    child: _saving
-                        ? SizedBox.square(
-                            dimension: AppIconSize.md,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colorScheme.onSecondary,
-                            ),
-                          )
-                        : Text(l10n.onboardingContinue),
-                  ),
-                ),
-              ),
-            ],
+                  )
+                : Text(l10n.onboardingContinue),
           ),
-        ),
+          const SizedBox(height: AppSpacing.xs),
+          TextButton(
+            onPressed: _saving ? null : () => _finish(applyToSearch: false),
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.secondary,
+            ),
+            child: Text(l10n.onboardingSkip),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _toggle(
-    String title,
-    IconData icon,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return SwitchListTile(
-      title: Text(title),
-      secondary: Icon(icon),
-      value: value,
-      onChanged: onChanged,
+      children: [
+        OnboardingHeading(
+          title: l10n.onboardingEligibilityTitle,
+          subtitle: l10n.onboardingEligibilitySubtitle,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        EligibilityChecklist(
+          value: _draft,
+          showExamples: true,
+          onChanged: (next) => setState(() => _draft = next),
+        ),
+      ],
     );
   }
 }

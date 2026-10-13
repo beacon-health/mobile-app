@@ -86,13 +86,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  /// Status chip color: pending → secondary (gray), approved → primary
-  /// (green), rejected → tertiary (bittersweet).
+  /// Status color, in the shade that reads as text: pending → secondary
+  /// (gray), approved → green, rejected → bittersweet.
   Color _statusColor(String status) {
     final scheme = Theme.of(context).colorScheme;
     return switch (status) {
-      'approved' => scheme.primary,
-      'rejected' => scheme.tertiary,
+      'approved' => scheme.primaryText,
+      'rejected' => scheme.tertiaryText,
       _ => scheme.secondary,
     };
   }

@@ -12,15 +12,9 @@ class ThemeModeProvider extends ChangeNotifier {
   factory ThemeModeProvider() => _instance;
   ThemeModeProvider._();
 
-  /// Display names for theme mode options.
-  static const Map<ThemeMode, String> themeModeNames = {
-    ThemeMode.system: 'Auto',
-    ThemeMode.light: 'Light',
-    ThemeMode.dark: 'Dark',
-  };
-
-  // Light for first-launch / signed-out users; Settings can change it.
-  ThemeMode _themeMode = ThemeMode.light;
+  // Follows the phone until Settings says otherwise: someone who set their
+  // phone to dark has already told us what they want.
+  ThemeMode _themeMode = ThemeMode.system;
 
   /// The currently active theme mode.
   ThemeMode get themeMode => _themeMode;

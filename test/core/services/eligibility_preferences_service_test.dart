@@ -11,11 +11,13 @@ void main() {
   });
 
   group('EligibilityState', () {
-    test('defaults to no gates, applied to search', () {
+    test('starts unanswered: nothing checked, and nothing applied', () {
+      // Applying it by default would hide every facility that asks for a
+      // document from someone who was never asked what they have.
       const state = EligibilityState();
       expect(state.proofOfIncome, isFalse);
       expect(state.acceptsMedicaid, isFalse);
-      expect(state.applyToSearch, isTrue);
+      expect(state.applyToSearch, isFalse);
     });
 
     test('round-trips through the JSON stored with the account', () {
@@ -50,10 +52,17 @@ void main() {
       expect(restored.referralRequired, isTrue);
     });
 
-    test('a missing row is the default state', () {
+    test('a missing row is the unanswered state', () {
       final restored = EligibilityState.fromJson(null);
-      expect(restored.applyToSearch, isTrue);
+      expect(restored.applyToSearch, isFalse);
       expect(restored.acceptsMedicaid, isFalse);
+    });
+
+    test('a saved row without the flag still applies', () {
+      // Rows saved before the flag existed came from people who had
+      // answered, back when answers always applied.
+      final restored = EligibilityState.fromJson({'proof_of_income': true});
+      expect(restored.applyToSearch, isTrue);
     });
 
     test('copyWith changes only what it is given', () {

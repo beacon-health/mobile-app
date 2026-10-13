@@ -28,10 +28,6 @@ class FacilityListPanel extends StatelessWidget {
   final Widget Function(String?) buildCategoryIcon;
   final Function(bool isPanelOpen, bool isFullyExpanded)? onPanelStateChange;
 
-  /// When false, every rendered [FacilityCard] disables its heart icon (used
-  /// in guest mode where favorites require sign-in).
-  final bool canFavorite;
-
   /// Opens the "request a facility" flow from the empty state ("Can't find a
   /// facility? Submit a request to add one").
   final void Function()? onRequestFacility;
@@ -59,11 +55,19 @@ class FacilityListPanel extends StatelessWidget {
     required this.buildCategoryIcon,
     this.totalMatches = 0,
     this.onPanelStateChange,
-    this.canFavorite = true,
     this.onRequestFacility,
     this.onRateFacility,
     this.onCorrectFacility,
   });
+
+  /// How much taller than usual the header's one line of title is at the
+  /// person's text size. The header and the collapsed panel both grow by it,
+  /// so large text has the room it needs.
+  static double _extraTitleHeight(MediaQueryData mediaQuery) {
+    final title = AppTypography.textTheme.titleLarge!;
+    final line = title.fontSize! * title.height!;
+    return mediaQuery.textScaler.scale(line) - line;
+  }
 
   /// The panel's height in each of its states. Shared with the map, which
   /// needs to know how much of itself the panel covers.
@@ -74,9 +78,12 @@ class FacilityListPanel extends StatelessWidget {
     required bool isSearchActive,
   }) {
     final screenHeight = mediaQuery.size.height;
-    final defaultHeight = screenHeight * MapConstants.panelDefaultHeightRatio;
+    final defaultHeight = screenHeight * MapConstants.panelDefaultHeightRatio +
+        _extraTitleHeight(mediaQuery);
     if (isSearchActive) return defaultHeight;
-    if (!isPanelOpen) return MapConstants.panelMinHeight;
+    if (!isPanelOpen) {
+      return MapConstants.panelMinHeight + _extraTitleHeight(mediaQuery);
+    }
     if (!isFullyExpanded) return defaultHeight;
     return screenHeight -
         (MapConstants.searchBarAreaHeight +
@@ -122,7 +129,7 @@ class FacilityListPanel extends StatelessWidget {
               }
             },
       child: AnimatedContainer(
-        duration: MapConstants.animationDuration,
+        duration: AppMotion.of(context, MapConstants.animationDuration),
         curve: MapConstants.animationCurve,
         height: targetHeight,
         decoration: BoxDecoration(
@@ -143,16 +150,18 @@ class FacilityListPanel extends StatelessWidget {
   Widget _buildPanelHeader(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      height: MapConstants.panelHeaderHeight,
+      height: MapConstants.panelHeaderHeight +
+          _extraTitleHeight(MediaQuery.of(context)),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
       child: Column(
         children: [
           const SizedBox(height: AppSpacing.sm),
           const DragHandle(),
           const SizedBox(height: AppSpacing.sm),
-          // The header has a fixed height, so its one line of text shrinks
-          // to fit rather than wrapping or spilling out — at large text
-          // sizes, or in a language that runs long.
+          // The header is one line tall at the person's text size. A line
+          // too long for the width shrinks to fit rather than wrapping or
+          // spilling out — in a language that runs long, or at the very
+          // largest sizes.
           Flexible(
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -161,18 +170,24 @@ class FacilityListPanel extends StatelessWidget {
                       AppLocalizations.of(context)!.mapSwipeUpToView,
                       maxLines: 1,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceMuted,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     )
-                  : Text(
-                      // The count ties the list to the map: it is what's on
-                      // screen.
-                      isLoading || facilities.isEmpty
-                          ? AppLocalizations.of(context)!.mapResourcesNearYou
-                          : AppLocalizations.of(context)!
-                              .mapResourcesInView(facilities.length),
-                      maxLines: 1,
-                      style: theme.textTheme.titleLarge,
+                  // Announced when it changes: for someone who can't see the
+                  // pins move, the count is the map's answer.
+                  : Semantics(
+                      header: true,
+                      liveRegion: true,
+                      child: Text(
+                        // The count ties the list to the map: it is what's
+                        // on screen.
+                        isLoading || facilities.isEmpty
+                            ? AppLocalizations.of(context)!.mapResourcesNearYou
+                            : AppLocalizations.of(context)!
+                                .mapResourcesInView(facilities.length),
+                        maxLines: 1,
+                        style: theme.textTheme.titleLarge,
+                      ),
                     ),
             ),
           ),
@@ -241,7 +256,6 @@ class FacilityListPanel extends StatelessWidget {
                           onToggleFavorite: () => onToggleFavorite(facility.id),
                           onLaunchUrl: onLaunchUrl,
                           buildCategoryIcon: buildCategoryIcon,
-                          canFavorite: canFavorite,
                           onRate: onRateFacility == null
                               ? null
                               : () => onRateFacility!(facility),
@@ -276,7 +290,7 @@ class FacilityListPanel extends StatelessWidget {
             Icon(
               Icons.zoom_out_map,
               size: AppIconSize.xxl,
-              color: theme.colorScheme.onSurfaceMuted,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(l10n.mapNothingInView, style: theme.textTheme.titleMedium),

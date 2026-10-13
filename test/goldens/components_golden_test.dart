@@ -92,17 +92,9 @@ class _Gallery extends StatelessWidget {
             ),
           ]),
           const SizedBox(height: AppSpacing.sm),
-          row(const [
-            SelectionTile(
-              label: 'Selected',
-              selected: true,
-              padding: EdgeInsets.all(AppSpacing.sm),
-            ),
-            SelectionTile(
-              label: 'Unselected',
-              selected: false,
-              padding: EdgeInsets.all(AppSpacing.sm),
-            ),
+          row([
+            SelectionTile(label: 'Selected', selected: true, onTap: () {}),
+            SelectionTile(label: 'Unselected', selected: false, onTap: () {}),
           ]),
           const SectionHeader('Section header'),
           Card(

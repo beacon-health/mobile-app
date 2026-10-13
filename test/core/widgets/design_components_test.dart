@@ -117,24 +117,45 @@ void main() {
   });
 
   group('CustomFilterChip', () {
+    BoxDecoration chipDecoration(WidgetTester tester) => tester
+        .widget<DecoratedBox>(
+          find.descendant(
+            of: find.byType(CustomFilterChip),
+            matching: find.byType(DecoratedBox),
+          ),
+        )
+        .decoration as BoxDecoration;
+
+    Color labelColor(WidgetTester tester, String label) =>
+        tester.widget<Text>(find.text(label)).style!.color!;
+
     testWidgets('selected chips fill with the secondary color', (tester) async {
       await _pump(
         tester,
         CustomFilterChip(
-          label: 'Open Now',
+          label: 'Open now',
           isSelected: true,
           hasDropdown: false,
           onTap: () {},
         ),
       );
-      final decoration = _decorationOf(
+      expect(chipDecoration(tester).color, _scheme(tester).secondary);
+    });
+
+    testWidgets('is a full-size touch target', (tester) async {
+      await _pump(
         tester,
-        find.descendant(
-          of: find.byType(CustomFilterChip),
-          matching: find.byType(Container),
+        CustomFilterChip(
+          label: 'Open now',
+          isSelected: false,
+          hasDropdown: false,
+          onTap: () {},
         ),
       );
-      expect(decoration.color, _scheme(tester).secondary);
+      expect(
+        tester.getSize(find.byType(CustomFilterChip)).height,
+        greaterThanOrEqualTo(AppSizes.minTouchTarget),
+      );
     });
 
     testWidgets('locked chips show a lock and hide the dropdown arrow',
@@ -151,6 +172,27 @@ void main() {
       );
       expect(find.byIcon(Icons.lock_outline), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
+    });
+
+    testWidgets('a locked chip is as readable as any other, and still taps',
+        (tester) async {
+      // It was drawn at 38% opacity, which read as "does nothing" — but
+      // tapping it offers sign-in.
+      var taps = 0;
+      await _pump(
+        tester,
+        CustomFilterChip(
+          label: 'Favorites',
+          isSelected: false,
+          hasDropdown: false,
+          isLocked: true,
+          onTap: () => taps++,
+        ),
+      );
+
+      expect(labelColor(tester, 'Favorites'), _scheme(tester).onSurface);
+      await tester.tap(find.text('Favorites'));
+      expect(taps, 1);
     });
 
     testWidgets('unlocked dropdown chips show the arrow and handle taps',
@@ -172,39 +214,50 @@ void main() {
   });
 
   group('SelectionTile', () {
-    Border borderOf(WidgetTester tester) => _decorationOf(
-          tester,
-          find.descendant(
-            of: find.byType(SelectionTile),
-            matching: find.byType(Container),
-          ),
-        ).border! as Border;
+    BorderSide sideOf(WidgetTester tester) => (tester
+            .widget<Material>(
+              find.descendant(
+                of: find.byType(SelectionTile),
+                matching: find.byType(Material),
+              ),
+            )
+            .shape! as RoundedRectangleBorder)
+        .side;
 
-    testWidgets('selected tiles get the thicker primary outline',
+    testWidgets('selected tiles get the thicker primary outline and a check',
         (tester) async {
       await _pump(
         tester,
-        const SelectionTile(
-          label: 'Yes',
-          selected: true,
-          padding: EdgeInsets.zero,
-        ),
+        SelectionTile(label: 'Housing', selected: true, onTap: () {}),
       );
-      final side = borderOf(tester).top;
-      expect(side.width, AppSizes.borderSelected);
-      expect(side.color, _scheme(tester).primary);
+      expect(sideOf(tester).width, AppSizes.borderSelected);
+      expect(sideOf(tester).color, _scheme(tester).primary);
+      // Selected shows in shape, not only in color.
+      expect(find.byIcon(Icons.check), findsOneWidget);
     });
 
     testWidgets('unselected tiles use the default outline', (tester) async {
       await _pump(
         tester,
-        const SelectionTile(
-          label: 'No',
-          selected: false,
-          padding: EdgeInsets.zero,
-        ),
+        SelectionTile(label: 'Housing', selected: false, onTap: () {}),
       );
-      expect(borderOf(tester).top.width, AppSizes.border);
+      expect(sideOf(tester).width, AppSizes.border);
+      expect(find.byIcon(Icons.check), findsNothing);
+    });
+
+    testWidgets('is a full-size touch target that reports taps',
+        (tester) async {
+      var taps = 0;
+      await _pump(
+        tester,
+        SelectionTile(label: 'Food', selected: false, onTap: () => taps++),
+      );
+      expect(
+        tester.getSize(find.byType(SelectionTile)).height,
+        greaterThanOrEqualTo(AppSizes.minTouchTarget),
+      );
+      await tester.tap(find.text('Food'));
+      expect(taps, 1);
     });
   });
 }

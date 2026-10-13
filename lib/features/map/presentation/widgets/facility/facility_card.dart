@@ -8,21 +8,23 @@ import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+/// One facility: a row in the map's list, which expands in place, and the
+/// whole of the sheet a tapped pin opens. Both are the same card on the same
+/// surface, so a facility looks the same however it was reached.
 class FacilityCard extends StatefulWidget {
   final Facility facility;
   final bool isExpanded;
+
+  /// The heart was tapped. Callers decide what that means for a guest (the
+  /// sign-in prompt); the button itself is always live.
   final VoidCallback onToggleFavorite;
   final VoidCallback onToggleExpand;
   final Widget Function(String?) buildCategoryIcon;
   final Future<void> Function(String) onLaunchUrl;
   final bool showExpandButton;
 
-  /// When false, the heart/favorite icon renders disabled and is not tappable.
-  /// Used in guest mode where favorites require sign-in.
-  final bool canFavorite;
-
-  /// Opens the rating flow ("Already visited? Rate your experience"), shown as
-  /// a Next Steps row when non-null. Callers gate guests to the sign-in
+  /// Opens the rating flow ("Already visited? Rate your experience"), shown
+  /// beneath the details when non-null. Callers gate guests to the sign-in
   /// prompt inside this callback.
   final VoidCallback? onRate;
 
@@ -30,16 +32,16 @@ class FacilityCard extends StatefulWidget {
   /// beneath the rate row when non-null. Callers gate guests.
   final VoidCallback? onSubmitCorrection;
 
-  /// Overrides the default list margin. The single-facility view passes
-  /// [EdgeInsets.zero] so the card fills its rounded wrapper with no seams.
+  /// Overrides the default list margin. The facility sheet passes
+  /// [EdgeInsets.zero] so the card fills it edge to edge.
   final EdgeInsetsGeometry? margin;
 
-  /// Overrides the Card's default shape (the single-facility view matches the
-  /// wrapper's larger corner radius).
+  /// Overrides the Card's default shape (the facility sheet rounds only its
+  /// top corners).
   final ShapeBorder? shape;
 
   /// Renders a drag handle at the top of the card, on the card's own
-  /// background (used by the swipe-to-dismiss single-facility view).
+  /// background (used by the swipe-to-dismiss facility sheet).
   final bool showDragHandle;
 
   const FacilityCard({
@@ -51,7 +53,6 @@ class FacilityCard extends StatefulWidget {
     required this.buildCategoryIcon,
     required this.onLaunchUrl,
     this.showExpandButton = true,
-    this.canFavorite = true,
     this.onRate,
     this.onSubmitCorrection,
     this.margin,
@@ -64,6 +65,9 @@ class FacilityCard extends StatefulWidget {
 }
 
 class _FacilityCardState extends State<FacilityCard> {
+  /// Least height of the three actions under the name.
+  static const double _actionMinHeight = 64;
+
   late ScrollController _scrollController;
 
   @override
@@ -108,38 +112,90 @@ class _FacilityCardState extends State<FacilityCard> {
         .join(', ');
   }
 
-  Widget _buildSubtitle(ThemeData theme) {
+  /// Name, address, and (collapsed) a two-line preview. The name runs to two
+  /// lines before it truncates; expanded, it shows in full.
+  Widget _buildTitleBlock(ThemeData theme) {
     final address = _addressText;
     final preview = _previewText;
-    final muted = theme.colorScheme.onSurfaceMuted;
+    final muted = theme.colorScheme.onSurfaceVariant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (address.isNotEmpty)
+        Text(
+          widget.facility.name,
+          style: widget.showExpandButton
+              ? theme.textTheme.titleSmall
+              : theme.textTheme.titleMedium,
+          maxLines: widget.isExpanded ? null : 2,
+          overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
+        ),
+        if (address.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xxs),
           Text(
             address,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceSecondary,
-            ),
-            maxLines: widget.isExpanded ? 2 : 1,
-            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(color: muted),
+            maxLines: widget.isExpanded ? null : 1,
+            overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
           ),
-        if (preview.isNotEmpty)
+        ],
+        if (preview.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xxs),
           Text(
             preview,
             style: theme.textTheme.bodySmall?.copyWith(color: muted),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildFavoriteButton(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
+    final facility = widget.facility;
+    return IconButton(
+      // Named for the facility, so a screen reader or Voice Control user can
+      // tell one heart from the next.
+      tooltip: facility.isFavorite
+          ? l10n.cardUnsave(facility.name)
+          : l10n.cardSave(facility.name),
+      icon: Icon(
+        facility.isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: facility.isFavorite
+            ? AppColors.favorite
+            : theme.colorScheme.onSurfaceVariant,
+      ),
+      onPressed: widget.onToggleFavorite,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final expandable = widget.showExpandButton;
+
+    final header = Padding(
+      padding: EdgeInsetsDirectional.only(
+        start: AppSpacing.md,
+        top: AppSpacing.md,
+        // In a list row, room for the heart and the expand control under it.
+        end: expandable ? AppSizes.minTouchTarget : 0,
+        bottom: AppSpacing.md,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          widget.buildCategoryIcon(widget.facility.primaryCategory),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: _buildTitleBlock(theme)),
+          if (!expandable) _buildFavoriteButton(theme),
+        ],
+      ),
+    );
+
     return Card(
       margin: widget.margin ??
           const EdgeInsets.symmetric(
@@ -148,114 +204,93 @@ class _FacilityCardState extends State<FacilityCard> {
           ),
       shape: widget.shape,
       clipBehavior: Clip.none,
-      color: isDark ? null : AppColors.honeydew,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // GestureDetector, not InkWell — an InkWell ripple would fire across
-          // the whole card.
-          GestureDetector(
-            onTap: widget.showExpandButton ? widget.onToggleExpand : null,
-            behavior: HitTestBehavior.opaque,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (widget.showDragHandle)
-                  const Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.sm),
-                    child: DragHandle(),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppSpacing.sm,
-                    right: AppSpacing.xxxl,
-                  ),
-                  child: ListTile(
-                    leading: widget
-                        .buildCategoryIcon(widget.facility.primaryCategory),
-                    title: Text(
-                      widget.facility.name,
-                      style: theme.textTheme.titleSmall,
-                      maxLines: widget.isExpanded ? null : 1,
-                      overflow: widget.isExpanded
-                          ? TextOverflow.visible
-                          : TextOverflow.ellipsis,
-                    ),
-                    subtitle: _buildSubtitle(theme),
-                  ),
+      color: theme.colorScheme.facilityCard,
+      child:
+          expandable ? _buildListRow(theme, l10n, header) : _buildSheet(header),
+    );
+  }
+
+  /// A row of the list: the header, with the details growing beneath it when
+  /// expanded. The heart and the expand control sit over its trailing edge.
+  Widget _buildListRow(ThemeData theme, AppLocalizations l10n, Widget header) {
+    return Stack(
+      children: [
+        // GestureDetector, not InkWell — an InkWell ripple would fire across
+        // the whole card.
+        GestureDetector(
+          onTap: widget.onToggleExpand,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // At least two controls tall, so the heart and the expand
+              // control each keep a full-size target.
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: 2 * AppSizes.minTouchTarget,
                 ),
+                child: header,
+              ),
+              if (widget.isExpanded) _buildFacilityDetails(widget.facility),
+            ],
+          ),
+        ),
+        PositionedDirectional(
+          top: 0,
+          end: 0,
+          child: _buildFavoriteButton(theme),
+        ),
+        PositionedDirectional(
+          // Stays beside the header when the card grows beneath it.
+          top: AppSizes.minTouchTarget,
+          end: 0,
+          child: IconButton(
+            tooltip:
+                widget.isExpanded ? l10n.cardHideDetails : l10n.cardShowDetails,
+            icon: Icon(
+              widget.isExpanded ? Icons.expand_less : Icons.expand_more,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            onPressed: widget.onToggleExpand,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The whole of the facility sheet: a fixed handle, and everything else —
+  /// name included — scrolling beneath it, so a long name at a large text
+  /// size can't push the details out of reach.
+  Widget _buildSheet(Widget header) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.showDragHandle)
+          const Padding(
+            padding: EdgeInsets.only(top: AppSpacing.sm),
+            child: Center(child: DragHandle()),
+          ),
+        Flexible(
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                header,
                 if (widget.isExpanded) _buildFacilityDetails(widget.facility),
-                if (!widget.isExpanded) const SizedBox(height: AppSpacing.sm),
               ],
             ),
           ),
-          Positioned(
-            top: -AppSpacing.xs,
-            right: -AppSpacing.xs,
-            child: IconButton(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              constraints: const BoxConstraints(),
-              icon: Icon(
-                widget.facility.isFavorite
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: !widget.canFavorite
-                    ? theme.colorScheme.onSurface.withValues(
-                        alpha: AppOpacity.disabled,
-                      )
-                    : (widget.facility.isFavorite ? AppColors.favorite : null),
-                size: AppIconSize.md,
-              ),
-              // `null` onPressed renders the disabled state for guests.
-              onPressed: widget.canFavorite ? widget.onToggleFavorite : null,
-            ),
-          ),
-          if (widget.showExpandButton)
-            Positioned(
-              bottom: -AppSpacing.sm,
-              right: -AppSpacing.xs,
-              child: IconButton(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                constraints: const BoxConstraints(),
-                icon: Icon(
-                  widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-                  size: AppIconSize.md,
-                ),
-                onPressed: widget.onToggleExpand,
-              ),
-            ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   bool _isOpen24_7(Facility facility) {
     return facility.hoursDisplay.toLowerCase().contains('24 hours') ||
         facility.hoursDisplay.toLowerCase().contains('24/7');
-  }
-
-  Widget _buildNextStepItem({
-    required IconData icon,
-    required String value,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: AppIconSize.md, color: theme.colorScheme.tertiary),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(value, style: theme.textTheme.labelMedium),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _openDirections() {
@@ -276,8 +311,108 @@ class _FacilityCardState extends State<FacilityCard> {
     }
   }
 
+  /// Directions, Call, Website — what people came for, directly under the
+  /// name rather than below the fold. Call and Website appear only when the
+  /// facility has them. Side by side at ordinary text sizes; stacked once the
+  /// labels would no longer fit.
+  Widget _buildActions(Facility facility) {
+    final l10n = AppLocalizations.of(context)!;
+    final phone = facility.primaryPhone;
+    final hasPhone = phone.isNotEmpty && phone != 'Phone not available';
+    final website = facility.website;
+    final hasWebsite = website != null && website.isNotEmpty;
+    final stacked = MediaQuery.textScalerOf(context).scale(100) / 100 >= 1.5;
+
+    const padding = EdgeInsets.symmetric(
+      horizontal: AppSpacing.xs,
+      vertical: AppSpacing.sm,
+    );
+    const minimumSize = Size(0, _actionMinHeight);
+    // Set on the button, not the label, so the label keeps the button's own
+    // foreground color.
+    final textStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        );
+    Widget label(IconData icon, String text, {String? spoken}) => Flex(
+          direction: stacked ? Axis.horizontal : Axis.vertical,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: AppIconSize.lg),
+            const SizedBox.square(dimension: AppSpacing.xs),
+            Flexible(
+              child: Text(
+                text,
+                semanticsLabel: spoken,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        );
+
+    final actions = [
+      FilledButton(
+        onPressed: _openDirections,
+        style: FilledButton.styleFrom(
+          padding: padding,
+          minimumSize: minimumSize,
+          textStyle: textStyle,
+        ),
+        child: label(Icons.directions, l10n.cardDirections),
+      ),
+      if (hasPhone)
+        OutlinedButton(
+          onPressed: () => widget.onLaunchUrl('tel:${dialablePhone(phone)}'),
+          style: OutlinedButton.styleFrom(
+            padding: padding,
+            minimumSize: minimumSize,
+            textStyle: textStyle,
+          ),
+          // Read out with the number, and still starting with the word on
+          // the button.
+          child: label(
+            Icons.call,
+            l10n.cardCall,
+            spoken: l10n.cardCallNumber(formatPhoneForDisplay(phone)),
+          ),
+        ),
+      if (hasWebsite)
+        OutlinedButton(
+          onPressed: () => widget.onLaunchUrl(website),
+          style: OutlinedButton.styleFrom(
+            padding: padding,
+            minimumSize: minimumSize,
+            textStyle: textStyle,
+          ),
+          child: label(Icons.language, l10n.cardWebsite),
+        ),
+    ];
+
+    if (stacked) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (index, action) in actions.indexed) ...[
+            if (index > 0) const SizedBox(height: AppSpacing.sm),
+            action,
+          ],
+        ],
+      );
+    }
+    return Row(
+      children: [
+        for (final (index, action) in actions.indexed) ...[
+          if (index > 0) const SizedBox(width: AppSpacing.sm),
+          Expanded(child: action),
+        ],
+      ],
+    );
+  }
+
   Widget _buildFacilityDetails(Facility facility) {
-    final Widget content = Padding(
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         0,
@@ -287,56 +422,42 @@ class _FacilityCardState extends State<FacilityCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildActions(facility),
+          const SizedBox(height: AppSpacing.md),
           if (facility.description.isNotEmpty) ...[
             const Divider(height: AppSpacing.md),
-            Text(
-              facility.description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(facility.description, style: theme.textTheme.bodyMedium),
             const SizedBox(height: AppSpacing.sm),
           ],
           ..._buildAtAGlanceSection(facility),
           ..._buildServicesSection(facility),
           const Divider(height: AppSpacing.md),
-          _buildNextStepsAndHours(facility),
-          // Full width so these don't wrap awkwardly in the narrow column.
+          _buildHours(facility),
+          // Full width so these don't wrap awkwardly in a narrow column.
           if (widget.onRate != null) ...[
             const SizedBox(height: AppSpacing.xs),
             _buildActionLink(
               Icons.thumbs_up_down_outlined,
-              AppLocalizations.of(context)!.cardRatePromptLead,
-              AppLocalizations.of(context)!.cardRatePromptAction,
+              l10n.cardRatePromptLead,
+              l10n.cardRatePromptAction,
               widget.onRate,
             ),
           ],
-          if (widget.onSubmitCorrection != null) ...[
-            const SizedBox(height: AppSpacing.xs),
+          if (widget.onSubmitCorrection != null)
             _buildActionLink(
               Icons.edit_note_outlined,
-              AppLocalizations.of(context)!.cardCorrectionPromptLead,
-              AppLocalizations.of(context)!.cardCorrectionPromptAction,
+              l10n.cardCorrectionPromptLead,
+              l10n.cardCorrectionPromptAction,
               widget.onSubmitCorrection,
             ),
-          ],
         ],
       ),
     );
-
-    if (!widget.showExpandButton) {
-      return Flexible(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: content,
-        ),
-      );
-    } else {
-      return content;
-    }
   }
 
   /// Full-width tappable "form" action (rate / submit corrections). The [lead]
   /// is bold in the default text color; only the [action] reads as a link
-  /// (bittersweet, underlined) to flag the submittal route.
+  /// (underlined, in the link color) to flag the submittal route.
   Widget _buildActionLink(
     IconData icon,
     String lead,
@@ -344,14 +465,14 @@ class _FacilityCardState extends State<FacilityCard> {
     VoidCallback? onTap,
   ) {
     final theme = Theme.of(context);
-    final accent = theme.colorScheme.tertiary;
+    final link = theme.colorScheme.tertiaryText;
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppSizes.minTouchTarget),
         child: Row(
           children: [
-            Icon(icon, size: AppIconSize.md, color: accent),
+            Icon(icon, size: AppIconSize.md, color: link),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text.rich(
@@ -367,9 +488,9 @@ class _FacilityCardState extends State<FacilityCard> {
                       text: action,
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: accent,
+                        color: link,
                         decoration: TextDecoration.underline,
-                        decorationColor: accent,
+                        decorationColor: link,
                       ),
                     ),
                   ],
@@ -382,92 +503,64 @@ class _FacilityCardState extends State<FacilityCard> {
     );
   }
 
-  Widget _buildNextStepsAndHours(Facility facility) {
-    final is24_7 = _isOpen24_7(facility);
-    final phone = facility.primaryPhone;
+  Widget _buildHours(Facility facility) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final style = theme.textTheme.labelSmall;
 
-    return Row(
+    final Widget body;
+    if (_isOpen24_7(facility)) {
+      body = Text(
+        l10n.cardOpen247,
+        style: style?.copyWith(fontWeight: FontWeight.w700),
+      );
+    } else if (facility.hours.isEmpty) {
+      body = Text(
+        l10n.cardContactForHours,
+        style: style?.copyWith(
+          fontWeight: FontWeight.w400,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    } else {
+      // A table, so the day column is as wide as its longest name at any
+      // text size and the times stay aligned beside it.
+      body = Table(
+        columnWidths: const {
+          0: IntrinsicColumnWidth(),
+          1: FlexColumnWidth(),
+        },
+        children: [
+          for (final h in facility.hours)
+            TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: AppSpacing.md,
+                    bottom: AppSpacing.xs,
+                  ),
+                  child: Text(_formatDay(h.day), style: style),
+                ),
+                Text(
+                  h.opensAt != null && h.closesAt != null
+                      ? '${_formatTime(h.opensAt!)} - '
+                          '${_formatTime(h.closesAt!)}'
+                      : '',
+                  style: style?.copyWith(fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
+        ],
+      );
+    }
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.cardNextSteps,
-                style: theme.textTheme.titleSmall,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              if (widget.facility.website != null &&
-                  widget.facility.website!.isNotEmpty)
-                _buildNextStepItem(
-                  icon: Icons.language,
-                  value: AppLocalizations.of(context)!.cardVisitWebsite,
-                  onTap: () => widget.onLaunchUrl(widget.facility.website!),
-                )
-              else
-                _buildNextStepItem(
-                  icon: Icons.language,
-                  value: AppLocalizations.of(context)!.cardWebsiteNotAvailable,
-                  onTap: () {},
-                ),
-              if (phone.isNotEmpty && phone != 'Phone not available')
-                _buildNextStepItem(
-                  icon: Icons.phone,
-                  // Mixed source formats normalize to (xxx) xxx-xxxx.
-                  value: formatPhoneForDisplay(phone),
-                  onTap: () =>
-                      widget.onLaunchUrl('tel:${dialablePhone(phone)}'),
-                ),
-              _buildNextStepItem(
-                icon: Icons.directions,
-                value: AppLocalizations.of(context)!.cardGetDirections,
-                onTap: _openDirections,
-              ),
-            ],
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 150,
-          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          color: theme.dividerColor,
-        ),
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.cardHours,
-                style: theme.textTheme.titleSmall,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              if (is24_7) ...[
-                _buildDayHourRow('Open 24/7', ''),
-              ] else ...[
-                ...facility.hours.map(
-                  (h) => _buildDayHourRow(
-                    h.day,
-                    h.opensAt != null && h.closesAt != null
-                        ? '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}'
-                        : '',
-                  ),
-                ),
-                if (facility.hours.isEmpty)
-                  Text(
-                    AppLocalizations.of(context)!.cardContactForHours,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w400,
-                      color: theme.colorScheme.onSurfaceMuted,
-                    ),
-                  ),
-              ],
-            ],
-          ),
-        ),
+        Text(l10n.cardHours, style: theme.textTheme.titleMedium),
+        const SizedBox(height: AppSpacing.sm),
+        body,
+        const SizedBox(height: AppSpacing.sm),
       ],
     );
   }
@@ -476,22 +569,36 @@ class _FacilityCardState extends State<FacilityCard> {
   /// Returns an empty list when the facility has no service data.
   List<Widget> _buildServicesSection(Facility facility) {
     final theme = Theme.of(context);
-    final title = Text(
-      AppLocalizations.of(context)!.cardServices,
-      style: theme.textTheme.titleMedium,
-    );
+    final l10n = AppLocalizations.of(context)!;
+    final title = Text(l10n.cardServices, style: theme.textTheme.titleMedium);
 
     if (facility.servicesSummary != null &&
         facility.servicesSummary!.isNotEmpty) {
+      final muted = theme.colorScheme.onSurfaceVariant;
       return [
         const Divider(height: AppSpacing.md),
         title,
         const SizedBox(height: AppSpacing.sm),
         Text(facility.servicesSummary!, style: theme.textTheme.bodyMedium),
         const SizedBox(height: AppSpacing.sm),
-        Text(
-          AppLocalizations.of(context)!.cardServicesAiDisclaimer,
-          style: _disclaimerStyle(theme),
+        // Upright, with a mark: italics at this size are the hardest text on
+        // the card to read, and this line is a warning.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.auto_awesome_outlined,
+              size: AppIconSize.sm,
+              color: muted,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                l10n.cardServicesAiDisclaimer,
+                style: theme.textTheme.bodySmall?.copyWith(color: muted),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
       ];
@@ -506,7 +613,7 @@ class _FacilityCardState extends State<FacilityCard> {
           runSpacing: AppSpacing.sm,
           children: [
             for (final service in facility.services)
-              TagChip(label: service, color: theme.colorScheme.tertiary),
+              TagChip(label: service, color: theme.colorScheme.tertiaryText),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -515,14 +622,7 @@ class _FacilityCardState extends State<FacilityCard> {
     return const [];
   }
 
-  /// Italic caption for AI-generated or free-text summaries.
-  TextStyle? _disclaimerStyle(ThemeData theme) =>
-      theme.textTheme.bodySmall?.copyWith(
-        fontStyle: FontStyle.italic,
-        color: theme.colorScheme.onSurfaceMuted,
-      );
-
-  /// "At a Glance" eligibility chips + summary. Returns an empty list (no
+  /// "At a glance" eligibility chips + summary. Returns an empty list (no
   /// leading divider) when the facility has neither, so it can sit at the top
   /// of the details block without an orphan separator.
   List<Widget> _buildAtAGlanceSection(Facility facility) {
@@ -561,7 +661,9 @@ class _FacilityCardState extends State<FacilityCard> {
         const SizedBox(height: AppSpacing.md),
         Text(
           facility.otherEligibilitySummary!,
-          style: _disclaimerStyle(theme),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
       const SizedBox(height: AppSpacing.xs),
@@ -574,7 +676,7 @@ class _FacilityCardState extends State<FacilityCard> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: AppIconSize.sm, color: theme.colorScheme.primary),
+        Icon(icon, size: AppIconSize.sm, color: theme.colorScheme.secondary),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text.rich(
@@ -599,7 +701,7 @@ class _FacilityCardState extends State<FacilityCard> {
     if (elig == null) return [];
 
     final chips = <Widget>[];
-    final color = Theme.of(context).colorScheme.primary;
+    final color = Theme.of(context).colorScheme.primaryText;
     void addChip(String label, EligibilityValue value, IconData icon) {
       if (value == EligibilityValue.yes) {
         chips.add(TagChip(label: label, icon: icon, color: color));
@@ -642,36 +744,5 @@ class _FacilityCardState extends State<FacilityCard> {
       'sun': 'Sun',
     };
     return dayMap[day.toLowerCase()] ?? day;
-  }
-
-  Widget _buildDayHourRow(String day, String hours) {
-    final isClosed = hours.toLowerCase() == 'closed';
-    final is24_7 = day.toLowerCase().contains('24/7');
-    final theme = Theme.of(context);
-    final style = theme.textTheme.labelSmall?.copyWith(
-      color: isClosed ? theme.colorScheme.tertiary : null,
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text(is24_7 ? '' : _formatDay(day), style: style),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            is24_7 ? AppLocalizations.of(context)!.cardOpen247 : hours,
-            style: style?.copyWith(
-              fontWeight:
-                  isClosed || is24_7 ? FontWeight.w700 : FontWeight.w400,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
   }
 }

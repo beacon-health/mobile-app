@@ -1,5 +1,3 @@
-import 'package:beacon_app/core/theme/app_sizes.dart';
-
 /// Hard requirements that restrict which users can access a facility.
 enum EligibilityRequirement {
   proofOfIncome,
@@ -107,11 +105,8 @@ extension PreferenceRequirementExtension on PreferenceRequirement {
 }
 
 class FilterConstants {
-  static const double modalHeightRatio = 0.60;
-  static const Duration animationDuration = AppMotion.fast;
-
-  /// Height of the map's horizontal filter-chip row.
-  static const double barHeight = 40;
+  /// Most of the screen the filter sheet may take; it scrolls past that.
+  static const double modalHeightRatio = 0.8;
 
   static const List<EligibilityRequirement> eligibilityRequirements = [
     EligibilityRequirement.proofOfIncome,

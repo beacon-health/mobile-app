@@ -7,13 +7,13 @@
   "homeFavorites": "Tus favoritos",
   "homeNoFavorites": "Aún no tienes favoritos",
   "homeNoFavoritesHint": "Agrega favoritos desde el mapa para verlos aquí",
-  "homeFavoritesSignInTitle": "Inicia sesión para acceder a Favoritos",
+  "homeFavoritesSignInTitle": "Inicia sesión para guardar favoritos",
   "homeFavoritesSignInHint": "Inicia sesión para guardar tus centros favoritos.",
-  "homeRecentlyViewed": "Centros vistos recientemente",
+  "homeRecentlyViewed": "Vistos recientemente",
   "homeNoRecentlyViewed": "No hay centros vistos recientemente",
   "homeNoRecentlyViewedHint": "Toca un centro en el mapa para verlo aquí.",
   "mapSearchLocation": "Ingresa código postal",
-  "mapSearchResourcesHint": "Buscar recursos...",
+  "mapSearchResourcesHint": "Buscar recursos",
   "mapAreaLabel": "Área del mapa",
   "mapSearchThisArea": "Buscar en esta área",
   "mapSearching": "Buscando…",
@@ -24,8 +24,8 @@
   "mapRequestFacility": "Solicitar un centro",
   "mapLoadFailed": "No se pudieron cargar los centros. Inténtalo de nuevo.",
   "mapRetry": "Reintentar",
-  "mapInvalidZip": "Ingresa un código postal válido de 5 dígitos (p. ej., 60605)",
-  "mapZipNotFound": "No se encontró la ubicación para el código postal {zipCode}.",
+  "mapInvalidZip": "Ingresa un código postal de 5 dígitos.",
+  "mapZipNotFound": "No encontramos el código postal {zipCode}.",
   "@mapZipNotFound": {
     "placeholders": {
       "zipCode": {
@@ -40,29 +40,23 @@
   "filterFilters": "Filtros",
   "filterClearAll": "Borrar todo",
   "filterApply": "Aplicar",
-  "commonYes": "Sí",
-  "commonNo": "No",
-  "eligProofOfIncome": "Requiere comprobante de ingresos",
-  "eligProofOfResidency": "Requiere comprobante de residencia",
-  "eligInsuranceRequired": "Requiere seguro médico",
-  "eligReferralRequired": "Requiere referencia médica",
-  "prefAcceptsWalkIns": "Acepta visitas sin cita",
-  "prefAppointmentOnly": "Solo con cita",
-  "prefOpenToImmigrants": "Abierto a inmigrantes",
-  "prefFreeServices": "Servicios gratuitos disponibles",
-  "prefSlidingScale": "Tarifa según ingresos disponible",
-  "prefOtherLanguages": "Otros idiomas disponibles",
-  "prefTelehealth": "Telemedicina disponible",
-  "prefWheelchairAccessible": "Accesible en silla de ruedas",
-  "prefServesOutsideArea": "Atiende fuera del área",
-  "cardNextSteps": "Próximos pasos",
+  "eligProofOfIncome": "Comprobante de ingresos",
+  "eligProofOfResidency": "Comprobante de domicilio",
+  "eligInsuranceRequired": "Seguro médico",
+  "eligReferralRequired": "Una referencia médica",
+  "prefAcceptsWalkIns": "Atienden sin cita",
+  "prefAppointmentOnly": "Requieren cita",
+  "prefOpenToImmigrants": "Atienden a inmigrantes",
+  "prefFreeServices": "Ofrecen servicios gratuitos",
+  "prefSlidingScale": "Cobran según tus ingresos",
+  "prefOtherLanguages": "Atienden en otros idiomas",
+  "prefTelehealth": "Ofrecen telemedicina",
+  "prefWheelchairAccessible": "Son accesibles en silla de ruedas",
+  "prefServesOutsideArea": "Atienden a personas de fuera de su zona",
   "cardHours": "Horario",
   "cardServices": "Servicios",
-  "cardServicesAiDisclaimer": "Resumen generado por IA; puede contener imprecisiones",
+  "cardServicesAiDisclaimer": "Resumen escrito por IA. Puede contener errores.",
   "cardAtAGlance": "De un vistazo",
-  "cardVisitWebsite": "Visitar sitio web",
-  "cardWebsiteNotAvailable": "Sitio web no disponible",
-  "cardGetDirections": "Cómo llegar",
   "cardContactForHours": "Contacta al centro para conocer el horario",
   "cardOpen247": "Abierto 24/7",
   "cardAddressNotAvailable": "La dirección de este centro no está disponible",
@@ -94,10 +88,10 @@
   "settingsYourRequests": "Tus solicitudes",
   "settingsDirectionsApp": "App de direcciones",
   "settingsAskEachTime": "Preguntar cada vez",
-  "settingsSignInHint": "¡Inicia sesión para guardar favoritos, filtrar por preferencias y más!",
+  "settingsSignInHint": "Inicia sesión para guardar favoritos y usarlos en cualquier dispositivo.",
   "settingsZipUpdated": "Código postal actualizado",
   "settingsUpdateZipTitle": "Actualizar código postal",
-  "settingsZipValidation": "Ingresa un código postal de 5 dígitos",
+  "settingsZipValidation": "Ingresa un código postal de 5 dígitos.",
   "settingsZipNotFoundError": "No se encontró ese código postal. Inténtalo de nuevo.",
   "ratingsEmptyTitle": "Aún no has calificado ningún centro.",
   "ratingsEmptyHint": "Califica un centro desde el mapa o desde Vistos recientemente en Inicio. Tus calificaciones aparecerán aquí.",
@@ -119,10 +113,9 @@
   "settingsApp": "Aplicación",
   "settingsLanguage": "Idioma",
   "settingsAppearance": "Apariencia",
-  "settingsEligibility": "Elegibilidad",
+  "settingsEligibility": "Lo que puedes presentar",
   "settingsZipCode": "Código postal",
   "settingsAbout": "Acerca de",
-  "settingsVersion": "Versión",
   "settingsPrivacyPolicy": "Política de privacidad",
   "settingsTermsOfService": "Términos de servicio",
   "settingsSignOut": "Cerrar sesión",
@@ -141,38 +134,38 @@
       }
     }
   },
-  "settingsSignOutConfirm": "¿Estás seguro de que deseas cerrar sesión?",
+  "settingsSignOutConfirm": "Tus favoritos y ajustes se quedan en tu cuenta. Se quitarán de este teléfono.",
   "profileTitle": "Perfil",
   "authContinueWithGoogle": "Continuar con Google",
   "authContinueWithApple": "Continuar con Apple",
   "authContinueAsGuest": "Continuar como invitado",
   "authOr": "o",
-  "authTermsPrefix": "Al hacer clic en continuar, aceptas nuestros ",
+  "authTermsPrefix": "Al continuar, aceptas nuestros ",
   "authTermsOfService": "Términos de servicio",
   "authAnd": " y ",
   "authPrivacyPolicy": "Política de privacidad",
-  "authSelectLanguage": "Seleccionar un idioma 🌐",
+  "authSelectLanguage": "Seleccionar un idioma",
   "authSignInPromptTitle": "Inicia sesión para usar esta función",
-  "authSignInPromptBody": "Crea una cuenta gratuita para desbloquear Favoritos, filtros de elegibilidad y más.",
+  "authSignInPromptBody": "Inicia sesión para guardar favoritos, filtrar por preferencias y calificar lugares.",
   "authSignInError": "Error al iniciar sesión. Inténtalo de nuevo.",
   "locationChoiceTitle": "¿Cómo quieres encontrar recursos?",
   "locationChoiceSubtitle": "Usaremos esto para mostrarte recursos cercanos.",
-  "locationChoiceUseLocation": "Activar búsqueda por ubicación",
-  "locationChoiceUseLocationDesc": "Usa el GPS para obtener los resultados más precisos.",
-  "locationChoiceEnterZip": "Ingresar código postal",
-  "locationChoiceEnterZipDesc": "Buscar por código postal.",
+  "locationChoiceUseLocation": "Usar mi ubicación",
+  "locationChoiceUseLocationDesc": "Lo más preciso. Te pediremos permiso a continuación.",
+  "locationChoiceEnterZip": "Ingresar un código postal",
+  "locationChoiceEnterZipDesc": "Busca en una zona sin compartir tu ubicación.",
   "locationCurrentLocation": "Ubicación actual",
-  "locationPermissionDenied": "Acceso a la ubicación denegado. Actívalo en Ajustes > Privacidad > Servicios de ubicación.",
-  "locationPermissionDeniedTitle": "Se requiere acceso a la ubicación",
-  "locationPermissionDeniedBody": "Para usar la búsqueda por GPS, activa la ubicación de Beacon en Ajustes de iOS > Privacidad > Servicios de ubicación.",
+  "locationPermissionDenied": "El acceso a la ubicación está desactivado. Actívalo para Beacon en los ajustes de tu teléfono.",
+  "locationPermissionDeniedTitle": "Se necesita acceso a la ubicación",
+  "locationPermissionDeniedBody": "Para buscar por tu ubicación, activa el acceso a la ubicación para Beacon en los ajustes de tu teléfono.",
   "locationUseMyLocationTooltip": "Usar mi ubicación",
   "settingsUseMyLocation": "Usar mi ubicación",
-  "settingsUseMyLocationDesc": "Usar GPS en lugar del código postal",
+  "settingsUseMyLocationDesc": "En lugar de un código postal",
   "settingsSignOutSuccess": "Sesión cerrada",
   "commonCancel": "Cancelar",
   "navProfile": "Perfil",
-  "profileApplyEligibility": "Aplicar criterios de elegibilidad a la búsqueda",
-  "profileApplyEligibilityDesc": "Mostrar solo centros que coincidan con tu elegibilidad.",
+  "profileApplyEligibility": "Filtrar por lo que puedo presentar",
+  "profileApplyEligibilityDesc": "Oculta los lugares que piden algo que no has marcado abajo.",
   "profileSignedIn": "Sesión iniciada",
   "profileSignedInThrough": "Sesión iniciada con {provider}",
   "@profileSignedInThrough": {
@@ -190,13 +183,13 @@
   "homeCategoryCommunity": "Recursos comunitarios",
   "homeCategorySpecialized": "Servicios especializados",
   "commonLinkFailed": "No se pudo abrir el enlace.",
-  "onboardingEligibilityTitle": "Tu elegibilidad",
-  "onboardingEligibilitySubtitle": "Cuéntanos qué aplica a ti para mostrarte centros para los que calificas. Puedes cambiarlo cuando quieras en tu Perfil.",
+  "onboardingEligibilityTitle": "¿Qué puedes presentar?",
+  "onboardingEligibilitySubtitle": "Ocultaremos los lugares que no podrías usar. Puedes cambiarlo cuando quieras en Perfil.",
   "onboardingContinue": "Continuar",
   "onboardingTagline": "Encuentra recursos gratuitos y de bajo costo cerca de ti.",
   "zipEntryTitle": "¿Cuál es tu código postal?",
   "zipEntrySubtitle": "Lo usaremos para mostrarte recursos cercanos.",
-  "zipEntryInvalid": "Ingresa un código postal de 5 dígitos",
+  "zipEntryInvalid": "Ingresa un código postal de 5 dígitos.",
   "requestFieldWebsite": "Sitio web del centro *",
   "requestFieldWebsiteError": "Ingresa el sitio web del centro",
   "correctionDialogTitle": "Enviar correcciones",
@@ -285,12 +278,104 @@
   },
   "mapNothingInView": "Nada en esta parte del mapa",
   "mapNothingInViewHint": "Aleja o mueve el mapa para ver más.",
-  "eligAcceptsMedicaid": "Acepta Medicaid",
+  "eligAcceptsMedicaid": "Medicaid",
   "chipMedicaid": "Medicaid",
   "cardIncomeLimit": "Límite de ingresos",
   "cardServiceArea": "Área de servicio",
   "labelSeparator": ": ",
   "correctionFieldClosed": "Cerrado permanentemente",
   "correctionFieldClosedHint": "Actívalo si el lugar cerró definitivamente.",
-  "requestTypeClosure": "Cierre reportado"
+  "requestTypeClosure": "Cierre reportado",
+  "homeOpenMap": "Abrir mapa",
+  "filterShowResults": "{count, plural, =0{Sin resultados} =1{Ver 1 resultado} other{Ver {count} resultados}}",
+  "@filterShowResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOnlyShowPlacesThat": "Mostrar solo lugares que",
+  "filterClose": "Cerrar filtros",
+  "filterCategoriesSelected": "{count, plural, =1{1 categoría} other{{count} categorías}}",
+  "@filterCategoriesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardDirections": "Cómo llegar",
+  "cardCall": "Llamar",
+  "cardCallNumber": "Llamar al {phone}",
+  "@cardCallNumber": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "cardWebsite": "Sitio web",
+  "cardSave": "Guardar {name}",
+  "@cardSave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardUnsave": "Quitar {name} de favoritos",
+  "@cardUnsave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardShowDetails": "Ver detalles",
+  "cardHideDetails": "Ocultar detalles",
+  "eligProofOfIncomeHint": "Recibo de sueldo, declaración de impuestos o carta de beneficios",
+  "eligProofOfResidencyHint": "Identificación, contrato de alquiler o factura de servicios",
+  "onboardingSkip": "Omitir por ahora",
+  "onboardingStep": "Paso {step} de {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileSavedOnDevice": "Guardado en este dispositivo",
+  "authTermsSuffix": ".",
+  "authLanguageButton": "Idioma: {language}. Cambiar idioma",
+  "@authLanguageButton": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "zipEntryHelper": "5 dígitos",
+  "zipEntryLocationOff": "El acceso a la ubicación está desactivado; ingresa un código postal.",
+  "settingsSignOutTitle": "¿Cerrar sesión?",
+  "settingsVersionFooter": "Beacon {version}",
+  "@settingsVersionFooter": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAccessibility": "Accesibilidad",
+  "settingsMapAsList": "Abrir el mapa como lista",
+  "settingsMapAsListDesc": "Más fácil con lectores de pantalla",
+  "settingsLargerPins": "Marcadores más grandes",
+  "settingsLargerPinsDesc": "Marcadores y nombres más grandes en el mapa",
+  "settingsAppearanceSystem": "Igual que el dispositivo",
+  "settingsAppearanceLight": "Claro",
+  "settingsAppearanceDark": "Oscuro",
+  "commonNotSet": "Sin definir"
 }

@@ -1,14 +1,17 @@
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/coverage_notice.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
+import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
+import 'package:beacon_app/features/auth/presentation/widgets/onboarding_scaffold.dart';
 import 'package:beacon_app/features/map/presentation/services/location_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Asks how to locate facilities: GPS or ZIP. Granting GPS goes straight to
-/// [MainNavBar]; denial falls back to [ZipEntryPage].
+/// First onboarding step: how to locate facilities, GPS or ZIP. Granting GPS
+/// goes on to the eligibility step; denial falls back to [ZipEntryPage].
 class LocationChoicePage extends StatefulWidget {
   const LocationChoicePage({super.key, this.prefilledZip});
 
@@ -27,98 +30,79 @@ class _LocationChoicePageState extends State<LocationChoicePage> {
     final result = await LocationService.getCurrentLocation();
     if (!mounted) return;
 
-    if (result.status == LocationStatus.granted) {
+    final granted = result.status == LocationStatus.granted;
+    if (granted) {
       await ZipCodeService().setCurrentLocation(
         latitude: result.latitude,
         longitude: result.longitude,
       );
       if (!mounted) return;
-      _goToMain();
-      return;
     }
 
+    // Cleared before leaving: the next step's back button returns here.
     setState(() => _isResolvingLocation = false);
-    _goToZipEntry();
+    if (granted) {
+      finishLocationOnboarding(context);
+    } else {
+      _goToZipEntry(locationOff: true);
+    }
   }
 
-  void _onEnterZip() => _goToZipEntry();
-
-  void _goToZipEntry() {
+  void _goToZipEntry({bool locationOff = false}) {
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => ZipEntryPage(prefilledZip: widget.prefilledZip),
+        builder: (_) => ZipEntryPage(
+          prefilledZip: widget.prefilledZip,
+          locationOff: locationOff,
+        ),
       ),
     );
   }
 
-  void _goToMain() {
-    // Signed-in users get the required Eligibility step next; guests go
-    // straight to the app.
-    finishLocationOnboarding(context);
+  /// This page replaced the sign-in screen, so going back means putting that
+  /// screen in its place again.
+  void _backToSignIn() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    // Someone who has signed in has nothing to go back to: the sign-in screen
+    // would only ask them to sign in again.
+    final isGuest = GuestModeService().isGuest;
+    final canPop = Navigator.of(context).canPop();
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: AppGradients.onboarding(context),
+    return OnboardingScaffold(
+      step: 1,
+      onBack: isGuest && !canPop ? _backToSignIn : null,
+      children: [
+        OnboardingHeading(
+          title: l10n.locationChoiceTitle,
+          subtitle: l10n.locationChoiceSubtitle,
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.onboardingGutter,
+        const SizedBox(height: AppSpacing.xxl),
+        _ChoiceCard(
+          icon: Icons.my_location,
+          title: l10n.locationChoiceUseLocation,
+          description: l10n.locationChoiceUseLocationDesc,
+          onTap: _isResolvingLocation ? null : _onUseLocation,
+          isLoading: _isResolvingLocation,
         ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.xxxl),
-              Center(
-                child: Image.asset(
-                  'assets/beacon-logo.png',
-                  width: AppSizes.logoMedium,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxxl),
-              Text(
-                l10n.locationChoiceTitle,
-                style: textTheme.headlineMedium?.copyWith(
-                  color: colorScheme.secondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                l10n.locationChoiceSubtitle,
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxxl),
-              _ChoiceCard(
-                icon: Icons.my_location,
-                title: l10n.locationChoiceUseLocation,
-                description: l10n.locationChoiceUseLocationDesc,
-                onTap: _isResolvingLocation ? null : _onUseLocation,
-                isLoading: _isResolvingLocation,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _ChoiceCard(
-                icon: Icons.location_on_outlined,
-                title: l10n.locationChoiceEnterZip,
-                description: l10n.locationChoiceEnterZipDesc,
-                onTap: _isResolvingLocation ? null : _onEnterZip,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              const CoverageNotice(),
-              const Spacer(),
-            ],
-          ),
+        const SizedBox(height: AppSpacing.md),
+        _ChoiceCard(
+          icon: Icons.location_on_outlined,
+          title: l10n.locationChoiceEnterZip,
+          description: l10n.locationChoiceEnterZipDesc,
+          onTap: _isResolvingLocation ? null : _goToZipEntry,
         ),
-      ),
+        const SizedBox(height: AppSpacing.xl),
+        const CoverageNotice(),
+      ],
     );
   }
 }
@@ -142,27 +126,32 @@ class _ChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Material(
-      color: theme.cardTheme.color,
-      borderRadius: AppRadii.lgAll,
+    final isDark = theme.brightness == Brightness.dark;
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadii.lgAll,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
               Container(
                 width: AppSizes.avatar,
                 height: AppSizes.avatar,
-                decoration: const BoxDecoration(
-                  color: AppColors.honeydew,
+                // Honeydew is the brightest thing on a dark screen; there the
+                // tile takes a tone of the surface instead.
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? colorScheme.secondaryContainer
+                      : AppColors.honeydew,
                   borderRadius: AppRadii.mdAll,
                 ),
-                // Fixed pairing on the fixed honeydew tile, in both modes.
                 child: Icon(
                   icon,
-                  color: AppColors.paynesGray,
+                  color: isDark
+                      ? colorScheme.onSecondaryContainer
+                      : AppColors.paynesGray,
                   size: AppIconSize.xl,
                 ),
               ),
@@ -172,11 +161,11 @@ class _ChoiceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: theme.textTheme.titleMedium),
-                    const SizedBox(height: AppSpacing.xs),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       description,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceSecondary,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

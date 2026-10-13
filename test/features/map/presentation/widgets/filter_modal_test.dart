@@ -15,6 +15,7 @@ void main() {
     bool showFavoritesOnly = false,
     Map<PreferenceRequirement, bool?> preferences = const {},
     VoidCallback? onLockedTap,
+    int Function(FilterSelection)? resultCount,
   }) async {
     Map<String, dynamic>? result;
     await pumpThemed(
@@ -34,6 +35,7 @@ void main() {
                   showOpenNowOnly: false,
                   isGuest: isGuest,
                   onLockedTap: onLockedTap,
+                  resultCount: resultCount,
                 ),
               );
             },
@@ -47,8 +49,23 @@ void main() {
     return () => result;
   }
 
-  Switch favoritesSwitch(WidgetTester tester) =>
-      tester.widgetList<Switch>(find.byType(Switch)).last;
+  SwitchListTile switchFor(WidgetTester tester, String label) =>
+      tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, label));
+
+  Future<void> tapRow(WidgetTester tester, String label) async {
+    await tester.scrollUntilVisible(
+      find.text(label),
+      100,
+      scrollable: find
+          .descendant(
+            of: find.byType(FilterModal),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(find.text(label));
+    await tester.pumpAndSettle();
+  }
 
   group('FilterModal for guests', () {
     testWidgets('locks Favorites and Preferences and prompts on tap',
@@ -57,26 +74,29 @@ void main() {
       await openModal(tester, isGuest: true, onLockedTap: () => prompts++);
 
       expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
-      expect(favoritesSwitch(tester).onChanged, isNull);
+      // Locked rows are rows to tap, not switches that look switched off.
+      expect(find.widgetWithText(SwitchListTile, 'Favorites'), findsNothing);
 
-      await tester.tap(find.text('Favorites'));
-      await tester.tap(find.text('Preferences'));
-      await tester.pumpAndSettle();
+      await tapRow(tester, 'Favorites');
+      await tapRow(tester, 'Preferences');
 
       expect(prompts, 2);
-      // The section never opens, so none of its options can be reached.
-      expect(find.text('Accepts walk-ins').hitTestable(), findsNothing);
+      // None of the preference switches can be reached.
+      expect(find.text('Take walk-ins'), findsNothing);
     });
 
-    testWidgets('leaves Open Now and Category usable', (tester) async {
-      await openModal(tester, isGuest: true);
+    testWidgets('leaves Open now and Category usable', (tester) async {
+      final result = await openModal(tester, isGuest: true);
 
-      final openNow = tester.widgetList<Switch>(find.byType(Switch)).first;
-      expect(openNow.onChanged, isNotNull);
+      expect(switchFor(tester, 'Open now').onChanged, isNotNull);
+      await tapRow(tester, 'Open now');
+      // The categories are simply there: no section to open first.
+      await tapRow(tester, 'Medical Care');
 
-      await tester.tap(find.text('Category'));
+      await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
-      expect(find.text('Medical Care').hitTestable(), findsOneWidget);
+      expect(result()!['showOpenNowOnly'], isTrue);
+      expect(result()!['categories'], {'Medical Care'});
     });
 
     testWidgets('never applies a favorites or preference filter',
@@ -89,13 +109,10 @@ void main() {
         preferences: {PreferenceRequirement.acceptsWalkins: true},
       );
 
-      expect(favoritesSwitch(tester).value, isFalse);
-
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       expect(result()!['showFavoritesOnly'], isFalse);
-      // The modal lists every preference with a null ("no filter") value.
       final preferences = result()!['preferenceRequirements']
           as Map<PreferenceRequirement, bool?>;
       expect(preferences.values, everyElement(isNull));
@@ -103,19 +120,81 @@ void main() {
   });
 
   group('FilterModal for signed-in users', () {
-    testWidgets('Favorites toggles and Preferences opens', (tester) async {
+    testWidgets('Favorites toggles', (tester) async {
       final result = await openModal(tester, isGuest: false);
 
       expect(find.byIcon(Icons.lock_outline), findsNothing);
-
-      await tester.tap(find.byType(Switch).last);
-      await tester.tap(find.text('Preferences'));
-      await tester.pumpAndSettle();
-      expect(find.text('Accepts walk-ins').hitTestable(), findsOneWidget);
+      await tapRow(tester, 'Favorites');
 
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
       expect(result()!['showFavoritesOnly'], isTrue);
     });
+
+    testWidgets('preferences are switches under "Only show places that"',
+        (tester) async {
+      // They were Yes / No tiles, where "No" asked for places that, say,
+      // refuse walk-ins.
+      final result = await openModal(tester, isGuest: false);
+
+      expect(find.text('Only show places that'), findsOneWidget);
+      expect(find.text('Yes'), findsNothing);
+      expect(find.text('No'), findsNothing);
+
+      await tapRow(tester, 'Take walk-ins');
+      expect(switchFor(tester, 'Take walk-ins').value, isTrue);
+
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+      final preferences = result()!['preferenceRequirements']
+          as Map<PreferenceRequirement, bool?>;
+      expect(preferences[PreferenceRequirement.acceptsWalkins], isTrue);
+    });
+
+    testWidgets('switching a preference back off removes the filter',
+        (tester) async {
+      final result = await openModal(
+        tester,
+        isGuest: false,
+        preferences: {PreferenceRequirement.acceptsWalkins: true},
+      );
+
+      await tapRow(tester, 'Take walk-ins');
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+
+      final preferences = result()!['preferenceRequirements']
+          as Map<PreferenceRequirement, bool?>;
+      // Off means "no filter", never "must not".
+      expect(preferences[PreferenceRequirement.acceptsWalkins], isNull);
+    });
+  });
+
+  group('FilterModal result count', () {
+    testWidgets('the button says how many results it will show',
+        (tester) async {
+      await openModal(
+        tester,
+        isGuest: false,
+        resultCount: (selection) => selection.showOpenNowOnly ? 1 : 12,
+      );
+      expect(find.text('Show 12 results'), findsOneWidget);
+
+      await tapRow(tester, 'Open now');
+
+      expect(find.text('Show 1 result'), findsOneWidget);
+    });
+
+    testWidgets('says so when nothing would match', (tester) async {
+      await openModal(tester, isGuest: false, resultCount: (_) => 0);
+
+      expect(find.text('No results'), findsOneWidget);
+    });
+  });
+
+  testWidgets('the close button has a name', (tester) async {
+    await openModal(tester, isGuest: false);
+
+    expect(find.byTooltip('Close filters'), findsOneWidget);
   });
 }

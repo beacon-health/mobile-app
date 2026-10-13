@@ -4,8 +4,12 @@ import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Eligibility hard-gates — things the user *needs* from a facility. Filters
-/// out facilities demanding more than the user can provide.
+/// What the person can provide when a facility asks: each flag is true when
+/// they have it. `FacilityFilterService.eligibilityGates` turns the answers
+/// into what the map hides.
+///
+/// The field names (and the stored keys) are the facility-side column names
+/// they are matched against, which is why they read as requirements.
 class EligibilityState {
   const EligibilityState({
     this.proofOfIncome = false,
@@ -13,7 +17,7 @@ class EligibilityState {
     this.insuranceRequired = false,
     this.referralRequired = false,
     this.acceptsMedicaid = false,
-    this.applyToSearch = true,
+    this.applyToSearch = false,
   });
 
   final bool proofOfIncome;
@@ -22,8 +26,10 @@ class EligibilityState {
   final bool referralRequired;
   final bool acceptsMedicaid;
 
-  /// When false the gates are kept but not applied, so the user sees
-  /// everything. Defaults to true.
+  /// Whether the answers filter the map. Off until the person has given
+  /// them — in onboarding or on Profile — so nobody has facilities hidden on
+  /// the strength of a question they were never asked. Turning it off later
+  /// keeps the answers and shows everything.
   final bool applyToSearch;
 
   EligibilityState copyWith({
@@ -62,6 +68,8 @@ class EligibilityState {
       referralRequired: json['referral_required'] as bool? ?? false,
       // Absent from rows written before 1.1.0; off is the right reading.
       acceptsMedicaid: json['accepts_medicaid'] as bool? ?? false,
+      // A saved row without the flag predates it, from when saved answers
+      // always applied.
       applyToSearch: json['apply_to_search'] as bool? ?? true,
     );
   }
@@ -143,8 +151,9 @@ class PreferencesState {
   }
 }
 
-/// Stores eligibility-gate and service-preference toggles in SharedPreferences
-/// as individual boolean keys, synced to `user_settings` when signed in.
+/// Stores the "what can you provide" answers and service-preference toggles
+/// in SharedPreferences as individual boolean keys. A guest's stay on the
+/// device; a signed-in user's also sync to `user_settings`.
 class EligibilityPreferencesService extends ChangeNotifier {
   factory EligibilityPreferencesService() => _instance;
 
@@ -186,7 +195,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
       insuranceRequired: prefs.getBool(_keyInsuranceRequired) ?? false,
       referralRequired: prefs.getBool(_keyReferralRequired) ?? false,
       acceptsMedicaid: prefs.getBool(_keyAcceptsMedicaid) ?? false,
-      applyToSearch: prefs.getBool(_keyApplyToSearch) ?? true,
+      applyToSearch: prefs.getBool(_keyApplyToSearch) ?? false,
     );
     _preferences = PreferencesState(
       acceptsWalkIns: prefs.getBool(_keyAcceptsWalkIns) ?? false,
