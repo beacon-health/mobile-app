@@ -9,7 +9,14 @@ section before working in that area:
   signing, monitoring, troubleshooting
 - `design/README.md` — design tokens, components, and the Claude Design export
 
-If you find this file or the README out of date, fix it in the same PR.
+**Every PR: re-read the README sections your change touches and update them in
+the same PR**, and this file too. Both hold only what stays true — no one-time
+setup walkthroughs, launch status, or anything else that expires once it's done.
+
+**This repository is public.** Keep cloud project IDs and numbers, account and
+service-account names, user or device data, user counts, store-review
+correspondence, tester quotes, and security specifics out of code, comments,
+commits, PR text, and docs.
 
 ## Workflow
 
@@ -34,6 +41,9 @@ flutter test
   settings), also run `flutter build ios --release --no-codesign`.
 - Flutter is pinned to 3.47.0 in all three workflows; bump them together and
   match locally.
+- Changed a screen, navigation, or the map? Run it on an iOS simulator **and**
+  an Android emulator, and press Android's back button from wherever you
+  changed. Tests can't see what only a device shows.
 
 ## Running
 
@@ -68,12 +78,26 @@ commands, or make text edits with the file tools instead of the shell.
 - No hardcoded user-facing strings: add the key to all three ARB files in
   `lib/l10n/`, then `make l10n`.
 - Gate every Supabase write on `GuestModeService.isGuest` and call
-  `showSignInPromptDialog(context)`.
+  `showSignInPromptDialog(context)`. Read the session through
+  `GuestModeService` (`isGuest`, `currentUser`), never `Supabase.instance` in
+  a widget — it is also what tests sign in through.
 - Never auto-query facilities on map pan, and never load-and-filter on device
   (README → Architecture).
-- `FacilityCategories` is the single source of truth for the taxonomy.
+- **Never hardcode a state or a list of states.** Coverage comes from
+  `CoverageService`, which follows `launched_states`.
+- **Tabs and map overlays are not routes**, so Android's back button doesn't
+  close them on its own. Anything new that opens over a tab without being a
+  route joins the chain in `MapPageState.handleBack()` / `mapBackTarget`, with
+  a `pressBack` test (README → Architecture).
+- `FacilityCategories` is the single source of truth for the taxonomy, and
+  `FacilityFilterService.eligibilityGates` for what the eligibility switches
+  hide.
 - One sign-in provider per platform: the rule lives only in
   `nativeSignInProviderFor`, and every sign-in surface uses `NativeSignInButton`.
+- Anything else that differs by platform goes in a function that takes the
+  platform (as `MapLauncherService.appsFor` does) so both sides are tested. If
+  it relies on a native declaration (`<queries>`, `Info.plist`), add the pair
+  to `test/core/config/platform_config_test.dart`.
 - **Style with design tokens, never literals** — import
   `package:beacon_app/core/theme/theme.dart`, and reuse `TagChip`,
   `SectionHeader`, `EmptyState`, `DragHandle` before writing new widgets.
@@ -91,6 +115,9 @@ commands, or make text edits with the file tools instead of the shell.
 - Use `createTestFacility(...)`, `pumpThemed(...)`, and
   `mockPlatformServices()` from `test/helpers/`. Fake plugins through their
   method channels — don't add mocking packages.
+- Test Home, Map, and anything about navigation through the real shell:
+  `pumpAppShell` with `FakeFacilityRepository` and `FakeGoogleMaps`, and
+  `pressBack(tester)` for Android's back button (README → Testing).
 - **Never generate goldens locally.** They're canonical on Linux and skip on
   macOS (glyph rasterization differs). After an intentional visual change:
   push, let CI fail, review the `golden-failures` diffs, then run
