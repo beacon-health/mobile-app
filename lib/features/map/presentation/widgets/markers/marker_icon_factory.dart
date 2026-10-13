@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui show ImageByteFormat, PictureRecorder;
 
 import 'package:beacon_app/core/theme/theme.dart';
@@ -34,29 +35,10 @@ class MarkerUtils {
     }
 
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-
-    final double canvasWidth =
-        math.max(_markerSize, 200.0 + _horizontalPadding * 2);
-    const double totalHeight = _markerSize + _nameAreaHeight;
-
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-
-    final markerX = (canvasWidth - _markerSize) / 2;
-
-    canvas.save();
-    canvas.translate(markerX, 0);
-    _drawFacilityMarker(canvas, primaryCategory);
-    canvas.restore();
-
-    if (showName && name.isNotEmpty) {
-      _drawName(canvas, name, canvasWidth, markerX, _markerSize);
-    }
-
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(canvasWidth.ceil(), totalHeight.ceil());
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final bytes = byteData!.buffer.asUint8List();
+    final bytes = await facilityMarkerPng(
+      primaryCategory,
+      name: showName ? name : '',
+    );
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
@@ -66,6 +48,47 @@ class MarkerUtils {
     _markerCache[cacheKey] = descriptor;
     return descriptor;
   }
+
+  /// The facility pin bitmap as PNG: the category circle at the top center of
+  /// a [facilityMarkerCanvasSize] canvas, with [name] (if any) beneath it.
+  /// Shown at 1/devicePixelRatio scale, so the circle is ~33pt on a 3x phone.
+  /// Also exported for the Claude Design map kit
+  /// (tool/design/render_references_test.dart).
+  static Future<Uint8List> facilityMarkerPng(
+    String? primaryCategory, {
+    String name = '',
+  }) async {
+    final canvasWidth = facilityMarkerCanvasSize.width;
+    final markerX = (canvasWidth - _markerSize) / 2;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    canvas.save();
+    canvas.translate(markerX, 0);
+    _drawFacilityMarker(canvas, primaryCategory);
+    canvas.restore();
+
+    if (name.isNotEmpty) {
+      _drawName(canvas, name, canvasWidth, markerX, _markerSize);
+    }
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(
+      facilityMarkerCanvasSize.width.ceil(),
+      facilityMarkerCanvasSize.height.ceil(),
+    );
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  /// Pixel size of [facilityMarkerPng]'s canvas; the circle occupies the top
+  /// [facilityMarkerCircleSize] px square, centered horizontally.
+  static final Size facilityMarkerCanvasSize = Size(
+    math.max(_markerSize, 200.0 + _horizontalPadding * 2),
+    _markerSize + _nameAreaHeight,
+  );
+  static const double facilityMarkerCircleSize = _markerSize;
 
   /// Creates a cluster bubble showing the number of facilities grouped at a
   /// zoomed-out point. Cached per exact count.
@@ -79,7 +102,20 @@ class MarkerUtils {
     }
 
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    final bytes = await clusterMarkerPng(count);
 
+    final descriptor = BitmapDescriptor.bytes(
+      bytes,
+      imagePixelRatio: devicePixelRatio,
+    );
+
+    _markerCache[cacheKey] = descriptor;
+    return descriptor;
+  }
+
+  /// The cluster bubble bitmap as PNG (square, centered on the point). Also
+  /// exported for the Claude Design map kit.
+  static Future<Uint8List> clusterMarkerPng(int count) async {
     // Bubble grows with magnitude so large clusters read clearly.
     final double size = count < 10
         ? 90.0
@@ -135,15 +171,7 @@ class MarkerUtils {
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.ceil(), size.ceil());
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final bytes = byteData!.buffer.asUint8List();
-
-    final descriptor = BitmapDescriptor.bytes(
-      bytes,
-      imagePixelRatio: devicePixelRatio,
-    );
-
-    _markerCache[cacheKey] = descriptor;
-    return descriptor;
+    return byteData!.buffer.asUint8List();
   }
 
   static void _drawName(

@@ -1,0 +1,87 @@
+/* Beacon map kit — compose map screens instead of tracing screenshots.
+ *
+ * Backgrounds are real captures of the app's Google Map in Beacon's map
+ * styles (tool/design/capture_map_backgrounds.dart); pins are the app's own
+ * marker bitmaps (MarkerUtils). Cluster bubbles are drawn in CSS so any count
+ * works; their geometry mirrors MarkerUtils.clusterMarkerPng at 3x.
+ * Keep the Google logo (bottom left of every background) visible.
+ */
+
+/* A 390×844 phone-sized map. Pick a zoom; dark mode swaps the style.
+ * Under a bottom panel, set --map-inset-bottom to the panel's height: like
+ * the app's map padding, it lifts the map (and its Google logo) above it. */
+.beacon-map {
+  position: relative;
+  overflow: hidden;
+  width: 390px;
+  height: 844px;
+  background: var(--color-background) no-repeat;
+  background-size: cover;
+  background-position: center bottom var(--map-inset-bottom, 0px);
+}
+.beacon-map--neighborhood { background-image: url("./backgrounds/light_neighborhood.jpg"); }
+.beacon-map--city { background-image: url("./backgrounds/light_city.jpg"); }
+:root[data-theme="dark"] .beacon-map--neighborhood { background-image: url("./backgrounds/dark_neighborhood.jpg"); }
+:root[data-theme="dark"] .beacon-map--city { background-image: url("./backgrounds/dark_city.jpg"); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .beacon-map--neighborhood { background-image: url("./backgrounds/dark_neighborhood.jpg"); }
+  :root:not([data-theme="light"]) .beacon-map--city { background-image: url("./backgrounds/dark_city.jpg"); }
+}
+
+/* A facility pin centered on its point: set `left` / `top` on it. */
+.beacon-pin {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  background: center / contain no-repeat;
+}
+.beacon-pin--health-care { background-image: url("./pins/pin_health-care.png"); }
+.beacon-pin--mental-health { background-image: url("./pins/pin_mental-health.png"); }
+.beacon-pin--basic-needs { background-image: url("./pins/pin_basic-needs.png"); }
+.beacon-pin--housing-shelter { background-image: url("./pins/pin_housing-shelter.png"); }
+.beacon-pin--community-resources { background-image: url("./pins/pin_community-resources.png"); }
+.beacon-pin--specialized-services { background-image: url("./pins/pin_specialized-services.png"); }
+.beacon-pin--fallback { background-image: url("./pins/pin_fallback.png"); }
+
+/* The facility name the app draws under pins from street zoom (15) in.
+ * Give it the same `left` / `top` as its pin. */
+.beacon-pin-label {
+  position: absolute;
+  width: 67px;
+  transform: translate(-50%, 21px);
+  text-align: center;
+  font: 700 8px/1.1 var(--font-family);
+  color: #000;
+  text-shadow: 1px 1px 1px #fff, -1px -1px 1px #fff, 1px -1px 1px #fff,
+    -1px 1px 1px #fff, 0 0 2px #fff;
+}
+
+/* Cluster bubble for grouped facilities at city zoom; put the count inside.
+ * Default is under 10; use --medium for 10–99 and --large for 100+. */
+.beacon-cluster {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  transform: translate(-50%, -50%);
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: var(--color-brand-reseda-green);
+  box-shadow: 0 0 0 2.3px color-mix(in srgb, var(--color-brand-reseda-green) 35%, transparent);
+  color: #fff;
+  font: 700 10px/1 var(--font-family);
+}
+.beacon-cluster--medium {
+  width: 31px;
+  height: 31px;
+  font-size: 12.5px;
+  box-shadow: 0 0 0 2.8px color-mix(in srgb, var(--color-brand-reseda-green) 35%, transparent);
+}
+.beacon-cluster--large {
+  width: 36px;
+  height: 36px;
+  font-size: 14.7px;
+  box-shadow: 0 0 0 3.3px color-mix(in srgb, var(--color-brand-reseda-green) 35%, transparent);
+}
