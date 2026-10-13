@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/onboarding_scaffold.dart';
@@ -6,10 +7,19 @@ import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart'
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Finishes the location step of onboarding by moving on to the last one,
-/// [EligibilityOnboardingPage]. Pushed rather than swapped in, so its back
-/// button returns to the location the person just gave.
+/// Finishes the location step of onboarding. A guest is done and goes
+/// straight to the app: what you can provide belongs to an account. Someone
+/// signed in moves on to [EligibilityOnboardingPage], pushed rather than
+/// swapped in so its back button returns to the location they just gave.
 void finishLocationOnboarding(BuildContext context) {
+  if (GuestModeService().isGuest) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const MainNavBar()),
+      (route) => false,
+    );
+    return;
+  }
   Navigator.push(
     context,
     MaterialPageRoute<void>(
@@ -18,9 +28,9 @@ void finishLocationOnboarding(BuildContext context) {
   );
 }
 
-/// Last onboarding step, for guests and signed-in users alike: what the
-/// person can provide. The answers filter the map and stay editable on the
-/// Profile tab — on the device for a guest, with the account otherwise.
+/// Last onboarding step, for signed-in users only: what the person can
+/// provide. The answers filter the map, are saved with the account, and stay
+/// editable on the Profile tab. Guests don't see it, here or on Profile.
 ///
 /// "Continue" turns the filter on, even with nothing checked (that is an
 /// answer: I have none of these). "Skip for now" leaves it off, so nothing is

@@ -581,19 +581,15 @@ void main() {
       expect(listed(tester), ['referral', 'walk-in']);
     });
 
-    testWidgets("a guest's answers filter the map too", (tester) async {
-      // Guests can give and change them on Profile now, so they apply.
+    testWidgets('guests are shown everything, whatever was left behind',
+        (tester) async {
+      // Answers belong to an account. A guest can't see or change them, so
+      // stale ones on the device must not hide anything.
       await pumpMap(tester, facilities: [needsReferral, noReferral]);
 
       await setEligibility(
         tester,
         const EligibilityState(applyToSearch: true),
-      );
-      expect(listed(tester), ['walk-in']);
-
-      await setEligibility(
-        tester,
-        const EligibilityState(referralRequired: true, applyToSearch: true),
       );
       expect(listed(tester), ['referral', 'walk-in']);
     });

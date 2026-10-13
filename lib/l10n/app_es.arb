@@ -348,7 +348,6 @@
       }
     }
   },
-  "profileSavedOnDevice": "Guardado en este dispositivo",
   "authTermsSuffix": ".",
   "authLanguageButton": "Idioma: {language}. Cambiar idioma",
   "@authLanguageButton": {

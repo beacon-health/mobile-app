@@ -803,9 +803,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get profileSavedOnDevice => 'Guardado en este dispositivo';
-
-  @override
   String get authTermsSuffix => '.';
 
   @override

@@ -348,7 +348,6 @@
       }
     }
   },
-  "profileSavedOnDevice": "保存在此设备上",
   "authTermsSuffix": "。",
   "authLanguageButton": "语言：{language}。更改语言",
   "@authLanguageButton": {

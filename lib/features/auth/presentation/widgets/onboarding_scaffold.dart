@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -16,10 +17,13 @@ class OnboardingScaffold extends StatelessWidget {
     this.onBack,
   });
 
-  /// Where to look (location or ZIP), then what you can provide. Choosing a
-  /// ZIP is part of the first step: it only appears when GPS wasn't used, and
-  /// a count that skipped from one to three would read as a missed screen.
-  static const int totalSteps = 2;
+  /// How many steps this person has. Someone signed in has two: where to
+  /// look (location or ZIP), then what they can provide. A guest has only
+  /// the first, and one step needs no counter. Choosing a ZIP is part of the
+  /// first step: it only appears when GPS wasn't used, and a count that
+  /// skipped a number would read as a missed screen.
+  static int totalStepsFor({required bool isGuest, required int step}) =>
+      isGuest && step == 1 ? 1 : 2;
 
   /// This step, counting from one.
   final int step;
@@ -97,10 +101,12 @@ class _StepHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final label = AppLocalizations.of(context)!.onboardingStep(
-      step,
-      OnboardingScaffold.totalSteps,
+    final totalSteps = OnboardingScaffold.totalStepsFor(
+      isGuest: GuestModeService().isGuest,
+      step: step,
     );
+    final label =
+        AppLocalizations.of(context)!.onboardingStep(step, totalSteps);
     // With nothing beneath it and nowhere named to go, the button would do
     // nothing — as when a guest signs in and onboarding restarts.
     final navigator = Navigator.of(context);
@@ -124,45 +130,47 @@ class _StepHeader extends StatelessWidget {
             const SizedBox(width: AppSpacing.lg),
           const SizedBox(width: AppSpacing.sm),
           // One announcement ("Step 1 of 2") rather than a bar and a label.
-          Expanded(
-            child: Semantics(
-              label: label,
-              child: ExcludeSemantics(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        for (var i = 1; i <= OnboardingScaffold.totalSteps; i++)
-                          Expanded(
-                            child: Container(
-                              height: AppSizes.handleHeight,
-                              margin: const EdgeInsetsDirectional.only(
-                                end: AppSpacing.xs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: i <= step
-                                    ? scheme.secondary
-                                    : scheme.outlineVariant,
-                                borderRadius: AppRadii.pillAll,
+          // A single step has nothing to count.
+          if (totalSteps > 1)
+            Expanded(
+              child: Semantics(
+                label: label,
+                child: ExcludeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          for (var i = 1; i <= totalSteps; i++)
+                            Expanded(
+                              child: Container(
+                                height: AppSizes.handleHeight,
+                                margin: const EdgeInsetsDirectional.only(
+                                  end: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: i <= step
+                                      ? scheme.secondary
+                                      : scheme.outlineVariant,
+                                  borderRadius: AppRadii.pillAll,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      label,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        label,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

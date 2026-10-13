@@ -1384,12 +1384,6 @@ abstract class AppLocalizations {
   /// **'Step {step} of {total}'**
   String onboardingStep(int step, int total);
 
-  /// No description provided for @profileSavedOnDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved on this device'**
-  String get profileSavedOnDevice;
-
   /// No description provided for @authTermsSuffix.
   ///
   /// In en, this message translates to:
