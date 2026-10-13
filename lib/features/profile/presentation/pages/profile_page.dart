@@ -20,9 +20,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Account + "what you can provide". Guests get the sign-in card in place of
-/// the account, and the same checklist, saved on the device. Service
-/// Preferences live on the Map and app settings under Settings.
+/// Account + "what you can provide". Guests see a sign-in card only: both
+/// belong to an account. Service Preferences live on the Map and app settings
+/// under Settings.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -113,8 +113,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-        _buildEligibilitySection(l10n, savedOnDevice: true),
-        const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
@@ -301,20 +299,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // --- Eligibility ---------------------------------------------------------
 
-  Widget _buildEligibilitySection(
-    AppLocalizations l10n, {
-    bool savedOnDevice = false,
-  }) {
+  Widget _buildEligibilitySection(AppLocalizations l10n) {
     final epService = context.watch<EligibilityPreferencesService>();
     final state = epService.eligibility;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(
-          l10n.settingsEligibility,
-          note: savedOnDevice ? l10n.profileSavedOnDevice : null,
-        ),
+        SectionHeader(l10n.settingsEligibility),
         // The switch in its own card, set apart from the answers it governs.
         Card(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),

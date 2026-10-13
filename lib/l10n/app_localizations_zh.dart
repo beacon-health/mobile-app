@@ -763,9 +763,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get profileSavedOnDevice => '保存在此设备上';
-
-  @override
   String get authTermsSuffix => '。';
 
   @override

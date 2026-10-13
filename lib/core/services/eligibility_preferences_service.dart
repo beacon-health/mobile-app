@@ -152,8 +152,9 @@ class PreferencesState {
 }
 
 /// Stores the "what can you provide" answers and service-preference toggles
-/// in SharedPreferences as individual boolean keys. A guest's stay on the
-/// device; a signed-in user's also sync to `user_settings`.
+/// in SharedPreferences as individual boolean keys, synced to `user_settings`.
+/// Both belong to an account: guests can't set them and are never filtered
+/// by them.
 class EligibilityPreferencesService extends ChangeNotifier {
   factory EligibilityPreferencesService() => _instance;
 

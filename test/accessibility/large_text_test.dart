@@ -82,12 +82,24 @@ void main() {
         testWidgets('onboarding fits ($language)', (tester) async {
           await resetAppState(tester);
           usePasskeys();
-          for (final page in const [
-            LoginPage(),
-            CreatePasskeyPage(),
+          const steps = [
             LocationChoicePage(),
             ZipEntryPage(locationOff: true),
-            EligibilityOnboardingPage(),
+          ];
+          for (final Widget page in [
+            const LoginPage(),
+            const CreatePasskeyPage(),
+            ...steps,
+          ]) {
+            await pumpPage(tester, page);
+            expect(tester.takeException(), isNull, reason: '$page');
+          }
+
+          // Signed in, the steps carry a count and one more follows.
+          GuestModeService().debugUser = testUser();
+          for (final Widget page in [
+            ...steps,
+            const EligibilityOnboardingPage(),
           ]) {
             await pumpPage(tester, page);
             expect(tester.takeException(), isNull, reason: '$page');
