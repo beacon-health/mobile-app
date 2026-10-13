@@ -854,6 +854,58 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonNotSet => 'Sin definir';
 
   @override
+  String get authSignInWithPasskey => 'Iniciar sesión con una llave de acceso';
+
+  @override
+  String get authPasskeyHint =>
+      '¿Primera vez en Beacon? Inicia sesión una vez y luego agrega una llave de acceso.';
+
+  @override
+  String get authNoPasskey =>
+      'Aún no hay una llave de acceso para Beacon en este teléfono. Inicia sesión abajo y luego agrega una desde Perfil.';
+
+  @override
+  String get authPasskeyUnavailable =>
+      'Este teléfono no puede usar llaves de acceso en este momento. Verifica que tenga bloqueo de pantalla e inténtalo de nuevo.';
+
+  @override
+  String get passkeyCreateTitle => 'Crea tu llave de acceso';
+
+  @override
+  String get passkeyBenefitFast =>
+      'Inicia sesión con tu rostro, huella o bloqueo de pantalla';
+
+  @override
+  String get passkeyBenefitNoPassword => 'Nada que recordar ni escribir';
+
+  @override
+  String get passkeyBenefitPrivate =>
+      'Se queda en tus dispositivos. Beacon nunca la ve.';
+
+  @override
+  String get passkeyNameLabel => 'Nombre (opcional)';
+
+  @override
+  String get passkeyNameHelper =>
+      'Se muestra en este teléfono para que distingas tus llaves de acceso.';
+
+  @override
+  String get passkeyCreate => 'Crear llave de acceso';
+
+  @override
+  String get passkeyNotNow => 'Ahora no';
+
+  @override
+  String get passkeyCreated => 'Llave de acceso creada';
+
+  @override
+  String get passkeyCreateFailed =>
+      'No se pudo crear la llave de acceso. Inténtalo de nuevo.';
+
+  @override
+  String get profileAddPasskey => 'Agregar una llave de acceso';
+
+  @override
   String get brandTagline => 'Atención médica más llevadera.';
 
   @override

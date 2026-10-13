@@ -123,10 +123,11 @@ tool/                          Repo scripts: golden adoption, Claude Design bund
 
 ### Architecture at a glance
 
-**Entry flow:** `AuthGate` → `LoginPage` (a language picker, then Apple on
-iOS, Google on Android, or guest) → `LocationChoicePage` (GPS, or a ZIP on
-`ZipEntryPage`) → `EligibilityOnboardingPage` (signed in only; a guest skips
-it) → `MainNavBar`. The steps after
+**Entry flow:** `AuthGate` → `LoginPage` (a language picker, then a passkey
+where offered, Apple on iOS or Google on Android, or guest) →
+`LocationChoicePage` (GPS, or a ZIP on `ZipEntryPage`) →
+`EligibilityOnboardingPage` (signed in only; a guest skips it) →
+`MainNavBar`. The steps after
 sign-in share `OnboardingScaffold`, which draws the step count and the back
 button; each step is pushed over the one before it, so back returns there.
 Returning users go straight to `MainNavBar`; the `hasCompletedOnboarding`
@@ -140,6 +141,18 @@ full-contrast, with a lock — it does something when tapped, so it must not
 look disabled. When adding a feature
 that writes to Supabase, gate it — RLS will reject anonymous writes anyway, and
 a sign-in prompt is a far better experience than a silent failure.
+
+**Passkeys sign in; they don't sign up.** `PasskeyService` wraps Supabase
+Auth's passkey support, which lets a passkey sign in with no session but only
+lets a signed-in user create one. So a new person signs in with Apple or
+Google once, is offered a passkey (`CreatePasskeyPage`, also reachable from
+Profile), and uses it from then on. Closing the system sheet and having no
+passkey yet are outcomes, not errors, and are never reported. The feature is
+off unless the build passes `--dart-define=PASSKEYS_ENABLED=true`, because it
+needs three things outside this repository: passkeys switched on for the
+Supabase project, a web domain serving the two association files that vouch
+for the app (Apple's app-site-association and Android's Digital Asset Links),
+and that domain in the iOS Associated Domains entitlement.
 
 **Coverage follows the database.** `CoverageService` reads `launched_states`
 (cached on device, refreshed at startup and before a ZIP is turned away). The
@@ -204,6 +217,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `CoverageService` | Which states are live, from `launched_states`; drives the ZIP gate and coverage notice |
 | `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
 | `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
+| `PasskeyService` | Sign in with, and create, a passkey through Supabase Auth; off unless the build enables it |
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
 | `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
 | `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |

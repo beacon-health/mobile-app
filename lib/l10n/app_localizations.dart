@@ -1474,6 +1474,96 @@ abstract class AppLocalizations {
   /// **'Not set'**
   String get commonNotSet;
 
+  /// No description provided for @authSignInWithPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a passkey'**
+  String get authSignInWithPasskey;
+
+  /// No description provided for @authPasskeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'New to Beacon? Sign in once, then add a passkey.'**
+  String get authPasskeyHint;
+
+  /// No description provided for @authNoPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s no passkey for Beacon on this phone yet. Sign in below, then add one from Profile.'**
+  String get authNoPasskey;
+
+  /// No description provided for @authPasskeyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone can\'t use passkeys right now. Check that it has a screen lock, then try again.'**
+  String get authPasskeyUnavailable;
+
+  /// No description provided for @passkeyCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your passkey'**
+  String get passkeyCreateTitle;
+
+  /// No description provided for @passkeyBenefitFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with your face, fingerprint or screen lock'**
+  String get passkeyBenefitFast;
+
+  /// No description provided for @passkeyBenefitNoPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to remember or type'**
+  String get passkeyBenefitNoPassword;
+
+  /// No description provided for @passkeyBenefitPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'It stays on your devices. Beacon never sees it.'**
+  String get passkeyBenefitPrivate;
+
+  /// No description provided for @passkeyNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get passkeyNameLabel;
+
+  /// No description provided for @passkeyNameHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown on this phone so you can tell your passkeys apart.'**
+  String get passkeyNameHelper;
+
+  /// No description provided for @passkeyCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create passkey'**
+  String get passkeyCreate;
+
+  /// No description provided for @passkeyNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get passkeyNotNow;
+
+  /// No description provided for @passkeyCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey created'**
+  String get passkeyCreated;
+
+  /// No description provided for @passkeyCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create a passkey. Please try again.'**
+  String get passkeyCreateFailed;
+
+  /// No description provided for @profileAddPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a passkey'**
+  String get profileAddPasskey;
+
   /// Tagline shown under the logo on the sign-in screen.
   ///
   /// In en, this message translates to:

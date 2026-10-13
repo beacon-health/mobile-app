@@ -1,18 +1,23 @@
 import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/services/passkey_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/features/auth/presentation/pages/create_passkey_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Sign-in entry point: a language picker, the platform's native provider
-/// (Apple on iOS, Google on Android), and Continue as guest. [isGuestUpgrade]
+/// Sign-in entry point: a language picker, then up to three ways in, in this
+/// order — a passkey (where `PasskeyService` offers one), the platform's
+/// native provider (Apple on iOS, Google on Android), and Continue as guest.
+/// There is no email or password. [isGuestUpgrade]
 /// routes through [LocationChoicePage] with the guest's ZIP pre-filled and
 /// replaces the navigation stack.
 class LoginPage extends StatefulWidget {
@@ -47,6 +52,43 @@ class _LoginPageState extends State<LoginPage> {
 
   void _continueAsGuest() {
     _goToLocationChoice();
+  }
+
+  bool get _offersPasskey => PasskeyService.isOfferedOn(defaultTargetPlatform);
+
+  Future<void> _signInWithPasskey() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    final outcome = await PasskeyService.instance.signIn();
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    setState(() {
+      _isLoading = false;
+      _errorMessage = switch (outcome) {
+        // Closing the sheet is a choice, not an error.
+        PasskeyOutcome.success || PasskeyOutcome.cancelled => null,
+        PasskeyOutcome.noPasskey => l10n.authNoPasskey,
+        PasskeyOutcome.unavailable => l10n.authPasskeyUnavailable,
+        PasskeyOutcome.failed => l10n.authSignInError,
+      };
+    });
+    if (outcome == PasskeyOutcome.success) _goToLocationChoice();
+  }
+
+  /// After a first Apple or Google sign-in: offer a passkey for next time,
+  /// once, then carry on whatever the answer.
+  Future<void> _afterNativeSignIn() async {
+    if (_offersPasskey && !await PasskeyService.instance.hasPasskey()) {
+      if (!mounted) return;
+      await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (_) => const CreatePasskeyPage()),
+      );
+    }
+    if (mounted) _goToLocationChoice();
   }
 
   void _goToLocationChoice() {
@@ -200,8 +242,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.huge),
+                          if (_offersPasskey) ...[
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed:
+                                    _isLoading ? null : _signInWithPasskey,
+                                icon: const Icon(Icons.key),
+                                label: Text(l10n.authSignInWithPasskey),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                          ],
                           NativeSignInButton(
-                            onSuccess: _goToLocationChoice,
+                            onSuccess: _afterNativeSignIn,
                             onFailure: (message) =>
                                 setState(() => _errorMessage = message),
                             onLoadingChanged: (loading) => setState(() {
@@ -248,6 +302,16 @@ class _LoginPageState extends State<LoginPage> {
                               child: Text(l10n.authContinueAsGuest),
                             ),
                           ),
+                          if (_offersPasskey) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              l10n.authPasskeyHint,
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: muted,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       Padding(

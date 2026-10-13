@@ -77,6 +77,29 @@ void main() {
       );
     });
 
+    test('takes back the two permissions the passkeys plugin adds', () {
+      // Beacon signs in as itself, never on a website's behalf, and doesn't
+      // run on the Android versions the old account permission was for.
+      for (final permission in [
+        'CREDENTIAL_MANAGER_SET_ORIGIN',
+        'USE_CREDENTIALS',
+      ]) {
+        expect(
+          RegExp(
+            r'<uses-permission\s+android:name="android\.permission\.' +
+                permission +
+                r'"\s+tools:node="remove"',
+          ).hasMatch(manifest),
+          isTrue,
+          reason: permission,
+        );
+        expect(
+          File('android/permissions.txt').readAsStringSync(),
+          isNot(contains(permission)),
+        );
+      }
+    });
+
     test('reads the Maps key from the build, not from source', () {
       expect(manifest, contains(r'android:value="${GOOGLE_MAPS_API_KEY}"'));
       expect(manifest, isNot(contains('AIza')));

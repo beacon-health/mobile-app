@@ -843,6 +843,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonNotSet => 'Not set';
 
   @override
+  String get authSignInWithPasskey => 'Sign in with a passkey';
+
+  @override
+  String get authPasskeyHint =>
+      'New to Beacon? Sign in once, then add a passkey.';
+
+  @override
+  String get authNoPasskey =>
+      'There\'s no passkey for Beacon on this phone yet. Sign in below, then add one from Profile.';
+
+  @override
+  String get authPasskeyUnavailable =>
+      'This phone can\'t use passkeys right now. Check that it has a screen lock, then try again.';
+
+  @override
+  String get passkeyCreateTitle => 'Create your passkey';
+
+  @override
+  String get passkeyBenefitFast =>
+      'Sign in with your face, fingerprint or screen lock';
+
+  @override
+  String get passkeyBenefitNoPassword => 'Nothing to remember or type';
+
+  @override
+  String get passkeyBenefitPrivate =>
+      'It stays on your devices. Beacon never sees it.';
+
+  @override
+  String get passkeyNameLabel => 'Name (optional)';
+
+  @override
+  String get passkeyNameHelper =>
+      'Shown on this phone so you can tell your passkeys apart.';
+
+  @override
+  String get passkeyCreate => 'Create passkey';
+
+  @override
+  String get passkeyNotNow => 'Not now';
+
+  @override
+  String get passkeyCreated => 'Passkey created';
+
+  @override
+  String get passkeyCreateFailed =>
+      'Couldn\'t create a passkey. Please try again.';
+
+  @override
+  String get profileAddPasskey => 'Add a passkey';
+
+  @override
   String get brandTagline => 'Healthcare made lighter.';
 
   @override

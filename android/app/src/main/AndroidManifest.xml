@@ -17,6 +17,17 @@
         android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
         tools:node="remove" />
 
+    <!-- The passkeys plugin asks for these two, and Beacon needs neither.
+         SET_ORIGIN lets a browser sign in on a website's behalf; Beacon only
+         ever signs in as itself. USE_CREDENTIALS belongs to the account
+         system Android replaced before the versions Beacon supports. -->
+    <uses-permission
+        android:name="android.permission.CREDENTIAL_MANAGER_SET_ORIGIN"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.USE_CREDENTIALS"
+        tools:node="remove" />
+
     <!-- "Get directions" asks which map apps are installed. Since Android 11
          an app can only see the ones it declares here, so without these
          entries every map app reports as missing. Keep in step with
