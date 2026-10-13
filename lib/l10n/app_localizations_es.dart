@@ -915,4 +915,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brandTagline => 'Atención médica más llevadera.';
+
+  @override
+  String get cardHoursClosed => 'Cerrado';
+
+  @override
+  String get cardHoursUnknown => 'Sin datos';
 }

@@ -6,6 +6,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/local_user_data.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/apple_mark.dart';
 import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
@@ -156,11 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
     switch (provider) {
       case 'apple':
         background = AppColors.appleBlack;
-        child = const Icon(
-          Icons.apple,
-          size: AppIconSize.xl,
-          color: Colors.white,
-        );
+        child = const AppleMark(size: AppIconSize.xl, color: Colors.white);
       case 'google':
         background = Colors.white;
         // Google's own "G", as on the sign-in button.

@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/widgets/dashed_vertical_divider.dart';
 import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -112,6 +113,77 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('a rule runs between the two columns, and none beside one',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        size: const Size(780, 844),
+      );
+      final rule = tester.getRect(find.byType(DashedVerticalDivider));
+      expect(rule.left, greaterThan(tester.getTopLeft(find.text('Mon')).dx));
+      expect(
+        rule.right,
+        lessThanOrEqualTo(tester.getTopLeft(find.text('Thu')).dx),
+      );
+      // As tall as the longer column.
+      expect(rule.top, lessThanOrEqualTo(tester.getRect(find.text('Mon')).top));
+      expect(
+        rule.bottom,
+        greaterThanOrEqualTo(tester.getRect(find.text('Wed')).bottom),
+      );
+
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week.sublist(0, 3)),
+        isExpanded: true,
+      );
+      expect(find.byType(DashedVerticalDivider), findsNothing);
+    });
+
+    testWidgets('a closed day and an unknown day say which they are',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(
+          hours: const [
+            OperatingHours(day: 'mon', opensAt: '09:00', closesAt: '17:00'),
+            OperatingHours(day: 'sat'),
+            OperatingHours(day: 'sun', isClosed: true),
+          ],
+        ),
+        isExpanded: true,
+      );
+      final l10n = _l10n(tester);
+
+      double rowOf(String text) => tester.getTopLeft(find.text(text)).dy;
+      expect(rowOf(l10n.cardHoursUnknown), rowOf('Sat'));
+      expect(rowOf(l10n.cardHoursClosed), rowOf('Sun'));
+    });
+
+    testWidgets('a divider closes the section before the links under it',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        onRate: () {},
+      );
+      final l10n = _l10n(tester);
+      final hours = tester.getTopLeft(find.text(l10n.cardHours)).dy;
+      final rate = tester
+          .getTopLeft(find.textContaining(l10n.cardRatePromptAction).last)
+          .dy;
+
+      final between =
+          tester.widgetList<Divider>(find.byType(Divider)).where((divider) {
+        final y = tester.getTopLeft(find.byWidget(divider)).dy;
+        return y > hours && y < rate;
+      });
+      expect(between, hasLength(1));
+    });
+
     testWidgets('a few days stay in one column', (tester) async {
       await _pumpCard(
         tester,
@@ -124,6 +196,20 @@ void main() {
         tester.getTopLeft(find.text('Mon')).dx,
       );
     });
+  });
+
+  testWidgets('the address is heavier than the preview under it',
+      (tester) async {
+    final facility = createTestFacility(
+      address: '205 N Michigan Ave, Chicago, IL 60601',
+      description: 'Safe, affordable housing.',
+    );
+    await _pumpCard(tester, facility);
+
+    final address = tester.widget<Text>(find.text(facility.address)).style!;
+    final preview = tester.widget<Text>(find.text(facility.description)).style!;
+    expect(address.fontWeight!.value, greaterThan(preview.fontWeight!.value));
+    expect(address.color, isNot(preview.color));
   });
 
   testWidgets('expanded card puts directions under the name, then hours',

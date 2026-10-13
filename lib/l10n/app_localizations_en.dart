@@ -903,4 +903,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brandTagline => 'Healthcare made lighter.';
+
+  @override
+  String get cardHoursClosed => 'Closed';
+
+  @override
+  String get cardHoursUnknown => 'Unknown';
 }
