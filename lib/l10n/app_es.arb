@@ -380,5 +380,13 @@
   "brandTagline": "Atención médica más llevadera.",
   "@brandTagline": {
     "description": "Tagline shown under the logo on the sign-in screen."
+  },
+  "cardHoursClosed": "Cerrado",
+  "@cardHoursClosed": {
+    "description": "Beside a day the facility is closed."
+  },
+  "cardHoursUnknown": "Sin datos",
+  "@cardHoursUnknown": {
+    "description": "Beside a day whose hours are not known."
   }
 }

@@ -38,10 +38,15 @@ class OperatingHours {
   final String? opensAt;
   final String? closesAt;
 
+  /// The source says the facility is closed this day. A day with neither
+  /// times nor this is one the source doesn't know.
+  final bool isClosed;
+
   const OperatingHours({
     required this.day,
     this.opensAt,
     this.closesAt,
+    this.isClosed = false,
   });
 
   factory OperatingHours.fromJson(Map<String, dynamic> json) {
@@ -49,6 +54,7 @@ class OperatingHours {
       day: json['day'] as String? ?? '',
       opensAt: json['opens_at'] as String? ?? json['opensAt'] as String?,
       closesAt: json['closes_at'] as String? ?? json['closesAt'] as String?,
+      isClosed: json['closed'] == true,
     );
   }
 
@@ -56,6 +62,7 @@ class OperatingHours {
         'day': day,
         'opens_at': opensAt,
         'closes_at': closesAt,
+        if (isClosed) 'closed': true,
       };
 
   /// Formats hours for display (e.g., "Mon: 9:00am - 5:00pm").
@@ -397,6 +404,11 @@ class Facility {
       if (dayKey == null) continue;
 
       if (timePart.toLowerCase() == 'closed') {
+        result.add(OperatingHours(day: dayKey, isClosed: true));
+        continue;
+      }
+      // "U": the source lists the day but doesn't know its hours.
+      if (timePart.toUpperCase() == 'U') {
         result.add(OperatingHours(day: dayKey));
         continue;
       }
@@ -412,6 +424,8 @@ class Facility {
         );
       }
     }
+    // Nothing but unknown days is no hours at all.
+    if (result.every((h) => h.opensAt == null && !h.isClosed)) return [];
     return result;
   }
 

@@ -2,6 +2,7 @@ import 'package:beacon_app/core/services/apple_sign_in_service.dart';
 import 'package:beacon_app/core/services/google_sign_in_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/apple_mark.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
@@ -151,7 +152,7 @@ class _NativeSignInButtonState extends State<NativeSignInButton> {
               ),
             )
           : isApple
-              ? const Icon(Icons.apple, size: 22)
+              ? AppleMark(size: AppIconSize.md, color: foreground)
               // Google's branding guidelines require their own "G" mark on a
               // Sign in with Google button; Material's `g_mobiledata` glyph is
               // a different letterform and not licensed for this use.

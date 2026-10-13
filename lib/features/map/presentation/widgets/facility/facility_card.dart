@@ -1,6 +1,7 @@
 import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/utils/phone_format.dart';
+import 'package:beacon_app/core/widgets/dashed_vertical_divider.dart';
 import 'package:beacon_app/core/widgets/drag_handle.dart';
 import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
@@ -132,9 +133,14 @@ class _FacilityCardState extends State<FacilityCard> {
         ),
         if (address.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xxs),
+          // Heavier and darker than the preview under it: an address is a
+          // fact to act on, the preview a description to skim.
           Text(
             address,
-            style: theme.textTheme.bodySmall?.copyWith(color: muted),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: widget.isExpanded ? null : 1,
             overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
           ),
@@ -433,9 +439,10 @@ class _FacilityCardState extends State<FacilityCard> {
           ..._buildServicesSection(facility),
           const Divider(height: AppSpacing.md),
           _buildHours(facility),
+          if (widget.onRate != null || widget.onSubmitCorrection != null)
+            const Divider(height: AppSpacing.md),
           // Full width so these don't wrap awkwardly in a narrow column.
           if (widget.onRate != null) ...[
-            const SizedBox(height: AppSpacing.xs),
             _buildActionLink(
               Icons.thumbs_up_down_outlined,
               l10n.cardRatePromptLead,
@@ -507,10 +514,15 @@ class _FacilityCardState extends State<FacilityCard> {
   /// mistake.
   static const int _minHoursToSplit = 4;
 
-  String _hoursRange(OperatingHours h) =>
-      h.opensAt != null && h.closesAt != null
-          ? '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}'
-          : '';
+  /// A day's hours, or that it is closed, or that nobody knows: the three
+  /// must not look alike.
+  String _hoursRange(OperatingHours h) {
+    final l10n = AppLocalizations.of(context)!;
+    if (h.opensAt != null && h.closesAt != null) {
+      return '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}';
+    }
+    return h.isClosed ? l10n.cardHoursClosed : l10n.cardHoursUnknown;
+  }
 
   /// The width the longest day and the longest time need side by side, at
   /// the current text size.
@@ -593,23 +605,27 @@ class _FacilityCardState extends State<FacilityCard> {
           // Side by side when both halves of the week fit, so a short list
           // doesn't leave half the card empty; one column otherwise, as at
           // large text sizes.
-          final half = (constraints.maxWidth - AppSpacing.xl) / 2;
+          final half = (constraints.maxWidth - AppSpacing.xxl) / 2;
           if (hours.length < _minHoursToSplit ||
               _widestHoursRow(hours, style) > half) {
             return _buildHoursTable(hours, style);
           }
           final firstColumn = (hours.length + 1) ~/ 2;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _buildHoursTable(hours.sublist(0, firstColumn), style),
-              ),
-              const SizedBox(width: AppSpacing.xl),
-              Expanded(
-                child: _buildHoursTable(hours.sublist(firstColumn), style),
-              ),
-            ],
+          // IntrinsicHeight, so the rule between the columns is as tall as
+          // the longer of them.
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _buildHoursTable(hours.sublist(0, firstColumn), style),
+                ),
+                const DashedVerticalDivider(width: AppSpacing.xxl),
+                Expanded(
+                  child: _buildHoursTable(hours.sublist(firstColumn), style),
+                ),
+              ],
+            ),
           );
         },
       );
