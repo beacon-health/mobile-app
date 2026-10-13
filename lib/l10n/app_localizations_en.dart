@@ -705,6 +705,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get mapNothingInView => 'Nothing in this part of the map';
+
+  @override
+  String get mapNothingInViewHint => 'Zoom out or move the map to see more.';
+
+  @override
   String get eligAcceptsMedicaid => 'Accepts Medicaid';
 
   @override
@@ -715,6 +721,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cardServiceArea => 'Service area';
+
+  @override
+  String get labelSeparator => ': ';
 
   @override
   String get correctionFieldClosed => 'Permanently closed';

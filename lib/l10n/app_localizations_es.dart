@@ -717,6 +717,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get mapNothingInView => 'Nada en esta parte del mapa';
+
+  @override
+  String get mapNothingInViewHint => 'Aleja o mueve el mapa para ver más.';
+
+  @override
   String get eligAcceptsMedicaid => 'Acepta Medicaid';
 
   @override
@@ -727,6 +733,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardServiceArea => 'Área de servicio';
+
+  @override
+  String get labelSeparator => ': ';
 
   @override
   String get correctionFieldClosed => 'Cerrado permanentemente';

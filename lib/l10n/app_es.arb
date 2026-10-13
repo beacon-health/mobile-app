@@ -283,10 +283,13 @@
       }
     }
   },
+  "mapNothingInView": "Nada en esta parte del mapa",
+  "mapNothingInViewHint": "Aleja o mueve el mapa para ver más.",
   "eligAcceptsMedicaid": "Acepta Medicaid",
   "chipMedicaid": "Medicaid",
   "cardIncomeLimit": "Límite de ingresos",
   "cardServiceArea": "Área de servicio",
+  "labelSeparator": ": ",
   "correctionFieldClosed": "Cerrado permanentemente",
   "correctionFieldClosedHint": "Actívalo si el lugar cerró definitivamente.",
   "requestTypeClosure": "Cierre reportado"

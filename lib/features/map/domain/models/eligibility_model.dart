@@ -53,6 +53,18 @@ class FacilityEligibility {
   final EligibilityValue directServices;
   final EligibilityValue hoursListed;
 
+  /// Whether the facility takes Medicaid. Known for a minority of facilities;
+  /// unknown passes every filter, like the other gates.
+  final EligibilityValue acceptsMedicaid;
+
+  /// Free text: who qualifies by income ("At or below 200% of the Federal
+  /// Poverty Level").
+  final String? incomeLimit;
+
+  /// Free text: who the facility serves by geography ("DeKalb County
+  /// residents only").
+  final String? serviceArea;
+
   final String? ageRestriction;
   final String? restrictedGroups;
   final String? operatingHours;
@@ -78,6 +90,9 @@ class FacilityEligibility {
     this.servesOutsideArea = EligibilityValue.unknown,
     this.directServices = EligibilityValue.unknown,
     this.hoursListed = EligibilityValue.unknown,
+    this.acceptsMedicaid = EligibilityValue.unknown,
+    this.incomeLimit,
+    this.serviceArea,
     this.ageRestriction,
     this.restrictedGroups,
     this.operatingHours,
@@ -138,6 +153,11 @@ class FacilityEligibility {
       hoursListed: EligibilityValue.fromString(
         data['hours_listed'] as String?,
       ),
+      acceptsMedicaid: EligibilityValue.fromString(
+        data['accepts_medicaid'] as String?,
+      ),
+      incomeLimit: _cleanSummary(data['income_limit'] as String?),
+      serviceArea: _cleanSummary(data['service_area'] as String?),
       ageRestriction: _nullIfN(data['age_restriction'] as String?),
       restrictedGroups: _nullIfN(data['restricted_groups'] as String?),
       operatingHours: _nullIfN(data['operating_hours'] as String?),
@@ -158,6 +178,7 @@ class FacilityEligibility {
     _addIfKnown(map, 'proof_of_residency', proofOfResidency);
     _addIfKnown(map, 'insurance_required', insuranceRequired);
     _addIfKnown(map, 'referral_required', referralRequired);
+    _addIfKnown(map, 'accepts_medicaid', acceptsMedicaid);
     _addIfKnown(map, 'accepts_walkins', acceptsWalkins);
     _addIfKnown(map, 'appointment_only', appointmentOnly);
     _addIfKnown(map, 'open_to_immigrants', openToImmigrants);

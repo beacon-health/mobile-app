@@ -283,10 +283,13 @@
       }
     }
   },
+  "mapNothingInView": "地图的这一区域没有资源",
+  "mapNothingInViewHint": "缩小或移动地图以查看更多。",
   "eligAcceptsMedicaid": "接受 Medicaid（医疗补助）",
   "chipMedicaid": "Medicaid",
   "cardIncomeLimit": "收入限制",
   "cardServiceArea": "服务区域",
+  "labelSeparator": "：",
   "correctionFieldClosed": "已永久关闭",
   "correctionFieldClosedHint": "如果该机构已永久停业，请开启此项。",
   "requestTypeClosure": "已报告关闭"

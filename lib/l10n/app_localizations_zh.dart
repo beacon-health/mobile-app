@@ -681,6 +681,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get mapNothingInView => '地图的这一区域没有资源';
+
+  @override
+  String get mapNothingInViewHint => '缩小或移动地图以查看更多。';
+
+  @override
   String get eligAcceptsMedicaid => '接受 Medicaid（医疗补助）';
 
   @override
@@ -691,6 +697,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cardServiceArea => '服务区域';
+
+  @override
+  String get labelSeparator => '：';
 
   @override
   String get correctionFieldClosed => '已永久关闭';

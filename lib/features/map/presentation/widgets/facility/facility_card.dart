@@ -87,15 +87,53 @@ class _FacilityCardState extends State<FacilityCard> {
     super.dispose();
   }
 
-  /// Collapsed rows preview services so users can judge relevance; expanded
-  /// rows show "city, state" (the full text renders in the body).
-  String get _subtitleText {
-    final locationLine = '${widget.facility.city}, ${widget.facility.state}';
-    if (widget.isExpanded) return locationLine;
+  /// What a collapsed row says about the facility beneath its address, so
+  /// users can judge relevance: the description, else the services summary.
+  /// Empty when expanded — the full text renders in the body.
+  String get _previewText {
+    if (widget.isExpanded) return '';
     final description = widget.facility.description.trim();
     if (description.isNotEmpty) return description;
-    final services = widget.facility.servicesSummary?.trim() ?? '';
-    return services.isNotEmpty ? services : locationLine;
+    return widget.facility.servicesSummary?.trim() ?? '';
+  }
+
+  /// The address, always visible: people who navigate from memory look for it
+  /// before they ask for directions. Falls back to "city, state" for the few
+  /// records without one.
+  String get _addressText {
+    final facility = widget.facility;
+    if (facility.hasAddress) return facility.address;
+    return [facility.city, facility.state]
+        .where((part) => part.isNotEmpty)
+        .join(', ');
+  }
+
+  Widget _buildSubtitle(ThemeData theme) {
+    final address = _addressText;
+    final preview = _previewText;
+    final muted = theme.colorScheme.onSurfaceMuted;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (address.isNotEmpty)
+          Text(
+            address,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceSecondary,
+            ),
+            maxLines: widget.isExpanded ? 2 : 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        if (preview.isNotEmpty)
+          Text(
+            preview,
+            style: theme.textTheme.bodySmall?.copyWith(color: muted),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+      ],
+    );
   }
 
   @override
@@ -143,14 +181,7 @@ class _FacilityCardState extends State<FacilityCard> {
                           ? TextOverflow.visible
                           : TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(
-                      _subtitleText,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceMuted,
-                      ),
-                      maxLines: widget.isExpanded ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    subtitle: _buildSubtitle(theme),
                   ),
                 ),
                 if (widget.isExpanded) _buildFacilityDetails(widget.facility),
@@ -229,16 +260,10 @@ class _FacilityCardState extends State<FacilityCard> {
 
   void _openDirections() {
     final facility = widget.facility;
-    final hasValidAddress = facility.address.isNotEmpty &&
-        !facility.address.toLowerCase().contains('not available');
-    final hasValidCity = facility.city.isNotEmpty;
-    final hasValidState = facility.state.isNotEmpty;
-
-    if (hasValidAddress && hasValidCity && hasValidState) {
-      final fullAddress =
-          '${facility.address}, ${facility.city}, ${facility.state}'.trim();
-      // Chooser + remembered preference — iOS has no default-maps API.
-      MapLauncherService.openDirections(context, address: fullAddress);
+    if (facility.hasAddress) {
+      // `address` already carries the city, state, and ZIP. Chooser +
+      // remembered preference — neither platform exposes its default map app.
+      MapLauncherService.openDirections(context, address: facility.address);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -504,22 +529,33 @@ class _FacilityCardState extends State<FacilityCard> {
     final eligibilityChips = _buildEligibilityChips(facility);
     final hasSummary = facility.otherEligibilitySummary != null &&
         facility.otherEligibilitySummary!.isNotEmpty;
-    if (eligibilityChips.isEmpty && !hasSummary) return const [];
+    final l10n = AppLocalizations.of(context)!;
+    final facts = [
+      if (facility.eligibility?.incomeLimit case final String limit)
+        _buildFactRow(Icons.payments_outlined, l10n.cardIncomeLimit, limit),
+      if (facility.eligibility?.serviceArea case final String area)
+        _buildFactRow(Icons.map_outlined, l10n.cardServiceArea, area),
+    ];
+    if (eligibilityChips.isEmpty && !hasSummary && facts.isEmpty) {
+      return const [];
+    }
 
     final theme = Theme.of(context);
     return [
       const Divider(height: AppSpacing.md),
+      if (eligibilityChips.isNotEmpty || facts.isNotEmpty)
+        Text(l10n.cardAtAGlance, style: theme.textTheme.titleMedium),
       if (eligibilityChips.isNotEmpty) ...[
-        Text(
-          AppLocalizations.of(context)!.cardAtAGlance,
-          style: theme.textTheme.titleMedium,
-        ),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
           children: eligibilityChips,
         ),
+      ],
+      for (final fact in facts) ...[
+        const SizedBox(height: AppSpacing.sm),
+        fact,
       ],
       if (hasSummary) ...[
         const SizedBox(height: AppSpacing.md),
@@ -530,6 +566,32 @@ class _FacilityCardState extends State<FacilityCard> {
       ],
       const SizedBox(height: AppSpacing.xs),
     ];
+  }
+
+  /// A labelled line of free text under the chips ("Income limit: …").
+  Widget _buildFactRow(IconData icon, String label, String value) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: AppIconSize.sm, color: theme.colorScheme.primary),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: label + AppLocalizations.of(context)!.labelSeparator,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+      ],
+    );
   }
 
   List<Widget> _buildEligibilityChips(Facility facility) {
@@ -545,6 +607,7 @@ class _FacilityCardState extends State<FacilityCard> {
     }
 
     final l10n = AppLocalizations.of(context)!;
+    addChip(l10n.chipMedicaid, elig.acceptsMedicaid, Icons.badge_outlined);
     addChip(l10n.chipWalkIns, elig.acceptsWalkins, Icons.directions_walk);
     addChip(l10n.chipFree, elig.freeServicesAvailable, Icons.money_off);
     addChip(l10n.chipTelehealth, elig.telehealthAvailable, Icons.videocam);

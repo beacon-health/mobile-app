@@ -1264,6 +1264,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 resource in this area} other{{count} resources in this area}}'**
   String mapResourcesInView(int count);
 
+  /// No description provided for @mapNothingInView.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this part of the map'**
+  String get mapNothingInView;
+
+  /// No description provided for @mapNothingInViewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out or move the map to see more.'**
+  String get mapNothingInViewHint;
+
   /// No description provided for @eligAcceptsMedicaid.
   ///
   /// In en, this message translates to:
@@ -1287,6 +1299,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Service area'**
   String get cardServiceArea;
+
+  /// No description provided for @labelSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **': '**
+  String get labelSeparator;
 
   /// No description provided for @correctionFieldClosed.
   ///

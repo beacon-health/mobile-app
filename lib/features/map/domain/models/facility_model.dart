@@ -137,6 +137,12 @@ class Facility {
   final bool isFavorite;
   final bool isVisited;
 
+  /// What [address] holds when the record has no street, city, or state.
+  static const String addressUnavailable = 'Address not available';
+
+  /// Whether there is a real address to show or route to.
+  bool get hasAddress => address.isNotEmpty && address != addressUnavailable;
+
   /// Primary phone number for quick display.
   String get primaryPhone =>
       phones.isNotEmpty ? phones.first.number : 'Phone not available';
@@ -427,7 +433,7 @@ class Facility {
         parts.add(cityState);
       }
     }
-    return parts.isNotEmpty ? parts.join(', ') : 'Address not available';
+    return parts.isNotEmpty ? parts.join(', ') : addressUnavailable;
   }
 
   Facility copyWith({

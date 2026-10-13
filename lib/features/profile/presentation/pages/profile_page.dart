@@ -345,6 +345,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 state.referralRequired,
                 child((v) => state.copyWith(referralRequired: v)),
               ),
+              const Divider(height: 1),
+              _eligToggle(
+                l10n.eligAcceptsMedicaid,
+                Icons.badge_outlined,
+                state.acceptsMedicaid,
+                child((v) => state.copyWith(acceptsMedicaid: v)),
+              ),
             ],
           ),
         ),

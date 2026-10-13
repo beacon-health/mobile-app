@@ -12,6 +12,7 @@ class EligibilityState {
     this.proofOfResidency = false,
     this.insuranceRequired = false,
     this.referralRequired = false,
+    this.acceptsMedicaid = false,
     this.applyToSearch = true,
   });
 
@@ -19,6 +20,7 @@ class EligibilityState {
   final bool proofOfResidency;
   final bool insuranceRequired;
   final bool referralRequired;
+  final bool acceptsMedicaid;
 
   /// When false the gates are kept but not applied, so the user sees
   /// everything. Defaults to true.
@@ -29,6 +31,7 @@ class EligibilityState {
     bool? proofOfResidency,
     bool? insuranceRequired,
     bool? referralRequired,
+    bool? acceptsMedicaid,
     bool? applyToSearch,
   }) {
     return EligibilityState(
@@ -36,6 +39,7 @@ class EligibilityState {
       proofOfResidency: proofOfResidency ?? this.proofOfResidency,
       insuranceRequired: insuranceRequired ?? this.insuranceRequired,
       referralRequired: referralRequired ?? this.referralRequired,
+      acceptsMedicaid: acceptsMedicaid ?? this.acceptsMedicaid,
       applyToSearch: applyToSearch ?? this.applyToSearch,
     );
   }
@@ -45,6 +49,7 @@ class EligibilityState {
         'proof_of_residency': proofOfResidency,
         'insurance_required': insuranceRequired,
         'referral_required': referralRequired,
+        'accepts_medicaid': acceptsMedicaid,
         'apply_to_search': applyToSearch,
       };
 
@@ -55,6 +60,8 @@ class EligibilityState {
       proofOfResidency: json['proof_of_residency'] as bool? ?? false,
       insuranceRequired: json['insurance_required'] as bool? ?? false,
       referralRequired: json['referral_required'] as bool? ?? false,
+      // Absent from rows written before 1.1.0; off is the right reading.
+      acceptsMedicaid: json['accepts_medicaid'] as bool? ?? false,
       applyToSearch: json['apply_to_search'] as bool? ?? true,
     );
   }
@@ -152,6 +159,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
   static const _keyProofOfResidency = 'elig.proof_of_residency';
   static const _keyInsuranceRequired = 'elig.insurance_required';
   static const _keyReferralRequired = 'elig.referral_required';
+  static const _keyAcceptsMedicaid = 'elig.accepts_medicaid';
   static const _keyApplyToSearch = 'elig.apply_to_search';
 
   static const _keyAcceptsWalkIns = 'pref.accepts_walk_ins';
@@ -177,6 +185,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
       proofOfResidency: prefs.getBool(_keyProofOfResidency) ?? false,
       insuranceRequired: prefs.getBool(_keyInsuranceRequired) ?? false,
       referralRequired: prefs.getBool(_keyReferralRequired) ?? false,
+      acceptsMedicaid: prefs.getBool(_keyAcceptsMedicaid) ?? false,
       applyToSearch: prefs.getBool(_keyApplyToSearch) ?? true,
     );
     _preferences = PreferencesState(
@@ -204,6 +213,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
     await prefs.setBool(_keyProofOfResidency, value.proofOfResidency);
     await prefs.setBool(_keyInsuranceRequired, value.insuranceRequired);
     await prefs.setBool(_keyReferralRequired, value.referralRequired);
+    await prefs.setBool(_keyAcceptsMedicaid, value.acceptsMedicaid);
     await prefs.setBool(_keyApplyToSearch, value.applyToSearch);
     notifyListeners();
     if (syncToCloud) {
@@ -250,6 +260,7 @@ class EligibilityPreferencesService extends ChangeNotifier {
       _keyProofOfResidency,
       _keyInsuranceRequired,
       _keyReferralRequired,
+      _keyAcceptsMedicaid,
       _keyApplyToSearch,
       _keyAcceptsWalkIns,
       _keyAppointmentOnly,

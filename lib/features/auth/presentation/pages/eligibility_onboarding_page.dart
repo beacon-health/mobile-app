@@ -142,6 +142,16 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
                                   _draft = _draft.copyWith(referralRequired: v),
                             ),
                           ),
+                          const Divider(height: 1),
+                          _toggle(
+                            l10n.eligAcceptsMedicaid,
+                            Icons.badge_outlined,
+                            _draft.acceptsMedicaid,
+                            (v) => setState(
+                              () =>
+                                  _draft = _draft.copyWith(acceptsMedicaid: v),
+                            ),
+                          ),
                         ],
                       ),
                     ),
