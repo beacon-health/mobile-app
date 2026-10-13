@@ -503,6 +503,70 @@ class _FacilityCardState extends State<FacilityCard> {
     );
   }
 
+  /// Fewer days than this stay in one column: two beside one reads as a
+  /// mistake.
+  static const int _minHoursToSplit = 4;
+
+  String _hoursRange(OperatingHours h) =>
+      h.opensAt != null && h.closesAt != null
+          ? '${_formatTime(h.opensAt!)} - ${_formatTime(h.closesAt!)}'
+          : '';
+
+  /// The width the longest day and the longest time need side by side, at
+  /// the current text size.
+  double _widestHoursRow(List<OperatingHours> hours, TextStyle? style) {
+    double widest(Iterable<String> texts, TextStyle? style) {
+      var width = 0.0;
+      for (final text in texts) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        if (painter.width > width) width = painter.width;
+        painter.dispose();
+      }
+      return width;
+    }
+
+    return widest(hours.map((h) => _formatDay(h.day)), style) +
+        AppSpacing.md +
+        widest(
+          hours.map(_hoursRange),
+          style?.copyWith(fontWeight: FontWeight.w400),
+        );
+  }
+
+  /// A table, so the day column is as wide as its longest name at any text
+  /// size and the times stay aligned beside it.
+  Widget _buildHoursTable(List<OperatingHours> hours, TextStyle? style) {
+    return Table(
+      columnWidths: const {
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
+      },
+      children: [
+        for (final h in hours)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppSpacing.md,
+                  bottom: AppSpacing.xs,
+                ),
+                child: Text(_formatDay(h.day), style: style),
+              ),
+              Text(
+                _hoursRange(h),
+                style: style?.copyWith(fontWeight: FontWeight.w400),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
   Widget _buildHours(Facility facility) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
@@ -523,34 +587,31 @@ class _FacilityCardState extends State<FacilityCard> {
         ),
       );
     } else {
-      // A table, so the day column is as wide as its longest name at any
-      // text size and the times stay aligned beside it.
-      body = Table(
-        columnWidths: const {
-          0: IntrinsicColumnWidth(),
-          1: FlexColumnWidth(),
+      body = LayoutBuilder(
+        builder: (context, constraints) {
+          final hours = facility.hours;
+          // Side by side when both halves of the week fit, so a short list
+          // doesn't leave half the card empty; one column otherwise, as at
+          // large text sizes.
+          final half = (constraints.maxWidth - AppSpacing.xl) / 2;
+          if (hours.length < _minHoursToSplit ||
+              _widestHoursRow(hours, style) > half) {
+            return _buildHoursTable(hours, style);
+          }
+          final firstColumn = (hours.length + 1) ~/ 2;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildHoursTable(hours.sublist(0, firstColumn), style),
+              ),
+              const SizedBox(width: AppSpacing.xl),
+              Expanded(
+                child: _buildHoursTable(hours.sublist(firstColumn), style),
+              ),
+            ],
+          );
         },
-        children: [
-          for (final h in facility.hours)
-            TableRow(
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: AppSpacing.md,
-                    bottom: AppSpacing.xs,
-                  ),
-                  child: Text(_formatDay(h.day), style: style),
-                ),
-                Text(
-                  h.opensAt != null && h.closesAt != null
-                      ? '${_formatTime(h.opensAt!)} - '
-                          '${_formatTime(h.closesAt!)}'
-                      : '',
-                  style: style?.copyWith(fontWeight: FontWeight.w400),
-                ),
-              ],
-            ),
-        ],
       );
     }
 

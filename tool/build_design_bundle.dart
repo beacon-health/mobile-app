@@ -329,10 +329,8 @@ final List<_Card> _componentCards = [
     body: _refs('component_buttons') +
         _spec([
           '<b>Primary</b>: fill <code>--color-primary</code>, text '
-              '<code>--color-on-primary</code> — the main action on a screen.',
-          '<b>Onboarding CTA</b>: fill <code>--color-secondary</code>, text '
-              '<code>--color-on-secondary</code> — on the green onboarding '
-              'gradient, where a green button would disappear.',
+              '<code>--color-on-primary</code> — the main action on a screen, '
+              'in onboarding as everywhere else.',
           '<b>Secondary</b>: transparent, 1px <code>--color-primary</code> '
               'outline and text.',
           '<b>Text</b>: bare <code>--color-primary</code> text; destructive '

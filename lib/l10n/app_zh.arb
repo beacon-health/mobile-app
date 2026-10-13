@@ -376,5 +376,9 @@
   "settingsAppearanceSystem": "跟随设备",
   "settingsAppearanceLight": "浅色",
   "settingsAppearanceDark": "深色",
-  "commonNotSet": "未设置"
+  "commonNotSet": "未设置",
+  "brandTagline": "让就医更轻松。",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

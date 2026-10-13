@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/locale_provider.dart';
+import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/foundation.dart';
@@ -76,6 +77,31 @@ void main() {
 
     expect(LocaleProvider().locale.languageCode, 'es');
     await LocaleProvider().setLocale(const Locale('en'), syncToCloud: false);
+  });
+
+  testWidgets('the tagline is text in the app language, not part of the logo',
+      (tester) async {
+    // Baked into the artwork it could not be translated or read aloud.
+    await pumpThemed(tester, const LoginPage(), locale: const Locale('es'));
+    expect(find.text('Atención médica más llevadera.'), findsOneWidget);
+  });
+
+  testWidgets('the logo has its own artwork for a dark screen', (tester) async {
+    String logoAsset() => (tester
+            .widget<Image>(
+              find.descendant(
+                of: find.byType(BeaconLogo),
+                matching: find.byType(Image),
+              ),
+            )
+            .image as AssetImage)
+        .assetName;
+
+    await pumpThemed(tester, const LoginPage());
+    expect(logoAsset(), 'assets/beacon-logo.png');
+
+    await pumpThemed(tester, const LoginPage(), brightness: Brightness.dark);
+    expect(logoAsset(), 'assets/beacon-logo-dark.png');
   });
 
   testWidgets('says "By continuing", and ends the sentence', (tester) async {

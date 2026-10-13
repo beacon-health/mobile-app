@@ -114,13 +114,12 @@ class _ZipEntryPageState extends State<ZipEntryPage> {
           const SizedBox(height: AppSpacing.xl),
           FilledButton(
             onPressed: _isLoading ? null : _submit,
-            style: AppTheme.secondaryFilledButton(context),
             child: _isLoading
                 ? SizedBox.square(
                     dimension: AppIconSize.md,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: theme.colorScheme.onSecondary,
+                      color: theme.colorScheme.onPrimary,
                     ),
                   )
                 : Text(l10n.onboardingContinue),

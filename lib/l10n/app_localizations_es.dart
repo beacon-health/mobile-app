@@ -852,4 +852,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonNotSet => 'Sin definir';
+
+  @override
+  String get brandTagline => 'Atención médica más llevadera.';
 }

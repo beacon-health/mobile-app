@@ -841,4 +841,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonNotSet => 'Not set';
+
+  @override
+  String get brandTagline => 'Healthcare made lighter.';
 }

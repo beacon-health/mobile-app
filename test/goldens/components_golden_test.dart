@@ -44,11 +44,7 @@ class _Gallery extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           row([
             ElevatedButton(onPressed: () {}, child: const Text('Primary')),
-            FilledButton(
-              onPressed: () {},
-              style: AppTheme.secondaryFilledButton(context),
-              child: const Text('Secondary'),
-            ),
+            FilledButton(onPressed: () {}, child: const Text('Filled')),
             OutlinedButton(onPressed: () {}, child: const Text('Outlined')),
             TextButton(onPressed: () {}, child: const Text('Text')),
             const ElevatedButton(onPressed: null, child: Text('Disabled')),

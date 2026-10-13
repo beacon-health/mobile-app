@@ -46,7 +46,7 @@ Each color has one job. Where two look alike, this is the difference:
 | `primaryText` | Text buttons, outlined-button labels, selected options, chip text | Fills |
 | `error` | Destructive actions and error text | Links |
 | `AppColors.favorite` | The filled heart, and nothing else | — |
-| Payne's gray (`secondary`) | Onboarding buttons, section headers, row icons, the focus ring | — |
+| Payne's gray (`secondary`) | Headings, section headers, row icons, the focus ring | — |
 | `AppColors.userLocation` | The "use my location" control: the platform's location blue, matching the map's dot | — |
 | `AppColors.googleBlue` | Google's mark | — |
 
@@ -77,8 +77,8 @@ Build from these before writing a new widget:
 | `EmptyState` | Icon + title + message (+ optional action) for an empty page |
 | `DragHandle` | Grab handle for custom sheets and panels |
 | `CustomFilterChip`, `SelectionTile` | Map filter bar pills and the filter sheet's category options |
+| `BeaconLogo` | The wordmark, in brand colors on light and white on dark. No tagline in the artwork: that is the `brandTagline` string |
 | `NativeSignInButton` | The only sign-in button; Apple on iOS, Google on Android, each in its brand's light and dark style |
-| `AppTheme.secondaryFilledButton` / `secondaryOutlinedButton` | Payne's-gray calls to action on the green onboarding gradient |
 | `AppTheme.destructiveTextButton` / `destructiveFilledButton` | Deleting an account, removing a rating |
 | `FocusRingBorder` | The ring a button draws while it holds keyboard focus (applied by the theme) |
 

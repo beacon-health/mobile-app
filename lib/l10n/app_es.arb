@@ -376,5 +376,9 @@
   "settingsAppearanceSystem": "Igual que el dispositivo",
   "settingsAppearanceLight": "Claro",
   "settingsAppearanceDark": "Oscuro",
-  "commonNotSet": "Sin definir"
+  "commonNotSet": "Sin definir",
+  "brandTagline": "Atención médica más llevadera.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

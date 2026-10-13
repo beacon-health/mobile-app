@@ -810,4 +810,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonNotSet => '未设置';
+
+  @override
+  String get brandTagline => '让就医更轻松。';
 }

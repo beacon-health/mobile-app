@@ -200,14 +200,7 @@ final _components = <String, Widget Function()>{
         children: [
           _label('PRIMARY — ElevatedButton / FilledButton'),
           ElevatedButton(onPressed: () {}, child: const Text('Apply filters')),
-          _label('ONBOARDING CTA — secondaryFilledButton'),
-          Builder(
-            builder: (context) => FilledButton(
-              onPressed: () {},
-              style: AppTheme.secondaryFilledButton(context),
-              child: const Text('Continue'),
-            ),
-          ),
+          FilledButton(onPressed: () {}, child: const Text('Continue')),
           _label('SECONDARY — OutlinedButton'),
           OutlinedButton(onPressed: () {}, child: const Text('Clear all')),
           _label('TEXT AND DESTRUCTIVE — TextButton'),

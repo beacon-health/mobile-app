@@ -2,6 +2,7 @@ import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -161,9 +162,6 @@ class _LoginPageState extends State<LoginPage> {
                             child: TextButton.icon(
                               onPressed:
                                   _isLoading ? null : _showLanguagePicker,
-                              style: TextButton.styleFrom(
-                                foregroundColor: theme.colorScheme.secondary,
-                              ),
                               icon: const Icon(Icons.language),
                               label: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -182,10 +180,16 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
-                          Image.asset(
-                            'assets/beacon-logo.png',
-                            width: AppSizes.logoHero,
-                            excludeFromSemantics: true,
+                          const BeaconLogo(width: AppSizes.logoHero),
+                          const SizedBox(height: AppSpacing.sm),
+                          // Live text, not part of the logo artwork: it is
+                          // translated, scales, and is read aloud.
+                          Text(
+                            l10n.brandTagline,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: theme.colorScheme.secondary,
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           Text(
@@ -241,7 +245,6 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: _isLoading ? null : _continueAsGuest,
-                              style: AppTheme.secondaryOutlinedButton(context),
                               child: Text(l10n.authContinueAsGuest),
                             ),
                           ),

@@ -1473,6 +1473,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not set'**
   String get commonNotSet;
+
+  /// Tagline shown under the logo on the sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthcare made lighter.'**
+  String get brandTagline;
 }
 
 class _AppLocalizationsDelegate
