@@ -39,6 +39,23 @@ void main() {
       expect(byDay['fri']!.closesAt, '12:00');
       // A closed day is listed, with no times.
       expect(byDay['tue']!.opensAt, isNull);
+      expect(byDay['tue']!.isClosed, isTrue);
+      expect(byDay['mon']!.isClosed, isFalse);
+    });
+
+    test('an unknown day is kept apart from a closed one', () {
+      final facility = withHours('M: 9:00AM-5:00PM, T: U, Su: Closed');
+
+      final byDay = {for (final h in facility.hours) h.day: h};
+      expect(byDay['tue']!.opensAt, isNull);
+      expect(byDay['tue']!.isClosed, isFalse);
+      expect(byDay['sun']!.isClosed, isTrue);
+    });
+
+    test('nothing but unknown days is no hours on file', () {
+      expect(withHours('M: U, T: U, W: U').hours, isEmpty);
+      // One known fact is worth showing the week for.
+      expect(withHours('M: U, T: U, Su: Closed').hours, hasLength(3));
     });
 
     test('noon and midnight convert correctly', () {

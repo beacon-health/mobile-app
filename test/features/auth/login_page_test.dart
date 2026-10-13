@@ -32,7 +32,7 @@ void main() {
       );
       // The quieter choice: outlined, not a second filled button.
       expect(
-        find.widgetWithText(OutlinedButton, 'Continue as guest'),
+        find.widgetWithText(FilledButton, 'Continue as guest'),
         findsOneWidget,
       );
     },

@@ -104,6 +104,9 @@ abstract final class AppOpacity {
   /// The pill behind the active tab's icon.
   static const double navIndicator = 0.16;
 
+  /// A rule between columns of one list, lighter than a section divider.
+  static const double subtleDivider = 0.6;
+
   /// Keyboard-focus wash on rows and tiles that can't carry a ring.
   static const double focus = 0.24;
 

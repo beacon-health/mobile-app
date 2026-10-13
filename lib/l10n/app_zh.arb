@@ -438,5 +438,13 @@
   "brandTagline": "让就医更轻松。",
   "@brandTagline": {
     "description": "Tagline shown under the logo on the sign-in screen."
+  },
+  "cardHoursClosed": "休息",
+  "@cardHoursClosed": {
+    "description": "Beside a day the facility is closed."
+  },
+  "cardHoursUnknown": "未知",
+  "@cardHoursUnknown": {
+    "description": "Beside a day whose hours are not known."
   }
 }
