@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/features/ask/data/assistant_model.dart';
 import 'package:beacon_app/features/ask/data/assistant_service.dart';
 import 'package:beacon_app/features/ask/presentation/pages/ask_page.dart';
@@ -42,10 +43,12 @@ void main() {
   Future<void> pumpShell(
     WidgetTester tester, {
     AssistantAvailability? assistant = AssistantAvailability.available,
+    bool signedIn = true,
     Size? size,
     Locale locale = const Locale('en'),
   }) async {
     platform = await resetAppState(tester);
+    if (signedIn) GuestModeService().debugUser = testUser();
     await saveLocation(home);
     if (assistant != null) model = await useAssistant(status: assistant);
     await pumpAppShell(
@@ -54,6 +57,14 @@ void main() {
       size: size ?? const Size(390, 844),
       locale: locale,
     );
+  }
+
+  /// Signs in or out while the app is open, as the auth stream would.
+  Future<void> setSignedIn(WidgetTester tester, bool signedIn) async {
+    final guests = GuestModeService();
+    guests.debugUser = signedIn ? testUser() : null;
+    guests.notifyListeners();
+    await settle(tester);
   }
 
   List<String> tabLabels(WidgetTester tester) => [
@@ -91,6 +102,34 @@ void main() {
 
       await pumpShell(tester, assistant: null);
       expect(tabLabels(tester), ['Home', 'Map', 'Profile', 'Settings']);
+    });
+
+    testWidgets('is left out for a guest, and comes with signing in',
+        (tester) async {
+      // An account feature, like Favorites.
+      await pumpShell(tester, signedIn: false);
+      expect(tabLabels(tester), ['Home', 'Map', 'Profile', 'Settings']);
+
+      await setSignedIn(tester, true);
+      expect(tabLabels(tester), ['Home', 'Map', 'Ask', 'Profile', 'Settings']);
+    });
+
+    testWidgets('signing out leaves Ask and ends the conversation',
+        (tester) async {
+      await pumpShell(tester);
+      await openTab(tester, 'Ask');
+      model.filtersReply = '{"categories":["health_care"]}';
+      await ask(tester, 'a doctor');
+      expect(find.byType(AskFacilityCard), findsWidgets);
+
+      await setSignedIn(tester, false);
+      expect(tabLabels(tester), ['Home', 'Map', 'Profile', 'Settings']);
+      expect(selectedTab(tester), NavTab.home);
+
+      // The next person to sign in starts from nothing.
+      await setSignedIn(tester, true);
+      await openTab(tester, 'Ask');
+      expect(find.byType(AskFacilityCard), findsNothing);
     });
 
     testWidgets('five labels fit a narrow phone in Spanish', (tester) async {
@@ -212,10 +251,12 @@ void main() {
         expect(size.shortestSide, greaterThanOrEqualTo(48), reason: tooltip);
       }
 
-      // Saving belongs to an account: a guest is offered sign-in.
+      // Ask is only offered to an account, so saving just saves.
+      expect(find.byIcon(Icons.favorite), findsNothing);
       await tester.tap(find.byTooltip('Save Loop Clinic'));
       await settle(tester);
-      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byIcon(Icons.favorite), findsOneWidget);
     });
 
     testWidgets('tapping a card opens that facility on the Map',

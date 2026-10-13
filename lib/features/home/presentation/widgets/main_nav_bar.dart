@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/features/ask/data/assistant_service.dart';
 import 'package:beacon_app/features/ask/domain/ask_request.dart';
 import 'package:beacon_app/features/ask/presentation/pages/ask_page.dart';
@@ -117,13 +118,15 @@ class _MainNavBarState extends State<MainNavBar> {
 
   Widget _buildScaffold(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final showAsk = context.watch<AssistantService>().showsTab;
+    // Ask belongs to an account, like Favorites: a guest doesn't get the tab.
+    final showAsk = context.watch<AssistantService>().showsTab &&
+        !context.watch<GuestModeService>().isGuest;
     final tabs = [
       for (final tab in AppTab.values)
         if (tab != AppTab.ask || showAsk) tab,
     ];
-    // The Ask tab left the bar while it was open (the app's language changed
-    // to one the model doesn't speak, say).
+    // The Ask tab left the bar while it was open (the person signed out, or
+    // the phone's model went away).
     if (!tabs.contains(_selected)) _selected = AppTab.home;
 
     NavigationDestination destination(AppTab tab) => switch (tab) {

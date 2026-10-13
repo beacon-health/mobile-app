@@ -210,7 +210,8 @@ The native side is a method channel with two calls, `availability` and
 `extractFilters` (`AssistantBridge` in each native project;
 `AssistantModelService.forPlatform` on the Dart side). `AssistantService`
 tracks availability: a phone that can never run the model gets no Ask tab; one
-that can but isn't ready gets the tab and an explanation. Android's model
+that can but isn't ready gets the tab and an explanation. Ask belongs to an
+account: a guest gets no tab either, and signing out ends the conversation. Android's model
 library is built for API 26, so the manifest overrides its minimum SDK and the
 bridge never touches it below that.
 
@@ -236,7 +237,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
 | `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
 | `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |
-| `AssistantService` (`features/ask/data/`) | Whether the phone has a language model Ask can use; decides if the Ask tab is shown |
+| `AssistantService` (`features/ask/data/`) | Whether the phone has a language model Ask can use; decides, with a signed-in account, if the Ask tab is shown |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |

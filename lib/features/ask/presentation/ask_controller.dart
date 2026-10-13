@@ -269,15 +269,18 @@ class AskController extends ChangeNotifier {
     AskFilters filters,
     LatLng origin,
   ) {
-    // As on the Map, the preference filters belong to an account.
+    // As on the Map, the person's answers and the preference filters belong
+    // to an account. Ask is only offered to one, but the rule is the Map's.
     final isGuest = GuestModeService().isGuest;
     final matches = FacilityFilterService.filterFacilities(
       pool,
       searchText: filters.keyword,
       selectedCategories: filters.categories,
-      selectedEligibilityRequirements: FacilityFilterService.eligibilityGates(
-        EligibilityPreferencesService().eligibility,
-      ),
+      selectedEligibilityRequirements: isGuest
+          ? const {}
+          : FacilityFilterService.eligibilityGates(
+              EligibilityPreferencesService().eligibility,
+            ),
       selectedPreferenceRequirements: isGuest
           ? const {}
           : {for (final need in filters.preferences) need: true},

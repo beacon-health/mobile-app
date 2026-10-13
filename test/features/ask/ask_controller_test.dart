@@ -279,6 +279,7 @@ void main() {
       location: north(0.001),
     );
     await setUpAsk(tester, facilities: [needsReferral, dental]);
+    GuestModeService().debugUser = testUser();
     await EligibilityPreferencesService().updateEligibility(
       const EligibilityState(applyToSearch: true),
       syncToCloud: false,

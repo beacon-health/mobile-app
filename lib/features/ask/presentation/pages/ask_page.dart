@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/empty_state.dart';
 import 'package:beacon_app/features/ask/data/assistant_model.dart';
@@ -49,7 +50,22 @@ class _AskPageState extends State<AskPage> {
   AssistantModel? _controllerModel;
 
   @override
+  void initState() {
+    super.initState();
+    GuestModeService().addListener(_onAccountChanged);
+  }
+
+  /// Ask belongs to an account: signing out ends the conversation, so the
+  /// next person to sign in on this phone doesn't find it.
+  void _onAccountChanged() {
+    if (!GuestModeService().isGuest) return;
+    _input.clear();
+    _controller?.clear();
+  }
+
+  @override
   void dispose() {
+    GuestModeService().removeListener(_onAccountChanged);
     _controller?.removeListener(_onConversationChanged);
     _controller?.dispose();
     _input.dispose();

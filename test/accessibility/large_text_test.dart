@@ -182,6 +182,7 @@ void main() {
           (tester) async {
         useTextScale(tester, scale);
         await resetAppState(tester);
+        GuestModeService().debugUser = testUser();
         await saveLocation(home);
         final model = await useAssistant();
         await pumpAppShell(
