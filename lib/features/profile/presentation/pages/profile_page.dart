@@ -5,14 +5,17 @@ import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/local_user_data.dart';
+import 'package:beacon_app/core/services/passkey_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
+import 'package:beacon_app/features/auth/presentation/pages/create_passkey_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -277,6 +280,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 MaterialPageRoute<void>(builder: (_) => const MyRequestsPage()),
               ),
             ),
+            if (PasskeyService.isOfferedOn(defaultTargetPlatform)) ...[
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.key),
+                title: Text(l10n.profileAddPasskey),
+                trailing: const Icon(Icons.chevron_right, size: AppIconSize.md),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<bool>(
+                    builder: (_) => const CreatePasskeyPage(),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

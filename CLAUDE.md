@@ -99,6 +99,8 @@ commands, or make text edits with the file tools instead of the shell.
   answers hide, and `EligibilityChecklist` for how the question is worded.
 - One sign-in provider per platform: the rule lives only in
   `nativeSignInProviderFor`, and every sign-in surface uses `NativeSignInButton`.
+  Passkeys go through `PasskeyService` (`isOfferedOn` decides where). No
+  email or password sign-in, anywhere.
 - Anything else that differs by platform goes in a function that takes the
   platform (as `MapLauncherService.appsFor` does) so both sides are tested. If
   it relies on a native declaration (`<queries>`, `Info.plist`), add the pair

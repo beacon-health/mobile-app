@@ -1,6 +1,7 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
+import 'package:beacon_app/features/auth/presentation/pages/create_passkey_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../helpers/app_shell.dart';
+import '../helpers/fake_passkeys.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/test_facility.dart';
 
@@ -79,8 +81,10 @@ void main() {
 
         testWidgets('onboarding fits ($language)', (tester) async {
           await resetAppState(tester);
+          usePasskeys();
           for (final page in const [
             LoginPage(),
+            CreatePasskeyPage(),
             LocationChoicePage(),
             ZipEntryPage(locationOff: true),
             EligibilityOnboardingPage(),

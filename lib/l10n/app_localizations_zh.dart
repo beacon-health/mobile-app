@@ -813,4 +813,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonNotSet => '未设置';
+
+  @override
+  String get authSignInWithPasskey => '使用通行密钥登录';
+
+  @override
+  String get authPasskeyHint => '初次使用 Beacon？先登录一次，然后添加通行密钥。';
+
+  @override
+  String get authNoPasskey => '此手机上还没有 Beacon 的通行密钥。请先在下方登录，然后在个人资料中添加。';
+
+  @override
+  String get authPasskeyUnavailable => '此手机目前无法使用通行密钥。请确认已设置屏幕锁定后重试。';
+
+  @override
+  String get passkeyCreateTitle => '创建您的通行密钥';
+
+  @override
+  String get passkeyBenefitFast => '使用面容、指纹或屏幕锁定登录';
+
+  @override
+  String get passkeyBenefitNoPassword => '无需记忆或输入任何内容';
+
+  @override
+  String get passkeyBenefitPrivate => '它保存在您的设备上，Beacon 无法看到。';
+
+  @override
+  String get passkeyNameLabel => '名称（可选）';
+
+  @override
+  String get passkeyNameHelper => '显示在此手机上，便于区分您的通行密钥。';
+
+  @override
+  String get passkeyCreate => '创建通行密钥';
+
+  @override
+  String get passkeyNotNow => '暂不';
+
+  @override
+  String get passkeyCreated => '通行密钥已创建';
+
+  @override
+  String get passkeyCreateFailed => '无法创建通行密钥，请重试。';
+
+  @override
+  String get profileAddPasskey => '添加通行密钥';
 }
