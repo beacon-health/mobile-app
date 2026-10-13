@@ -813,4 +813,127 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonNotSet => '未设置';
+
+  @override
+  String get navAsk => '提问';
+
+  @override
+  String get askTitle => '提问';
+
+  @override
+  String get askHeading => '您想找什么帮助？';
+
+  @override
+  String get askSuggestionClinic => '附近的免费诊所';
+
+  @override
+  String get askSuggestionTalk => '找人倾诉';
+
+  @override
+  String get askSuggestionFood => '正在开放的食物银行';
+
+  @override
+  String get askSuggestionShelter => '今晚的住处';
+
+  @override
+  String get askCrisisNote => '遇到紧急情况请拨打 911。如果您正处于危机中或有自杀念头，请拨打或发短信至 988。';
+
+  @override
+  String get askCrisisTitle => '现在就可以获得帮助';
+
+  @override
+  String get askCall911 => '拨打 911';
+
+  @override
+  String get askCall988 => '拨打或发短信至 988';
+
+  @override
+  String get askInputLabel => '输入您需要的帮助';
+
+  @override
+  String get askSend => '发送';
+
+  @override
+  String get askPrivacyFooter => '在此手机上运行，聊天内容不会发送到任何地方。';
+
+  @override
+  String get askNewChat => '新对话';
+
+  @override
+  String get askThinking => '正在查找…';
+
+  @override
+  String askFoundSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '我找到了 $count 个符合条件的机构，以下是最近的几个。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get askAiNote => 'AI 解读了您的请求。请向机构核实详情。';
+
+  @override
+  String get askShowOnMap => '在地图上显示';
+
+  @override
+  String get askOnlyOpenNow => '仅显示营业中';
+
+  @override
+  String get askOpenMap => '打开地图';
+
+  @override
+  String get askOpenMapWithFilters => '使用这些筛选条件打开地图';
+
+  @override
+  String get askHandoffUnclear => '我没能明白要搜索什么。请试着说出您需要的帮助类型，或自行在地图上搜索。';
+
+  @override
+  String get askHandoffNoResults => '我没有在附近找到符合条件的机构。您可以在地图上查看更远的范围或更改筛选条件。';
+
+  @override
+  String get askHandoffMedical => '我无法提供医疗建议。我可以帮您找到就诊的地方，您也可以在地图上搜索。';
+
+  @override
+  String get askHandoffOffTopic => '我只能帮您在 Beacon 中查找服务。请试着说出您需要的帮助类型，或在地图上搜索。';
+
+  @override
+  String askDistanceMiles(String distance) {
+    return '$distance 英里';
+  }
+
+  @override
+  String askDirectionsTo(String name) {
+    return '前往 $name 的路线';
+  }
+
+  @override
+  String get askNotReadyTitle => '助手尚未就绪';
+
+  @override
+  String get askNotReadyBody => '您的手机仍在准备，或已在手机设置中关闭。在此期间，您可以在地图上搜索。';
+
+  @override
+  String get askLanguageTitle => '助手暂不支持此语言';
+
+  @override
+  String get askLanguageBody => '您手机上的助手无法用此语言回答。您可以改为在地图上搜索。';
+
+  @override
+  String get askSearchMap => '在地图上搜索';
+
+  @override
+  String get chipImmigrants => '向移民开放';
+
+  @override
+  String get askCrisisKeywords =>
+      '自杀|想死|不想活|轻生|结束生命|伤害自己|自残|服药过量|家暴|被虐待|打我|有危险|紧急情况|急救|无法呼吸|喘不过气|胸痛';
+
+  @override
+  String get askSearchedFor => '我搜索的条件';
+
+  @override
+  String get askNoneOpenNow => '这些机构目前都未营业。';
 }

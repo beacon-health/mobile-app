@@ -377,5 +377,63 @@
   "settingsAppearanceSystem": "Match device",
   "settingsAppearanceLight": "Light",
   "settingsAppearanceDark": "Dark",
-  "commonNotSet": "Not set"
+  "commonNotSet": "Not set",
+  "navAsk": "Ask",
+  "askTitle": "Ask",
+  "askHeading": "What do you need help finding?",
+  "askSuggestionClinic": "A free clinic near me",
+  "askSuggestionTalk": "Someone to talk to",
+  "askSuggestionFood": "Food pantries open now",
+  "askSuggestionShelter": "A place to stay tonight",
+  "askCrisisNote": "In an emergency, call 911. If you're in crisis or thinking about suicide, call or text 988.",
+  "askCrisisTitle": "Help is available right now",
+  "askCall911": "Call 911",
+  "askCall988": "Call or text 988",
+  "askInputLabel": "Ask for a kind of help",
+  "askSend": "Send",
+  "askPrivacyFooter": "Runs on this phone. Chats aren't sent anywhere.",
+  "askNewChat": "New chat",
+  "askThinking": "Looking…",
+  "askFoundSummary": "{count, plural, =1{I found 1 place that matches.} other{I found {count} places that match. Here are the nearest.}}",
+  "@askFoundSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "askAiNote": "AI read your request. Check details with the facility.",
+  "askShowOnMap": "Show on map",
+  "askOnlyOpenNow": "Only open now",
+  "askOpenMap": "Open the map",
+  "askOpenMapWithFilters": "Open the map with these filters",
+  "askHandoffUnclear": "I couldn't work out what to search for. Try naming the kind of help you need, or search the map yourself.",
+  "askHandoffNoResults": "I didn't find anything nearby that matches. On the map you can look further away or change the filters.",
+  "askHandoffMedical": "I can't give medical advice. I can help you find a place to get care, or you can search the map.",
+  "askHandoffOffTopic": "I can only help you find services in Beacon. Try asking for a kind of help, or search the map.",
+  "askDistanceMiles": "{distance} mi",
+  "@askDistanceMiles": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "askDirectionsTo": "Directions to {name}",
+  "@askDirectionsTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNotReadyTitle": "The assistant isn't ready yet",
+  "askNotReadyBody": "Your phone is still setting it up, or it's turned off in your phone's settings. You can search the map in the meantime.",
+  "askLanguageTitle": "The assistant doesn't work in this language yet",
+  "askLanguageBody": "Your phone's assistant can't answer in this language. You can search the map instead.",
+  "askSearchMap": "Search the map",
+  "chipImmigrants": "Open to immigrants",
+  "askCrisisKeywords": "suicide|suicidal|kill myself|killing myself|end my life|want to die|hurt myself|harm myself|self harm|self-harm|overdose|can't go on|being abused|abusing me|hits me|unsafe at home|in danger|emergency|can't breathe|chest pain|heavy bleeding",
+  "askSearchedFor": "What I searched for",
+  "askNoneOpenNow": "None of these are open right now."
 }

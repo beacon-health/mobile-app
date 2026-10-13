@@ -1177,6 +1177,32 @@ class MapPageState extends State<MapPage>
     }
   }
 
+  /// Shows a search handed over from the Ask tab: its filters, around the
+  /// saved location — the same place Ask looked, wherever the map was
+  /// pointing before.
+  Future<void> applyFilters({
+    required Set<String> categories,
+    required bool openNow,
+    required Set<PreferenceRequirement> preferences,
+    required String searchText,
+  }) async {
+    if (!mounted) return;
+    setState(() {
+      _selectedCategories
+        ..clear()
+        ..addAll(categories);
+      _showOpenNowOnly = openNow;
+      _selectedPreferenceRequirements = {
+        for (final preference in preferences) preference: true,
+      };
+      _showFavoritesOnly = false;
+      _searchController.text = searchText;
+      _isPanelOpen = true;
+    });
+    // Clears any open card or row, reloads, and re-filters.
+    await recenterOnUserLocation();
+  }
+
   /// Undoes the innermost thing open on the map — the facility card, an
   /// expanded row, the raised list, or a search — and says whether there was
   /// one. Android's back button asks here before it leaves the tab.

@@ -377,5 +377,63 @@
   "settingsAppearanceSystem": "Igual que el dispositivo",
   "settingsAppearanceLight": "Claro",
   "settingsAppearanceDark": "Oscuro",
-  "commonNotSet": "Sin definir"
+  "commonNotSet": "Sin definir",
+  "navAsk": "Preguntar",
+  "askTitle": "Preguntar",
+  "askHeading": "¿Qué necesitas encontrar?",
+  "askSuggestionClinic": "Una clínica gratuita cerca de mí",
+  "askSuggestionTalk": "Alguien con quien hablar",
+  "askSuggestionFood": "Despensas de alimentos abiertas ahora",
+  "askSuggestionShelter": "Un lugar donde dormir esta noche",
+  "askCrisisNote": "En una emergencia, llama al 911. Si estás en crisis o piensas en el suicidio, llama o envía un mensaje de texto al 988.",
+  "askCrisisTitle": "Hay ayuda disponible ahora mismo",
+  "askCall911": "Llamar al 911",
+  "askCall988": "Llamar o escribir al 988",
+  "askInputLabel": "Pide un tipo de ayuda",
+  "askSend": "Enviar",
+  "askPrivacyFooter": "Funciona en este teléfono. Tus mensajes no se envían a ningún lugar.",
+  "askNewChat": "Nueva conversación",
+  "askThinking": "Buscando…",
+  "askFoundSummary": "{count, plural, =1{Encontré 1 lugar que coincide.} other{Encontré {count} lugares que coinciden. Estos son los más cercanos.}}",
+  "@askFoundSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "askAiNote": "La IA interpretó tu solicitud. Confirma los detalles con el lugar.",
+  "askShowOnMap": "Ver en el mapa",
+  "askOnlyOpenNow": "Solo abiertos ahora",
+  "askOpenMap": "Abrir el mapa",
+  "askOpenMapWithFilters": "Abrir el mapa con estos filtros",
+  "askHandoffUnclear": "No pude entender qué buscar. Intenta nombrar el tipo de ayuda que necesitas o busca en el mapa.",
+  "askHandoffNoResults": "No encontré nada cercano que coincida. En el mapa puedes buscar más lejos o cambiar los filtros.",
+  "askHandoffMedical": "No puedo dar consejos médicos. Puedo ayudarte a encontrar un lugar donde recibir atención, o puedes buscar en el mapa.",
+  "askHandoffOffTopic": "Solo puedo ayudarte a encontrar servicios en Beacon. Intenta pedir un tipo de ayuda o busca en el mapa.",
+  "askDistanceMiles": "{distance} mi",
+  "@askDistanceMiles": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "askDirectionsTo": "Cómo llegar a {name}",
+  "@askDirectionsTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNotReadyTitle": "El asistente aún no está listo",
+  "askNotReadyBody": "Tu teléfono aún lo está preparando, o está desactivado en los ajustes del teléfono. Mientras tanto, puedes buscar en el mapa.",
+  "askLanguageTitle": "El asistente aún no funciona en este idioma",
+  "askLanguageBody": "El asistente de tu teléfono no puede responder en este idioma. Puedes buscar en el mapa.",
+  "askSearchMap": "Buscar en el mapa",
+  "chipImmigrants": "Abierto a inmigrantes",
+  "askCrisisKeywords": "suicidio|suicidarme|matarme|quitarme la vida|quiero morir|hacerme daño|lastimarme|autolesión|sobredosis|no puedo más|me maltrata|me golpea|me pega|abusa de mí|estoy en peligro|emergencia|no puedo respirar|dolor en el pecho",
+  "askSearchedFor": "Lo que busqué",
+  "askNoneOpenNow": "Ninguno de estos está abierto en este momento."
 }

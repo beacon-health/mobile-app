@@ -7,6 +7,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/features/ask/data/assistant_service.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
@@ -53,6 +54,9 @@ class BeaconApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<AccessibilitySettings>.value(
           value: AccessibilitySettings(),
+        ),
+        ChangeNotifierProvider<AssistantService>.value(
+          value: AssistantService(),
         ),
       ],
       child: Consumer2<LocaleProvider, ThemeModeProvider>(

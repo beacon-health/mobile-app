@@ -1,6 +1,8 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
+import 'package:beacon_app/features/ask/presentation/pages/ask_page.dart';
+import 'package:beacon_app/features/ask/presentation/widgets/ask_messages.dart';
 import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
@@ -17,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../helpers/app_shell.dart';
+import '../helpers/fake_assistant.dart';
 import '../helpers/pump_app.dart';
 import '../helpers/test_facility.dart';
 
@@ -165,6 +168,53 @@ void main() {
           expect(find.byType(FilterModal), findsOneWidget);
         });
       }
+
+      testWidgets('Ask fits: the start, an answer, and a hand-off',
+          (tester) async {
+        useTextScale(tester, scale);
+        await resetAppState(tester);
+        await saveLocation(home);
+        final model = await useAssistant();
+        await pumpAppShell(
+          tester,
+          repository: FakeFacilityRepository([busy]),
+          size: smallPhone,
+        );
+        await openTab(tester, 'Ask');
+
+        Future<void> ask(String text, String reply) async {
+          model.filtersReply = reply;
+          await tester.enterText(find.byType(TextField).last, text);
+          await tester.tap(find.byTooltip('Send'));
+          await settle(tester);
+        }
+
+        // A crisis card and a refusal, an answer with a card, a hand-off
+        // with its filters. Every one is laid out; an overflow fails the
+        // test.
+        // The list keeps its newest message in view; drag back through the
+        // conversation so everything above it is laid out too.
+        Future<void> scrollBackTo(Finder finder) async {
+          final list = find.descendant(
+            of: find.byType(AskPage),
+            matching: find.byType(ListView),
+          );
+          for (var i = 0; i < 40 && finder.evaluate().isEmpty; i++) {
+            await tester.drag(list, const Offset(0, 150));
+            await tester.pumpAndSettle();
+          }
+          expect(finder, findsOneWidget);
+        }
+
+        await ask('I want to die', '{"intent":"off_topic"}');
+        await scrollBackTo(find.byType(AskCrisisCard));
+
+        await ask('someone to talk to', '{"categories":["mental_health"]}');
+        await scrollBackTo(find.byType(AskFacilityCard));
+
+        await ask('a shelter', '{"categories":["housing"],"open_now":true}');
+        expect(find.byType(AskHandoff), findsWidgets);
+      });
 
       testWidgets('Home and Map fit, with a facility open', (tester) async {
         useTextScale(tester, scale);

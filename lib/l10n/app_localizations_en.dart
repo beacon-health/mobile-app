@@ -844,4 +844,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonNotSet => 'Not set';
+
+  @override
+  String get navAsk => 'Ask';
+
+  @override
+  String get askTitle => 'Ask';
+
+  @override
+  String get askHeading => 'What do you need help finding?';
+
+  @override
+  String get askSuggestionClinic => 'A free clinic near me';
+
+  @override
+  String get askSuggestionTalk => 'Someone to talk to';
+
+  @override
+  String get askSuggestionFood => 'Food pantries open now';
+
+  @override
+  String get askSuggestionShelter => 'A place to stay tonight';
+
+  @override
+  String get askCrisisNote =>
+      'In an emergency, call 911. If you\'re in crisis or thinking about suicide, call or text 988.';
+
+  @override
+  String get askCrisisTitle => 'Help is available right now';
+
+  @override
+  String get askCall911 => 'Call 911';
+
+  @override
+  String get askCall988 => 'Call or text 988';
+
+  @override
+  String get askInputLabel => 'Ask for a kind of help';
+
+  @override
+  String get askSend => 'Send';
+
+  @override
+  String get askPrivacyFooter =>
+      'Runs on this phone. Chats aren\'t sent anywhere.';
+
+  @override
+  String get askNewChat => 'New chat';
+
+  @override
+  String get askThinking => 'Looking…';
+
+  @override
+  String askFoundSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'I found $count places that match. Here are the nearest.',
+      one: 'I found 1 place that matches.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get askAiNote =>
+      'AI read your request. Check details with the facility.';
+
+  @override
+  String get askShowOnMap => 'Show on map';
+
+  @override
+  String get askOnlyOpenNow => 'Only open now';
+
+  @override
+  String get askOpenMap => 'Open the map';
+
+  @override
+  String get askOpenMapWithFilters => 'Open the map with these filters';
+
+  @override
+  String get askHandoffUnclear =>
+      'I couldn\'t work out what to search for. Try naming the kind of help you need, or search the map yourself.';
+
+  @override
+  String get askHandoffNoResults =>
+      'I didn\'t find anything nearby that matches. On the map you can look further away or change the filters.';
+
+  @override
+  String get askHandoffMedical =>
+      'I can\'t give medical advice. I can help you find a place to get care, or you can search the map.';
+
+  @override
+  String get askHandoffOffTopic =>
+      'I can only help you find services in Beacon. Try asking for a kind of help, or search the map.';
+
+  @override
+  String askDistanceMiles(String distance) {
+    return '$distance mi';
+  }
+
+  @override
+  String askDirectionsTo(String name) {
+    return 'Directions to $name';
+  }
+
+  @override
+  String get askNotReadyTitle => 'The assistant isn\'t ready yet';
+
+  @override
+  String get askNotReadyBody =>
+      'Your phone is still setting it up, or it\'s turned off in your phone\'s settings. You can search the map in the meantime.';
+
+  @override
+  String get askLanguageTitle =>
+      'The assistant doesn\'t work in this language yet';
+
+  @override
+  String get askLanguageBody =>
+      'Your phone\'s assistant can\'t answer in this language. You can search the map instead.';
+
+  @override
+  String get askSearchMap => 'Search the map';
+
+  @override
+  String get chipImmigrants => 'Open to immigrants';
+
+  @override
+  String get askCrisisKeywords =>
+      'suicide|suicidal|kill myself|killing myself|end my life|want to die|hurt myself|harm myself|self harm|self-harm|overdose|can\'t go on|being abused|abusing me|hits me|unsafe at home|in danger|emergency|can\'t breathe|chest pain|heavy bleeding';
+
+  @override
+  String get askSearchedFor => 'What I searched for';
+
+  @override
+  String get askNoneOpenNow => 'None of these are open right now.';
 }

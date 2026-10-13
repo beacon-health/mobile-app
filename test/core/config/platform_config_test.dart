@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:beacon_app/core/services/map_launcher_service.dart';
+import 'package:beacon_app/features/ask/data/assistant_model.dart';
+import 'package:beacon_app/features/ask/domain/ask_request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,6 +23,87 @@ void main() {
     expect(match, isNotNull, reason: '$key missing from Info.plist');
     return match!.group(1)!;
   }
+
+  group("the Ask tab's model bridge", () {
+    // The Dart side calls a method channel that each native project has to
+    // answer. Nothing fails to build if one of them stops: the Ask tab just
+    // disappears.
+    final channel = MethodChannelAssistantModel.channel.name;
+    final kotlin = File(
+      'android/app/src/main/kotlin/org/beaconhealth/app/AssistantBridge.kt',
+    ).readAsStringSync();
+    final swift = File('ios/Runner/AssistantBridge.swift').readAsStringSync();
+
+    test('both platforms answer on the channel Dart calls', () {
+      expect(kotlin, contains('"$channel"'));
+      expect(swift, contains('"$channel"'));
+    });
+
+    test('both platforms answer the same calls', () {
+      for (final method in ['availability', 'extractFilters']) {
+        expect(kotlin, contains('"$method"'), reason: 'Android: $method');
+        expect(swift, contains('"$method"'), reason: 'iOS: $method');
+      }
+    });
+
+    test('both platforms register the bridge at startup', () {
+      expect(
+        File('android/app/src/main/kotlin/org/beaconhealth/app/MainActivity.kt')
+            .readAsStringSync(),
+        contains('AssistantBridge.CHANNEL'),
+      );
+      expect(
+        File('ios/Runner/AppDelegate.swift').readAsStringSync(),
+        contains('AssistantBridge.register'),
+      );
+      // A Swift file outside the Xcode project compiles nowhere.
+      expect(
+        File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync(),
+        contains('AssistantBridge.swift in Sources'),
+      );
+    });
+
+    test('iOS returns every id the Dart parser accepts, and no others', () {
+      final ids = RegExp('return "([a-z_]+)"')
+          .allMatches(swift)
+          .map((m) => m.group(1)!)
+          .toSet();
+      final intents = RegExp('intentId = "([a-z_]+)"')
+          .allMatches(swift)
+          .map((m) => m.group(1)!)
+          .toSet();
+      // The four availability answers share the `return "…"` form.
+      const availability = {
+        'available',
+        'unsupported',
+        'unsupportedLanguage',
+        'notReady',
+      };
+      expect(
+        ids.difference(availability),
+        {...AskRequest.categoryIds.keys, ...AskRequest.needIds.keys},
+      );
+      expect(intents, AskRequest.intentIds.keys.toSet());
+    });
+
+    test('Android ships the model library below its own minimum SDK', () {
+      // The library is built for API 26; the app installs on 24. Without the
+      // override the build fails, and without the runtime check it would
+      // crash on Android 7.
+      expect(
+        manifest,
+        contains('tools:overrideLibrary="com.google.mlkit.genai.prompt'),
+      );
+      expect(kotlin, contains('Build.VERSION.SDK_INT < Build.VERSION_CODES.O'));
+    });
+
+    test('Android declares the one permission the model service needs', () {
+      expect(
+        File('android/permissions.txt').readAsStringSync(),
+        contains('com.google.android.apps.aicore.service.BIND_SERVICE'),
+      );
+    });
+  });
 
   group('Android', () {
     test('declares every map app the code looks for', () {

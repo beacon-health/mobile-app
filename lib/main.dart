@@ -8,6 +8,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/features/ask/data/assistant_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,6 +44,7 @@ void main() async {
   await EligibilityPreferencesService().init();
   await RecentFacilitiesService().init();
   await UserSettingsService.instance.init();
+  await AssistantService().init();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

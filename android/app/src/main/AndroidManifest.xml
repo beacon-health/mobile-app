@@ -17,6 +17,12 @@
         android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
         tools:node="remove" />
 
+    <!-- The on-device model library behind the Ask tab is built for Android
+         8 (API 26); Beacon still installs on 7. The override lets it ship,
+         and AssistantBridge never touches the library below 26, where the
+         Ask tab simply isn't offered. -->
+    <uses-sdk tools:overrideLibrary="com.google.mlkit.genai.prompt, com.google.mlkit.genai.common" />
+
     <!-- "Get directions" asks which map apps are installed. Since Android 11
          an app can only see the ones it declares here, so without these
          entries every map app reports as missing. Keep in step with
