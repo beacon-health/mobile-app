@@ -159,13 +159,12 @@ class _CreatePasskeyPageState extends State<CreatePasskeyPage> {
                   children: [
                     FilledButton(
                       onPressed: _busy ? null : _create,
-                      style: AppTheme.secondaryFilledButton(context),
                       child: _busy
                           ? SizedBox.square(
                               dimension: AppIconSize.md,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: scheme.onSecondary,
+                                color: scheme.onPrimary,
                               ),
                             )
                           : Text(l10n.passkeyCreate),

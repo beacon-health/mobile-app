@@ -391,5 +391,9 @@
   "passkeyNotNow": "Not now",
   "passkeyCreated": "Passkey created",
   "passkeyCreateFailed": "Couldn't create a passkey. Please try again.",
-  "profileAddPasskey": "Add a passkey"
+  "profileAddPasskey": "Add a passkey",
+  "brandTagline": "Healthcare made lighter.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

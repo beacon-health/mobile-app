@@ -855,4 +855,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profileAddPasskey => '添加通行密钥';
+
+  @override
+  String get brandTagline => '让就医更轻松。';
 }

@@ -893,4 +893,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAddPasskey => 'Add a passkey';
+
+  @override
+  String get brandTagline => 'Healthcare made lighter.';
 }

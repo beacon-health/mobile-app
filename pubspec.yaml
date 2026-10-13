@@ -45,6 +45,7 @@ flutter:
 
   assets:
     - assets/beacon-logo.png
+    - assets/beacon-logo-dark.png
     - assets/google-g-logo.png
     - assets/map_styles/
 

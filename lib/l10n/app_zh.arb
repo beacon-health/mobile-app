@@ -391,5 +391,9 @@
   "passkeyNotNow": "暂不",
   "passkeyCreated": "通行密钥已创建",
   "passkeyCreateFailed": "无法创建通行密钥，请重试。",
-  "profileAddPasskey": "添加通行密钥"
+  "profileAddPasskey": "添加通行密钥",
+  "brandTagline": "让就医更轻松。",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

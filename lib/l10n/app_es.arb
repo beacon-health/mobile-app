@@ -391,5 +391,9 @@
   "passkeyNotNow": "Ahora no",
   "passkeyCreated": "Llave de acceso creada",
   "passkeyCreateFailed": "No se pudo crear la llave de acceso. Inténtalo de nuevo.",
-  "profileAddPasskey": "Agregar una llave de acceso"
+  "profileAddPasskey": "Agregar una llave de acceso",
+  "brandTagline": "Atención médica más llevadera.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

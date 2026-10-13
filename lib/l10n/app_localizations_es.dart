@@ -904,4 +904,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileAddPasskey => 'Agregar una llave de acceso';
+
+  @override
+  String get brandTagline => 'Atención médica más llevadera.';
 }
