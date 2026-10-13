@@ -28,10 +28,46 @@ import 'package:beacon_app/features/map/presentation/widgets/filters/components/
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
+import 'package:beacon_app/features/map/utils/map_geometry.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+
+/// What a back press undoes on the map, innermost layer first.
+enum MapBackTarget {
+  /// The single-facility card opened from a marker.
+  facilityCard,
+
+  /// A list row expanded in place.
+  expandedRow,
+
+  /// The list pulled up to full height.
+  expandedPanel,
+
+  /// Text in the search field.
+  searchText,
+
+  /// Nothing is open; the press belongs to whoever is above the map.
+  nothing,
+}
+
+/// Which layer a back press closes, given what is open: whatever covers the
+/// most goes first. A card sits on top of everything; a raised list hides the
+/// map and is lowered before the search that filled it is thrown away, so one
+/// press never costs both the view and the typed text.
+MapBackTarget mapBackTarget({
+  required bool cardOpen,
+  required bool rowExpanded,
+  required bool hasSearchText,
+  required bool panelFullyExpanded,
+}) {
+  if (cardOpen) return MapBackTarget.facilityCard;
+  if (rowExpanded) return MapBackTarget.expandedRow;
+  if (panelFullyExpanded) return MapBackTarget.expandedPanel;
+  if (hasSearchText) return MapBackTarget.searchText;
+  return MapBackTarget.nothing;
+}
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -45,13 +81,44 @@ class MapPageState extends State<MapPage>
         AutomaticKeepAliveClientMixin,
         TickerProviderStateMixin,
         WidgetsBindingObserver {
+  static const CameraPosition _initialCamera = CameraPosition(
+    target: LatLng(
+      MapConstants.defaultLatitude,
+      MapConstants.defaultLongitude,
+    ),
+    zoom: MapConstants.defaultZoom,
+  );
+
+  /// Slack allowed when asking "is the camera still where the focus put it?"
+  static const double _focusTolerancePx = 24;
+  static const double _focusToleranceZoom = 0.25;
+
+  /// Margin kept around a cluster's members when the camera zooms to fit them.
+  static const double _clusterFitPadding = 56;
+
+  /// Closest the camera goes when fitting a cluster a few doors wide.
+  static const double _clusterFitMaxZoom = 19;
+
+  /// The least map kept in play when a tall sheet covers nearly all of it.
+  static const double _minVisibleStrip = 80;
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _chromeKey = GlobalKey();
   GoogleMapController? _googleMapController;
   bool _isMapCreated = false;
   List<Facility> _allFacilities = [];
   List<Facility> _filteredFacilities = [];
+
+  /// What the list panel shows: the filtered facilities on screen, nearest
+  /// the middle of the map first. Markers still draw all of
+  /// [_filteredFacilities].
+  List<Facility> _listFacilities = [];
+
+  /// The map's last reported view, or null while it isn't known — before the
+  /// map exists, or while the camera travels to a newly loaded area.
+  LatLngBounds? _visibleBounds;
 
   bool _isPanelOpen = false;
   bool _isFullyExpanded = false;
@@ -70,8 +137,9 @@ class MapPageState extends State<MapPage>
   bool _singleCardExpanded = false;
   Facility? _selectedFacility;
   late final FacilityRepositoryBase _facilityRepository;
+  late final FacilityProvider _facilityProvider;
   bool _isLoading = true;
-  String? _error;
+  bool _loadFailed = false;
   final Set<Marker> _markers = {};
   double _currentZoom = MapConstants.defaultZoom;
   double _previousZoom = MapConstants.defaultZoom;
@@ -84,6 +152,10 @@ class MapPageState extends State<MapPage>
   Timer? _markerUpdateDebounce;
   bool _isUpdatingMarkers = false;
 
+  /// A marker refresh was asked for while one was running. Dropping it left
+  /// the map showing clusters from a zoom level it had already left.
+  bool _markerUpdateQueued = false;
+
   late String _currentLocation;
   Brightness? _lastBrightness;
 
@@ -94,9 +166,14 @@ class MapPageState extends State<MapPage>
   double _currentLatitude = MapConstants.defaultLatitude;
   double _currentLongitude = MapConstants.defaultLongitude;
 
-  /// Whether the OS has already granted GPS permission; controls the blue
-  /// user-location dot. Re-checked after each prompt or external change.
+  /// Whether the OS has already granted GPS permission. Re-checked after each
+  /// prompt or external change.
   bool _locationGranted = false;
+
+  /// Whether the user chose GPS over a ZIP. The blue dot shows only when both
+  /// this and [_locationGranted] hold: someone who switched to a ZIP has said
+  /// they don't want to be located, permission or not.
+  bool _gpsMode = false;
 
   /// Center the facility list was last queried around, plus the live camera
   /// target. When the two drift apart, the "Search this area" button appears
@@ -106,6 +183,23 @@ class MapPageState extends State<MapPage>
   bool _showSearchAreaButton = false;
   bool _isSearchingArea = false;
 
+  /// The camera as the map last reported it.
+  CameraPosition _camera = _initialCamera;
+
+  /// Set while a facility holds the camera's attention (card open, or a list
+  /// row expanded): where the camera was beforehand, and where the focus put
+  /// it. Releasing the facility returns to the first — unless the user has
+  /// since moved the map away from the second, in which case it stays put.
+  CameraPosition? _cameraBeforeFocus;
+  CameraPosition? _focusCamera;
+
+  /// The focus animation is still running, so [_camera] can't yet be compared
+  /// with [_focusCamera].
+  bool _focusInFlight = false;
+
+  /// Size of the map itself, in logical pixels.
+  Size _mapSize = Size.zero;
+
   /// Facility to center on once the map finishes creating — set when the user
   /// taps a Home Favorite before the map controller exists (first navigation).
   Facility? _pendingFacility;
@@ -113,7 +207,8 @@ class MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
-    _facilityRepository = FacilityRepository();
+    _facilityRepository = context.read<FacilityRepositoryBase>();
+    _facilityProvider = context.read<FacilityProvider>();
 
     final zipService = ZipCodeService();
     _currentLatitude = zipService.latitude;
@@ -121,6 +216,7 @@ class MapPageState extends State<MapPage>
     _currentLocation = zipService.zipCode?.isNotEmpty == true
         ? zipService.zipCode!
         : ZipCodeService.currentLocationSentinel;
+    _gpsMode = zipService.locationSearchEnabled;
 
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -131,10 +227,11 @@ class MapPageState extends State<MapPage>
     _isPanelOpen = true;
     _searchFocusNode.addListener(_onSearchFocusChange);
 
-    // AutomaticKeepAlive means initState runs once, so both of these must be
-    // listened to or Map drifts from Settings and Profile.
+    // AutomaticKeepAlive means initState runs once, so each of these must be
+    // listened to or Map drifts from Settings, Profile, and the favorites.
     zipService.addListener(_onZipServiceChanged);
     EligibilityPreferencesService().addListener(_onEligibilityChanged);
+    _facilityProvider.addListener(_onFavoritesChanged);
   }
 
   void _onZipServiceChanged() {
@@ -144,20 +241,24 @@ class MapPageState extends State<MapPage>
         : ZipCodeService.currentLocationSentinel;
     final newLat = zipService.latitude;
     final newLng = zipService.longitude;
+    final gpsMode = zipService.locationSearchEnabled;
 
     final coordsChanged =
         newLat != _currentLatitude || newLng != _currentLongitude;
     final labelChanged = newLabel != _currentLocation;
-    if (!coordsChanged && !labelChanged) return;
+    final modeChanged = gpsMode != _gpsMode;
+    if (!coordsChanged && !labelChanged && !modeChanged) return;
 
     if (!mounted) return;
     setState(() {
       _currentLocation = newLabel;
       _currentLatitude = newLat;
       _currentLongitude = newLng;
+      _gpsMode = gpsMode;
     });
 
     if (coordsChanged) {
+      _forgetFocus();
       unawaited(_loadFacilities());
       final controller = _googleMapController;
       if (controller != null) {
@@ -223,11 +324,17 @@ class MapPageState extends State<MapPage>
         setState(() {
           _isKeyboardVisible = false;
         });
+        // Android's back button hides the keyboard but leaves the field
+        // focused, and a focused search pins the list at its default height
+        // where it can't be raised or scrolled. Once the keyboard is gone,
+        // the typing is over.
+        if (_searchFocusNode.hasFocus) _searchFocusNode.unfocus();
       }
     });
   }
 
   void _onSearchFocusChange() {
+    final closesCard = _searchFocusNode.hasFocus && _showSingleFacility;
     setState(() {
       if (_searchFocusNode.hasFocus) {
         if (_showSingleFacility) {
@@ -241,6 +348,7 @@ class MapPageState extends State<MapPage>
       }
       _isSearchActive = _searchFocusNode.hasFocus;
     });
+    if (closesCard) _releaseFocus();
   }
 
   @override
@@ -256,6 +364,7 @@ class MapPageState extends State<MapPage>
     WidgetsBinding.instance.removeObserver(this);
     ZipCodeService().removeListener(_onZipServiceChanged);
     EligibilityPreferencesService().removeListener(_onEligibilityChanged);
+    _facilityProvider.removeListener(_onFavoritesChanged);
     _disposeMapController();
     _markerUpdateDebounce?.cancel();
     _markerIconCache.clear();
@@ -301,23 +410,31 @@ class MapPageState extends State<MapPage>
         if (_pendingFacility != null) {
           final pending = _pendingFacility!;
           _pendingFacility = null;
-          await _animateToFacility(pending);
+          await _focusOn(
+            pending.location,
+            minZoom: MapConstants.markerZoom,
+            sheetHeight: _singleCardSheetHeight(),
+          );
         } else if (_currentLatitude != MapConstants.defaultLatitude ||
             _currentLongitude != MapConstants.defaultLongitude) {
-          controller.animateCamera(
-            CameraUpdate.newLatLngZoom(
-              LatLng(_currentLatitude, _currentLongitude),
-              MapConstants.detailZoom,
+          unawaited(
+            controller.animateCamera(
+              CameraUpdate.newLatLngZoom(
+                LatLng(_currentLatitude, _currentLongitude),
+                MapConstants.detailZoom,
+              ),
             ),
           );
         } else if (_allFacilities.isNotEmpty) {
-          controller.animateCamera(
-            CameraUpdate.newLatLngZoom(
-              LatLng(
-                _allFacilities.first.location.latitude,
-                _allFacilities.first.location.longitude,
+          unawaited(
+            controller.animateCamera(
+              CameraUpdate.newLatLngZoom(
+                LatLng(
+                  _allFacilities.first.location.latitude,
+                  _allFacilities.first.location.longitude,
+                ),
+                MapConstants.defaultZoom,
               ),
-              MapConstants.defaultZoom,
             ),
           );
         }
@@ -332,15 +449,14 @@ class MapPageState extends State<MapPage>
   }
 
   Future<void> _loadFacilities() async {
-    final facilityProvider = context.read<FacilityProvider>();
-
     // Deliberately no provider-cache short-circuit: `facilities` holds the
     // current region, not everything, so each location change must re-query.
     setState(() {
       _isLoading = true;
-      _error = null;
+      _loadFailed = false;
       _markers.clear();
-      _filteredFacilities.clear();
+      _filteredFacilities = [];
+      _listFacilities = [];
     });
 
     final queryCenter = LatLng(_currentLatitude, _currentLongitude);
@@ -360,15 +476,26 @@ class MapPageState extends State<MapPage>
       );
 
       if (mounted) {
-        facilityProvider.setFacilities(facilities);
+        _facilityProvider.setFacilities(facilities);
 
         setState(() {
-          _allFacilities = facilities;
+          // A copy: the provider edits its list in place when favorites
+          // change, and this page needs to see those edits as changes.
+          _allFacilities = List.of(facilities);
+          _applyFavoriteFlags();
           _isLoading = false;
           _lastQueryCenter = queryCenter;
           _showSearchAreaButton = false;
+          // The camera may still be on its way here. Until it settles and
+          // reports its view, list everything that came back rather than
+          // filtering against wherever the map was.
+          final bounds = _visibleBounds;
+          if (bounds != null && !bounds.contains(queryCenter)) {
+            _visibleBounds = null;
+          }
         });
         _filterFacilities();
+        unawaited(_syncListToViewport(mustContain: queryCenter));
       }
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
@@ -378,7 +505,7 @@ class MapPageState extends State<MapPage>
       );
       if (mounted) {
         setState(() {
-          _error = 'Failed to load facilities. Please try again.';
+          _loadFailed = true;
           _isLoading = false;
         });
       }
@@ -393,6 +520,7 @@ class MapPageState extends State<MapPage>
     if (latitude == null || longitude == null) return;
     final isCurrent = displayName == ZipCodeService.currentLocationSentinel;
 
+    _forgetFocus();
     setState(() {
       _currentLatitude = latitude;
       _currentLongitude = longitude;
@@ -467,7 +595,7 @@ class MapPageState extends State<MapPage>
 
     const radiusMeters = MapConstants.defaultRadiusMiles * 1609.34;
     final thresholdMeters = (radiusMeters * 0.35).clamp(300.0, 40000.0);
-    final drifted = _distanceMeters(last, center) > thresholdMeters;
+    final drifted = MapGeometry.distanceMeters(last, center) > thresholdMeters;
 
     if (drifted != _showSearchAreaButton) {
       setState(() => _showSearchAreaButton = drifted);
@@ -480,8 +608,10 @@ class MapPageState extends State<MapPage>
     final center = _mapCenter;
     if (center == null || _isSearchingArea) return;
 
+    _forgetFocus();
     setState(() {
       _isSearchingArea = true;
+      _expandedFacilityId = null;
       _currentLatitude = center.latitude;
       _currentLongitude = center.longitude;
       _currentLocation = MapConstants.mapAreaSentinel;
@@ -494,80 +624,333 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  double _distanceMeters(LatLng a, LatLng b) {
-    const earthRadius = 6371000.0;
-    final dLat = (b.latitude - a.latitude) * math.pi / 180;
-    final dLng = (b.longitude - a.longitude) * math.pi / 180;
-    final lat1 = a.latitude * math.pi / 180;
-    final lat2 = b.latitude * math.pi / 180;
-    final h = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(lat1) *
-            math.cos(lat2) *
-            math.sin(dLng / 2) *
-            math.sin(dLng / 2);
-    return earthRadius * 2 * math.atan2(math.sqrt(h), math.sqrt(1 - h));
+  // --- Keeping the list, the camera, and the selection in step -------------
+
+  /// Runs whenever the camera comes to rest, whoever moved it.
+  void _onCameraIdle() {
+    _focusInFlight = false;
+    if ((_previousZoom - _currentZoom).abs() > 0.1) {
+      _previousZoom = _currentZoom;
+      _updateMarkers();
+    }
+    _maybeShowSearchAreaButton();
+
+    // The list is hidden behind the card; it re-syncs when the card closes.
+    if (_showSingleFacility) return;
+
+    if (_expandedFacilityId != null) {
+      // The expanded row's own camera move ends here, and the list must not
+      // reshuffle under the row the user just opened.
+      if (_isCameraAtFocus()) return;
+      // Anything else was the user moving the map: the row gives way.
+      setState(() => _expandedFacilityId = null);
+      _forgetFocus();
+    }
+    unawaited(_syncListToViewport());
   }
 
-  /// Zooms in toward a tapped cluster; the camera-idle handler then re-clusters
-  /// (or breaks the cluster into individual markers past the zoom threshold).
-  Future<void> _onClusterTap(LatLng center) async {
+  /// Reads the map's view and narrows the list to it. With [mustContain], it
+  /// does nothing unless the view already shows that point — used after a
+  /// load, when the camera may still be travelling to the new area.
+  Future<void> _syncListToViewport({LatLng? mustContain}) async {
+    final controller = _googleMapController;
+    if (controller == null || !mounted) return;
+    try {
+      final bounds = await controller.getVisibleRegion();
+      if (!mounted) return;
+      // A map that hasn't been laid out yet reports an empty region.
+      if (bounds.northeast == bounds.southwest) return;
+      if (mustContain != null && !bounds.contains(mustContain)) return;
+      _visibleBounds = bounds;
+      _rebuildList();
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._syncListToViewport',
+      );
+    }
+  }
+
+  /// Recomputes the list from the filtered facilities and the map's view.
+  void _rebuildList() {
+    final bounds = _visibleBounds;
+    final isGuest = context.read<GuestModeService>().isGuest;
+    // A text search, or the Favorites filter, asks about the whole loaded
+    // area, so those matches list even when they're off screen.
+    final asksAboutWholeArea = _searchController.text.trim().isNotEmpty ||
+        (_showFavoritesOnly && !isGuest);
+
+    final next = FacilityFilterService.nearestFirst(
+      _filteredFacilities,
+      center:
+          bounds == null ? null : _mapCenter ?? MapGeometry.centerOf(bounds),
+      within: asksAboutWholeArea ? null : bounds,
+    );
+
+    final reordered = next.length != _listFacilities.length ||
+        Iterable<int>.generate(next.length)
+            .any((i) => next[i].id != _listFacilities[i].id);
+    setState(() => _listFacilities = next);
+    // A list that changed under the user starts from its top.
+    if (reordered && _scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  /// The band of the map, top to bottom in logical pixels, left visible
+  /// between the search chrome and a bottom sheet [sheetHeight] tall.
+  ({double top, double bottom}) _visibleStrip(double sheetHeight) {
+    final top = _chromeBottom();
+    return (
+      top: top,
+      bottom: math.max(top + _minVisibleStrip, _mapSize.height - sheetHeight),
+    );
+  }
+
+  /// Bottom edge of the search bar and filter chips, measured from the top of
+  /// the map.
+  double _chromeBottom() {
+    final chrome = _chromeKey.currentContext?.findRenderObject();
+    final map = context.findRenderObject();
+    if (chrome is! RenderBox || map is! RenderBox || !chrome.hasSize) {
+      return MapConstants.searchBarAreaHeight;
+    }
+    return chrome
+        .localToGlobal(Offset(0, chrome.size.height), ancestor: map)
+        .dy;
+  }
+
+  double _listPanelHeight() => FacilityListPanel.heightFor(
+        MediaQuery.of(context),
+        isPanelOpen: _isPanelOpen,
+        isFullyExpanded: _isFullyExpanded,
+        isSearchActive: _isSearchActive,
+      );
+
+  /// Height the single-facility card takes at its default size, margins
+  /// included.
+  double _singleCardSheetHeight() =>
+      MediaQuery.of(context).size.height *
+          MapConstants.singleCardDefaultHeightRatio +
+      2 * AppSpacing.lg;
+
+  /// Where the camera must point, at [zoom], for [point] to sit in the middle
+  /// of the strip a sheet [sheetHeight] tall leaves visible.
+  LatLng _targetShowing(LatLng point, double zoom, double sheetHeight) {
+    if (_mapSize.height <= 0) return point;
+    final strip = _visibleStrip(sheetHeight);
+    return MapGeometry.targetShowing(
+      point,
+      zoom: zoom,
+      pixelsAboveCenter: _mapSize.height / 2 - (strip.top + strip.bottom) / 2,
+    );
+  }
+
+  /// Gives [point] the camera's attention: centers it in the visible strip,
+  /// zooming in to at least [minZoom], and remembers where the camera was so
+  /// [_releaseFocus] can go back.
+  Future<void> _focusOn(
+    LatLng point, {
+    required double minZoom,
+    required double sheetHeight,
+  }) async {
     final controller = _googleMapController;
     if (controller == null) return;
-    final target = (_currentZoom + 2).clamp(3.0, 18.0);
-    await controller.animateCamera(
-      CameraUpdate.newLatLngZoom(center, target),
-    );
+
+    try {
+      // Moving between facilities keeps the original starting point.
+      _cameraBeforeFocus ??= _camera;
+      final zoom = math.max(_camera.zoom, minZoom);
+      final focus = CameraPosition(
+        target: _targetShowing(point, zoom, sheetHeight),
+        zoom: zoom,
+      );
+      _focusCamera = focus;
+      _focusInFlight = true;
+      await controller.animateCamera(CameraUpdate.newCameraPosition(focus));
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._focusOn',
+      );
+    }
+  }
+
+  bool _isCameraAtFocus() {
+    final focus = _focusCamera;
+    if (focus == null) return false;
+    if (_focusInFlight) return true;
+    if ((focus.zoom - _camera.zoom).abs() > _focusToleranceZoom) return false;
+    final tolerance = _focusTolerancePx *
+        MapGeometry.metersPerPixel(_camera.target.latitude, _camera.zoom);
+    return MapGeometry.distanceMeters(focus.target, _camera.target) <=
+        tolerance;
+  }
+
+  /// Ends a facility's hold on the camera. If the camera is still where the
+  /// focus left it, it returns to where it was beforehand; if the user has
+  /// moved the map since, it stays where they put it.
+  void _releaseFocus() {
+    final before = _cameraBeforeFocus;
+    final shouldRestore = before != null && _isCameraAtFocus();
+    _forgetFocus();
+
+    final controller = _googleMapController;
+    if (shouldRestore && controller != null) {
+      // The list re-syncs when this move comes to rest.
+      unawaited(
+        controller.animateCamera(CameraUpdate.newCameraPosition(before)),
+      );
+    } else {
+      unawaited(_syncListToViewport());
+    }
+  }
+
+  /// Drops any remembered camera without moving the map — for when the map is
+  /// about to go somewhere else entirely.
+  void _forgetFocus() {
+    _cameraBeforeFocus = null;
+    _focusCamera = null;
+    _focusInFlight = false;
+  }
+
+  /// Zooms until a tapped cluster's members stand apart, framed in the part
+  /// of the map the list leaves visible. When the camera comes to rest the
+  /// markers redraw and the list narrows to what is on screen: the cluster.
+  Future<void> _onClusterTap(List<Facility> members) async {
+    final controller = _googleMapController;
+    final bounds = MapGeometry.boundsOf(members.map((f) => f.location));
+    if (controller == null || bounds == null) return;
+
+    final center = MapGeometry.centerOf(bounds);
+    final sheetHeight = _listPanelHeight();
+    final strip = _visibleStrip(sheetHeight);
+
+    // Members at one address can't be separated by framing them; they need
+    // the zoom at which their pins fan out.
+    final sameAddress =
+        MapGeometry.distanceMeters(bounds.southwest, bounds.northeast) < 1;
+    var zoom = sameAddress
+        ? MarkerManagementService.fanOutRevealZoom(center.latitude)
+        : math.min(
+            MapGeometry.zoomToFit(
+              bounds,
+              Size(
+                math.max(1, _mapSize.width - 2 * _clusterFitPadding),
+                math.max(
+                  1,
+                  strip.bottom - strip.top - 2 * _clusterFitPadding,
+                ),
+              ),
+            ),
+            _clusterFitMaxZoom,
+          );
+    // Always make visible progress, even when the members already fit.
+    zoom = math.max(zoom, _currentZoom + 1);
+
+    _forgetFocus();
+    try {
+      await controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _targetShowing(center, zoom, sheetHeight),
+            zoom: zoom,
+          ),
+        ),
+      );
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._onClusterTap',
+      );
+    }
   }
 
   /// Eligibility gates auto-applied to search from the user's Profile. Empty
   /// when the parent "apply to search" toggle is off, so nothing is filtered.
-  Map<EligibilityRequirement, bool?> _eligibilityFilter() {
-    final e = EligibilityPreferencesService().eligibility;
-    if (!e.applyToSearch) return const {};
-    return {
-      if (e.proofOfIncome) EligibilityRequirement.proofOfIncome: true,
-      if (e.proofOfResidency) EligibilityRequirement.proofOfResidency: true,
-      if (e.insuranceRequired) EligibilityRequirement.insuranceRequired: true,
-      if (e.referralRequired) EligibilityRequirement.referralRequired: true,
-    };
-  }
-
   /// Re-runs filtering when the user edits eligibility on the Profile tab
   /// (this map stays alive in the IndexedStack, so it must react explicitly).
   void _onEligibilityChanged() {
     if (mounted) _filterFacilities();
   }
 
+  /// Favorites arrive after the facilities they belong to, and from a
+  /// provider this page doesn't rebuild on. Fold the hearts in when they land;
+  /// without this the Favorites filter could come up empty.
+  void _onFavoritesChanged() {
+    if (!mounted || _isLoading) return;
+    if (_applyFavoriteFlags()) _filterFacilities();
+  }
+
+  /// Sets each loaded facility's heart from the provider's favorite ids.
+  /// Returns whether anything changed.
+  bool _applyFavoriteFlags() {
+    final favoriteIds = _facilityProvider.favoriteIds;
+    var changed = false;
+    for (var i = 0; i < _allFacilities.length; i++) {
+      final facility = _allFacilities[i];
+      final isFavorite = favoriteIds.contains(facility.id);
+      if (facility.isFavorite != isFavorite) {
+        _allFacilities[i] = facility.copyWith(isFavorite: isFavorite);
+        changed = true;
+      }
+    }
+
+    final selected = _selectedFacility;
+    if (selected != null &&
+        selected.isFavorite != favoriteIds.contains(selected.id)) {
+      _selectedFacility = selected.copyWith(isFavorite: !selected.isFavorite);
+      changed = true;
+    }
+    return changed;
+  }
+
   void _filterFacilities() {
-    setState(() {
-      _filteredFacilities = FacilityFilterService.filterFacilities(
-        _allFacilities,
-        searchText: _searchController.text,
-        selectedCategories: _selectedCategories,
-        selectedEligibilityRequirements: _eligibilityFilter(),
-        selectedPreferenceRequirements: _selectedPreferenceRequirements,
-        showFavoritesOnly: _showFavoritesOnly,
-        showOpenNowOnly: _showOpenNowOnly,
-      );
-      _updateMarkers();
-    });
+    // Guests have no favorites, no preference filters and no eligibility
+    // answers; ignoring any stale state here means none of them can ever
+    // hide a facility from someone who can't change it.
+    final isGuest = context.read<GuestModeService>().isGuest;
+    _filteredFacilities = FacilityFilterService.filterFacilities(
+      _allFacilities,
+      searchText: _searchController.text,
+      selectedCategories: _selectedCategories,
+      selectedEligibilityRequirements: isGuest
+          ? const {}
+          : FacilityFilterService.eligibilityGates(
+              EligibilityPreferencesService().eligibility,
+            ),
+      selectedPreferenceRequirements:
+          isGuest ? const {} : _selectedPreferenceRequirements,
+      showFavoritesOnly: _showFavoritesOnly && !isGuest,
+      showOpenNowOnly: _showOpenNowOnly,
+    );
+    _rebuildList();
+    _updateMarkers();
   }
 
   Future<void> _updateMarkers() async {
-    if (!mounted || _googleMapController == null || _isUpdatingMarkers) return;
+    if (!mounted || _googleMapController == null) return;
+    if (_isUpdatingMarkers) {
+      // Run again once the current pass finishes, with the zoom of that
+      // moment — not the one this request was made at.
+      _markerUpdateQueued = true;
+      return;
+    }
     _markerUpdateDebounce?.cancel();
 
     _markerUpdateDebounce = Timer(const Duration(milliseconds: 100), () async {
-      if (!mounted) return;
+      if (!mounted || _googleMapController == null) return;
       _isUpdatingMarkers = true;
 
       try {
         final zoom = await _googleMapController!.getZoomLevel();
+        if (!mounted) return;
         setState(() {
           _currentZoom = zoom;
         });
-
-        if (!mounted) return;
 
         final newMarkers = await MarkerManagementService.createMarkersClustered(
           _filteredFacilities,
@@ -594,6 +977,10 @@ class MapPageState extends State<MapPage>
         );
       } finally {
         _isUpdatingMarkers = false;
+        if (_markerUpdateQueued) {
+          _markerUpdateQueued = false;
+          unawaited(_updateMarkers());
+        }
       }
     });
   }
@@ -611,7 +998,7 @@ class MapPageState extends State<MapPage>
 
   /// Slides the single-facility card down, then clears it — the animated
   /// counterpart of [_dismissSingleFacilityView], used for user gestures
-  /// (swipe-down handle, map tap) so the collapse is smooth.
+  /// (swipe-down handle, map tap, back) so the collapse is smooth.
   void _dismissSingleFacilityAnimated({bool showPanel = false}) {
     if (!_showSingleFacility || _cardDismissing) return;
     setState(() => _cardDismissing = true);
@@ -622,69 +1009,23 @@ class MapPageState extends State<MapPage>
   }
 
   void _dismissSingleFacilityView({bool showPanel = true}) {
-    if (_showSingleFacility) {
-      setState(() {
-        _showSingleFacility = false;
-        _cardDismissing = false;
-        _singleCardExpanded = false;
-        _selectedFacility = null;
-        _isPanelOpen = showPanel;
-        _isFullyExpanded = false;
-      });
-    }
-  }
-
-  Future<void> _animateToFacility(Facility facility) async {
-    if (_googleMapController == null) return;
-
-    try {
-      final screenHeight = MediaQuery.of(context).size.height;
-      final cardHeight = screenHeight * 0.6;
-      const searchBarHeight = MapConstants.searchBarAreaHeight;
-      const filterBarHeight = 60.0;
-      final visibleMapHeight =
-          screenHeight - cardHeight - searchBarHeight - filterBarHeight;
-      final targetY = searchBarHeight + filterBarHeight + visibleMapHeight;
-
-      final currentZoom = await _googleMapController!.getZoomLevel();
-      final targetZoom = currentZoom < MapConstants.markerZoom
-          ? MapConstants.markerZoom
-          : currentZoom;
-
-      final metersPerPixel = 156543.03392 *
-          math.cos(facility.location.latitude * math.pi / 180) /
-          math.pow(2, targetZoom);
-
-      final offsetPixels = (screenHeight / 2) - targetY;
-      final offsetMeters = offsetPixels * metersPerPixel;
-      final offsetDegrees = offsetMeters / 111320;
-
-      final adjustedTarget = LatLng(
-        facility.location.latitude - offsetDegrees,
-        facility.location.longitude,
-      );
-
-      await _googleMapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: adjustedTarget,
-            zoom: targetZoom,
-          ),
-        ),
-      );
-    } catch (e, stackTrace) {
-      ErrorReporter.instance.report(
-        e,
-        stackTrace,
-        context: 'MapPage._animateToFacility',
-      );
-    }
+    if (!_showSingleFacility) return;
+    setState(() {
+      _showSingleFacility = false;
+      _cardDismissing = false;
+      _singleCardExpanded = false;
+      _selectedFacility = null;
+      _isPanelOpen = showPanel;
+      _isFullyExpanded = false;
+    });
+    _releaseFocus();
   }
 
   Future<void> _showFacilityDetails(Facility facility) async {
     try {
       setState(() {
         _showSingleFacility = true;
+        _cardDismissing = false;
         _singleCardExpanded = false;
         _selectedFacility = facility;
         _isPanelOpen = false;
@@ -694,7 +1035,11 @@ class MapPageState extends State<MapPage>
 
       context.read<RecentFacilitiesService>().addFacility(facility);
 
-      await _animateToFacility(facility);
+      await _focusOn(
+        facility.location,
+        minZoom: MapConstants.markerZoom,
+        sheetHeight: _singleCardSheetHeight(),
+      );
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,
@@ -718,6 +1063,7 @@ class MapPageState extends State<MapPage>
     final values = FacilityCategories.isGroup(category)
         ? FacilityCategories.valuesForGroup(category)
         : [category];
+    final hadCard = _showSingleFacility;
     setState(() {
       _selectedCategories
         ..clear()
@@ -725,7 +1071,10 @@ class MapPageState extends State<MapPage>
       _searchController.clear();
       _showSingleFacility = false;
       _selectedFacility = null;
+      _expandedFacilityId = null;
+      if (hadCard) _isPanelOpen = true;
     });
+    _forgetFocus();
     _filterFacilities();
   }
 
@@ -748,6 +1097,7 @@ class MapPageState extends State<MapPage>
     final lat = zipService.latitude;
     final lng = zipService.longitude;
     if (!mounted) return;
+    _forgetFocus();
     setState(() {
       _currentLatitude = lat;
       _currentLongitude = lng;
@@ -756,6 +1106,7 @@ class MapPageState extends State<MapPage>
           : ZipCodeService.currentLocationSentinel;
       _showSingleFacility = false;
       _selectedFacility = null;
+      _expandedFacilityId = null;
     });
     await _loadFacilities();
     final controller = _googleMapController;
@@ -769,12 +1120,42 @@ class MapPageState extends State<MapPage>
     }
   }
 
+  /// Undoes the innermost thing open on the map — the facility card, an
+  /// expanded row, the raised list, or a search — and says whether there was
+  /// one. Android's back button asks here before it leaves the tab.
+  bool handleBack() {
+    // Android hides the keyboard on its own first, which can leave the field
+    // focused with nothing showing; drop that focus without spending a press.
+    if (_searchFocusNode.hasFocus) _searchFocusNode.unfocus();
+
+    switch (mapBackTarget(
+      cardOpen: _showSingleFacility,
+      rowExpanded: _expandedFacilityId != null,
+      hasSearchText: _searchController.text.isNotEmpty,
+      panelFullyExpanded: _isFullyExpanded,
+    )) {
+      case MapBackTarget.facilityCard:
+        _dismissSingleFacilityAnimated(showPanel: true);
+      case MapBackTarget.expandedRow:
+        _toggleFacilityExpansion(_expandedFacilityId!);
+      case MapBackTarget.expandedPanel:
+        setState(() => _isFullyExpanded = false);
+      case MapBackTarget.searchText:
+        _searchController.clear();
+        _filterFacilities();
+      case MapBackTarget.nothing:
+        return false;
+    }
+    return true;
+  }
+
   Widget _buildFilterBar() {
     final isGuest = context.read<GuestModeService>().isGuest;
     return FilterBar(
       selectedCategories: _selectedCategories,
-      selectedPreferenceRequirements: _selectedPreferenceRequirements,
-      showFavoritesOnly: _showFavoritesOnly,
+      selectedPreferenceRequirements:
+          isGuest ? const {} : _selectedPreferenceRequirements,
+      showFavoritesOnly: _showFavoritesOnly && !isGuest,
       showOpenNowOnly: _showOpenNowOnly,
       isGuestMode: isGuest,
       onFavoritesTap: isGuest
@@ -860,36 +1241,36 @@ class MapPageState extends State<MapPage>
 
   void _toggleFavoritesFilter() {
     _dismissSingleFacilityView();
-    setState(() {
-      _showFavoritesOnly = !_showFavoritesOnly;
-      _filterFacilities();
-    });
+    setState(() => _showFavoritesOnly = !_showFavoritesOnly);
+    _filterFacilities();
   }
 
   void _toggleOpenNowFilter() {
     _dismissSingleFacilityView();
-    setState(() {
-      _showOpenNowOnly = !_showOpenNowOnly;
-      _filterFacilities();
-    });
+    setState(() => _showOpenNowOnly = !_showOpenNowOnly);
+    _filterFacilities();
   }
 
   Future<void> _showFilterModal({FilterSection? expandedSection}) async {
+    final isGuest = context.read<GuestModeService>().isGuest;
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => FilterModal(
+      builder: (sheetContext) => FilterModal(
         selectedCategories: _selectedCategories,
         availableCategories: FacilityCategories.categoryBroadValues,
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
         expandedSection: expandedSection,
+        isGuest: isGuest,
+        onLockedTap: () => showSignInPromptDialog(sheetContext),
       ),
     );
 
     if (result != null && mounted) {
+      final hadCard = _showSingleFacility;
       setState(() {
         if (_showSingleFacility) {
           _showSingleFacility = false;
@@ -905,6 +1286,7 @@ class MapPageState extends State<MapPage>
         _showFavoritesOnly = result['showFavoritesOnly'] as bool;
         _showOpenNowOnly = result['showOpenNowOnly'] as bool;
       });
+      if (hadCard) _releaseFocus();
       _filterFacilities();
     }
   }
@@ -944,48 +1326,33 @@ class MapPageState extends State<MapPage>
   void _toggleFacilityExpansion(String facilityId) {
     final isOpening = _expandedFacilityId != facilityId;
     setState(() {
-      if (_expandedFacilityId == facilityId) {
-        _expandedFacilityId = null;
-      } else {
-        _expandedFacilityId = facilityId;
-      }
+      _expandedFacilityId = isOpening ? facilityId : null;
     });
 
-    if (!isOpening) return;
+    if (!isOpening) {
+      // Back to the view the user had before opening the row.
+      _releaseFocus();
+      return;
+    }
 
     final facility =
         _allFacilities.where((f) => f.id == facilityId).firstOrNull;
     if (facility != null) {
       context.read<RecentFacilitiesService>().addFacility(facility);
-      _googleMapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(
+      unawaited(
+        _focusOn(
           facility.location,
-          MapConstants.listExpandZoom,
+          minZoom: MapConstants.listExpandZoom,
+          sheetHeight: _listPanelHeight(),
         ),
       );
     }
   }
 
+  /// The provider flips the heart and notifies; [_onFavoritesChanged] carries
+  /// the change into this page's lists.
   void _toggleFavorite(String facilityId) {
-    final facilityProvider = context.read<FacilityProvider>();
-    facilityProvider.toggleFavorite(facilityId);
-
-    setState(() {
-      _allFacilities = facilityProvider.facilities;
-
-      final filteredIndex =
-          _filteredFacilities.indexWhere((f) => f.id == facilityId);
-      if (filteredIndex != -1) {
-        final updatedFacility = facilityProvider.getFacilityById(facilityId);
-        if (updatedFacility != null) {
-          _filteredFacilities[filteredIndex] = updatedFacility;
-        }
-      }
-
-      if (_showFavoritesOnly) {
-        _filterFacilities();
-      }
-    });
+    _facilityProvider.toggleFavorite(facilityId);
   }
 
   Future<void> _launchUrl(String url) async {
@@ -1004,8 +1371,7 @@ class MapPageState extends State<MapPage>
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            AppLocalizations.of(context)?.mapLoadFailed ??
-                (_error ?? 'An error occurred'),
+            AppLocalizations.of(context)!.mapLoadFailed,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -1022,7 +1388,7 @@ class MapPageState extends State<MapPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_error != null) {
+    if (_loadFailed) {
       return _buildError();
     }
 
@@ -1030,109 +1396,105 @@ class MapPageState extends State<MapPage>
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              style: _mapStyle,
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(
-                  MapConstants.defaultLatitude,
-                  MapConstants.defaultLongitude,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          _mapSize = constraints.biggest;
+          return Stack(
+            children: [
+              RepaintBoundary(
+                child: GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  style: _mapStyle,
+                  initialCameraPosition: _initialCamera,
+                  markers: _markers,
+                  onCameraMove: (CameraPosition position) {
+                    _camera = position;
+                    _currentZoom = position.zoom;
+                    _mapCenter = position.target;
+                  },
+                  onCameraIdle: _onCameraIdle,
+                  onTap: _onMapTap,
+                  myLocationEnabled: _locationGranted && _gpsMode,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapToolbarEnabled: false,
                 ),
-                zoom: MapConstants.defaultZoom,
               ),
-              markers: _markers,
-              onCameraMove: (CameraPosition position) {
-                _currentZoom = position.zoom;
-                _mapCenter = position.target;
-              },
-              onCameraIdle: () {
-                if ((_previousZoom - _currentZoom).abs() > 0.1) {
-                  _previousZoom = _currentZoom;
-                  _updateMarkers();
-                }
-                _maybeShowSearchAreaButton();
-              },
-              onTap: _onMapTap,
-              myLocationEnabled: _locationGranted,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: AppRadii.pillAll,
-                      boxShadow: AppShadows.raised,
-                    ),
-                    child: FacilitySearch(
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                      onChanged: _filterFacilities,
-                      onClear: _filterFacilities,
-                      onUseMyLocation: _useMyLocation,
-                      isLocatingUser: _isLocatingUser,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _buildFilterBar(),
-                  _buildSearchAreaButton(),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _isKeyboardVisible
-                ? const SizedBox.shrink()
-                : _showSingleFacility
-                    ? _buildSingleFacilityCard()
-                    : FacilityListPanel(
-                        facilities: _filteredFacilities,
-                        scrollController: _scrollController,
-                        isLoading: _isLoading,
-                        isPanelOpen: _isPanelOpen,
-                        isFullyExpanded: _isFullyExpanded,
-                        isSearchActive: _isSearchActive,
-                        expandedFacilityId: _expandedFacilityId,
-                        onToggleFacilityExpansion: _toggleFacilityExpansion,
-                        onToggleFavorite: _toggleFavorite,
-                        onLaunchUrl: _launchUrl,
-                        buildCategoryIcon:
-                            FacilityCategoryIcons.buildCategoryIcon,
-                        canFavorite: !isGuest,
-                        onRequestFacility: _onRequestFacility,
-                        onRateFacility: _onRateFacility,
-                        onCorrectFacility: _onCorrectFacility,
-                        onPanelStateChange: (isPanelOpen, isFullyExpanded) {
-                          setState(() {
-                            _isPanelOpen = isPanelOpen;
-                            _isFullyExpanded = isFullyExpanded;
-                          });
-                        },
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Column(
+                    key: _chromeKey,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardTheme.color,
+                          borderRadius: AppRadii.pillAll,
+                          boxShadow: AppShadows.raised,
+                        ),
+                        child: FacilitySearch(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onChanged: _filterFacilities,
+                          onClear: _filterFacilities,
+                          onUseMyLocation: _useMyLocation,
+                          isLocatingUser: _isLocatingUser,
+                        ),
                       ),
-          ),
-        ],
+                      const SizedBox(height: AppSpacing.xs),
+                      _buildFilterBar(),
+                      _buildSearchAreaButton(),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _isKeyboardVisible
+                    ? const SizedBox.shrink()
+                    : _showSingleFacility
+                        ? _buildSingleFacilityCard()
+                        : FacilityListPanel(
+                            facilities: _listFacilities,
+                            totalMatches: _filteredFacilities.length,
+                            scrollController: _scrollController,
+                            isLoading: _isLoading,
+                            isPanelOpen: _isPanelOpen,
+                            isFullyExpanded: _isFullyExpanded,
+                            isSearchActive: _isSearchActive,
+                            expandedFacilityId: _expandedFacilityId,
+                            onToggleFacilityExpansion: _toggleFacilityExpansion,
+                            onToggleFavorite: _toggleFavorite,
+                            onLaunchUrl: _launchUrl,
+                            buildCategoryIcon:
+                                FacilityCategoryIcons.buildCategoryIcon,
+                            canFavorite: !isGuest,
+                            onRequestFacility: _onRequestFacility,
+                            onRateFacility: _onRateFacility,
+                            onCorrectFacility: _onCorrectFacility,
+                            onPanelStateChange: (isPanelOpen, isFullyExpanded) {
+                              setState(() {
+                                _isPanelOpen = isPanelOpen;
+                                _isFullyExpanded = isFullyExpanded;
+                              });
+                            },
+                          ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1190,15 +1552,7 @@ class MapPageState extends State<MapPage>
               facility: _selectedFacility!,
               isExpanded: true,
               onToggleExpand: () {},
-              onToggleFavorite: () {
-                _toggleFavorite(_selectedFacility!.id);
-                setState(() {
-                  _selectedFacility = _allFacilities.firstWhere(
-                    (f) => f.id == _selectedFacility!.id,
-                    orElse: () => _selectedFacility!,
-                  );
-                });
-              },
+              onToggleFavorite: () => _toggleFavorite(_selectedFacility!.id),
               onLaunchUrl: _launchUrl,
               buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
               showExpandButton: false,

@@ -3,7 +3,7 @@ description: Find free and low-cost healthcare and social services near you.
 
 publish_to: "none"
 
-version: 1.0.0+1000
+version: 1.1.0+1000
 
 environment:
   sdk: ^3.6.0
@@ -16,8 +16,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   geocoding: ^4.0.0
-  geolocator: ^10.1.0
-  google_maps_flutter: ^2.17.0
+  geolocator: ^14.1.1
+  google_maps_flutter: ^2.18.2
   google_sign_in: ^7.2.0
   http: ^1.2.2
   intl: ^0.20.2
@@ -27,13 +27,14 @@ dependencies:
   sentry_flutter: ^9.6.0
   shared_preferences: ^2.5.5
   sign_in_with_apple: ^8.2.0
-  supabase_flutter: ^2.12.2
-  url_launcher: ^6.1.11
+  supabase_flutter: ^2.18.0
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
+  google_maps_flutter_platform_interface: ^2.16.0
   sentry_dart_plugin: ^3.4.0
   very_good_analysis: ^11.0.0
 

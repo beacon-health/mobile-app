@@ -14,6 +14,8 @@ extension EligibilityRequirementL10n on EligibilityRequirement {
         return l10n.eligInsuranceRequired;
       case EligibilityRequirement.referralRequired:
         return l10n.eligReferralRequired;
+      case EligibilityRequirement.acceptsMedicaid:
+        return l10n.eligAcceptsMedicaid;
     }
   }
 }

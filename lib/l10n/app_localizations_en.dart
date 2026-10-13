@@ -389,8 +389,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t delete your account. Please try again.';
 
   @override
-  String get coverageNotice =>
-      'Beacon currently shows facilities in Illinois. We\'re adding more states over time.';
+  String coverageNotice(String states) {
+    return 'Beacon currently shows facilities in $states. We\'re adding more states over time.';
+  }
 
   @override
   String get profileTitle => 'Profile';
@@ -450,7 +451,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locationChoiceEnterZip => 'Enter Zip Code';
 
   @override
-  String get locationChoiceEnterZipDesc => 'Search by ZIP code in the US.';
+  String get locationChoiceEnterZipDesc => 'Search by ZIP code.';
 
   @override
   String get locationCurrentLocation => 'Current Location';
@@ -598,4 +599,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cardCorrectionPromptAction => 'Submit corrections here';
+
+  @override
+  String zipOutsideCoverage(String states) {
+    return 'Beacon isn\'t available in that area yet. It currently covers $states.';
+  }
+
+  @override
+  String stateName(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'AL': 'Alabama',
+        'AK': 'Alaska',
+        'AZ': 'Arizona',
+        'AR': 'Arkansas',
+        'CA': 'California',
+        'CO': 'Colorado',
+        'CT': 'Connecticut',
+        'DE': 'Delaware',
+        'DC': 'Washington, D.C.',
+        'FL': 'Florida',
+        'GA': 'Georgia',
+        'GU': 'Guam',
+        'HI': 'Hawaii',
+        'ID': 'Idaho',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'IA': 'Iowa',
+        'KS': 'Kansas',
+        'KY': 'Kentucky',
+        'LA': 'Louisiana',
+        'ME': 'Maine',
+        'MD': 'Maryland',
+        'MA': 'Massachusetts',
+        'MI': 'Michigan',
+        'MN': 'Minnesota',
+        'MS': 'Mississippi',
+        'MO': 'Missouri',
+        'MT': 'Montana',
+        'NE': 'Nebraska',
+        'NV': 'Nevada',
+        'NH': 'New Hampshire',
+        'NJ': 'New Jersey',
+        'NM': 'New Mexico',
+        'NY': 'New York',
+        'NC': 'North Carolina',
+        'ND': 'North Dakota',
+        'OH': 'Ohio',
+        'OK': 'Oklahoma',
+        'OR': 'Oregon',
+        'PA': 'Pennsylvania',
+        'PR': 'Puerto Rico',
+        'RI': 'Rhode Island',
+        'SC': 'South Carolina',
+        'SD': 'South Dakota',
+        'TN': 'Tennessee',
+        'TX': 'Texas',
+        'UT': 'Utah',
+        'VT': 'Vermont',
+        'VA': 'Virginia',
+        'VI': 'U.S. Virgin Islands',
+        'WA': 'Washington',
+        'WV': 'West Virginia',
+        'WI': 'Wisconsin',
+        'WY': 'Wyoming',
+        'other': '$code',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listTwo(String first, String second) {
+    return '$first and $second';
+  }
+
+  @override
+  String listTwoBeforeI(String first, String second) {
+    return '$first and $second';
+  }
+
+  @override
+  String listMany(String rest, String last) {
+    return '$rest, and $last';
+  }
+
+  @override
+  String listManyBeforeI(String rest, String last) {
+    return '$rest, and $last';
+  }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String mapResourcesInView(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resources in this area',
+      one: '1 resource in this area',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapNothingInView => 'Nothing in this part of the map';
+
+  @override
+  String get mapNothingInViewHint => 'Zoom out or move the map to see more.';
+
+  @override
+  String get eligAcceptsMedicaid => 'Accepts Medicaid';
+
+  @override
+  String get chipMedicaid => 'Medicaid';
+
+  @override
+  String get cardIncomeLimit => 'Income limit';
+
+  @override
+  String get cardServiceArea => 'Service area';
+
+  @override
+  String get labelSeparator => ': ';
+
+  @override
+  String get correctionFieldClosed => 'Permanently closed';
+
+  @override
+  String get correctionFieldClosedHint =>
+      'Turn this on if the location has shut down for good.';
+
+  @override
+  String get requestTypeClosure => 'Reported closed';
 }

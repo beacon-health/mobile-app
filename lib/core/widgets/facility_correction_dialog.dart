@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/facility_request_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/utils/phone_format.dart';
 import 'package:beacon_app/core/widgets/dialog_text_field.dart';
@@ -7,7 +8,6 @@ import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Modal for submitting corrections to [facility], pre-filled with current
 /// values. Lands in `facility_requests` as `request_type = 'correction'`.
@@ -44,6 +44,10 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
 
   bool _isSubmitting = false;
 
+  /// The user is reporting the facility as permanently closed. The detail
+  /// fields stop mattering then, so they lock.
+  bool _reportedClosed = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +62,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
       text: f.hours.isEmpty ? '' : f.hoursDisplay,
     );
     _addressController = TextEditingController(
-      text: f.address == 'Address not available' ? '' : f.address,
+      text: f.hasAddress ? f.address : '',
     );
   }
 
@@ -75,7 +79,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (Supabase.instance.client.auth.currentUser?.id == null) {
+    if (GuestModeService().isGuest) {
       _showSnack(
         AppLocalizations.of(context)!.requestSignInRequired,
         isError: true,
@@ -93,6 +97,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
         phone: _phoneController.text,
         hours: _hoursController.text,
         address: _addressController.text,
+        reportedClosed: _reportedClosed,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -111,6 +116,8 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
       _showSnack(msg, isError: true);
     }
   }
+
+  bool get _fieldsEnabled => !_isSubmitting && !_reportedClosed;
 
   void _showSnack(String message, {bool isError = false}) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -145,31 +152,41 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
                       ),
                 ),
               ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.correctionFieldClosed),
+                subtitle: Text(l10n.correctionFieldClosedHint),
+                value: _reportedClosed,
+                onChanged: _isSubmitting
+                    ? null
+                    : (value) => setState(() => _reportedClosed = value),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _nameController,
                 label: l10n.correctionFieldName,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _websiteController,
                 label: l10n.correctionFieldWebsite,
                 keyboardType: TextInputType.url,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _phoneController,
                 label: l10n.correctionFieldPhone,
                 keyboardType: TextInputType.phone,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _hoursController,
                 label: l10n.correctionFieldHours,
                 maxLines: 2,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _addressController,
                 label: l10n.correctionFieldAddress,
                 maxLines: 2,

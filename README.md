@@ -4,15 +4,16 @@ A Flutter app that helps people find free and low-cost healthcare and
 social-services facilities near them — clinics, mental health and addiction
 services, housing and shelter, food assistance, and more.
 
-The facility dataset is nationwide (~144k geocoded facilities), but the public
-launch is **gated to one state at a time** (Illinois first) via a server-side
-allow-list, so new states go live with a single SQL `insert` and no app release.
+The facility dataset is nationwide (~144k geocoded facilities), but only
+**launched states** are served. A server-side allow-list gates the data, and the
+app reads the same list to name the covered states and to check ZIP codes, so a
+new state goes live with a single SQL `insert` and no app release.
 
 | | |
 |---|---|
-| **Platform** | iOS on the App Store; Android on Google Play (launch in progress) |
+| **Platform** | iOS (App Store) and Android (Google Play) |
 | **Flutter / Dart** | 3.47.0 stable / 3.13.0 (SDK constraint `^3.6.0`) |
-| **Android toolchain** | Gradle 8.14.5 · AGP 8.11.1 · Kotlin 2.2.20 — Flutter's current minimums; the AGP 9 migration is still open |
+| **Android toolchain** | Gradle 8.14.5 · AGP 8.11.1 · Kotlin 2.2.20 |
 | **Backend** | Supabase — Postgres + PostGIS, RLS, native Sign in with Apple (iOS) / Google (Android) |
 | **State management** | `provider` + `ChangeNotifier` singletons |
 | **Maps** | `google_maps_flutter` (Maps SDK for iOS and for Android — separate keys) |
@@ -100,7 +101,7 @@ lib/
     constants/                 Routes, legal URLs
     services/                  App-wide singletons (see "Key services")
     theme/                     Design tokens + AppTheme (see design/README.md)
-    utils/                     Formatting helpers
+    utils/                     Formatting, ZIP → state lookup, coverage text
     widgets/                   Shared dialogs, sign-in button, gates
   features/
     auth/                      Onboarding, login, ZIP entry, AuthGate
@@ -110,20 +111,23 @@ lib/
       data/                    Repository + Supabase facility service
       domain/models/           Facility, eligibility, hours
       presentation/            Map page, filters, cards, markers
+      utils/                   Map geometry, category icons
     profile/                   Profile tab (account, ratings, eligibility)
     settings/                  Settings, "Your Ratings", "Your Requests"
   l10n/                        ARB files (en/es/zh) + generated localizations
 test/                          Unit, widget, and golden tests mirroring lib/
+  helpers/                     Fake map, fake data source, app-shell harness
 design/                        Design-system guide + generated token export
-tool/                          Repo scripts (e.g. adopting golden renders from CI)
+tool/                          Repo scripts: golden adoption, Claude Design bundle
 ```
 
 ### Architecture at a glance
 
-**Entry flow:** `AuthGate` → `OnboardingPage` → `LoginPage` (Apple on iOS, Google on Android, or guest) →
-`LocationChoicePage` (GPS or ZIP) → eligibility step (signed-in only) →
-`MainNavBar`. Returning users go straight to `MainNavBar`; the
-`hasCompletedOnboarding` flag in `SharedPreferences` decides.
+**Entry flow:** `AuthGate` → `LoginPage` (Apple on iOS, Google on Android, or
+guest) → `LocationChoicePage` (GPS, or a ZIP on `ZipEntryPage`) →
+`EligibilityOnboardingPage` (signed-in only) → `MainNavBar`. Returning users go
+straight to `MainNavBar`; the `hasCompletedOnboarding` flag in
+`SharedPreferences` decides.
 
 **Guest mode is a first-class state.** `GuestModeService.isGuest` is derived
 from the Supabase session. Guests can browse, search, and get directions;
@@ -132,16 +136,50 @@ Favorites, ratings, requests, and the whole Profile tab are gated by checking
 that writes to Supabase, gate it — RLS will reject anonymous writes anyway, and
 a sign-in prompt is a far better experience than a silent failure.
 
+**Coverage follows the database.** `CoverageService` reads `launched_states`
+(cached on device, refreshed at startup and before a ZIP is turned away). The
+ZIP gate in `ZipCodeService.setZipCode` and the `CoverageNotice` text both come
+from it, so never hardcode a state name or a list of states. A ZIP's state
+comes from its three-digit prefix (`ZipState`), which needs no network.
+
 **Facility queries are server-side and bounded.** `SupabaseFacilityService`
 calls the PostGIS `facilities_near` RPC with a lat/lng + radius, capped at 250
 rows, with a quantized per-region in-memory cache. The map deliberately **does
 not auto-query on pan** — the user taps "Search this area". Don't reintroduce
-load-everything-and-filter-on-device; the table is far too large for it.
+load-everything-and-filter-on-device; the table is far too large for it. Home
+and Map read the repository from a `Provider<FacilityRepositoryBase>`, which is
+also how tests hand them a fake.
+
+**The list follows the map.** The list panel shows the loaded facilities that
+are on screen, nearest the middle of the map first, and re-syncs whenever the
+camera comes to rest — client-side, with no query. A text search or the
+Favorites filter lists every match in the loaded area instead. Selecting a
+facility remembers the camera and deselecting returns to it, unless the user
+moved the map in between. Facilities that share an address stay a count bubble
+until the zoom at which their fanned-out pins can be told apart
+(`MarkerManagementService.groupForZoom`).
+
+**Eligibility switches only ever hide what a person can't use.** The rule is
+`FacilityFilterService.eligibilityGates`. The four "required" switches (proof
+of income, proof of residency, insurance, referral) say what the person can
+provide: left off, facilities that require it are hidden; switched on, they
+are shown along with everything else. Medicaid runs the other way — only
+switching it on filters, hiding places known not to accept it. A facility with
+no answer on file always passes, and guests, who can't reach the switches, are
+never filtered.
 
 **Nav pages live in an `IndexedStack`** and keep state alive, so `initState`
 runs once. Pages that must react to changes made elsewhere (Settings editing the
-ZIP, Profile editing eligibility) subscribe to the relevant service in
-`initState` and re-filter on notify.
+ZIP, Profile editing eligibility, favorites finishing their load) subscribe to
+the relevant service in `initState` and re-filter on notify.
+
+**Tabs and map overlays are not routes, so Android's back button is handled by
+hand.** `MainNavBar` wraps the shell in a `PopScope`: back first asks
+`MapPageState.handleBack()` to close the innermost thing open on the map
+(facility card, expanded row, raised list, search text — the order lives in
+`mapBackTarget`), then returns to Home, and only leaves the app from Home.
+Dialogs, sheets, and pushed pages are routes and pop on their own. Anything new
+that opens over a tab without being a route must be added to that chain.
 
 ### Key services
 
@@ -150,17 +188,18 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 
 | Service | Responsibility |
 |---|---|
-| `GuestModeService` | Tracks signed-in vs guest from the Supabase session |
+| `GuestModeService` | Signed-in vs guest, and the current user, from the Supabase session |
+| `CoverageService` | Which states are live, from `launched_states`; drives the ZIP gate and coverage notice |
 | `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
 | `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
-| `ZipCodeService` | ZIP ↔ coordinates, GPS toggle, onboarding flag |
-| `EligibilityPreferencesService` | Eligibility gates + map preferences; auto-applies to search |
+| `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
+| `EligibilityPreferencesService` | Eligibility answers (income, residency, insurance, referral, Medicaid) + map preferences; auto-applies to search |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |
-| `FacilityRequestService` | New-facility requests and correction submissions |
+| `FacilityRequestService` | New-facility requests, corrections, and "permanently closed" reports |
 | `RecentFacilitiesService` | Last 3 viewed facilities, persisted locally |
-| `MapLauncherService` | Directions chooser (Apple / Google / Waze) + remembered choice |
+| `MapLauncherService` | Directions chooser + remembered choice. Apple Maps, Google Maps, Waze on iOS; Google Maps, Waze on Android |
 | `ErrorReporter` | `developer.log` in debug, Sentry in release |
 
 **Error handling convention:** never `print` or `debugPrint`. Every catch site
@@ -176,7 +215,17 @@ rule lives (unit-tested), and every sign-in surface uses `NativeSignInButton`.
 Google needs the **Web** OAuth client ID as the `GOOGLE_WEB_CLIENT_ID`
 dart-define (also listed first under Client IDs on the Supabase Google
 provider), plus an **Android** OAuth client in Google Cloud for
-`org.beaconhealth.app` carrying the SHA-1 of every key that signs a build.
+`org.beaconhealth.app` for every key that signs a build people run: debug,
+upload, and Play's app-signing key. The Android Maps key restriction needs the
+same SHA-1s.
+
+**Platform differences live in one function each** and take the platform as an
+argument so both can be tested: `nativeSignInProviderFor` for sign-in,
+`MapLauncherService.appsFor` / `probeUri` / `directionsUri` for map apps. A map
+app's URL scheme must also be declared natively — `<queries>` in
+`AndroidManifest.xml`, `LSApplicationQueriesSchemes` in `Info.plist` — or the OS
+reports it as not installed; `test/core/config/platform_config_test.dart`
+checks the two stay in step.
 
 ---
 
@@ -189,12 +238,22 @@ Supabase Postgres with PostGIS. The app talks to:
 | `FCT_Supabase` | Facility master table (geocoded, `geom` + GiST index) |
 | `DM_Supabase_Eligibility` | Per-facility eligibility attributes |
 | `fct_supabase_full` | View joining the two — used for favorites and single-facility lookups by id |
-| `facilities_near(...)` | PostGIS RPC — bounded, distance-sorted proximity search; enforces the state allow-list |
-| `launched_states` | Allow-list gating which states are live |
+| `facilities_near(...)` | PostGIS RPC — bounded, distance-sorted proximity search; enforces the state allow-list. Must return the same facility and eligibility columns as the view |
+| `launched_states` | Allow-list of live states (`ALL` = nationwide). Enforced by the RPC and read by the app |
 | `user_favorites`, `user_settings`, `facility_feedback`, `facility_requests` | Per-user data, all protected by owner-only RLS |
 
 Every user table has RLS with `using (auth.uid() = user_id)` **and** a matching
 `with check` clause — omitting `with check` makes inserts fail with a 42501.
+
+`facility_requests` holds new-facility requests and corrections
+(`request_type`); a correction with `reported_closed = true` is a user saying
+the facility has permanently closed.
+
+**Launching a state** is one statement, and the app follows without a release:
+
+```sql
+insert into public.launched_states (state_code) values ('OK');
+```
 
 **Categories** come from `category_broad` (13 values, the filter dimension) and
 `category_detail` (21 values, searchable). `FacilityCategories` is the single
@@ -237,7 +296,9 @@ a token, regenerate the Claude Design export:
 flutter test test/design_tokens_test.dart --update-goldens
 ```
 
-The full guide is in [`design/README.md`](design/README.md).
+The full guide is in [`design/README.md`](design/README.md). The Claude Design
+project is built from these tokens with `dart run tool/build_design_bundle.dart`
+(see [`.design-sync/NOTES.md`](.design-sync/NOTES.md)).
 
 ### Localization
 
@@ -262,8 +323,23 @@ Tests live in `test/`, mirroring `lib/`. Use `createTestFacility(...)` from
 `Facility` objects, and `pumpThemed(...)` from `test/helpers/pump_app.dart` to
 render widgets with the real theme, localizations, and providers.
 
-- **Unit tests** cover services, models, filtering, and the category taxonomy.
-- **Widget tests** cover the shared design components and the facility card.
+- **Unit tests** cover services, models, filtering, map geometry, marker
+  grouping, and the category taxonomy.
+- **Widget tests** cover the shared components, the facility card and list
+  panel, the dialogs, Settings, Profile, and the first-run flow.
+- **Shell tests** run the real `MainNavBar` — Home, Map, Profile, Settings —
+  over a fake map and a fake data source: Android back in every state, the
+  list following the map, cluster taps, selection, location changes, guest
+  locks, eligibility. `pumpAppShell` and `FakeFacilityRepository` are in
+  `test/helpers/app_shell.dart`; `FakeGoogleMaps`
+  (`test/helpers/fake_google_maps.dart`) stands in for the Maps SDK and lets a
+  test move the camera or tap a marker. `pressBack(tester)` presses Android's
+  back button.
+- **Guard tests** fail CI on drift that no build catches:
+  `test/core/config/platform_config_test.dart` (native manifest and plist
+  entries the Dart code relies on), `test/l10n_lint_test.dart` (the three ARB
+  files agree; no sentence-like string literal outside them), and
+  `test/design_system_lint_test.dart` (no hardcoded styles).
 - **Golden tests** (`test/goldens/`) snapshot the component gallery, the
   facility card, and the onboarding, login, settings, and guest-profile
   screens in light and dark. Screens without platform-specific pieces render
@@ -279,43 +355,20 @@ render widgets with the real theme, localizations, and providers.
   tool/update_goldens_from_ci.sh
   ```
 
-Plugins are faked through their method channels (see
-`test/features/map/presentation/services/`), so no mocking packages are
-needed; `mockPlatformServices()` stubs the ones screens touch on first build.
+Plugins are faked through their method channels (see `resetAppState` in
+`test/helpers/app_shell.dart`), so no mocking packages are needed;
+`mockPlatformServices()` stubs the ones screens touch on first build. Run a
+test on both platforms with `variant: TargetPlatformVariant.only(...)` or
+`shippingPlatforms`.
 
-Home and Map aren't widget-tested yet: they need Google Maps and a Supabase
-client, which the app doesn't inject.
+Tests draw every glyph as a full-width block, about twice as wide as the real
+typeface, so a row that fits on a phone can overflow in a test; give such a
+test a wider surface.
+
+Not covered by any automated test: the native sign-in sheets, and anything
+that depends on how a store build is signed (see "Releasing").
 
 ---
-
-## Android release signing
-
-Release builds are signed with an **upload key** read from `android/key.properties`
-(gitignored). Without that file, release builds fall back to debug keys — they
-run locally but **cannot be uploaded to Play**.
-
-Create the keystore once, outside the repo, and back it up somewhere durable;
-losing it means going through Google's upload-key reset:
-
-```bash
-keytool -genkeypair -v -keystore ~/keystores/beacon-upload.jks \
-  -alias upload -keyalg RSA -keysize 2048 -validity 10000
-```
-
-Then create `android/key.properties`:
-
-```properties
-storePassword=<password>
-keyPassword=<password>
-keyAlias=upload
-storeFile=/Users/<you>/keystores/beacon-upload.jks
-```
-
-With Play App Signing, Google re-signs releases with its own app-signing key.
-Add the SHA-1 of **every** key that signs a build people run — debug, upload,
-and Play's app-signing key (Play Console → App integrity) — to both the Android
-Maps key restriction and the Android OAuth client, or maps and Google sign-in
-fail on those builds.
 
 ## CI/CD
 
@@ -342,12 +395,13 @@ access so Xcode can create the distribution certificate and provisioning profile
 at build time. The build number is `1000 + github.run_number`, so uploads never
 collide.
 
-Android releases are signed in CI from secrets, because the keystore and
-`android/key.properties` are gitignored: the workflow rebuilds both, then deletes them.
-Play uploads authenticate with **Workload Identity Federation** rather than a
+Android releases are signed in CI with the upload key, rebuilt from secrets
+because the keystore and `android/key.properties` are gitignored; the workflow
+deletes both afterwards. A local release build without `android/key.properties`
+falls back to debug keys: it runs, but can't be uploaded to Play. Play uploads
+authenticate with **Workload Identity Federation** rather than a
 service-account key — GitHub's OIDC token is exchanged for short-lived Google
-credentials, so nothing long-lived is stored. (Key creation is also blocked by
-the `iam.disableServiceAccountKeyCreation` org policy.)
+credentials, so nothing long-lived is stored.
 
 Required GitHub secrets:
 
@@ -361,40 +415,26 @@ Required GitHub secrets:
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
 
-Setting federation up once, from `gcloud` (project **ID** `beacon-health`; the
-`principalSet` member uses the project **number** `336940310100`):
+---
 
-```bash
-gcloud iam workload-identity-pools create github --location=global
-gcloud iam workload-identity-pools providers create-oidc beacon-mobile-app \
-  --location=global --workload-identity-pool=github \
-  --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
-  --attribute-condition="assertion.repository=='beacon-health/mobile-app'"
-gcloud iam service-accounts create beacon-play-publisher
-gcloud iam service-accounts add-iam-policy-binding \
-  beacon-play-publisher@beacon-health.iam.gserviceaccount.com \
-  --role=roles/iam.workloadIdentityUser \
-  --member="principalSet://iam.googleapis.com/projects/336940310100/locations/global/workloadIdentityPools/github/attribute.repository/beacon-health/mobile-app"
-```
+## Releasing
 
-> The member path is `attribute.repository` — **singular**. `attributes.repository`
-> fails with `INVALID_ARGUMENT: Invalid principalSet member`, which reads like a
-> problem with the repository name rather than the spelling.
-
-The `--attribute-condition` is not optional in spirit: without it, any GitHub
-repository could mint tokens for this service account.
-
-> Play rejects the **first** upload of a new app over the API — that one has to
-> go through the Play Console by hand. The workflow handles every build after.
+1. Bump `version` in `pubspec.yaml`.
+2. Merge the release PRs in one sitting; the last merge's builds land on
+   TestFlight and Play's internal track.
+3. **Smoke-test the store-installed builds** before promoting them. Play
+   re-signs with its own key and TestFlight builds use the release SDK, so
+   these only show up there: sign in, check that map tiles load, open
+   directions, and on Android press back from each tab.
+4. Promote, then launch any new state with the `launched_states` insert under
+   "Backend".
 
 ---
 
 ## Monitoring
 
-Crashes and errors go to **Sentry**: org `beacon-health-technologies`, project
-`beacon`. Only release builds report; debug builds log through
-`developer.log`. A commit message containing `Fixes BEACON-<n>` resolves that
+Crashes and errors go to **Sentry**. Only release builds report; debug builds
+log through `developer.log`. A commit message containing `Fixes BEACON-<n>` resolves that
 issue when the commit reaches `main`.
 
 ---
@@ -418,15 +458,22 @@ OAuth client's package name and SHA-1 against the build, and that
 **Android: Google sign-in works locally but fails on Play installs** with
 `[16] Account reauth failed`. Play re-signs releases with the Play App Signing
 key, and that key's SHA-1 isn't registered. Add it to an Android OAuth client
-and the Android Maps key restriction (see "Android release signing").
+and the Android Maps key restriction (see "Key services").
 
 **Ratings or requests fail to submit.** A required table, column, or unique
 constraint hasn't been applied to the Supabase project. A 42501 specifically
 means an RLS policy is missing its `with check` clause.
 
 **No facilities appear anywhere.** Either the state you're searching isn't in
-`launched_states`, or you're outside the fixed 5-mile radius. Illinois ZIPs
-(e.g. `60613`) are the reliable test case.
+`launched_states`, or you're outside the fixed 5-mile radius. A ZIP in a
+launched state (e.g. `60613`) is the reliable test case.
+
+**A facility field is always empty in the map list but shows for favorites.**
+The `facilities_near` RPC isn't returning that column; the view is. Both must
+expose it.
+
+**Android back leaves the app from a new screen.** That screen isn't a route.
+See "Tabs and map overlays are not routes" under Architecture.
 
 **Pod or build errors after pulling.** `cd ios && pod install`. If Xcode starts
 converting plugins to Swift Package Manager, disable SPM (see Prerequisites).

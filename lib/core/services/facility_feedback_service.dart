@@ -48,10 +48,13 @@ class FacilityFeedbackEntry {
 /// (user, facility): [submit] upserts against the
 /// `facility_feedback_user_facility_uniq` constraint.
 class FacilityFeedbackService {
-  FacilityFeedbackService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  FacilityFeedbackService({SupabaseClient? client}) : _injectedClient = client;
 
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
+
+  /// Resolved on use, so a screen holding this service can be built without
+  /// a Supabase session.
+  SupabaseClient get _client => _injectedClient ?? Supabase.instance.client;
 
   static const String _table = 'facility_feedback';
 

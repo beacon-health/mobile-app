@@ -20,11 +20,19 @@ class FacilityProvider extends ChangeNotifier {
   /// `user_favorites` — independent of the current map region. Stays empty for
   /// guests, who can't favorite (see [favoriteFacilities]).
   List<Facility> _favoriteFacilities = [];
+
+  /// Ids of every favorite known right now, in the current region or not.
+  final Set<String> _favoriteIds = {};
   bool _isLoading = false;
   StreamSubscription<AuthState>? _authSubscription;
 
   List<Facility> get facilities => _facilities;
   bool get isLoading => _isLoading;
+
+  /// Ids of the user's favorites. A screen that holds its own facility list
+  /// (the map) uses this to keep its hearts in step, since the favorites
+  /// arrive after the facilities do.
+  Set<String> get favoriteIds => Set.unmodifiable(_favoriteIds);
 
   /// Signed-in users: favorites resolved by id from the table, region-agnostic.
   /// Guests: in-memory flags on the current region list.
@@ -98,13 +106,19 @@ class FacilityProvider extends ChangeNotifier {
     _favoriteFacilities.removeWhere((f) => f.id == facility.id);
     if (facility.isFavorite) {
       _favoriteFacilities.add(facility.copyWith(isFavorite: true));
+      _favoriteIds.add(facility.id);
+    } else {
+      _favoriteIds.remove(facility.id);
     }
   }
 
   /// Replaces in-memory `isFavorite` flags by intersecting with
   /// [favoriteIds].
   void applyFavoriteIds(Set<String> favoriteIds) {
-    var changed = false;
+    var changed = !setEquals(_favoriteIds, favoriteIds);
+    _favoriteIds
+      ..clear()
+      ..addAll(favoriteIds);
     for (var i = 0; i < _facilities.length; i++) {
       final f = _facilities[i];
       final shouldBeFavorite = favoriteIds.contains(f.id);
@@ -152,6 +166,10 @@ class FacilityProvider extends ChangeNotifier {
     var changed = false;
     if (_favoriteFacilities.isNotEmpty) {
       _favoriteFacilities = [];
+      changed = true;
+    }
+    if (_favoriteIds.isNotEmpty) {
+      _favoriteIds.clear();
       changed = true;
     }
     for (var i = 0; i < _facilities.length; i++) {

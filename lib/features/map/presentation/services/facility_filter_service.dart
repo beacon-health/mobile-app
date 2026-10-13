@@ -1,7 +1,67 @@
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/utils/map_geometry.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class FacilityFilterService {
+  /// Orders [facilities] nearest to [center] first and, when [within] is
+  /// given, keeps only those inside it — what the list shows, so it matches
+  /// what is on the map. With no [center] (the map hasn't reported its view
+  /// yet) everything passes in its original order.
+  ///
+  /// Ties break on name then id: facilities that share an address are the
+  /// same distance away, and without a tiebreak they would swap places on
+  /// every refresh.
+  static List<Facility> nearestFirst(
+    List<Facility> facilities, {
+    required LatLng? center,
+    LatLngBounds? within,
+  }) {
+    if (center == null) return List.of(facilities);
+
+    final distance = <String, double>{};
+    final kept = <Facility>[];
+    for (final facility in facilities) {
+      if (within != null && !within.contains(facility.location)) continue;
+      kept.add(facility);
+      distance[facility.id] =
+          MapGeometry.distanceMeters(center, facility.location);
+    }
+    kept.sort((a, b) {
+      final byDistance = distance[a.id]!.compareTo(distance[b.id]!);
+      if (byDistance != 0) return byDistance;
+      final byName = a.name.compareTo(b.name);
+      return byName != 0 ? byName : a.id.compareTo(b.id);
+    });
+    return kept;
+  }
+
+  /// What a facility's eligibility fields must be for someone who answered
+  /// [state] to be shown it, in the form [filterFacilities] takes: a facility
+  /// passes a gate when its value matches or isn't known.
+  ///
+  /// The four "required" switches say what the person can provide. Left off,
+  /// facilities that require it are hidden; switched on, they are shown along
+  /// with everything else — a switch never hides a facility that doesn't ask
+  /// for it. Medicaid runs the other way: accepting it turns nobody away, so
+  /// only switching it on filters, hiding the places known not to take it.
+  static Map<EligibilityRequirement, bool?> eligibilityGates(
+    EligibilityState state,
+  ) {
+    if (!state.applyToSearch) return const {};
+    return {
+      if (!state.proofOfIncome) EligibilityRequirement.proofOfIncome: false,
+      if (!state.proofOfResidency)
+        EligibilityRequirement.proofOfResidency: false,
+      if (!state.insuranceRequired)
+        EligibilityRequirement.insuranceRequired: false,
+      if (!state.referralRequired)
+        EligibilityRequirement.referralRequired: false,
+      if (state.acceptsMedicaid) EligibilityRequirement.acceptsMedicaid: true,
+    };
+  }
+
   /// Filters by search text, categories, and preferences.
   /// [selectedCategories] holds `category_broad` values; Home quick-actions
   /// expand a group into its members first.

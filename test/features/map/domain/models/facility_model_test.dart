@@ -1,3 +1,4 @@
+import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -48,6 +49,103 @@ void main() {
       expect(facility.email, isNull);
       expect(facility.phones, isEmpty);
       expect(facility.services, isEmpty);
+    });
+  });
+
+  group('Facility.fromSupabase eligibility extras', () {
+    Map<String, dynamic> row(Map<String, dynamic> extra) => {
+          'id': 'x',
+          'facility_name': 'Test Clinic',
+          'latitude': 41.8781,
+          'longitude': -87.6298,
+          'city': 'Chicago',
+          'state': 'IL',
+          // Present on every row that has eligibility data at all.
+          'operational': 'Y',
+          ...extra,
+        };
+
+    test('reads Medicaid, income limit and service area', () {
+      final facility = Facility.fromSupabase(
+        row({
+          'accepts_medicaid': 'Y',
+          'income_limit': ' At or below 138% of the federal poverty level. ',
+          'service_area': 'Garvin, McClain and Grady counties',
+        }),
+      );
+
+      expect(facility.eligibility!.acceptsMedicaid, EligibilityValue.yes);
+      expect(
+        facility.eligibility!.incomeLimit,
+        'At or below 138% of the federal poverty level.',
+      );
+      expect(
+        facility.eligibility!.serviceArea,
+        'Garvin, McClain and Grady counties',
+      );
+      expect(facility.eligibilityRequirements['accepts_medicaid'], isTrue);
+    });
+
+    test('a "no" is a known answer; a blank is not', () {
+      final refuses = Facility.fromSupabase(row({'accepts_medicaid': 'N'}));
+      expect(refuses.eligibility!.acceptsMedicaid, EligibilityValue.no);
+      expect(refuses.eligibilityRequirements['accepts_medicaid'], isFalse);
+
+      // Most rows: the column is null, so the facility passes the gate.
+      final unknown = Facility.fromSupabase(row({}));
+      expect(unknown.eligibility!.acceptsMedicaid, EligibilityValue.unknown);
+      expect(
+        unknown.eligibilityRequirements.containsKey('accepts_medicaid'),
+        isFalse,
+      );
+    });
+
+    test('placeholder text in the free-text columns is treated as absent', () {
+      final facility = Facility.fromSupabase(
+        row({'income_limit': 'N', 'service_area': '   '}),
+      );
+
+      expect(facility.eligibility!.incomeLimit, isNull);
+      expect(facility.eligibility!.serviceArea, isNull);
+    });
+
+    test('a row from before the columns existed still parses', () {
+      // What the 1.0.0-era query returned: none of the three keys.
+      final facility = Facility.fromSupabase(row({'proof_of_income': 'N'}));
+
+      expect(facility.eligibility!.acceptsMedicaid, EligibilityValue.unknown);
+      expect(facility.eligibility!.incomeLimit, isNull);
+      expect(facility.eligibility!.serviceArea, isNull);
+    });
+  });
+
+  group('Facility address', () {
+    test('joins street, city, state and ZIP once each', () {
+      final facility = Facility.fromSupabase({
+        'id': 'x',
+        'facility_name': 'Test',
+        'latitude': 1.0,
+        'longitude': 1.0,
+        'street_address': '35 E Wacker Dr',
+        'city': 'Chicago',
+        'state': 'IL',
+        'postal_code': '60601',
+      });
+
+      expect(facility.address, '35 E Wacker Dr, Chicago, IL 60601');
+      expect(facility.hasAddress, isTrue);
+    });
+
+    test('knows when there is nothing to route to', () {
+      final facility = Facility.fromSupabase({
+        'id': 'x',
+        'facility_name': 'Test',
+        'latitude': 1.0,
+        'longitude': 1.0,
+      });
+
+      expect(facility.address, Facility.addressUnavailable);
+      expect(facility.hasAddress, isFalse);
     });
   });
 

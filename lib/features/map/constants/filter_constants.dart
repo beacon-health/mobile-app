@@ -6,6 +6,7 @@ enum EligibilityRequirement {
   proofOfResidency,
   insuranceRequired,
   referralRequired,
+  acceptsMedicaid,
 }
 
 extension EligibilityRequirementExtension on EligibilityRequirement {
@@ -19,6 +20,8 @@ extension EligibilityRequirementExtension on EligibilityRequirement {
         return 'Insurance required';
       case EligibilityRequirement.referralRequired:
         return 'Referral required';
+      case EligibilityRequirement.acceptsMedicaid:
+        return 'Accepts Medicaid';
     }
   }
 
@@ -34,6 +37,8 @@ extension EligibilityRequirementExtension on EligibilityRequirement {
         return 'insurance_required';
       case EligibilityRequirement.referralRequired:
         return 'referral_required';
+      case EligibilityRequirement.acceptsMedicaid:
+        return 'accepts_medicaid';
     }
   }
 }
@@ -113,6 +118,7 @@ class FilterConstants {
     EligibilityRequirement.proofOfResidency,
     EligibilityRequirement.insuranceRequired,
     EligibilityRequirement.referralRequired,
+    EligibilityRequirement.acceptsMedicaid,
   ];
 
   static const List<PreferenceRequirement> preferenceRequirements = [

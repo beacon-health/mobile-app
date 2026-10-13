@@ -5,6 +5,7 @@ import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/utils/zip_state.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -113,15 +114,18 @@ class UserSettingsService {
     final preferencesJson = row['preferences'];
 
     // Lat/lng are re-derived by geocoding the ZIP, so the cloud row holds no
-    // device-derived coordinates that could go stale. The GPS sentinel is not
-    // a ZIP — rows written before that was fixed still carry it.
-    if (zip != null &&
-        zip.isNotEmpty &&
-        zip != ZipCodeService.currentLocationSentinel) {
+    // device-derived coordinates that could go stale. Anything that isn't five
+    // digits is a GPS label written by an older build, not a ZIP.
+    if (zip != null && ZipState.isWellFormed(zip)) {
       // syncToCloud false: this value came from the cloud, so re-uploading it
       // would be a redundant write.
-      final ok = await ZipCodeService().setZipCode(zip, syncToCloud: false);
-      if (!ok) {
+      final result = await ZipCodeService().setZipCode(
+        zip,
+        syncToCloud: false,
+      );
+      // A ZIP saved before its state was gated is expected, not a fault; the
+      // device keeps the location it already has.
+      if (result == ZipResult.notFound) {
         ErrorReporter.instance.report(
           Exception('Could not geocode cloud-stored ZIP: $zip'),
           StackTrace.current,
@@ -159,11 +163,11 @@ class UserSettingsService {
     final zip = ZipCodeService();
     final ep = EligibilityPreferencesService();
     final now = DateTime.now().toUtc().toIso8601String();
-    // While GPS is in use, zipCode holds the sentinel rather than a real ZIP.
+    // While GPS is in use, zipCode holds a label rather than a real ZIP.
     // Storing it would fail to geocode on the next sign-in.
-    final zipCode = zip.zipCode == ZipCodeService.currentLocationSentinel
-        ? null
-        : zip.zipCode;
+    final localZip = zip.zipCode;
+    final zipCode =
+        localZip != null && ZipState.isWellFormed(localZip) ? localZip : null;
     return {
       'user_id': userId,
       'zip_code': zipCode,

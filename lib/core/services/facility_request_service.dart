@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// A user-submitted request in the `facility_requests` staging table — either
 /// a **new** facility to add, or a **correction** to an existing one
-/// (`requestType`).
+/// (`requestType`). A correction can also report the facility as permanently
+/// closed.
 class FacilityRequestEntry {
   const FacilityRequestEntry({
     required this.facilityName,
     required this.status,
     required this.requestType,
+    this.reportedClosed = false,
     this.facilityId,
     this.website,
     this.phone,
@@ -22,6 +25,7 @@ class FacilityRequestEntry {
       facilityName: row['facility_name'] as String? ?? '',
       status: row['status'] as String? ?? 'pending',
       requestType: row['request_type'] as String? ?? 'new',
+      reportedClosed: row['reported_closed'] as bool? ?? false,
       facilityId: row['facility_id'] as String?,
       website: row['website'] as String?,
       phone: row['phone'] as String?,
@@ -39,6 +43,9 @@ class FacilityRequestEntry {
   /// `new` (add a facility) or `correction` (fix an existing one).
   final String requestType;
 
+  /// The user said this facility has permanently closed.
+  final bool reportedClosed;
+
   /// Set for corrections — the id of the facility being corrected.
   final String? facilityId;
   final String? website;
@@ -54,10 +61,14 @@ class FacilityRequestEntry {
 /// `facility_requests` staging table. Owner-only RLS; review happens in the
 /// Supabase dashboard.
 class FacilityRequestService {
-  FacilityRequestService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  FacilityRequestService({SupabaseClient? client}) : _injectedClient = client;
 
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
+
+  /// Resolved on use, not on construction, so a screen that merely holds this
+  /// service can be built without a Supabase session (in tests, or before
+  /// sign-in).
+  SupabaseClient get _client => _injectedClient ?? Supabase.instance.client;
 
   static const String _table = 'facility_requests';
 
@@ -89,7 +100,8 @@ class FacilityRequestService {
   }
 
   /// Submits a correction to an existing facility. Any subset of fields may be
-  /// provided; blanks are dropped.
+  /// provided; blanks are dropped. [reportedClosed] flags the facility as
+  /// permanently closed, alongside whatever else was corrected.
   Future<void> submitCorrection({
     required String facilityId,
     required String facilityName,
@@ -97,9 +109,37 @@ class FacilityRequestService {
     String? phone,
     String? hours,
     String? address,
+    bool reportedClosed = false,
   }) async {
-    await _client.from(_table).insert({
-      'user_id': _requireUserId(),
+    await _client.from(_table).insert(
+          correctionRow(
+            userId: _requireUserId(),
+            facilityId: facilityId,
+            facilityName: facilityName,
+            website: website,
+            phone: phone,
+            hours: hours,
+            address: address,
+            reportedClosed: reportedClosed,
+          ),
+        );
+  }
+
+  /// The row [submitCorrection] inserts. Split out so its shape can be
+  /// checked without a database.
+  @visibleForTesting
+  static Map<String, dynamic> correctionRow({
+    required String userId,
+    required String facilityId,
+    required String facilityName,
+    String? website,
+    String? phone,
+    String? hours,
+    String? address,
+    bool reportedClosed = false,
+  }) {
+    return {
+      'user_id': userId,
       'request_type': 'correction',
       'facility_id': facilityId,
       'facility_name': facilityName.trim(),
@@ -107,7 +147,10 @@ class FacilityRequestService {
       'phone': _clean(phone),
       'hours': _clean(hours),
       'street_address': _clean(address),
-    });
+      // Sent only when set, so an ordinary correction is the same row it
+      // always was and the column's default stands.
+      if (reportedClosed) 'reported_closed': true,
+    };
   }
 
   /// All of the signed-in user's requests, most recent first.

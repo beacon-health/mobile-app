@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Short TTL for the in-memory region cache. Long enough to make rapid
@@ -10,10 +11,21 @@ const Duration _kRegionCacheTtl = Duration(minutes: 5);
 /// sorts by true distance server-side — the table is far too large to fetch
 /// wholesale and filter in Dart.
 class SupabaseFacilityService {
-  SupabaseFacilityService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  SupabaseFacilityService({
+    SupabaseClient? client,
+    @visibleForTesting
+    Future<dynamic> Function(Map<String, dynamic> params)? nearbyQuery,
+  })  : _injectedClient = client,
+        _nearbyQuery = nearbyQuery;
 
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
+
+  /// Replaces the `facilities_near` call in tests, so the cache and the row
+  /// parsing around it can be exercised without a database.
+  final Future<dynamic> Function(Map<String, dynamic> params)? _nearbyQuery;
+
+  /// Resolved on use, so building the service never needs a live session.
+  SupabaseClient get _client => _injectedClient ?? Supabase.instance.client;
 
   /// PostGIS proximity RPC: `facilities_near(lat, lng, radius_m, max_results)`.
   static const String _rpcName = 'facilities_near';
@@ -41,15 +53,14 @@ class SupabaseFacilityService {
     final cached = _regionCache[key];
     if (cached != null && !cached.isExpired) return cached.facilities;
 
-    final response = await _client.rpc<dynamic>(
-      _rpcName,
-      params: {
-        'lat': latitude,
-        'lng': longitude,
-        'radius_m': radiusKm * 1000.0,
-        'max_results': _maxResults,
-      },
-    );
+    final params = <String, dynamic>{
+      'lat': latitude,
+      'lng': longitude,
+      'radius_m': radiusKm * 1000.0,
+      'max_results': _maxResults,
+    };
+    final response = await (_nearbyQuery?.call(params) ??
+        _client.rpc<dynamic>(_rpcName, params: params));
 
     final facilities = _parseRows(response);
     _putCache(key, facilities);

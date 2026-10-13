@@ -10,14 +10,19 @@ import 'package:flutter/material.dart';
 /// Lists the "add a facility" requests the signed-in user has submitted, with
 /// their review status. Mirrors the Your Ratings page.
 class MyRequestsPage extends StatefulWidget {
-  const MyRequestsPage({super.key});
+  const MyRequestsPage({super.key, this.requestService});
+
+  /// Where the requests come from. Defaults to the real service; tests pass
+  /// one that answers without a database.
+  final FacilityRequestService? requestService;
 
   @override
   State<MyRequestsPage> createState() => _MyRequestsPageState();
 }
 
 class _MyRequestsPageState extends State<MyRequestsPage> {
-  final FacilityRequestService _requestService = FacilityRequestService();
+  late final FacilityRequestService _requestService =
+      widget.requestService ?? FacilityRequestService();
 
   bool _loading = true;
   List<FacilityRequestEntry> _entries = const [];
@@ -97,7 +102,9 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     final l10n = AppLocalizations.of(context)!;
     final created = entry.createdAt;
     final parts = [
-      if (entry.isCorrection)
+      if (entry.reportedClosed)
+        l10n.requestTypeClosure
+      else if (entry.isCorrection)
         l10n.requestTypeCorrection
       else
         l10n.requestTypeNew,

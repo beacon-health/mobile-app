@@ -9,6 +9,7 @@ import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +24,13 @@ class BeaconApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // The one place the real repository is built. Home and Map read it
+        // from here, which is also what lets tests hand them a fake.
+        Provider<FacilityRepositoryBase>(create: (_) => FacilityRepository()),
         ChangeNotifierProvider<FacilityProvider>(
-          create: (_) => FacilityProvider(),
+          create: (context) => FacilityProvider(
+            repository: context.read<FacilityRepositoryBase>(),
+          ),
         ),
         ChangeNotifierProvider<GuestModeService>.value(
           value: GuestModeService(),

@@ -1,10 +1,23 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/coverage_service.dart';
 import 'package:beacon_app/core/services/user_settings_service.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Outcome of [ZipCodeService.setZipCode].
+enum ZipResult {
+  /// The ZIP is covered, was located, and is now the saved location.
+  saved,
+
+  /// Not a real ZIP, or the geocoder couldn't place it.
+  notFound,
+
+  /// A valid ZIP in a state Beacon hasn't launched in.
+  outsideCoverage,
+}
 
 class ZipCodeService extends ChangeNotifier {
   static final ZipCodeService _instance = ZipCodeService._();
@@ -92,23 +105,45 @@ class ZipCodeService extends ChangeNotifier {
     }
   }
 
-  /// Geocodes [zipCode] and stores the result.
-  /// Returns `true` on success, `false` if the zip cannot be resolved.
-  Future<bool> setZipCode(String zipCode, {bool syncToCloud = true}) async {
+  /// Checks that [zipCode] is in a launched state, then geocodes and stores
+  /// it. Nothing is stored unless the result is [ZipResult.saved].
+  Future<ZipResult> setZipCode(
+    String zipCode, {
+    bool syncToCloud = true,
+  }) async {
+    final zip = zipCode.trim();
+    final coverage = CoverageService();
+    // Turning someone away on a stale list would be worse than a short wait.
+    await coverage.ensureFresh();
+    switch (coverage.checkZip(zip)) {
+      case ZipCoverage.invalid:
+        return ZipResult.notFound;
+      case ZipCoverage.outsideCoverage:
+        return ZipResult.outsideCoverage;
+      case ZipCoverage.covered:
+        break;
+    }
+
     try {
-      final locations = await locationFromAddress('$zipCode, USA');
-      if (locations.isEmpty) return false;
+      final locations = await (debugGeocode ?? locationFromAddress)(
+        '$zip, USA',
+      );
+      if (locations.isEmpty) return ZipResult.notFound;
       await setZipAndLocation(
-        zipCode,
+        zip,
         locations.first.latitude,
         locations.first.longitude,
         syncToCloud: syncToCloud,
       );
-      return true;
+      return ZipResult.saved;
     } catch (_) {
-      return false;
+      return ZipResult.notFound;
     }
   }
+
+  /// Replaces the platform geocoder in tests.
+  @visibleForTesting
+  Future<List<Location>> Function(String address)? debugGeocode;
 
   /// Stores GPS coordinates as the active location source. A real 5-digit ZIP
   /// is snapshotted first so [disableLocationSearch] can restore it.

@@ -133,7 +133,14 @@
   "deleteAccountInProgress": "正在删除您的账户…",
   "deleteAccountSuccess": "您的账户已删除",
   "deleteAccountFailed": "无法删除您的账户，请重试。",
-  "coverageNotice": "Beacon 目前收录伊利诺伊州的服务机构，我们会逐步添加更多州。",
+  "coverageNotice": "Beacon 目前收录{states}的服务机构，我们会逐步添加更多州。",
+  "@coverageNotice": {
+    "placeholders": {
+      "states": {
+        "type": "String"
+      }
+    }
+  },
   "settingsSignOutConfirm": "确定要退出登录吗？",
   "profileTitle": "个人资料",
   "authContinueWithGoogle": "使用 Google 继续",
@@ -153,7 +160,7 @@
   "locationChoiceUseLocation": "启用基于位置的搜索",
   "locationChoiceUseLocationDesc": "使用 GPS 获得最准确的结果。",
   "locationChoiceEnterZip": "输入邮政编码",
-  "locationChoiceEnterZipDesc": "按美国邮政编码搜索。",
+  "locationChoiceEnterZipDesc": "按邮政编码搜索。",
   "locationCurrentLocation": "当前位置",
   "locationPermissionDenied": "位置访问被拒绝。请在「设置」>「隐私」>「定位服务」中启用。",
   "locationPermissionDeniedTitle": "需要位置访问权限",
@@ -206,5 +213,84 @@
   "cardRatePromptLead": "去过了？",
   "cardRatePromptAction": "评价您的体验",
   "cardCorrectionPromptLead": "信息有误？",
-  "cardCorrectionPromptAction": "在此提交更正"
+  "cardCorrectionPromptAction": "在此提交更正",
+  "zipOutsideCoverage": "Beacon 暂未覆盖该地区，目前覆盖{states}。",
+  "@zipOutsideCoverage": {
+    "placeholders": {
+      "states": {
+        "type": "String"
+      }
+    }
+  },
+  "stateName": "{code, select, AL{阿拉巴马州} AK{阿拉斯加州} AZ{亚利桑那州} AR{阿肯色州} CA{加利福尼亚州} CO{科罗拉多州} CT{康涅狄格州} DE{特拉华州} DC{华盛顿特区} FL{佛罗里达州} GA{佐治亚州} GU{关岛} HI{夏威夷州} ID{爱达荷州} IL{伊利诺伊州} IN{印第安纳州} IA{艾奥瓦州} KS{堪萨斯州} KY{肯塔基州} LA{路易斯安那州} ME{缅因州} MD{马里兰州} MA{马萨诸塞州} MI{密歇根州} MN{明尼苏达州} MS{密西西比州} MO{密苏里州} MT{蒙大拿州} NE{内布拉斯加州} NV{内华达州} NH{新罕布什尔州} NJ{新泽西州} NM{新墨西哥州} NY{纽约州} NC{北卡罗来纳州} ND{北达科他州} OH{俄亥俄州} OK{俄克拉荷马州} OR{俄勒冈州} PA{宾夕法尼亚州} PR{波多黎各} RI{罗得岛州} SC{南卡罗来纳州} SD{南达科他州} TN{田纳西州} TX{得克萨斯州} UT{犹他州} VT{佛蒙特州} VA{弗吉尼亚州} VI{美属维尔京群岛} WA{华盛顿州} WV{西弗吉尼亚州} WI{威斯康星州} WY{怀俄明州} other{{code}}}",
+  "@stateName": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "listTwo": "{first}和{second}",
+  "@listTwo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "listTwoBeforeI": "{first}和{second}",
+  "@listTwoBeforeI": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "listMany": "{rest}和{last}",
+  "@listMany": {
+    "placeholders": {
+      "rest": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "listManyBeforeI": "{rest}和{last}",
+  "@listManyBeforeI": {
+    "placeholders": {
+      "rest": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "listSeparator": "、",
+  "mapResourcesInView": "{count, plural, other{此区域有 {count} 个资源}}",
+  "@mapResourcesInView": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapNothingInView": "地图的这一区域没有资源",
+  "mapNothingInViewHint": "缩小或移动地图以查看更多。",
+  "eligAcceptsMedicaid": "接受 Medicaid（医疗补助）",
+  "chipMedicaid": "Medicaid",
+  "cardIncomeLimit": "收入限制",
+  "cardServiceArea": "服务区域",
+  "labelSeparator": "：",
+  "correctionFieldClosed": "已永久关闭",
+  "correctionFieldClosedHint": "如果该机构已永久停业，请开启此项。",
+  "requestTypeClosure": "已报告关闭"
 }

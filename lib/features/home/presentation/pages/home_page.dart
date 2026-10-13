@@ -42,17 +42,40 @@ class _HomePageState extends State<HomePage>
   Brightness? _lastBrightness;
   bool _locationGranted = false;
 
+  /// See MapPageState: the blue dot needs both OS permission and the user
+  /// having chosen GPS over a ZIP.
+  bool _gpsMode = false;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _facilityRepository = FacilityRepository();
+    _facilityRepository = context.read<FacilityRepositoryBase>();
+    final zipService = ZipCodeService();
+    _gpsMode = zipService.locationSearchEnabled;
+    // This page stays alive in the IndexedStack, so initState runs once;
+    // without listening, the map cutout kept showing the old location after
+    // the user changed it in Settings.
+    zipService.addListener(_onZipServiceChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
       _refreshLocationPermission();
     });
+  }
+
+  void _onZipServiceChanged() {
+    if (!mounted) return;
+    final zipService = ZipCodeService();
+    final moved = zipService.latitude != _currentLocation.latitude ||
+        zipService.longitude != _currentLocation.longitude;
+    final gpsMode = zipService.locationSearchEnabled;
+    if (gpsMode != _gpsMode) setState(() => _gpsMode = gpsMode);
+    if (moved) {
+      unawaited(_loadData());
+      unawaited(_refreshLocationPermission());
+    }
   }
 
   Future<void> _refreshLocationPermission() async {
@@ -74,6 +97,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void dispose() {
+    ZipCodeService().removeListener(_onZipServiceChanged);
     _mapController?.dispose();
     _mapController = null;
     super.dispose();
@@ -331,7 +355,7 @@ class _HomePageState extends State<HomePage>
                         zoom: MapConstants.homeCutoutZoom,
                       ),
                       markers: _markers,
-                      myLocationEnabled: _locationGranted,
+                      myLocationEnabled: _locationGranted && _gpsMode,
                       myLocationButtonEnabled: false,
                       zoomControlsEnabled: false,
                       mapToolbarEnabled: false,
