@@ -812,6 +812,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonNotSet => '未设置';
 
   @override
+  String get managerEntry => '管理机构';
+
+  @override
+  String get managerTitle => '您的机构';
+
+  @override
+  String managerVerified(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已验证 · $count 位管理员',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get managerPending => '等待验证';
+
+  @override
+  String get managerPendingBody => '我们会致电机构核实每一项申请，通常需要 2–3 个工作日。';
+
+  @override
+  String get managerRevoked => '访问权限已移除';
+
+  @override
+  String managerNeedsAttention(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项需要处理',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String managerFeedbackHidden(int people, int minimum) {
+    return '反馈暂不显示：目前 $people/$minimum 人';
+  }
+
+  @override
+  String get managerFeedbackReady => '反馈已可查看';
+
+  @override
+  String get managerEmptyTitle => '暂无机构';
+
+  @override
+  String get managerEmptyBody => '如果您运营的机构已收录在 Beacon 中，可以申请管理其信息。';
+
+  @override
+  String get managerRequestAccess => '申请管理机构';
+
+  @override
+  String get managerComingSoon => '申请尚未开放，请稍后再来。';
+
+  @override
   String get brandTagline => '让就医更轻松。';
 
   @override

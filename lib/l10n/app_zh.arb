@@ -377,6 +377,43 @@
   "settingsAppearanceLight": "浅色",
   "settingsAppearanceDark": "深色",
   "commonNotSet": "未设置",
+  "managerEntry": "管理机构",
+  "managerTitle": "您的机构",
+  "managerVerified": "{count, plural, other{已验证 · {count} 位管理员}}",
+  "@managerVerified": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "managerPending": "等待验证",
+  "managerPendingBody": "我们会致电机构核实每一项申请，通常需要 2–3 个工作日。",
+  "managerRevoked": "访问权限已移除",
+  "managerNeedsAttention": "{count, plural, other{{count} 项需要处理}}",
+  "@managerNeedsAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "managerFeedbackHidden": "反馈暂不显示：目前 {people}/{minimum} 人",
+  "@managerFeedbackHidden": {
+    "placeholders": {
+      "people": {
+        "type": "int"
+      },
+      "minimum": {
+        "type": "int"
+      }
+    }
+  },
+  "managerFeedbackReady": "反馈已可查看",
+  "managerEmptyTitle": "暂无机构",
+  "managerEmptyBody": "如果您运营的机构已收录在 Beacon 中，可以申请管理其信息。",
+  "managerRequestAccess": "申请管理机构",
+  "managerComingSoon": "申请尚未开放，请稍后再来。",
   "brandTagline": "让就医更轻松。",
   "@brandTagline": {
     "description": "Tagline shown under the logo on the sign-in screen."

@@ -1474,6 +1474,84 @@ abstract class AppLocalizations {
   /// **'Not set'**
   String get commonNotSet;
 
+  /// No description provided for @managerEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage facilities'**
+  String get managerEntry;
+
+  /// No description provided for @managerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your facilities'**
+  String get managerTitle;
+
+  /// No description provided for @managerVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Verified · 1 manager} other{Verified · {count} managers}}'**
+  String managerVerified(int count);
+
+  /// No description provided for @managerPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for verification'**
+  String get managerPending;
+
+  /// No description provided for @managerPendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We check each request by phone with the facility. It usually takes 2–3 business days.'**
+  String get managerPendingBody;
+
+  /// No description provided for @managerRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Access removed'**
+  String get managerRevoked;
+
+  /// No description provided for @managerNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 thing needs attention} other{{count} things need attention}}'**
+  String managerNeedsAttention(int count);
+
+  /// No description provided for @managerFeedbackHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback hidden: {people} of {minimum} people so far'**
+  String managerFeedbackHidden(int people, int minimum);
+
+  /// No description provided for @managerFeedbackReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback is ready to read'**
+  String get managerFeedbackReady;
+
+  /// No description provided for @managerEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No facilities yet'**
+  String get managerEmptyTitle;
+
+  /// No description provided for @managerEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you run a facility listed in Beacon, you can ask to manage its listing.'**
+  String get managerEmptyBody;
+
+  /// No description provided for @managerRequestAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request access to a facility'**
+  String get managerRequestAccess;
+
+  /// No description provided for @managerComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests aren\'t open yet. Check back soon.'**
+  String get managerComingSoon;
+
   /// Tagline shown under the logo on the sign-in screen.
   ///
   /// In en, this message translates to:

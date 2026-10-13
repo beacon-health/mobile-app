@@ -10,6 +10,7 @@ import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:beacon_app/features/manager/data/manager_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
@@ -237,6 +238,7 @@ Future<FakeGoogleMaps> pumpAppShell(
     MultiProvider(
       providers: [
         Provider<FacilityRepositoryBase>.value(value: repository),
+        Provider<ManagerRepository>.value(value: const NoManagerBackend()),
         ChangeNotifierProvider<FacilityProvider>(
           create: (_) => FacilityProvider(repository: repository),
         ),

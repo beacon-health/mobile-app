@@ -854,6 +854,66 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonNotSet => 'Sin definir';
 
   @override
+  String get managerEntry => 'Administrar centros';
+
+  @override
+  String get managerTitle => 'Tus centros';
+
+  @override
+  String managerVerified(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Verificado · $count administradores',
+      one: 'Verificado · 1 administrador',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get managerPending => 'En espera de verificación';
+
+  @override
+  String get managerPendingBody =>
+      'Verificamos cada solicitud por teléfono con el centro. Suele tardar de 2 a 3 días hábiles.';
+
+  @override
+  String get managerRevoked => 'Acceso retirado';
+
+  @override
+  String managerNeedsAttention(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count asuntos requieren atención',
+      one: '1 asunto requiere atención',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String managerFeedbackHidden(int people, int minimum) {
+    return 'Comentarios ocultos: $people de $minimum personas hasta ahora';
+  }
+
+  @override
+  String get managerFeedbackReady => 'Los comentarios ya se pueden leer';
+
+  @override
+  String get managerEmptyTitle => 'Aún no tienes centros';
+
+  @override
+  String get managerEmptyBody =>
+      'Si diriges un centro que aparece en Beacon, puedes solicitar administrar su ficha.';
+
+  @override
+  String get managerRequestAccess => 'Solicitar acceso a un centro';
+
+  @override
+  String get managerComingSoon =>
+      'Las solicitudes aún no están abiertas. Vuelve pronto.';
+
+  @override
   String get brandTagline => 'Atención médica más llevadera.';
 
   @override

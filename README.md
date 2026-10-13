@@ -106,6 +106,7 @@ lib/
   features/
     auth/                      Onboarding, login, ZIP entry, AuthGate
     home/                      Home page, quick actions, nav bar
+    manager/                   Facility managers: "Your facilities" (see Architecture)
     map/
       constants/               Map + filter + category constants
       data/                    Repository + Supabase facility service
@@ -140,6 +141,17 @@ full-contrast, with a lock — it does something when tapped, so it must not
 look disabled. When adding a feature
 that writes to Supabase, gate it — RLS will reject anonymous writes anyway, and
 a sign-in prompt is a far better experience than a silent failure.
+
+**Facility managers see a facility's feedback only past a threshold.** People
+who run a listed facility can ask to manage its listing; the Beacon team
+verifies each request by hand, and a facility can have several managers.
+Feedback is anonymous, so none of it is shown to a manager until at least
+`FeedbackVisibility.minimumPeople` different people have left some — below
+that, only the count. The server must enforce this by returning no feedback
+rows; the client rule only decides what to draw. The screens read a
+`ManagerRepository` from `Provider`. Until the feature has a backend the app
+provides `NoManagerBackend`, under which nobody has a facility and the way in
+(Profile → "Manage facilities") is not shown.
 
 **Coverage follows the database.** `CoverageService` reads `launched_states`
 (cached on device, refreshed at startup and before a ZIP is turned away). The

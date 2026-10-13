@@ -377,6 +377,43 @@
   "settingsAppearanceLight": "Claro",
   "settingsAppearanceDark": "Oscuro",
   "commonNotSet": "Sin definir",
+  "managerEntry": "Administrar centros",
+  "managerTitle": "Tus centros",
+  "managerVerified": "{count, plural, =1{Verificado · 1 administrador} other{Verificado · {count} administradores}}",
+  "@managerVerified": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "managerPending": "En espera de verificación",
+  "managerPendingBody": "Verificamos cada solicitud por teléfono con el centro. Suele tardar de 2 a 3 días hábiles.",
+  "managerRevoked": "Acceso retirado",
+  "managerNeedsAttention": "{count, plural, =1{1 asunto requiere atención} other{{count} asuntos requieren atención}}",
+  "@managerNeedsAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "managerFeedbackHidden": "Comentarios ocultos: {people} de {minimum} personas hasta ahora",
+  "@managerFeedbackHidden": {
+    "placeholders": {
+      "people": {
+        "type": "int"
+      },
+      "minimum": {
+        "type": "int"
+      }
+    }
+  },
+  "managerFeedbackReady": "Los comentarios ya se pueden leer",
+  "managerEmptyTitle": "Aún no tienes centros",
+  "managerEmptyBody": "Si diriges un centro que aparece en Beacon, puedes solicitar administrar su ficha.",
+  "managerRequestAccess": "Solicitar acceso a un centro",
+  "managerComingSoon": "Las solicitudes aún no están abiertas. Vuelve pronto.",
   "brandTagline": "Atención médica más llevadera.",
   "@brandTagline": {
     "description": "Tagline shown under the logo on the sign-in screen."
