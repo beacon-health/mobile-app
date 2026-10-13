@@ -7,6 +7,7 @@ import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/features/manager/data/manager_repository.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -53,6 +54,7 @@ Future<void> pumpThemed(
   Size size = phoneSize,
   Locale locale = const Locale('en'),
   bool settle = true,
+  ManagerRepository managers = const NoManagerBackend(),
 }) async {
   tester.view
     ..physicalSize = size
@@ -62,6 +64,7 @@ Future<void> pumpThemed(
   await tester.pumpWidget(
     MultiProvider(
       providers: [
+        Provider<ManagerRepository>.value(value: managers),
         ChangeNotifierProvider<GuestModeService>.value(
           value: GuestModeService(),
         ),

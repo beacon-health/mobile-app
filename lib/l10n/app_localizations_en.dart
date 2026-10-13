@@ -844,4 +844,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonNotSet => 'Not set';
+
+  @override
+  String get managerEntry => 'Manage facilities';
+
+  @override
+  String get managerTitle => 'Your facilities';
+
+  @override
+  String managerVerified(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Verified · $count managers',
+      one: 'Verified · 1 manager',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get managerPending => 'Waiting for verification';
+
+  @override
+  String get managerPendingBody =>
+      'We check each request by phone with the facility. It usually takes 2–3 business days.';
+
+  @override
+  String get managerRevoked => 'Access removed';
+
+  @override
+  String managerNeedsAttention(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things need attention',
+      one: '1 thing needs attention',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String managerFeedbackHidden(int people, int minimum) {
+    return 'Feedback hidden: $people of $minimum people so far';
+  }
+
+  @override
+  String get managerFeedbackReady => 'Feedback is ready to read';
+
+  @override
+  String get managerEmptyTitle => 'No facilities yet';
+
+  @override
+  String get managerEmptyBody =>
+      'If you run a facility listed in Beacon, you can ask to manage its listing.';
+
+  @override
+  String get managerRequestAccess => 'Request access to a facility';
+
+  @override
+  String get managerComingSoon => 'Requests aren\'t open yet. Check back soon.';
 }

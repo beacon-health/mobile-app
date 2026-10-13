@@ -10,6 +10,7 @@ import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
+import 'package:beacon_app/features/manager/data/manager_repository.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/presentation/providers/facility_provider.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -28,6 +29,9 @@ class BeaconApp extends StatelessWidget {
         // The one place the real repository is built. Home and Map read it
         // from here, which is also what lets tests hand them a fake.
         Provider<FacilityRepositoryBase>(create: (_) => FacilityRepository()),
+        // The manager screens' data. There is no backend for it yet, so this
+        // answers "no facilities" and the feature stays out of sight.
+        Provider<ManagerRepository>(create: (_) => const NoManagerBackend()),
         ChangeNotifierProvider<FacilityProvider>(
           create: (context) => FacilityProvider(
             repository: context.read<FacilityRepositoryBase>(),

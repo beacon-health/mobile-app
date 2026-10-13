@@ -10,6 +10,9 @@ import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
+import 'package:beacon_app/features/manager/data/manager_repository.dart';
+import 'package:beacon_app/features/manager/domain/managed_facility.dart';
+import 'package:beacon_app/features/manager/presentation/pages/managed_facilities_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_requests_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -29,6 +32,11 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool _isDeleting = false;
+
+  /// The signed-in person's facilities, asked for once. "Manage facilities"
+  /// shows only for someone who has at least one, in any status.
+  late final Future<List<ManagedFacility>> _managedFacilities =
+      context.read<ManagerRepository>().myFacilities();
 
   @override
   Widget build(BuildContext context) {
@@ -276,6 +284,32 @@ class _ProfilePageState extends State<ProfilePage> {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const MyRequestsPage()),
               ),
+            ),
+            FutureBuilder<List<ManagedFacility>>(
+              future: _managedFacilities,
+              builder: (context, snapshot) {
+                if (snapshot.data?.isEmpty ?? true) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.storefront_outlined),
+                      title: Text(l10n.managerEntry),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        size: AppIconSize.md,
+                      ),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const ManagedFacilitiesPage(),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
