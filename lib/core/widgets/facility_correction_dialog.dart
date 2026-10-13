@@ -44,6 +44,10 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
 
   bool _isSubmitting = false;
 
+  /// The user is reporting the facility as permanently closed. The detail
+  /// fields stop mattering then, so they lock.
+  bool _reportedClosed = false;
+
   @override
   void initState() {
     super.initState();
@@ -93,6 +97,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
         phone: _phoneController.text,
         hours: _hoursController.text,
         address: _addressController.text,
+        reportedClosed: _reportedClosed,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -111,6 +116,8 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
       _showSnack(msg, isError: true);
     }
   }
+
+  bool get _fieldsEnabled => !_isSubmitting && !_reportedClosed;
 
   void _showSnack(String message, {bool isError = false}) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -145,31 +152,41 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
                       ),
                 ),
               ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.correctionFieldClosed),
+                subtitle: Text(l10n.correctionFieldClosedHint),
+                value: _reportedClosed,
+                onChanged: _isSubmitting
+                    ? null
+                    : (value) => setState(() => _reportedClosed = value),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _nameController,
                 label: l10n.correctionFieldName,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _websiteController,
                 label: l10n.correctionFieldWebsite,
                 keyboardType: TextInputType.url,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _phoneController,
                 label: l10n.correctionFieldPhone,
                 keyboardType: TextInputType.phone,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _hoursController,
                 label: l10n.correctionFieldHours,
                 maxLines: 2,
               ),
               DialogTextField(
-                enabled: !_isSubmitting,
+                enabled: _fieldsEnabled,
                 controller: _addressController,
                 label: l10n.correctionFieldAddress,
                 maxLines: 2,

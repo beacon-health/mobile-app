@@ -97,7 +97,9 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     final l10n = AppLocalizations.of(context)!;
     final created = entry.createdAt;
     final parts = [
-      if (entry.isCorrection)
+      if (entry.reportedClosed)
+        l10n.requestTypeClosure
+      else if (entry.isCorrection)
         l10n.requestTypeCorrection
       else
         l10n.requestTypeNew,
