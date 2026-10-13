@@ -131,34 +131,12 @@ void main() {
       expect(find.text('Delete account'), findsNothing);
     });
 
-    testWidgets('can say what they can provide, kept on the device',
-        (tester) async {
-      // Onboarding promises this is editable in Profile; for a guest it used
-      // to be a sign-in card and nothing else.
+    testWidgets('is not asked what they can provide', (tester) async {
+      // An account feature, like the sign-out it sits beside.
       await pumpProfile(tester, signedIn: false);
 
-      expect(find.text('What you can provide'), findsOneWidget);
-      expect(find.text('Saved on this device'), findsOneWidget);
-
-      // Off until they say so: nothing was hidden on their behalf.
-      expect(eligibility.eligibility.applyToSearch, isFalse);
-      await scrollTo(tester, find.text(_filterSwitch));
-      await tester.tap(find.text(_filterSwitch));
-      await tester.pumpAndSettle();
-      await scrollTo(tester, find.text('Proof of address'));
-      await tester.tap(find.text('Proof of address'));
-      await tester.pumpAndSettle();
-
-      expect(eligibility.eligibility.applyToSearch, isTrue);
-      expect(eligibility.eligibility.proofOfResidency, isTrue);
-    });
-
-    testWidgets('signed-in users are not told it is on the device',
-        (tester) async {
-      await pumpProfile(tester);
-
-      expect(find.text('What you can provide'), findsOneWidget);
-      expect(find.text('Saved on this device'), findsNothing);
+      expect(find.text('What you can provide'), findsNothing);
+      expect(find.text(_filterSwitch), findsNothing);
     });
   });
 }

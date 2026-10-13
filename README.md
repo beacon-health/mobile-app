@@ -126,16 +126,16 @@ tool/                          Repo scripts: golden adoption, Claude Design bund
 
 **Entry flow:** `AuthGate` → `LoginPage` (a language picker, then Apple on
 iOS, Google on Android, or guest) → `LocationChoicePage` (GPS, or a ZIP on
-`ZipEntryPage`) → `EligibilityOnboardingPage` → `MainNavBar`. The steps after
+`ZipEntryPage`) → `EligibilityOnboardingPage` (signed in only; a guest skips
+it) → `MainNavBar`. The steps after
 sign-in share `OnboardingScaffold`, which draws the step count and the back
 button; each step is pushed over the one before it, so back returns there.
 Returning users go straight to `MainNavBar`; the `hasCompletedOnboarding`
 flag in `SharedPreferences` decides.
 
 **Guest mode is a first-class state.** `GuestModeService.isGuest` is derived
-from the Supabase session. Guests can browse, search, get directions, and say
-what they can provide (kept on the device); Favorites, the preference filters,
-ratings, and requests are gated by checking `isGuest` and calling
+from the Supabase session. Guests can browse, search, and get directions;
+Favorites, the preference filters, ratings, and requests are gated by checking `isGuest` and calling
 `showSignInPromptDialog(context)`. A gated control stays live and
 full-contrast, with a lock — it does something when tapped, so it must not
 look disabled. When adding a feature
@@ -165,9 +165,10 @@ moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
 (`MarkerManagementService.groupForZoom`).
 
-**"What can you provide?" only ever hides what a person can't use.** The
-question is asked once, in onboarding, and stays editable on Profile; both use
-`EligibilityChecklist`. The rule is `FacilityFilterService.eligibilityGates`.
+**"What can you provide?" only ever hides what a person can't use.** It
+belongs to an account: the question is asked once, in onboarding after sign-in,
+and stays editable on Profile; both use `EligibilityChecklist`. A guest is
+never asked and never filtered by it. The rule is `FacilityFilterService.eligibilityGates`.
 Four boxes are documents (proof of income, proof of address, insurance, a
 referral): unchecked, facilities that require it are hidden; checked, they are
 shown along with everything else. Medicaid runs the other way — only checking
@@ -233,7 +234,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
 | `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
-| `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; on the device for a guest, synced for an account |
+| `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
 | `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |
 | `AssistantService` (`features/ask/data/`) | Whether the phone has a language model Ask can use; decides if the Ask tab is shown |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |

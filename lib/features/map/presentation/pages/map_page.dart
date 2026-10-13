@@ -962,10 +962,9 @@ class MapPageState extends State<MapPage>
   /// The loaded facilities a set of filters leaves, with the search text and
   /// the "what you can provide" answers applied on top.
   ///
-  /// Guests have no favorites and no preference filters; ignoring any stale
-  /// state here means neither can hide a facility from someone who can't
-  /// change it. Their answers about what they can provide do apply — those
-  /// they can change, on Profile.
+  /// Guests have no favorites, no preference filters and no answers about
+  /// what they can provide; ignoring any stale state here means none of them
+  /// can hide a facility from someone who can't change it.
   List<Facility> _facilitiesMatching({
     required Set<String> categories,
     required Map<PreferenceRequirement, bool?> preferenceRequirements,
@@ -977,9 +976,11 @@ class MapPageState extends State<MapPage>
       _allFacilities,
       searchText: _searchController.text,
       selectedCategories: categories,
-      selectedEligibilityRequirements: FacilityFilterService.eligibilityGates(
-        EligibilityPreferencesService().eligibility,
-      ),
+      selectedEligibilityRequirements: isGuest
+          ? const {}
+          : FacilityFilterService.eligibilityGates(
+              EligibilityPreferencesService().eligibility,
+            ),
       selectedPreferenceRequirements:
           isGuest ? const {} : preferenceRequirements,
       showFavoritesOnly: showFavoritesOnly && !isGuest,
