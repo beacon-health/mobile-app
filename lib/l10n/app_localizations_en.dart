@@ -975,4 +975,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get askNoneOpenNow => 'None of these are open right now.';
+
+  @override
+  String get brandTagline => 'Healthcare made lighter.';
 }

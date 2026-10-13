@@ -18,6 +18,7 @@ Future<void> _pumpCard(
   VoidCallback? onToggleFavorite,
   VoidCallback? onRate,
   VoidCallback? onSubmitCorrection,
+  Size size = phoneSize,
 }) {
   mockPlatformServices();
   return pumpThemed(
@@ -36,6 +37,7 @@ Future<void> _pumpCard(
         ),
       ),
     ),
+    size: size,
   );
 }
 
@@ -63,6 +65,65 @@ void main() {
     );
     await tester.tap(find.byIcon(Icons.expand_more));
     expect(toggles, 1);
+  });
+
+  group('hours', () {
+    const week = [
+      OperatingHours(day: 'mon', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'tue', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'wed', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'thu', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'fri', opensAt: '09:00', closesAt: '16:00'),
+    ];
+
+    testWidgets('a week sits in two columns, read down then across',
+        (tester) async {
+      // One column left half the card empty beside it. The test font is
+      // about twice as wide as Inter, so the screen is too.
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        size: const Size(780, 844),
+      );
+
+      final mon = tester.getTopLeft(find.text('Mon'));
+      final wed = tester.getTopLeft(find.text('Wed'));
+      final thu = tester.getTopLeft(find.text('Thu'));
+      expect(wed.dx, mon.dx);
+      expect(wed.dy, greaterThan(mon.dy));
+      expect(thu.dy, mon.dy);
+      expect(thu.dx, greaterThan(mon.dx));
+    });
+
+    testWidgets('stays in one column when two would not fit', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 3.1;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('Thu')).dx,
+        tester.getTopLeft(find.text('Mon')).dx,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a few days stay in one column', (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week.sublist(0, 3)),
+        isExpanded: true,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('Wed')).dx,
+        tester.getTopLeft(find.text('Mon')).dx,
+      );
+    });
   });
 
   testWidgets('expanded card puts directions under the name, then hours',

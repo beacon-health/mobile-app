@@ -60,9 +60,8 @@ Use these, never raw hex or pixel values:
 ## Component patterns
 
 - **Buttons:** at least 48px tall (never a fixed height), `--radius-sm`,
-  `.text-label-large`. Primary fills `--color-primary`; onboarding CTA fills
-  `--color-secondary`, with a `--color-secondary` outlined button as the
-  quieter choice beside it; secondary is a 1px `--color-primary` outline with
+  `.text-label-large`. Primary fills `--color-primary`, in onboarding as
+  everywhere else; secondary is a 1px `--color-primary` outline with
   a `--color-primary-text` label; text buttons are bare in
   `--color-primary-text`, destructive ones in `--color-error`.
 - **Tag chip:** tinted fill, 30% outline, `--radius-md`, `.text-label-small`,

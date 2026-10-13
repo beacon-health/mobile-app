@@ -330,26 +330,6 @@ abstract final class AppTheme {
         _ => FontWeight.w700,
       };
 
-  /// Payne's-gray filled button for onboarding and auth calls to action,
-  /// where a reseda-green button would disappear into the green gradient.
-  /// Merges over the theme's `filledButtonTheme`, so shape and size match.
-  static ButtonStyle secondaryFilledButton(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return FilledButton.styleFrom(
-      backgroundColor: scheme.secondary,
-      foregroundColor: scheme.onSecondary,
-    );
-  }
-
-  /// The same, outlined: the quieter of two onboarding choices.
-  static ButtonStyle secondaryOutlinedButton(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return OutlinedButton.styleFrom(
-      foregroundColor: scheme.secondary,
-      side: BorderSide(color: scheme.secondary),
-    );
-  }
-
   /// Destructive actions: deleting an account, removing a rating.
   static ButtonStyle destructiveTextButton(BuildContext context) =>
       TextButton.styleFrom(

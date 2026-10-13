@@ -986,4 +986,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get askNoneOpenNow => 'Ninguno de estos está abierto en este momento.';
+
+  @override
+  String get brandTagline => 'Atención médica más llevadera.';
 }

@@ -434,5 +434,9 @@
   "chipImmigrants": "Abierto a inmigrantes",
   "askCrisisKeywords": "suicidio|suicidarme|matarme|quitarme la vida|quiero morir|hacerme daño|lastimarme|autolesión|sobredosis|no puedo más|me maltrata|me golpea|me pega|abusa de mí|estoy en peligro|emergencia|no puedo respirar|dolor en el pecho",
   "askSearchedFor": "Lo que busqué",
-  "askNoneOpenNow": "Ninguno de estos está abierto en este momento."
+  "askNoneOpenNow": "Ninguno de estos está abierto en este momento.",
+  "brandTagline": "Atención médica más llevadera.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

@@ -155,11 +155,11 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       case 'google':
         background = Colors.white;
-        // The glyph carries its own padding, so it needs a larger box.
-        child = const Icon(
-          Icons.g_mobiledata,
-          size: AppIconSize.xxl,
-          color: AppColors.googleBlue,
+        // Google's own "G", as on the sign-in button.
+        child = Image.asset(
+          'assets/google-g-logo.png',
+          height: AppIconSize.lg,
+          excludeFromSemantics: true,
         );
       default:
         background = AppColors.honeydew;

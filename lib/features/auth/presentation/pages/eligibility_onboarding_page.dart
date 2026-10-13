@@ -77,13 +77,12 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
         children: [
           FilledButton(
             onPressed: _saving ? null : () => _finish(applyToSearch: true),
-            style: AppTheme.secondaryFilledButton(context),
             child: _saving
                 ? SizedBox.square(
                     dimension: AppIconSize.md,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: colorScheme.onSecondary,
+                      color: colorScheme.onPrimary,
                     ),
                   )
                 : Text(l10n.onboardingContinue),
@@ -91,9 +90,6 @@ class _EligibilityOnboardingPageState extends State<EligibilityOnboardingPage> {
           const SizedBox(height: AppSpacing.xs),
           TextButton(
             onPressed: _saving ? null : () => _finish(applyToSearch: false),
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.secondary,
-            ),
             child: Text(l10n.onboardingSkip),
           ),
         ],

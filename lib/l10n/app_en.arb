@@ -434,5 +434,9 @@
   "chipImmigrants": "Open to immigrants",
   "askCrisisKeywords": "suicide|suicidal|kill myself|killing myself|end my life|want to die|hurt myself|harm myself|self harm|self-harm|overdose|can't go on|being abused|abusing me|hits me|unsafe at home|in danger|emergency|can't breathe|chest pain|heavy bleeding",
   "askSearchedFor": "What I searched for",
-  "askNoneOpenNow": "None of these are open right now."
+  "askNoneOpenNow": "None of these are open right now.",
+  "brandTagline": "Healthcare made lighter.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

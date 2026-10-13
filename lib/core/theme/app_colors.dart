@@ -75,7 +75,6 @@ abstract final class AppColors {
   // --- Third-party brand marks ---------------------------------------------
 
   static const Color appleBlack = Colors.black;
-  static const Color googleBlue = Color(0xFF4285F4);
 
   /// Sign in with Google (light variant): near-black label, hairline border.
   static const Color googleButtonText = Color(0xDD000000);

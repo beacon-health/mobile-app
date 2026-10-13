@@ -933,4 +933,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get askNoneOpenNow => '这些机构目前都未营业。';
+
+  @override
+  String get brandTagline => '让就医更轻松。';
 }

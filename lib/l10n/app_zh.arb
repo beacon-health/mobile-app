@@ -434,5 +434,9 @@
   "chipImmigrants": "向移民开放",
   "askCrisisKeywords": "自杀|想死|不想活|轻生|结束生命|伤害自己|自残|服药过量|家暴|被虐待|打我|有危险|紧急情况|急救|无法呼吸|喘不过气|胸痛",
   "askSearchedFor": "我搜索的条件",
-  "askNoneOpenNow": "这些机构目前都未营业。"
+  "askNoneOpenNow": "这些机构目前都未营业。",
+  "brandTagline": "让就医更轻松。",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }
