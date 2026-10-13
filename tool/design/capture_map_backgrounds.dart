@@ -7,8 +7,7 @@
 // iPhone 17e — 390×844pt, the design frame — on the oldest installed
 // runtime), screenshots each state it announces, and writes 2x JPEGs to
 // .design-sync/captures/. Needs Xcode and the gitignored iOS Maps key the app
-// build already uses. Until the app adopts the UIScene lifecycle, builds from
-// the iOS 27 SDK don't launch on iOS 27 simulators, hence the oldest runtime.
+// build already uses.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
