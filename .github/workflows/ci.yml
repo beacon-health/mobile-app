@@ -79,6 +79,12 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug
 
+      # Plugins merge their own permissions into the app, so a dependency bump
+      # can add one without touching this repo's manifest. Play wants a
+      # declaration for several of them, and refuses the upload until it has it.
+      - name: Check requested permissions
+        run: tool/check_android_permissions.sh
+
   # Uncomment when gitleaks is desired — requires GitHub Advanced Security or public repo
   # secrets-scan:
   #   name: Secrets Scan

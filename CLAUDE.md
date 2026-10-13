@@ -41,6 +41,11 @@ flutter test
   settings), also run `flutter build ios --release --no-codesign`.
 - Flutter is pinned to 3.47.0 in all three workflows; bump them together and
   match locally.
+- **A dependency bump can add Android permissions**, and Play can refuse the
+  upload over them. CI runs `tool/check_android_permissions.sh` after the
+  debug build. When it fails, add the permission to `android/permissions.txt`
+  only if Beacon uses it; otherwise remove it in the app manifest with
+  `tools:node="remove"` (README → CI/CD).
 - Changed a screen, navigation, or the map? Run it on an iOS simulator **and**
   an Android emulator, and press Android's back button from wherever you
   changed. Tests can't see what only a device shows.

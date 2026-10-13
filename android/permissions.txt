@@ -1,0 +1,16 @@
+# Every permission the built app requests, one per line.
+#
+# CI compares this with the debug build's merged manifest
+# (tool/check_android_permissions.sh). Plugins merge their own permissions into
+# the app, so a dependency update can add one without touching our manifest,
+# and Play wants a declaration — sometimes a review — for several of them.
+#
+# Add a line only for a permission Beacon uses. Otherwise take the permission
+# back out in app/src/main/AndroidManifest.xml with tools:node="remove".
+android.permission.ACCESS_COARSE_LOCATION
+android.permission.ACCESS_FINE_LOCATION
+android.permission.ACCESS_NETWORK_STATE
+android.permission.INTERNET
+android.permission.USE_BIOMETRIC
+android.permission.USE_FINGERPRINT
+org.beaconhealth.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION

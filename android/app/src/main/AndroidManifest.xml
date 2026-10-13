@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- geolocator deliberately does not declare these; the app must, because
          only the app knows whether it needs fine/coarse and foreground/background.
          Foreground-only, matching iOS's NSLocationWhenInUseUsageDescription —
@@ -6,6 +7,15 @@
          needs location while backgrounded and it triggers extra Play review. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- geolocator's manifest asks for this so it can keep reporting location
+         from a foreground service. Beacon only reads the position while it is
+         on screen and never starts that service, so the permission is taken
+         back out: Play requires a declaration and review for every
+         foreground-service permission an app ships. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        tools:node="remove" />
 
     <!-- "Get directions" asks which map apps are installed. Since Android 11
          an app can only see the ones it declares here, so without these

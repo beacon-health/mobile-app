@@ -92,9 +92,7 @@ jobs:
       # Keyless: GitHub's OIDC token is exchanged for short-lived Google
       # credentials. Writes an external_account credentials file and exports
       # GOOGLE_APPLICATION_CREDENTIALS, which fastlane's json_key accepts.
-      # Service-account JSON keys are blocked by the
-      # iam.disableServiceAccountKeyCreation org policy, and this is the
-      # recommended alternative anyway — nothing long-lived to leak or rotate.
+      # Nothing long-lived to leak or rotate.
       - name: Authenticate to Google Cloud
         id: gcp-auth
         if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
@@ -103,11 +101,8 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_PLAY_PUBLISHER_SA }}
 
-      # Play rejects an app's first upload over the API — that one goes through
-      # the Console by hand. Until that has happened and the publisher service
-      # account has been granted access, this step cannot succeed, so it stays
-      # off behind a repo variable rather than turning main red on every push.
-      # Flip PLAY_UPLOAD_ENABLED to 'true' once the Console side is ready.
+      # Runs only while the PLAY_UPLOAD_ENABLED repo variable is 'true'. What it
+      # needs on Google's side is listed in the README under CI/CD.
       - name: Upload to Play internal track
         if: ${{ vars.PLAY_UPLOAD_ENABLED == 'true' }}
         env:
@@ -116,8 +111,8 @@ jobs:
           cd android
           bundle exec fastlane beta
 
-      # The bundle is the thing you upload by hand for the first release, so
-      # publish it regardless of whether the automated upload ran.
+      # Keep the signed bundle whether or not the upload ran or succeeded, so
+      # a build can still be uploaded by hand.
       - name: Upload AAB artifact
         # Runs even if the Play upload failed — a failed upload is exactly when
         # someone needs the bundle to submit by hand.

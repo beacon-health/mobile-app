@@ -374,7 +374,7 @@ that depends on how a store build is signed (see "Releasing").
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, and a debug Android build; uploads a `golden-failures` artifact when a golden test fails |
+| `.github/workflows/ci.yml` | push / PR to `main` | format check, `flutter analyze --fatal-infos`, `flutter test`, a debug Android build, and a check that the build requests only the permissions in `android/permissions.txt`; uploads a `golden-failures` artifact when a golden test fails |
 | `.github/workflows/ios-build.yml` | push to `main` (docs ignored), or manual | builds and uploads to TestFlight via Fastlane |
 | `.github/workflows/android-build.yml` | push to `main` (docs ignored), or manual | builds a signed AAB and uploads to the Play internal track via Fastlane |
 
@@ -402,6 +402,23 @@ falls back to debug keys: it runs, but can't be uploaded to Play. Play uploads
 authenticate with **Workload Identity Federation** rather than a
 service-account key — GitHub's OIDC token is exchanged for short-lived Google
 credentials, so nothing long-lived is stored.
+
+The Play upload needs three things outside this repository: the
+`PLAY_UPLOAD_ENABLED` repository variable set to `true`, the **Google Play
+Android Developer API** enabled in the Google Cloud project the service account
+lives in, and that service account added in Play Console (Users and
+permissions) with permission to release the app to testing tracks. The signed
+bundle is kept as the `beacon-release-aab` artifact either way, so a build can
+be uploaded by hand.
+
+**Plugins can add Android permissions.** Their manifests are merged into the
+app's, so a dependency bump can ship a permission nobody asked for, and Play
+refuses an upload that carries certain permissions (foreground services, for
+one) until they are declared in Play Console. `tool/check_android_permissions.sh`
+fails CI when the built app's permissions differ from `android/permissions.txt`.
+If Beacon doesn't use a new permission, remove it in the app manifest with
+`tools:node="remove"`, as is done for geolocator's foreground-service
+permission.
 
 Required GitHub secrets:
 
@@ -471,6 +488,20 @@ launched state (e.g. `60613`) is the reliable test case.
 **A facility field is always empty in the map list but shows for favorites.**
 The `facilities_near` RPC isn't returning that column; the view is. Both must
 expose it.
+
+**The Play upload step fails.** The message from Google says which piece is
+missing:
+
+- *"Google Play Android Developer API has not been used in project…"* — enable
+  that API in the Cloud project.
+- *"The caller does not have permission"* — the upload service account isn't a
+  Play Console user with release access to the app.
+- *"You must let us know whether your app uses any Foreground Service
+  permissions"* (or a similar request for a declaration) — the bundle requests
+  a permission Play wants declared. Usually a plugin added it; see "Plugins can
+  add Android permissions" under CI/CD.
+
+After fixing it, re-run the failed job; nothing needs rebuilding by hand.
 
 **Android back leaves the app from a new screen.** That screen isn't a route.
 See "Tabs and map overlays are not routes" under Architecture.

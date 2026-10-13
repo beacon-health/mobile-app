@@ -59,6 +59,24 @@ void main() {
       );
     });
 
+    test('takes back the foreground-service permission geolocator adds', () {
+      // Beacon reads location only while it is on screen. Shipping the
+      // permission anyway makes Play ask for a declaration and a review, and
+      // refuse the upload until it has them.
+      expect(
+        RegExp(
+          r'<uses-permission\s+'
+          r'android:name="android\.permission\.FOREGROUND_SERVICE_LOCATION"\s+'
+          'tools:node="remove"',
+        ).hasMatch(manifest),
+        isTrue,
+      );
+      expect(
+        File('android/permissions.txt').readAsStringSync(),
+        isNot(contains('android.permission.FOREGROUND_SERVICE')),
+      );
+    });
+
     test('reads the Maps key from the build, not from source', () {
       expect(manifest, contains(r'android:value="${GOOGLE_MAPS_API_KEY}"'));
       expect(manifest, isNot(contains('AIza')));
