@@ -297,7 +297,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: AppSpacing.xl),
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton(
+                            child: FilledButton(
                               onPressed: _isLoading ? null : _continueAsGuest,
                               child: Text(l10n.authContinueAsGuest),
                             ),

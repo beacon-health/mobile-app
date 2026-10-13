@@ -1569,6 +1569,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Healthcare made lighter.'**
   String get brandTagline;
+
+  /// Beside a day the facility is closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get cardHoursClosed;
+
+  /// Beside a day whose hours are not known.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get cardHoursUnknown;
 }
 
 class _AppLocalizationsDelegate

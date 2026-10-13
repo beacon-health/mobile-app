@@ -858,4 +858,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brandTagline => '让就医更轻松。';
+
+  @override
+  String get cardHoursClosed => '休息';
+
+  @override
+  String get cardHoursUnknown => '未知';
 }
