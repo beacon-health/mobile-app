@@ -5,6 +5,7 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
@@ -282,12 +283,8 @@ class _HomePageState extends State<HomePage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: statusBarHeight + AppSpacing.sm),
-            Center(
-              child: Image.asset(
-                'assets/beacon-logo.png',
-                height: AppSizes.logoCompact,
-                excludeFromSemantics: true,
-              ),
+            const Center(
+              child: BeaconLogo(height: AppSizes.logoCompact),
             ),
             const SizedBox(height: AppSpacing.lg),
             sectionTitle(l10n.homeGreeting),

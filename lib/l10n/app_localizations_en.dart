@@ -900,4 +900,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managerComingSoon => 'Requests aren\'t open yet. Check back soon.';
+
+  @override
+  String get brandTagline => 'Healthcare made lighter.';
 }

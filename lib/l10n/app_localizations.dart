@@ -1551,6 +1551,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Requests aren\'t open yet. Check back soon.'**
   String get managerComingSoon;
+
+  /// Tagline shown under the logo on the sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthcare made lighter.'**
+  String get brandTagline;
 }
 
 class _AppLocalizationsDelegate

@@ -413,5 +413,9 @@
   "managerEmptyTitle": "暂无机构",
   "managerEmptyBody": "如果您运营的机构已收录在 Beacon 中，可以申请管理其信息。",
   "managerRequestAccess": "申请管理机构",
-  "managerComingSoon": "申请尚未开放，请稍后再来。"
+  "managerComingSoon": "申请尚未开放，请稍后再来。",
+  "brandTagline": "让就医更轻松。",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

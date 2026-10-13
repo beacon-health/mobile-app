@@ -413,5 +413,9 @@
   "managerEmptyTitle": "No facilities yet",
   "managerEmptyBody": "If you run a facility listed in Beacon, you can ask to manage its listing.",
   "managerRequestAccess": "Request access to a facility",
-  "managerComingSoon": "Requests aren't open yet. Check back soon."
+  "managerComingSoon": "Requests aren't open yet. Check back soon.",
+  "brandTagline": "Healthcare made lighter.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

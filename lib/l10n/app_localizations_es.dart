@@ -912,4 +912,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get managerComingSoon =>
       'Las solicitudes aún no están abiertas. Vuelve pronto.';
+
+  @override
+  String get brandTagline => 'Atención médica más llevadera.';
 }

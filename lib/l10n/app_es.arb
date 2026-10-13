@@ -413,5 +413,9 @@
   "managerEmptyTitle": "Aún no tienes centros",
   "managerEmptyBody": "Si diriges un centro que aparece en Beacon, puedes solicitar administrar su ficha.",
   "managerRequestAccess": "Solicitar acceso a un centro",
-  "managerComingSoon": "Las solicitudes aún no están abiertas. Vuelve pronto."
+  "managerComingSoon": "Las solicitudes aún no están abiertas. Vuelve pronto.",
+  "brandTagline": "Atención médica más llevadera.",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  }
 }

@@ -865,4 +865,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get managerComingSoon => '申请尚未开放，请稍后再来。';
+
+  @override
+  String get brandTagline => '让就医更轻松。';
 }
