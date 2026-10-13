@@ -9,6 +9,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/features/ask/data/assistant_service.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -143,6 +144,12 @@ Future<PlatformLog> resetAppState(
   CoverageService().debugReset();
   CoverageService().debugSetStates(['IL']);
   await EligibilityPreferencesService().clear();
+  // A phone with no language model, so no Ask tab, unless a test gives it
+  // one (see `useAssistant`).
+  AssistantService()
+    ..debugReset()
+    ..debugNoModel = true;
+  await AssistantService().refresh();
   await AccessibilitySettings().setOpenMapAsList(false);
   await AccessibilitySettings().setLargerMapPins(false);
   RecentFacilitiesService().clear();
@@ -223,6 +230,7 @@ Future<FakeGoogleMaps> pumpAppShell(
   required FakeFacilityRepository repository,
   Size size = phoneSize,
   Widget home = const MainNavBar(),
+  Locale locale = const Locale('en'),
 }) async {
   final maps = FakeGoogleMaps.install();
   MarkerUtils.debugDescriptorOverride = BitmapDescriptor.defaultMarker;
@@ -257,11 +265,14 @@ Future<FakeGoogleMaps> pumpAppShell(
         ChangeNotifierProvider<AccessibilitySettings>.value(
           value: AccessibilitySettings(),
         ),
+        ChangeNotifierProvider<AssistantService>.value(
+          value: AssistantService(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        locale: const Locale('en'),
+        locale: locale,
         supportedLocales: LocaleProvider.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,

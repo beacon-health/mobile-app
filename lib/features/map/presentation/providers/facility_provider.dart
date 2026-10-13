@@ -100,6 +100,30 @@ class FacilityProvider extends ChangeNotifier {
     }
   }
 
+  /// The same, for a facility that may not be in the current region list —
+  /// an Ask result, found around the saved location while the map looks
+  /// elsewhere.
+  Future<void> toggleFavoriteOf(Facility facility) async {
+    if (_facilities.any((f) => f.id == facility.id)) {
+      await toggleFavorite(facility.id);
+      return;
+    }
+
+    final wasFavorite = _favoriteIds.contains(facility.id);
+    _syncFavoriteFacility(facility.copyWith(isFavorite: !wasFavorite));
+    notifyListeners();
+
+    if (UserFavoritesService.instance.currentUserId == null) return;
+
+    final ok = wasFavorite
+        ? await UserFavoritesService.instance.removeFavorite(facility.id)
+        : await UserFavoritesService.instance.addFavorite(facility.id);
+    if (!ok) {
+      _syncFavoriteFacility(facility.copyWith(isFavorite: wasFavorite));
+      notifyListeners();
+    }
+  }
+
   /// Mirrors a favorite toggle into [_favoriteFacilities] so the Home Favorites
   /// list updates immediately, without waiting for a refetch.
   void _syncFavoriteFacility(Facility facility) {

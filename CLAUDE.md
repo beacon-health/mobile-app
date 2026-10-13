@@ -90,6 +90,11 @@ commands, or make text edits with the file tools instead of the shell.
   (README → Architecture).
 - **Never hardcode a state or a list of states.** Coverage comes from
   `CoverageService`, which follows `launched_states`.
+- **The Ask tab's model only picks filters** (README → Architecture). Never
+  show text it generated, never send a request anywhere but the on-device
+  bridge, and keep `CrisisKeywords` independent of it. A new filter id goes in
+  `AskRequest`, `AskPrompts`, and the Swift struct together;
+  `platform_config_test.dart` checks they agree.
 - **Tabs and map overlays are not routes**, so Android's back button doesn't
   close them on its own. Anything new that opens over a tab without being a
   route joins the chain in `MapPageState.handleBack()` / `mapBackTarget`, with

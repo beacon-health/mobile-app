@@ -1,3 +1,9 @@
+import 'dart:async';
+
+import 'package:beacon_app/core/services/guest_mode_service.dart';
+import 'package:beacon_app/features/ask/data/assistant_service.dart';
+import 'package:beacon_app/features/ask/domain/ask_request.dart';
+import 'package:beacon_app/features/ask/presentation/pages/ask_page.dart';
 import 'package:beacon_app/features/home/presentation/pages/home_page.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -6,13 +12,16 @@ import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-/// Index of each tab in the bottom bar.
+/// The tabs, in bar order. Ask is the middle one, and is only in the bar on
+/// phones with a language model it can use.
+enum AppTab { home, map, ask, profile, settings }
+
+/// Position of the two tabs whose place in the bar never changes.
 abstract final class NavTab {
   static const int home = 0;
   static const int map = 1;
-  static const int profile = 2;
-  static const int settings = 3;
 }
 
 class MainNavBar extends StatefulWidget {
@@ -23,7 +32,7 @@ class MainNavBar extends StatefulWidget {
 }
 
 class _MainNavBarState extends State<MainNavBar> {
-  int _selectedIndex = 0;
+  AppTab _selected = AppTab.home;
   final PageStorageBucket _bucket = PageStorageBucket();
   final List<Widget> _pages = [];
   final GlobalKey<_MapPageWrapperState> _mapPageKey =
@@ -32,15 +41,30 @@ class _MainNavBarState extends State<MainNavBar> {
   @override
   void initState() {
     super.initState();
+    // One page per AppTab, in enum order. All five are always built, so a
+    // tab keeps its state even while Ask comes and goes from the bar.
     _pages.addAll([
       HomePage(
         key: const PageStorageKey('home_page'),
         onNavigateToMap: _handleNavigateToMap,
       ),
       _MapPageWrapper(key: _mapPageKey),
+      AskPage(
+        onOpenMap: _openMapWithFilters,
+        onShowFacility: (facility) =>
+            _handleNavigateToMap(NavTab.map, facility),
+      ),
       const ProfilePage(),
       const SettingsPage(),
     ]);
+  }
+
+  /// Ask couldn't answer, or the person asked to see its results on the map.
+  void _openMapWithFilters(AskFilters filters) {
+    setState(() => _selected = AppTab.map);
+    Future.delayed(MapConstants.navSettleDelay, () {
+      _mapPageKey.currentState?.applyFilters(filters);
+    });
   }
 
   void _handleNavigateToMap(
@@ -48,9 +72,7 @@ class _MainNavBarState extends State<MainNavBar> {
     Facility? facility, {
     String? categoryFilter,
   }) {
-    setState(() {
-      _selectedIndex = pageIndex;
-    });
+    setState(() => _selected = AppTab.map);
 
     if (facility != null) {
       Future.delayed(MapConstants.navSettleDelay, () {
@@ -69,21 +91,15 @@ class _MainNavBarState extends State<MainNavBar> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   /// A back press the system did not act on, because [PopScope] below said it
   /// couldn't. The tabs aren't routes, so going "back one step" is ours to
   /// define: first whatever is open on the map, then the Home tab.
   void _onBackBlocked() {
-    if (_selectedIndex == NavTab.map &&
+    if (_selected == AppTab.map &&
         (_mapPageKey.currentState?.handleBack() ?? false)) {
       return;
     }
-    setState(() => _selectedIndex = NavTab.home);
+    setState(() => _selected = AppTab.home);
   }
 
   @override
@@ -92,7 +108,7 @@ class _MainNavBarState extends State<MainNavBar> {
     // Android's convention for the start tab. Dialogs, sheets, and pushed
     // pages are routes above this one and pop before this is ever asked.
     return PopScope<void>(
-      canPop: _selectedIndex == NavTab.home,
+      canPop: _selected == AppTab.home,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _onBackBlocked();
       },
@@ -101,57 +117,78 @@ class _MainNavBarState extends State<MainNavBar> {
   }
 
   Widget _buildScaffold(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // Ask belongs to an account, like Favorites: a guest doesn't get the tab.
+    final showAsk = context.watch<AssistantService>().showsTab &&
+        !context.watch<GuestModeService>().isGuest;
+    final tabs = [
+      for (final tab in AppTab.values)
+        if (tab != AppTab.ask || showAsk) tab,
+    ];
+    // The Ask tab left the bar while it was open (the person signed out, or
+    // the phone's model went away).
+    if (!tabs.contains(_selected)) _selected = AppTab.home;
+
+    NavigationDestination destination(AppTab tab) => switch (tab) {
+          AppTab.home => NavigationDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: l10n.navHome,
+            ),
+          AppTab.map => NavigationDestination(
+              icon: const Icon(Icons.map_outlined),
+              selectedIcon: const Icon(Icons.map),
+              label: l10n.navMap,
+            ),
+          AppTab.ask => NavigationDestination(
+              icon: const Icon(Icons.forum_outlined),
+              selectedIcon: const Icon(Icons.forum),
+              label: l10n.navAsk,
+            ),
+          AppTab.profile => NavigationDestination(
+              icon: const Icon(Icons.person_outline),
+              selectedIcon: const Icon(Icons.person),
+              label: l10n.navProfile,
+            ),
+          AppTab.settings => NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: l10n.navSettings,
+            ),
+        };
+
     return Scaffold(
       body: PageStorage(
         bucket: _bucket,
         child: IndexedStack(
-          index: _selectedIndex,
+          index: _selected.index,
           children: _pages,
         ),
       ),
-      bottomNavigationBar: Builder(
-        builder: (context) {
-          final l10n = AppLocalizations.of(context)!;
-          // Colors, the indicator pill, and label styles come from
-          // navigationBarTheme. Each tab pairs an outlined icon with a filled
-          // one, so the active tab differs in shape as well as color.
-          return DecoratedBox(
-            position: DecorationPosition.foreground,
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
+      // Colors, the indicator pill, and label styles come from
+      // navigationBarTheme. Each tab pairs an outlined icon with a filled
+      // one, so the active tab differs in shape as well as color.
+      bottomNavigationBar: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
             ),
-            child: NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onItemTapped,
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.home_outlined),
-                  selectedIcon: const Icon(Icons.home),
-                  label: l10n.navHome,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.map_outlined),
-                  selectedIcon: const Icon(Icons.map),
-                  label: l10n.navMap,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.person_outline),
-                  selectedIcon: const Icon(Icons.person),
-                  label: l10n.navProfile,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.settings_outlined),
-                  selectedIcon: const Icon(Icons.settings),
-                  label: l10n.navSettings,
-                ),
-              ],
-            ),
-          );
-        },
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: tabs.indexOf(_selected),
+          onDestinationSelected: (index) {
+            setState(() => _selected = tabs[index]);
+            // Opening Ask is the moment to ask the phone again whether its
+            // model has finished getting ready.
+            if (tabs[index] == AppTab.ask) {
+              unawaited(AssistantService().refresh());
+            }
+          },
+          destinations: [for (final tab in tabs) destination(tab)],
+        ),
       ),
     );
   }
@@ -179,6 +216,15 @@ class _MapPageWrapperState extends State<_MapPageWrapper> {
 
   void recenterOnUserLocation() {
     _mapPageKey.currentState?.recenterOnUserLocation();
+  }
+
+  void applyFilters(AskFilters filters) {
+    _mapPageKey.currentState?.applyFilters(
+      categories: filters.categories,
+      openNow: filters.openNow,
+      preferences: filters.preferences,
+      searchText: filters.keyword,
+    );
   }
 
   /// See [MapPageState.handleBack].

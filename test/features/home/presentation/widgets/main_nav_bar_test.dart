@@ -256,12 +256,14 @@ void main() {
   testWidgets('tapping a tab switches to it', (tester) async {
     await pumpShell(tester);
 
+    // Four tabs on a phone with no language model: Home, Map, Profile,
+    // Settings.
     await openTab(tester, 'Settings');
-    expect(selectedTab(tester), NavTab.settings);
+    expect(selectedTab(tester), 3);
     expect(find.text('Directions app'), findsOneWidget);
 
     await openTab(tester, 'Profile');
-    expect(selectedTab(tester), NavTab.profile);
+    expect(selectedTab(tester), 2);
 
     await openTab(tester, 'Map');
     expect(selectedTab(tester), NavTab.map);

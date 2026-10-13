@@ -28,5 +28,7 @@ import os
   // implicitly, and plugins register here once it exists.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // The Ask tab's channel to the on-device language model.
+    AssistantBridge.register(with: engineBridge.applicationRegistrar.messenger())
   }
 }

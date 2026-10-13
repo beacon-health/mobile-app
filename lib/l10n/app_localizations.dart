@@ -1474,6 +1474,228 @@ abstract class AppLocalizations {
   /// **'Not set'**
   String get commonNotSet;
 
+  /// No description provided for @navAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get navAsk;
+
+  /// No description provided for @askTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get askTitle;
+
+  /// No description provided for @askHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you need help finding?'**
+  String get askHeading;
+
+  /// No description provided for @askSuggestionClinic.
+  ///
+  /// In en, this message translates to:
+  /// **'A free clinic near me'**
+  String get askSuggestionClinic;
+
+  /// No description provided for @askSuggestionTalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone to talk to'**
+  String get askSuggestionTalk;
+
+  /// No description provided for @askSuggestionFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food pantries open now'**
+  String get askSuggestionFood;
+
+  /// No description provided for @askSuggestionShelter.
+  ///
+  /// In en, this message translates to:
+  /// **'A place to stay tonight'**
+  String get askSuggestionShelter;
+
+  /// No description provided for @askCrisisNote.
+  ///
+  /// In en, this message translates to:
+  /// **'In an emergency, call 911. If you\'re in crisis or thinking about suicide, call or text 988.'**
+  String get askCrisisNote;
+
+  /// No description provided for @askCrisisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help is available right now'**
+  String get askCrisisTitle;
+
+  /// No description provided for @askCall911.
+  ///
+  /// In en, this message translates to:
+  /// **'Call 911'**
+  String get askCall911;
+
+  /// No description provided for @askCall988.
+  ///
+  /// In en, this message translates to:
+  /// **'Call or text 988'**
+  String get askCall988;
+
+  /// No description provided for @askInputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a kind of help'**
+  String get askInputLabel;
+
+  /// No description provided for @askSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get askSend;
+
+  /// No description provided for @askPrivacyFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs on this phone. Chats aren\'t sent anywhere.'**
+  String get askPrivacyFooter;
+
+  /// No description provided for @askNewChat.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get askNewChat;
+
+  /// No description provided for @askThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking…'**
+  String get askThinking;
+
+  /// No description provided for @askFoundSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{I found 1 place that matches.} other{I found {count} places that match. Here are the nearest.}}'**
+  String askFoundSummary(int count);
+
+  /// No description provided for @askAiNote.
+  ///
+  /// In en, this message translates to:
+  /// **'AI read your request. Check details with the facility.'**
+  String get askAiNote;
+
+  /// No description provided for @askShowOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on map'**
+  String get askShowOnMap;
+
+  /// No description provided for @askOnlyOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Only open now'**
+  String get askOnlyOpenNow;
+
+  /// No description provided for @askOpenMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the map'**
+  String get askOpenMap;
+
+  /// No description provided for @askOpenMapWithFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the map with these filters'**
+  String get askOpenMapWithFilters;
+
+  /// No description provided for @askHandoffUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'I couldn\'t work out what to search for. Try naming the kind of help you need, or search the map yourself.'**
+  String get askHandoffUnclear;
+
+  /// No description provided for @askHandoffNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'I didn\'t find anything nearby that matches. On the map you can look further away or change the filters.'**
+  String get askHandoffNoResults;
+
+  /// No description provided for @askHandoffMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'I can\'t give medical advice. I can help you find a place to get care, or you can search the map.'**
+  String get askHandoffMedical;
+
+  /// No description provided for @askHandoffOffTopic.
+  ///
+  /// In en, this message translates to:
+  /// **'I can only help you find services in Beacon. Try asking for a kind of help, or search the map.'**
+  String get askHandoffOffTopic;
+
+  /// No description provided for @askDistanceMiles.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} mi'**
+  String askDistanceMiles(String distance);
+
+  /// No description provided for @askDirectionsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions to {name}'**
+  String askDirectionsTo(String name);
+
+  /// No description provided for @askNotReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant isn\'t ready yet'**
+  String get askNotReadyTitle;
+
+  /// No description provided for @askNotReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone is still setting it up, or it\'s turned off in your phone\'s settings. You can search the map in the meantime.'**
+  String get askNotReadyBody;
+
+  /// No description provided for @askLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant doesn\'t work in this language yet'**
+  String get askLanguageTitle;
+
+  /// No description provided for @askLanguageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone\'s assistant can\'t answer in this language. You can search the map instead.'**
+  String get askLanguageBody;
+
+  /// No description provided for @askSearchMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the map'**
+  String get askSearchMap;
+
+  /// No description provided for @chipImmigrants.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to immigrants'**
+  String get chipImmigrants;
+
+  /// No description provided for @askCrisisKeywords.
+  ///
+  /// In en, this message translates to:
+  /// **'suicide|suicidal|kill myself|killing myself|end my life|want to die|hurt myself|harm myself|self harm|self-harm|overdose|can\'t go on|being abused|abusing me|hits me|unsafe at home|in danger|emergency|can\'t breathe|chest pain|heavy bleeding'**
+  String get askCrisisKeywords;
+
+  /// No description provided for @askSearchedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What I searched for'**
+  String get askSearchedFor;
+
+  /// No description provided for @askNoneOpenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these are open right now.'**
+  String get askNoneOpenNow;
+
   /// Tagline shown under the logo on the sign-in screen.
   ///
   /// In en, this message translates to:

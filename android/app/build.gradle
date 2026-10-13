@@ -95,3 +95,10 @@ android {
 flutter {
     source '../..'
 }
+
+dependencies {
+    // Gemini Nano, the on-device model behind the Ask tab, through ML Kit's
+    // GenAI Prompt API (see AssistantBridge.kt).
+    implementation "com.google.mlkit:genai-prompt:1.0.0-beta4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+}

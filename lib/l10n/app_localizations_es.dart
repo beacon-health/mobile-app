@@ -854,6 +854,140 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonNotSet => 'Sin definir';
 
   @override
+  String get navAsk => 'Preguntar';
+
+  @override
+  String get askTitle => 'Preguntar';
+
+  @override
+  String get askHeading => '¿Qué necesitas encontrar?';
+
+  @override
+  String get askSuggestionClinic => 'Una clínica gratuita cerca de mí';
+
+  @override
+  String get askSuggestionTalk => 'Alguien con quien hablar';
+
+  @override
+  String get askSuggestionFood => 'Despensas de alimentos abiertas ahora';
+
+  @override
+  String get askSuggestionShelter => 'Un lugar donde dormir esta noche';
+
+  @override
+  String get askCrisisNote =>
+      'En una emergencia, llama al 911. Si estás en crisis o piensas en el suicidio, llama o envía un mensaje de texto al 988.';
+
+  @override
+  String get askCrisisTitle => 'Hay ayuda disponible ahora mismo';
+
+  @override
+  String get askCall911 => 'Llamar al 911';
+
+  @override
+  String get askCall988 => 'Llamar o escribir al 988';
+
+  @override
+  String get askInputLabel => 'Pide un tipo de ayuda';
+
+  @override
+  String get askSend => 'Enviar';
+
+  @override
+  String get askPrivacyFooter =>
+      'Funciona en este teléfono. Tus mensajes no se envían a ningún lugar.';
+
+  @override
+  String get askNewChat => 'Nueva conversación';
+
+  @override
+  String get askThinking => 'Buscando…';
+
+  @override
+  String askFoundSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Encontré $count lugares que coinciden. Estos son los más cercanos.',
+      one: 'Encontré 1 lugar que coincide.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get askAiNote =>
+      'La IA interpretó tu solicitud. Confirma los detalles con el lugar.';
+
+  @override
+  String get askShowOnMap => 'Ver en el mapa';
+
+  @override
+  String get askOnlyOpenNow => 'Solo abiertos ahora';
+
+  @override
+  String get askOpenMap => 'Abrir el mapa';
+
+  @override
+  String get askOpenMapWithFilters => 'Abrir el mapa con estos filtros';
+
+  @override
+  String get askHandoffUnclear =>
+      'No pude entender qué buscar. Intenta nombrar el tipo de ayuda que necesitas o busca en el mapa.';
+
+  @override
+  String get askHandoffNoResults =>
+      'No encontré nada cercano que coincida. En el mapa puedes buscar más lejos o cambiar los filtros.';
+
+  @override
+  String get askHandoffMedical =>
+      'No puedo dar consejos médicos. Puedo ayudarte a encontrar un lugar donde recibir atención, o puedes buscar en el mapa.';
+
+  @override
+  String get askHandoffOffTopic =>
+      'Solo puedo ayudarte a encontrar servicios en Beacon. Intenta pedir un tipo de ayuda o busca en el mapa.';
+
+  @override
+  String askDistanceMiles(String distance) {
+    return '$distance mi';
+  }
+
+  @override
+  String askDirectionsTo(String name) {
+    return 'Cómo llegar a $name';
+  }
+
+  @override
+  String get askNotReadyTitle => 'El asistente aún no está listo';
+
+  @override
+  String get askNotReadyBody =>
+      'Tu teléfono aún lo está preparando, o está desactivado en los ajustes del teléfono. Mientras tanto, puedes buscar en el mapa.';
+
+  @override
+  String get askLanguageTitle => 'El asistente aún no funciona en este idioma';
+
+  @override
+  String get askLanguageBody =>
+      'El asistente de tu teléfono no puede responder en este idioma. Puedes buscar en el mapa.';
+
+  @override
+  String get askSearchMap => 'Buscar en el mapa';
+
+  @override
+  String get chipImmigrants => 'Abierto a inmigrantes';
+
+  @override
+  String get askCrisisKeywords =>
+      'suicidio|suicidarme|matarme|quitarme la vida|quiero morir|hacerme daño|lastimarme|autolesión|sobredosis|no puedo más|me maltrata|me golpea|me pega|abusa de mí|estoy en peligro|emergencia|no puedo respirar|dolor en el pecho';
+
+  @override
+  String get askSearchedFor => 'Lo que busqué';
+
+  @override
+  String get askNoneOpenNow => 'Ninguno de estos está abierto en este momento.';
+
+  @override
   String get brandTagline => 'Atención médica más llevadera.';
 
   @override

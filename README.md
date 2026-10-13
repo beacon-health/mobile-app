@@ -104,6 +104,7 @@ lib/
     utils/                     Formatting, ZIP → state lookup, coverage text
     widgets/                   Shared dialogs, sign-in button, gates
   features/
+    ask/                       Ask tab: the on-device assistant
     auth/                      Onboarding, login, ZIP entry, AuthGate
     home/                      Home page, quick actions, nav bar
     map/
@@ -185,6 +186,35 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
 Directions, Call, and Website sit directly under the name.
 
+**Ask reads a request; it never answers one.** The Ask tab lets a person say
+what they need in their own words. The phone's own language model — Apple's
+Foundation Models on iOS, Gemini Nano through ML Kit on Android — turns the
+request into the Map's filters, and that is all it does:
+
+1. `AskPrompts` asks the model for a short JSON form; `AskRequest.parse` keeps
+   only the ids it knows and treats anything else as "no filters".
+2. `AskController` runs the same query and the same `FacilityFilterService`
+   rules as the Map, around the saved location.
+3. Every word on screen about a place comes from its record. The model writes
+   nothing the person reads: tried against the real models, a generated
+   summary misnamed facilities and reported closed places as open.
+
+Whenever a step can't do its job — no filters, no results, a request for
+medical advice or anything off topic — Ask hands the request to the Map with
+whatever filters it did work out (`MapPageState.applyFilters`). Messages that
+match `CrisisKeywords` (a fixed list, in all three languages) get 911 and 988
+at once, before and regardless of the model. Nothing leaves the phone, and the
+conversation lives in memory only.
+
+The native side is a method channel with two calls, `availability` and
+`extractFilters` (`AssistantBridge` in each native project;
+`AssistantModelService.forPlatform` on the Dart side). `AssistantService`
+tracks availability: a phone that can never run the model gets no Ask tab; one
+that can but isn't ready gets the tab and an explanation. Ask belongs to an
+account: a guest gets no tab either, and signing out ends the conversation. Android's model
+library is built for API 26, so the manifest overrides its minimum SDK and the
+bridge never touches it below that.
+
 **Tabs and map overlays are not routes, so Android's back button is handled by
 hand.** `MainNavBar` wraps the shell in a `PopScope`: back first asks
 `MapPageState.handleBack()` to close the innermost thing open on the map
@@ -207,6 +237,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
 | `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
 | `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |
+| `AssistantService` (`features/ask/data/`) | Whether the phone has a language model Ask can use; decides, with a signed-in account, if the Ask tab is shown |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |
@@ -410,8 +441,11 @@ Tests draw every glyph as a full-width block, about twice as wide as the real
 typeface, so a row that fits on a phone can overflow in a test; give such a
 test a wider surface.
 
-Not covered by any automated test: the native sign-in sheets, and anything
-that depends on how a store build is signed (see "Releasing").
+Not covered by any automated test: the native sign-in sheets, the on-device
+language models themselves (tests drive Ask with `FakeAssistantModel` from
+`test/helpers/fake_assistant.dart`; the emulator has no model, and the iOS
+simulator borrows the Mac's only when the two run matching OS versions), and
+anything that depends on how a store build is signed (see "Releasing").
 
 ---
 

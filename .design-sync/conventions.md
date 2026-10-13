@@ -89,8 +89,9 @@ Use these, never raw hex or pixel values:
   `--color-scrim`; sheets have a 40×4 pill handle. The facility sheet is full
   width, on `--color-facility-card`.
 - **Navigation:** centered `.text-title-large` app bar on
-  `--color-background`; a four-tab bottom bar (Home, Map, Profile, Settings)
-  on `--color-nav-bar`. The active tab has a `--color-nav-indicator` pill
+  `--color-background`; a bottom bar on `--color-nav-bar` with Home, Map,
+  Ask, Profile, Settings. Ask (the `forum` icon) is only there on phones with
+  an on-device language model, so design both the five- and four-tab bars. The active tab has a `--color-nav-indicator` pill
   behind a filled icon and a bold `--color-tertiary-text` label; the others
   are outlined icons in `--color-on-surface-variant`.
 - **Onboarding step:** a back arrow, a segmented progress bar with "Step n of
