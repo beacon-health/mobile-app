@@ -539,14 +539,18 @@ class MapPageState extends State<MapPage>
   }
 
   void _filterFacilities() {
+    // Guests have no favorites and no preference filters; ignoring any stale
+    // state here means neither can ever empty the list for them.
+    final isGuest = context.read<GuestModeService>().isGuest;
     setState(() {
       _filteredFacilities = FacilityFilterService.filterFacilities(
         _allFacilities,
         searchText: _searchController.text,
         selectedCategories: _selectedCategories,
         selectedEligibilityRequirements: _eligibilityFilter(),
-        selectedPreferenceRequirements: _selectedPreferenceRequirements,
-        showFavoritesOnly: _showFavoritesOnly,
+        selectedPreferenceRequirements:
+            isGuest ? const {} : _selectedPreferenceRequirements,
+        showFavoritesOnly: _showFavoritesOnly && !isGuest,
         showOpenNowOnly: _showOpenNowOnly,
       );
       _updateMarkers();
@@ -875,17 +879,20 @@ class MapPageState extends State<MapPage>
   }
 
   Future<void> _showFilterModal({FilterSection? expandedSection}) async {
+    final isGuest = context.read<GuestModeService>().isGuest;
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => FilterModal(
+      builder: (sheetContext) => FilterModal(
         selectedCategories: _selectedCategories,
         availableCategories: FacilityCategories.categoryBroadValues,
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,
         expandedSection: expandedSection,
+        isGuest: isGuest,
+        onLockedTap: () => showSignInPromptDialog(sheetContext),
       ),
     );
 

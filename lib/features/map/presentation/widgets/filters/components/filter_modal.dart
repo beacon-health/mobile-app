@@ -21,6 +21,14 @@ class FilterModal extends StatefulWidget {
   final bool showOpenNowOnly;
   final FilterSection? expandedSection;
 
+  /// Guests can't favorite or filter by preferences. Both controls render
+  /// locked here, exactly as their chips do in the filter bar, so the two
+  /// can't disagree.
+  final bool isGuest;
+
+  /// Called when a guest taps a locked control (the sign-in prompt).
+  final VoidCallback? onLockedTap;
+
   const FilterModal({
     super.key,
     required this.selectedCategories,
@@ -29,6 +37,8 @@ class FilterModal extends StatefulWidget {
     required this.showFavoritesOnly,
     required this.showOpenNowOnly,
     this.expandedSection,
+    this.isGuest = false,
+    this.onLockedTap,
   });
 
   @override
@@ -52,11 +62,13 @@ class _FilterModalState extends State<FilterModal> {
   void initState() {
     super.initState();
     _tempCategories = Set.from(widget.selectedCategories);
+    // A guest never carries these two filters, whatever state arrived.
     _tempPreferenceRequirements =
-        Map.from(widget.selectedPreferenceRequirements);
-    _tempShowFavoritesOnly = widget.showFavoritesOnly;
+        widget.isGuest ? {} : Map.from(widget.selectedPreferenceRequirements);
+    _tempShowFavoritesOnly = !widget.isGuest && widget.showFavoritesOnly;
     _tempShowOpenNowOnly = widget.showOpenNowOnly;
-    _expandedSection = widget.expandedSection;
+    _expandedSection =
+        _isLocked(widget.expandedSection) ? null : widget.expandedSection;
 
     if (widget.expandedSection != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,6 +82,9 @@ class _FilterModalState extends State<FilterModal> {
     _scrollController.dispose();
     super.dispose();
   }
+
+  bool _isLocked(FilterSection? section) =>
+      widget.isGuest && section == FilterSection.preferences;
 
   void _scrollToSection(FilterSection section) {
     final key = _sectionKeys[section];
@@ -154,6 +169,7 @@ class _FilterModalState extends State<FilterModal> {
                   AppLocalizations.of(context)!.filterFavorites,
                   _tempShowFavoritesOnly,
                   (value) => setState(() => _tempShowFavoritesOnly = value),
+                  locked: widget.isGuest,
                 ),
                 const Divider(height: AppSpacing.xxxl),
                 _buildExpandableSection(
@@ -210,23 +226,48 @@ class _FilterModalState extends State<FilterModal> {
   Widget _buildToggleSection(
     String title,
     bool value,
-    Function(bool) onChanged,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    Function(bool) onChanged, {
+    bool locked = false,
+  }) {
+    final theme = Theme.of(context);
+    final row = Row(
       children: [
-        Text(title, style: Theme.of(context).textTheme.bodyLarge),
-        Switch(value: value, onChanged: onChanged),
+        if (locked) ...[
+          _lockIcon(theme),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+        Expanded(
+          child: Text(
+            title,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: locked ? _lockedColor(theme) : null,
+            ),
+          ),
+        ),
+        // A null onChanged renders the switch disabled.
+        Switch(value: value, onChanged: locked ? null : onChanged),
       ],
     );
+    if (!locked) return row;
+    return InkWell(onTap: widget.onLockedTap, child: row);
   }
+
+  Color _lockedColor(ThemeData theme) =>
+      theme.colorScheme.onSurface.withValues(alpha: AppOpacity.disabled);
+
+  Widget _lockIcon(ThemeData theme) => Icon(
+        Icons.lock_outline,
+        size: AppIconSize.sm,
+        color: _lockedColor(theme),
+      );
 
   Widget _buildExpandableSection(
     FilterSection section,
     String title,
     Widget content,
   ) {
-    final isExpanded = _expandedSection == section;
+    final locked = _isLocked(section);
+    final isExpanded = !locked && _expandedSection == section;
     final theme = Theme.of(context);
 
     return Container(
@@ -235,23 +276,36 @@ class _FilterModalState extends State<FilterModal> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () {
-              setState(() {
-                _expandedSection = isExpanded ? null : section;
-              });
-            },
+            onTap: locked
+                ? widget.onLockedTap
+                : () {
+                    setState(() {
+                      _expandedSection = isExpanded ? null : section;
+                    });
+                  },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title, style: theme.textTheme.titleMedium),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: theme.colorScheme.onSurfaceMuted,
+                  if (locked) ...[
+                    _lockIcon(theme),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: locked ? _lockedColor(theme) : null,
+                      ),
+                    ),
                   ),
+                  if (!locked)
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: theme.colorScheme.onSurfaceMuted,
+                    ),
                 ],
               ),
             ),
