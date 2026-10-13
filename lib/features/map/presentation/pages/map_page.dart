@@ -138,7 +138,7 @@ class MapPageState extends State<MapPage>
   late final FacilityRepositoryBase _facilityRepository;
   late final FacilityProvider _facilityProvider;
   bool _isLoading = true;
-  String? _error;
+  bool _loadFailed = false;
   final Set<Marker> _markers = {};
   double _currentZoom = MapConstants.defaultZoom;
   double _previousZoom = MapConstants.defaultZoom;
@@ -447,7 +447,7 @@ class MapPageState extends State<MapPage>
     // current region, not everything, so each location change must re-query.
     setState(() {
       _isLoading = true;
-      _error = null;
+      _loadFailed = false;
       _markers.clear();
       _filteredFacilities = [];
       _listFacilities = [];
@@ -499,7 +499,7 @@ class MapPageState extends State<MapPage>
       );
       if (mounted) {
         setState(() {
-          _error = 'Failed to load facilities. Please try again.';
+          _loadFailed = true;
           _isLoading = false;
         });
       }
@@ -1372,8 +1372,7 @@ class MapPageState extends State<MapPage>
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            AppLocalizations.of(context)?.mapLoadFailed ??
-                (_error ?? 'An error occurred'),
+            AppLocalizations.of(context)!.mapLoadFailed,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -1390,7 +1389,7 @@ class MapPageState extends State<MapPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_error != null) {
+    if (_loadFailed) {
       return _buildError();
     }
 

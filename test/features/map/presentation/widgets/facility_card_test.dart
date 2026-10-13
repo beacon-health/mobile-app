@@ -147,6 +147,126 @@ void main() {
     expect(toggles, 1);
   });
 
+  testWidgets('a collapsed row shows the address above the description',
+      (tester) async {
+    // The address used to be reachable only by asking for directions.
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        address: '35 E Wacker Dr, Chicago, IL 60601',
+        description: 'Free legal aid',
+      ),
+    );
+
+    expect(find.text('35 E Wacker Dr, Chicago, IL 60601'), findsOneWidget);
+    expect(find.text('Free legal aid'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('35 E Wacker Dr, Chicago, IL 60601')).dy,
+      lessThan(tester.getTopLeft(find.text('Free legal aid')).dy),
+    );
+  });
+
+  testWidgets('an expanded card keeps the address in its header',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(address: '35 E Wacker Dr, Chicago, IL 60601'),
+      isExpanded: true,
+    );
+
+    expect(find.text('35 E Wacker Dr, Chicago, IL 60601'), findsOneWidget);
+  });
+
+  testWidgets('a record with no address falls back to city and state',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        address: Facility.addressUnavailable,
+        city: 'Tulsa',
+        state: 'OK',
+      ),
+    );
+
+    expect(find.text('Tulsa, OK'), findsOneWidget);
+    expect(find.text(Facility.addressUnavailable), findsNothing);
+  });
+
+  testWidgets('Medicaid shows as a chip only when accepted', (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        eligibility: const FacilityEligibility(
+          acceptsMedicaid: EligibilityValue.yes,
+        ),
+      ),
+      isExpanded: true,
+    );
+    expect(
+      find.widgetWithText(TagChip, _l10n(tester).chipMedicaid),
+      findsOneWidget,
+    );
+
+    for (final value in [EligibilityValue.no, EligibilityValue.unknown]) {
+      await _pumpCard(
+        tester,
+        createTestFacility(
+          eligibility: FacilityEligibility(acceptsMedicaid: value),
+        ),
+        isExpanded: true,
+      );
+      expect(
+        find.widgetWithText(TagChip, _l10n(tester).chipMedicaid),
+        findsNothing,
+        reason: value.name,
+      );
+    }
+  });
+
+  testWidgets('income limit and service area show as labelled lines',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        eligibility: const FacilityEligibility(
+          incomeLimit: 'At or below 200% of the Federal Poverty Level',
+          serviceArea: 'DeKalb County residents only',
+        ),
+      ),
+      isExpanded: true,
+    );
+    final l10n = _l10n(tester);
+
+    expect(find.text(l10n.cardAtAGlance), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Income limit: At or below 200% of the Federal Poverty Level',
+        findRichText: true,
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        'Service area: DeKalb County residents only',
+        findRichText: true,
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a facility with none of the new fields shows no empty section',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(eligibility: const FacilityEligibility()),
+      isExpanded: true,
+    );
+
+    expect(find.text(_l10n(tester).cardAtAGlance), findsNothing);
+    expect(
+        find.textContaining('Income limit', findRichText: true), findsNothing);
+  });
+
   testWidgets('rate and correction rows appear only with their callbacks',
       (tester) async {
     await _pumpCard(tester, createTestFacility(), isExpanded: true);

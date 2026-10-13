@@ -50,6 +50,8 @@ Future<void> pumpThemed(
   Widget child, {
   Brightness brightness = Brightness.light,
   Size size = phoneSize,
+  Locale locale = const Locale('en'),
+  bool settle = true,
 }) async {
   tester.view
     ..physicalSize = size
@@ -77,7 +79,7 @@ Future<void> pumpThemed(
         darkTheme: AppTheme.darkTheme,
         themeMode:
             brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
-        locale: const Locale('en'),
+        locale: locale,
         supportedLocales: LocaleProvider.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -89,7 +91,12 @@ Future<void> pumpThemed(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  // A screen that animates forever (a spinner) can never settle.
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 /// Decodes every on-screen [Image] so goldens don't capture them blank.

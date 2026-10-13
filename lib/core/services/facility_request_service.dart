@@ -61,10 +61,14 @@ class FacilityRequestEntry {
 /// `facility_requests` staging table. Owner-only RLS; review happens in the
 /// Supabase dashboard.
 class FacilityRequestService {
-  FacilityRequestService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  FacilityRequestService({SupabaseClient? client}) : _injectedClient = client;
 
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
+
+  /// Resolved on use, not on construction, so a screen that merely holds this
+  /// service can be built without a Supabase session (in tests, or before
+  /// sign-in).
+  SupabaseClient get _client => _injectedClient ?? Supabase.instance.client;
 
   static const String _table = 'facility_requests';
 

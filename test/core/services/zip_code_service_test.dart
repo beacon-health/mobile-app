@@ -99,4 +99,85 @@ void main() {
       expect(await zipService.setZipCode('75001'), ZipResult.saved);
     });
   });
+
+  group('ZipCodeService GPS mode', () {
+    test('turning GPS on remembers the ZIP, and turning it off restores it',
+        () async {
+      await zipService.setZipCode('60601');
+      final zipLat = zipService.latitude;
+
+      await zipService.setCurrentLocation(
+        latitude: 41.95,
+        longitude: -87.70,
+        syncToCloud: false,
+      );
+      expect(zipService.locationSearchEnabled, isTrue);
+      expect(zipService.zipCode, ZipCodeService.currentLocationSentinel);
+      expect(zipService.latitude, 41.95);
+      expect(zipService.previousZipCode, '60601');
+
+      final restored =
+          await zipService.disableLocationSearch(syncToCloud: false);
+
+      expect(restored, isTrue);
+      expect(zipService.locationSearchEnabled, isFalse);
+      expect(zipService.zipCode, '60601');
+      expect(zipService.latitude, zipLat);
+    });
+
+    test('with no earlier ZIP, turning GPS off asks the caller for one',
+        () async {
+      await zipService.setCurrentLocation(
+        latitude: 41.95,
+        longitude: -87.70,
+        syncToCloud: false,
+      );
+
+      final restored =
+          await zipService.disableLocationSearch(syncToCloud: false);
+
+      expect(restored, isFalse);
+      expect(zipService.zipCode, isNull);
+      // The map still has somewhere to render while the ZIP is asked for.
+      expect(zipService.latitude, 41.95);
+    });
+
+    test('the stored label is the same in every language', () async {
+      // A translated label was once stored here and later mistaken for a ZIP.
+      await zipService.setCurrentLocation(
+        latitude: 41.95,
+        longitude: -87.70,
+        syncToCloud: false,
+      );
+      expect(zipService.zipCode, 'Current Location');
+    });
+
+    test('everything survives a restart', () async {
+      await zipService.setZipCode('73102');
+      await zipService.setCurrentLocation(
+        latitude: 35.5,
+        longitude: -97.5,
+        syncToCloud: false,
+      );
+
+      await zipService.init();
+
+      expect(zipService.locationSearchEnabled, isTrue);
+      expect(zipService.latitude, 35.5);
+      expect(zipService.previousZipCode, '73102');
+      expect(zipService.hasCompletedOnboarding, isTrue);
+    });
+
+    test('notifies listeners when the mode changes', () async {
+      var notifications = 0;
+      void onChange() => notifications++;
+      zipService.addListener(onChange);
+      addTearDown(() => zipService.removeListener(onChange));
+
+      await zipService.setLocationSearchEnabled(true, syncToCloud: false);
+      await zipService.setLocationSearchEnabled(true, syncToCloud: false);
+
+      expect(notifications, 1, reason: 'no change the second time');
+    });
+  });
 }

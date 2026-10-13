@@ -62,7 +62,7 @@ class _FacilityCorrectionDialogState extends State<_FacilityCorrectionDialog> {
       text: f.hours.isEmpty ? '' : f.hoursDisplay,
     );
     _addressController = TextEditingController(
-      text: f.address == 'Address not available' ? '' : f.address,
+      text: f.hasAddress ? f.address : '',
     );
   }
 

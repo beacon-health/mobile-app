@@ -11,9 +11,16 @@ class GuestModeService extends ChangeNotifier {
 
   StreamSubscription<AuthState>? _authSubscription;
 
+  /// Lets a widget test stand in for a signed-in user without a Supabase
+  /// session. Null (the default) means "ask Supabase".
+  @visibleForTesting
+  bool? debugIsGuest;
+
   /// Whether the current user is a guest (not signed in). Defaults to `true`
   /// when Supabase is not initialized (e.g. in tests or before [init]).
   bool get isGuest {
+    final override = debugIsGuest;
+    if (override != null) return override;
     try {
       return Supabase.instance.client.auth.currentUser == null;
     } catch (_) {

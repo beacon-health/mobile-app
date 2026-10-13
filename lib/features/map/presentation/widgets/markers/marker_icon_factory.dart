@@ -19,6 +19,12 @@ class MarkerUtils {
 
   static final Map<String, BitmapDescriptor> _markerCache = {};
 
+  /// Tests set this so markers skip rasterizing. Turning a picture into a
+  /// bitmap waits on the real event loop, which a widget test's fake clock
+  /// never runs, so marker creation would otherwise never finish there.
+  @visibleForTesting
+  static BitmapDescriptor? debugDescriptorOverride;
+
   /// Creates a custom marker for a facility. [primaryCategory] is a
   /// `category_broad` value; [showName] draws the label beneath the pin.
   static Future<BitmapDescriptor> createFacilityMarker(
@@ -28,6 +34,8 @@ class MarkerUtils {
     BuildContext context, {
     required bool showName,
   }) async {
+    if (debugDescriptorOverride case final override?) return override;
+
     final cacheKey = '${name}_${primaryCategory ?? 'default'}_$showName';
 
     if (_markerCache.containsKey(cacheKey)) {
@@ -96,6 +104,8 @@ class MarkerUtils {
     int count,
     BuildContext context,
   ) async {
+    if (debugDescriptorOverride case final override?) return override;
+
     final cacheKey = 'cluster_$count';
     if (_markerCache.containsKey(cacheKey)) {
       return _markerCache[cacheKey]!;

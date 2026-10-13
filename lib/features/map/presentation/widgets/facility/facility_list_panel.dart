@@ -150,22 +150,32 @@ class FacilityListPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           const DragHandle(),
           const SizedBox(height: AppSpacing.sm),
-          if (!isPanelOpen && !isFullyExpanded)
-            Text(
-              AppLocalizations.of(context)!.mapSwipeUpToView,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceMuted,
-              ),
-            )
-          else
-            Text(
-              // The count ties the list to the map: it is what's on screen.
-              isLoading || facilities.isEmpty
-                  ? AppLocalizations.of(context)!.mapResourcesNearYou
-                  : AppLocalizations.of(context)!
-                      .mapResourcesInView(facilities.length),
-              style: theme.textTheme.titleLarge,
+          // The header has a fixed height, so its one line of text shrinks
+          // to fit rather than wrapping or spilling out — at large text
+          // sizes, or in a language that runs long.
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: (!isPanelOpen && !isFullyExpanded)
+                  ? Text(
+                      AppLocalizations.of(context)!.mapSwipeUpToView,
+                      maxLines: 1,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceMuted,
+                      ),
+                    )
+                  : Text(
+                      // The count ties the list to the map: it is what's on
+                      // screen.
+                      isLoading || facilities.isEmpty
+                          ? AppLocalizations.of(context)!.mapResourcesNearYou
+                          : AppLocalizations.of(context)!
+                              .mapResourcesInView(facilities.length),
+                      maxLines: 1,
+                      style: theme.textTheme.titleLarge,
+                    ),
             ),
+          ),
         ],
       ),
     );
