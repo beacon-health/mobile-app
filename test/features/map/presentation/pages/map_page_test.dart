@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
@@ -493,6 +494,72 @@ void main() {
     });
   });
 
+  group('eligibility', () {
+    final needsReferral = createTestFacility(
+      id: 'referral',
+      name: 'Referral Clinic',
+      location: offset(0.0020, 0),
+      eligibilityRequirements: {'referral_required': true},
+    );
+    final noReferral = createTestFacility(
+      id: 'walk-in',
+      name: 'Walk-in Clinic',
+      location: offset(0.0030, 0),
+      eligibilityRequirements: {'referral_required': false},
+    );
+
+    Future<void> setEligibility(
+      WidgetTester tester,
+      EligibilityState state,
+    ) async {
+      await EligibilityPreferencesService()
+          .updateEligibility(state, syncToCloud: false);
+      await settle(tester);
+    }
+
+    testWidgets('a switch left off hides what requires it; on shows it too',
+        (tester) async {
+      await resetAppState(tester);
+      await saveLocation(home);
+      GuestModeService().debugUser = testUser();
+      repository = FakeFacilityRepository([needsReferral, noReferral]);
+      maps = await pumpAppShell(
+        tester,
+        repository: repository,
+        home: const MapPage(),
+      );
+      map = maps.mapStartingAtZoom(MapConstants.defaultZoom);
+
+      expect(listed(tester), ['walk-in']);
+
+      // Switching it on adds the facility that asks for a referral and keeps
+      // the one that doesn't.
+      await setEligibility(
+        tester,
+        const EligibilityState(referralRequired: true),
+      );
+      expect(listed(tester), ['referral', 'walk-in']);
+
+      await setEligibility(
+        tester,
+        const EligibilityState(applyToSearch: false),
+      );
+      expect(listed(tester), ['referral', 'walk-in']);
+    });
+
+    testWidgets('guests are shown everything', (tester) async {
+      // A guest can't reach the switches, so answers left on the device by
+      // an earlier account must not hide anything from them.
+      await pumpMap(tester, facilities: [needsReferral, noReferral]);
+      await setEligibility(
+        tester,
+        const EligibilityState(acceptsMedicaid: true),
+      );
+
+      expect(listed(tester), ['referral', 'walk-in']);
+    });
+  });
+
   group('mapBackTarget', () {
     test('closes the innermost open layer first', () {
       MapBackTarget target({
@@ -509,8 +576,9 @@ void main() {
           );
 
       expect(target(), MapBackTarget.nothing);
-      expect(target(panel: true), MapBackTarget.expandedPanel);
-      expect(target(panel: true, search: true), MapBackTarget.searchText);
+      expect(target(search: true), MapBackTarget.searchText);
+      // A raised list comes down before the search that filled it is cleared.
+      expect(target(panel: true, search: true), MapBackTarget.expandedPanel);
       expect(
         target(panel: true, search: true, row: true),
         MapBackTarget.expandedRow,

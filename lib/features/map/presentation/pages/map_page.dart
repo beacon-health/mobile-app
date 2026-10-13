@@ -42,19 +42,20 @@ enum MapBackTarget {
   /// A list row expanded in place.
   expandedRow,
 
-  /// Text in the search field.
-  searchText,
-
   /// The list pulled up to full height.
   expandedPanel,
+
+  /// Text in the search field.
+  searchText,
 
   /// Nothing is open; the press belongs to whoever is above the map.
   nothing,
 }
 
-/// Which layer a back press closes, given what is open. The order is the
-/// order a person opened them in reverse: a card sits on top of everything,
-/// and the raised list is the outermost thing the map itself owns.
+/// Which layer a back press closes, given what is open: whatever covers the
+/// most goes first. A card sits on top of everything; a raised list hides the
+/// map and is lowered before the search that filled it is thrown away, so one
+/// press never costs both the view and the typed text.
 MapBackTarget mapBackTarget({
   required bool cardOpen,
   required bool rowExpanded,
@@ -63,8 +64,8 @@ MapBackTarget mapBackTarget({
 }) {
   if (cardOpen) return MapBackTarget.facilityCard;
   if (rowExpanded) return MapBackTarget.expandedRow;
-  if (hasSearchText) return MapBackTarget.searchText;
   if (panelFullyExpanded) return MapBackTarget.expandedPanel;
+  if (hasSearchText) return MapBackTarget.searchText;
   return MapBackTarget.nothing;
 }
 
@@ -870,18 +871,6 @@ class MapPageState extends State<MapPage>
 
   /// Eligibility gates auto-applied to search from the user's Profile. Empty
   /// when the parent "apply to search" toggle is off, so nothing is filtered.
-  Map<EligibilityRequirement, bool?> _eligibilityFilter() {
-    final e = EligibilityPreferencesService().eligibility;
-    if (!e.applyToSearch) return const {};
-    return {
-      if (e.proofOfIncome) EligibilityRequirement.proofOfIncome: true,
-      if (e.proofOfResidency) EligibilityRequirement.proofOfResidency: true,
-      if (e.insuranceRequired) EligibilityRequirement.insuranceRequired: true,
-      if (e.referralRequired) EligibilityRequirement.referralRequired: true,
-      if (e.acceptsMedicaid) EligibilityRequirement.acceptsMedicaid: true,
-    };
-  }
-
   /// Re-runs filtering when the user edits eligibility on the Profile tab
   /// (this map stays alive in the IndexedStack, so it must react explicitly).
   void _onEligibilityChanged() {
@@ -920,14 +909,19 @@ class MapPageState extends State<MapPage>
   }
 
   void _filterFacilities() {
-    // Guests have no favorites and no preference filters; ignoring any stale
-    // state here means neither can ever empty the list for them.
+    // Guests have no favorites, no preference filters and no eligibility
+    // answers; ignoring any stale state here means none of them can ever
+    // hide a facility from someone who can't change it.
     final isGuest = context.read<GuestModeService>().isGuest;
     _filteredFacilities = FacilityFilterService.filterFacilities(
       _allFacilities,
       searchText: _searchController.text,
       selectedCategories: _selectedCategories,
-      selectedEligibilityRequirements: _eligibilityFilter(),
+      selectedEligibilityRequirements: isGuest
+          ? const {}
+          : FacilityFilterService.eligibilityGates(
+              EligibilityPreferencesService().eligibility,
+            ),
       selectedPreferenceRequirements:
           isGuest ? const {} : _selectedPreferenceRequirements,
       showFavoritesOnly: _showFavoritesOnly && !isGuest,
@@ -1127,7 +1121,7 @@ class MapPageState extends State<MapPage>
   }
 
   /// Undoes the innermost thing open on the map — the facility card, an
-  /// expanded row, a search, or the raised list — and says whether there was
+  /// expanded row, the raised list, or a search — and says whether there was
   /// one. Android's back button asks here before it leaves the tab.
   bool handleBack() {
     // Android hides the keyboard on its own first, which can leave the field
@@ -1144,11 +1138,11 @@ class MapPageState extends State<MapPage>
         _dismissSingleFacilityAnimated(showPanel: true);
       case MapBackTarget.expandedRow:
         _toggleFacilityExpansion(_expandedFacilityId!);
+      case MapBackTarget.expandedPanel:
+        setState(() => _isFullyExpanded = false);
       case MapBackTarget.searchText:
         _searchController.clear();
         _filterFacilities();
-      case MapBackTarget.expandedPanel:
-        setState(() => _isFullyExpanded = false);
       case MapBackTarget.nothing:
         return false;
     }

@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
@@ -157,6 +158,94 @@ void main() {
       expect(
         FilterConstants.eligibilityRequirements,
         EligibilityRequirement.values,
+      );
+    });
+  });
+
+  group('FacilityFilterService.eligibilityGates', () {
+    // One facility per answer on file, for each "required" column.
+    const requiredColumns = {
+      'proof_of_income',
+      'proof_of_residency',
+      'insurance_required',
+      'referral_required',
+    };
+
+    EligibilityState allOn({bool applyToSearch = true}) => EligibilityState(
+          proofOfIncome: true,
+          proofOfResidency: true,
+          insuranceRequired: true,
+          referralRequired: true,
+          applyToSearch: applyToSearch,
+        );
+
+    List<String> shown(EligibilityState state, String column) => [
+          for (final f in FacilityFilterService.filterFacilities(
+            [
+              createTestFacility(
+                id: 'requires',
+                eligibilityRequirements: {column: true},
+              ),
+              createTestFacility(
+                id: 'open',
+                eligibilityRequirements: {column: false},
+              ),
+              createTestFacility(id: 'unknown'),
+            ],
+            searchText: '',
+            selectedCategories: {},
+            selectedEligibilityRequirements:
+                FacilityFilterService.eligibilityGates(state),
+            showFavoritesOnly: false,
+            showOpenNowOnly: false,
+          ))
+            f.id,
+        ];
+
+    test('a "required" switch that is on hides nothing', () {
+      // Switching "Insurance required" on used to hide every facility that
+      // doesn't require insurance — most of the map.
+      for (final column in requiredColumns) {
+        expect(
+          shown(allOn(), column),
+          ['requires', 'open', 'unknown'],
+          reason: column,
+        );
+      }
+    });
+
+    test('a "required" switch that is off hides only what requires it', () {
+      for (final column in requiredColumns) {
+        expect(
+          shown(const EligibilityState(), column),
+          ['open', 'unknown'],
+          reason: column,
+        );
+      }
+    });
+
+    test('each switch gates its own column and no other', () {
+      final gates = FacilityFilterService.eligibilityGates(
+        allOn().copyWith(referralRequired: false),
+      );
+      expect(gates, {EligibilityRequirement.referralRequired: false});
+    });
+
+    test('Medicaid filters only when switched on, and only known refusals', () {
+      expect(
+          shown(allOn(), 'accepts_medicaid'), ['requires', 'open', 'unknown']);
+      expect(
+        shown(allOn().copyWith(acceptsMedicaid: true), 'accepts_medicaid'),
+        ['requires', 'unknown'],
+      );
+    });
+
+    test('nothing is gated when eligibility is not applied to search', () {
+      expect(
+        FacilityFilterService.eligibilityGates(
+          const EligibilityState(acceptsMedicaid: true, applyToSearch: false),
+        ),
+        isEmpty,
       );
     });
   });

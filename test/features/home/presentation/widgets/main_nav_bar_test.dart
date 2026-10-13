@@ -158,6 +158,37 @@ void main() {
     expect(selectedTab(tester), NavTab.map);
   });
 
+  testWidgets('back lowers a raised list before it clears the search',
+      (tester) async {
+    // One press must not cost both the view and the typed text.
+    await pumpShell(tester);
+    await openTab(tester, 'Map');
+    final resting = panelHeight(tester);
+    String searchText() =>
+        tester.widget<TextField>(find.byType(TextField)).controller!.text;
+
+    await tester.enterText(find.byType(TextField), 'clinic');
+    await settle(tester);
+    // The list can only be raised once the keyboard is out of the way.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await settle(tester);
+    await tester.fling(
+      find.textContaining('in this area'),
+      const Offset(0, -200),
+      1500,
+    );
+    await settle(tester);
+    expect(panelHeight(tester), greaterThan(resting));
+
+    await pressBack(tester);
+    expect(panelHeight(tester), resting);
+    expect(searchText(), 'clinic');
+
+    await pressBack(tester);
+    expect(searchText(), isEmpty);
+    expect(selectedTab(tester), NavTab.map);
+  });
+
   testWidgets('back closes the filter sheet and stays on the map',
       (tester) async {
     await pumpShell(tester);
