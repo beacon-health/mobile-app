@@ -7,8 +7,8 @@
  * Keep the Google logo (bottom left of every background) visible.
  */
 
-/* A 390×844 phone-sized map. Pick a zoom; dark mode swaps the style.
- * Under a bottom panel, set --map-inset-bottom to the panel's height: like
+/* A 390×844 phone-sized map. Pick a zoom; `data-theme="dark"` swaps the
+ * style, as it does the tokens (not the OS setting). Under a bottom panel, set --map-inset-bottom to the panel's height: like
  * the app's map padding, it lifts the map (and its Google logo) above it. */
 .beacon-map {
   position: relative;
@@ -23,10 +23,6 @@
 .beacon-map--city { background-image: url("./backgrounds/light_city.jpg"); }
 :root[data-theme="dark"] .beacon-map--neighborhood { background-image: url("./backgrounds/dark_neighborhood.jpg"); }
 :root[data-theme="dark"] .beacon-map--city { background-image: url("./backgrounds/dark_city.jpg"); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .beacon-map--neighborhood { background-image: url("./backgrounds/dark_neighborhood.jpg"); }
-  :root:not([data-theme="light"]) .beacon-map--city { background-image: url("./backgrounds/dark_city.jpg"); }
-}
 
 /* A facility pin centered on its point: set `left` / `top` on it. */
 .beacon-pin {
