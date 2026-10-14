@@ -1,5 +1,6 @@
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -93,12 +94,12 @@ void main() {
 
     maps.tapMarker(map, const MarkerId('near'));
     await settle(tester);
-    expect(find.text('Next Steps'), findsOneWidget);
+    expect(find.text('Directions'), findsOneWidget);
     expect(find.byType(FacilityListPanel), findsNothing);
 
     await pressBack(tester);
 
-    expect(find.text('Next Steps'), findsNothing);
+    expect(find.text('Directions'), findsNothing);
     expect(find.byType(FacilityListPanel), findsOneWidget);
     expect(selectedTab(tester), NavTab.map);
 
@@ -113,11 +114,11 @@ void main() {
 
     await tester.tap(find.text('Near Clinic'));
     await settle(tester);
-    expect(find.text('Next Steps'), findsOneWidget);
+    expect(find.text('Directions'), findsOneWidget);
 
     await pressBack(tester);
 
-    expect(find.text('Next Steps'), findsNothing);
+    expect(find.text('Directions'), findsNothing);
     expect(selectedTab(tester), NavTab.map);
   });
 
@@ -194,13 +195,14 @@ void main() {
     await pumpShell(tester);
     await openTab(tester, 'Map');
 
-    await tester.tap(find.byIcon(Icons.tune));
+    // The button that opens every filter says what it is.
+    await tester.tap(find.text('Filters'));
     await settle(tester);
-    expect(find.text('Filters'), findsOneWidget);
+    expect(find.byType(FilterModal), findsOneWidget);
 
     await pressBack(tester);
 
-    expect(find.text('Filters'), findsNothing);
+    expect(find.byType(FilterModal), findsNothing);
     expect(selectedTab(tester), NavTab.map);
     expect(platform.exits, 0);
   });
@@ -210,6 +212,7 @@ void main() {
     await openTab(tester, 'Map');
 
     // A guest tapping the locked Favorites chip gets the sign-in prompt.
+    await tester.ensureVisible(find.text('Favorites'));
     await tester.tap(find.text('Favorites'));
     await settle(tester);
     expect(find.byType(Dialog), findsOneWidget);
@@ -228,10 +231,10 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Near Clinic'));
     await settle(tester);
-    expect(find.text('Next Steps'), findsOneWidget);
+    expect(find.text('Directions'), findsOneWidget);
 
     await pressBack(tester); // the expanded row
-    expect(find.text('Next Steps'), findsNothing);
+    expect(find.text('Directions'), findsNothing);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'clinic',

@@ -1,4 +1,5 @@
 import 'package:beacon_app/app.dart';
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/coverage_service.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
@@ -22,6 +23,7 @@ void main() async {
 
   await LocaleProvider().init();
   await ThemeModeProvider().init();
+  await AccessibilitySettings().init();
 
   if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
     throw Exception(

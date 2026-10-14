@@ -5,6 +5,7 @@ import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
@@ -171,12 +172,7 @@ class _HomePageState extends State<HomePage>
       if (!mounted || _mapController == null) return;
 
       try {
-        await _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            _currentLocation,
-            MapConstants.homeCutoutZoom,
-          ),
-        );
+        await _recenterPreview(_mapController!);
       } catch (e, stackTrace) {
         // A dispose mid-flight throws here; that race is expected, so only
         // report if the widget is somehow still alive.
@@ -199,6 +195,18 @@ class _HomePageState extends State<HomePage>
         );
       }
     }
+  }
+
+  /// Points the preview at the saved location: a flight, or a cut for someone
+  /// who has asked the OS to reduce motion.
+  Future<void> _recenterPreview(GoogleMapController controller) {
+    final update = CameraUpdate.newLatLngZoom(
+      _currentLocation,
+      MapConstants.homeCutoutZoom,
+    );
+    return AppMotion.reduced(context)
+        ? controller.moveCamera(update)
+        : controller.animateCamera(update);
   }
 
   Future<void> _loadMapStyle() async {
@@ -225,12 +233,7 @@ class _HomePageState extends State<HomePage>
 
     if (_currentLocation.latitude != MapConstants.defaultLatitude) {
       try {
-        await controller.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            _currentLocation,
-            MapConstants.homeCutoutZoom,
-          ),
-        );
+        await _recenterPreview(controller);
       } catch (e, stackTrace) {
         if (!mounted) return;
         ErrorReporter.instance.report(
@@ -266,7 +269,10 @@ class _HomePageState extends State<HomePage>
     final l10n = AppLocalizations.of(context)!;
     final statusBarHeight = MediaQuery.of(context).padding.top;
     final isGuest = context.watch<GuestModeService>().isGuest;
-    final sectionTitle = Theme.of(context).textTheme.titleLarge;
+    Widget sectionTitle(String text) => Semantics(
+          header: true,
+          child: Text(text, style: Theme.of(context).textTheme.titleLarge),
+        );
 
     return Scaffold(
       // One page-level scroll view avoids nested-scroll conflicts between
@@ -277,23 +283,22 @@ class _HomePageState extends State<HomePage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: statusBarHeight + AppSpacing.sm),
-            Center(
-              child: Image.asset(
-                'assets/beacon-logo.png',
-                height: AppSizes.logoCompact,
-              ),
+            const Center(
+              child: BeaconLogo(height: AppSizes.logoCompact),
             ),
-            const SizedBox(height: AppSpacing.xxl),
-            Text(l10n.homeGreeting, style: sectionTitle),
             const SizedBox(height: AppSpacing.lg),
-            _buildMapAndCategories(),
-            const SizedBox(height: AppSpacing.xl),
-            Text(l10n.homeRecentlyViewed, style: sectionTitle),
+            sectionTitle(l10n.homeGreeting),
+            const SizedBox(height: AppSpacing.md),
+            _buildMapPreview(l10n),
             const SizedBox(height: AppSpacing.sm),
+            _buildCategoryGrid(l10n),
+            const SizedBox(height: AppSpacing.xl),
+            sectionTitle(l10n.homeRecentlyViewed),
+            const SizedBox(height: AppSpacing.md),
             _buildRecentlyViewedSection(isGuest: isGuest),
             const SizedBox(height: AppSpacing.xl),
-            Text(l10n.homeFavorites, style: sectionTitle),
-            const SizedBox(height: AppSpacing.sm),
+            sectionTitle(l10n.homeFavorites),
+            const SizedBox(height: AppSpacing.md),
             _buildFavoritesSection(l10n, isGuest: isGuest),
             const SizedBox(height: AppSpacing.lg),
           ],
@@ -315,36 +320,35 @@ class _HomePageState extends State<HomePage>
         _ => group,
       };
 
-  Widget _buildMapAndCategories() {
-    // Driven off the shared taxonomy so labels, icons, and the resulting map
-    // filter stay in sync with the markers.
-    final l10n = AppLocalizations.of(context)!;
-    final actions = [
-      for (final group in FacilityCategories.quickActionGroups)
-        _QuickAction(
-          icon: MarkerUtils.getIconForCategory(group),
-          label: _groupLabel(l10n, group),
-          color: MarkerUtils.getColorForCategory(group),
-          category: group,
-        ),
-    ];
+  /// Height of the map preview, and the least a quick-action tile stands.
+  static const double _mapPreviewHeight = 120;
+  static const double _tileMinHeight = 76;
 
-    return SizedBox(
-      height: 160,
-      child: Row(
-        children: [
-          // 2:3 split — the map gives up width so the 3-column quick-action
-          // grid has room for readable labels.
-          Expanded(
-            flex: 2,
-            child: GestureDetector(
-              onTap: _navigateToMapPage,
-              child: Container(
-                clipBehavior: Clip.hardEdge,
-                decoration: const BoxDecoration(
-                  borderRadius: AppRadii.lgAll,
-                  boxShadow: AppShadows.raised,
-                ),
+  /// The map as a button: a live preview with an "Open map" label, so it
+  /// reads as something to tap and has a name for screen readers.
+  Widget _buildMapPreview(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: l10n.homeOpenMap,
+      onTap: _navigateToMapPage,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: _navigateToMapPage,
+        child: Container(
+          height: _mapPreviewHeight,
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            borderRadius: AppRadii.mdAll,
+            boxShadow: AppShadows.card,
+            border: switch (theme.colorScheme.cardOutline) {
+              final side? => Border.fromBorderSide(side),
+              null => null,
+            },
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
                 child: IgnorePointer(
                   child: RepaintBoundary(
                     child: GoogleMap(
@@ -365,71 +369,120 @@ class _HomePageState extends State<HomePage>
                   ),
                 ),
               ),
-            ),
+              PositionedDirectional(
+                end: AppSpacing.md,
+                bottom: AppSpacing.md,
+                child: Container(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: AppSpacing.md,
+                    end: AppSpacing.lg,
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.cardTheme.color,
+                    borderRadius: AppRadii.pillAll,
+                    boxShadow: AppShadows.raised,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.map,
+                        size: AppIconSize.md,
+                        color: theme.colorScheme.secondary,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        l10n.homeOpenMap,
+                        style: theme.textTheme.labelLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            flex: 3,
-            child: Column(
+        ),
+      ),
+    );
+  }
+
+  /// The six quick actions. Driven off the shared taxonomy so labels, icons,
+  /// and the resulting map filter stay in sync with the markers.
+  ///
+  /// Three across at ordinary text sizes; fewer as the text grows, so a label
+  /// gets the width it needs instead of breaking mid-word.
+  Widget _buildCategoryGrid(AppLocalizations l10n) {
+    final brightness = Theme.of(context).brightness;
+    final textScale = MediaQuery.textScalerOf(context).scale(100) / 100;
+    final columns = textScale < 1.25 ? 3 : (textScale < 1.8 ? 2 : 1);
+    final actions = [
+      for (final group in FacilityCategories.quickActionGroups)
+        _QuickAction(
+          icon: MarkerUtils.getIconForCategory(group),
+          label: _groupLabel(l10n, group),
+          color: MarkerUtils.getColorForCategory(group, brightness: brightness),
+          category: group,
+        ),
+    ];
+
+    return Column(
+      children: [
+        for (var start = 0; start < actions.length; start += columns) ...[
+          if (start > 0) const SizedBox(height: AppSpacing.sm),
+          // Tiles in a row share the height of the tallest label.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                for (var row = 0; row < 2; row++) ...[
-                  if (row > 0) const SizedBox(height: AppSpacing.sm),
+                for (var i = start; i < start + columns; i++) ...[
+                  if (i > start) const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Row(
-                      children: [
-                        for (var col = 0; col < 3; col++) ...[
-                          if (col > 0) const SizedBox(width: AppSpacing.sm),
-                          _buildCategoryButton(actions[row * 3 + col]),
-                        ],
-                      ],
-                    ),
+                    child: i < actions.length
+                        ? _buildCategoryButton(actions[i])
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ],
             ),
           ),
         ],
-      ),
+      ],
     );
   }
 
   Widget _buildCategoryButton(_QuickAction action) {
-    return Expanded(
-      child: GestureDetector(
+    final theme = Theme.of(context);
+    return Material(
+      color: action.color.tint,
+      borderRadius: AppRadii.mdAll,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: () => _navigateToMapWithCategory(action.category),
-        child: Container(
-          decoration: BoxDecoration(
-            color: action.color.tint,
-            borderRadius: AppRadii.mdAll,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(action.icon, color: action.color, size: AppIconSize.md),
-              const SizedBox(height: AppSpacing.xxs),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                // Tiles are ~58pt wide on the smallest device. The SizedBox
-                // pins the width so the label wraps to two lines first;
-                // FittedBox only shrinks it if that still overflows.
-                child: LayoutBuilder(
-                  builder: (context, constraints) => FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SizedBox(
-                      width: constraints.maxWidth,
-                      child: Text(
-                        action.label,
-                        textAlign: TextAlign.center,
-                        style: AppTypography.quickActionLabel.copyWith(
-                          color: action.color,
-                        ),
-                        maxLines: 2,
-                      ),
-                    ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: _tileMinHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xs,
+              vertical: AppSpacing.sm,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // The color belongs to the icon; the words stay in the text
+                // color, which is the one that's readable.
+                Icon(action.icon, color: action.color, size: AppIconSize.lg),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  action.label,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -443,12 +496,13 @@ class _HomePageState extends State<HomePage>
     required String hint,
   }) {
     final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceMuted;
+    final muted = theme.colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: AppRadii.mdAll,
+        border: _cardBorder(theme),
       ),
       child: Row(
         children: [
@@ -476,16 +530,25 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// The hairline dark mode draws around a card in place of its shadow.
+  BoxBorder? _cardBorder(ThemeData theme) =>
+      switch (theme.colorScheme.cardOutline) {
+        final side? => Border.fromBorderSide(side),
+        null => null,
+      };
+
   /// Rounded, shadowed container for the populated Home lists. The
   /// transparent Material lets ListTile ink paint above the background.
   Widget _buildListCard({required Widget child, double? maxHeight}) {
+    final theme = Theme.of(context);
     return Container(
       constraints:
           maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
+        color: theme.cardTheme.color,
         borderRadius: AppRadii.mdAll,
         boxShadow: AppShadows.card,
+        border: _cardBorder(theme),
       ),
       child: ClipRRect(
         borderRadius: AppRadii.mdAll,
@@ -530,36 +593,32 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// Single compact row used for both the Recently Viewed and Favorites
-  /// populated lists. Kept dense so the Home page stays usable when both
-  /// sections have items.
+  /// One row of the Recently viewed and Favorites lists. The name gets two
+  /// lines — most facility names don't fit one — and the address one.
   Widget _buildFacilityRow(Facility facility, {required VoidCallback onTap}) {
     final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
     return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xxs,
+      contentPadding: const EdgeInsetsDirectional.only(
+        start: AppSpacing.md,
+        end: AppSpacing.sm,
       ),
-      visualDensity: VisualDensity.compact,
       leading: FacilityCategoryIcons.buildCategoryIcon(
         facility.primaryCategory,
       ),
       title: Text(
         facility.name,
         style: theme.textTheme.titleSmall,
-        maxLines: 1,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         facility.address,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceMuted,
-        ),
+        style: theme.textTheme.bodySmall?.copyWith(color: muted),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: const Icon(Icons.chevron_right, size: AppIconSize.md),
+      trailing: Icon(Icons.chevron_right, size: AppIconSize.md, color: muted),
       onTap: onTap,
     );
   }
@@ -582,7 +641,7 @@ class _HomePageState extends State<HomePage>
       {required bool isGuest}) {
     if (isGuest) {
       final theme = Theme.of(context);
-      final muted = theme.colorScheme.onSurfaceMuted;
+      final muted = theme.colorScheme.onSurfaceVariant;
       return Center(
         child: SingleChildScrollView(
           child: Container(
@@ -590,6 +649,7 @@ class _HomePageState extends State<HomePage>
             decoration: BoxDecoration(
               color: theme.cardTheme.color,
               borderRadius: AppRadii.mdAll,
+              border: _cardBorder(theme),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -599,7 +659,7 @@ class _HomePageState extends State<HomePage>
                 Text(
                   l10n.homeFavoritesSignInTitle,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(color: muted),
+                  style: theme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(

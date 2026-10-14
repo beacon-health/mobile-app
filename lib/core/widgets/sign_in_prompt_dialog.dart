@@ -23,7 +23,8 @@ class _SignInPromptDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
-      child: Padding(
+      // Scrolls, so the button stays reachable at the largest text sizes.
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.xxl,
           AppSpacing.sm,
@@ -38,8 +39,9 @@ class _SignInPromptDialog extends StatelessWidget {
               child: IconButton(
                 icon: Icon(
                   Icons.close,
-                  color: colorScheme.onSurfaceMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -64,7 +66,7 @@ class _SignInPromptDialog extends StatelessWidget {
                 l10n.authSignInPromptBody,
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ),

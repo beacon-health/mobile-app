@@ -30,13 +30,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeNoFavoritesHint => '从地图页面添加收藏即可在此查看';
 
   @override
-  String get homeFavoritesSignInTitle => '登录以使用收藏';
+  String get homeFavoritesSignInTitle => '登录以保存收藏';
 
   @override
   String get homeFavoritesSignInHint => '登录即可收藏您喜欢的机构。';
 
   @override
-  String get homeRecentlyViewed => '最近浏览的机构';
+  String get homeRecentlyViewed => '最近浏览';
 
   @override
   String get homeNoRecentlyViewed => '暂无最近浏览的机构';
@@ -48,7 +48,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapSearchLocation => '输入邮政编码';
 
   @override
-  String get mapSearchResourcesHint => '搜索资源...';
+  String get mapSearchResourcesHint => '搜索资源';
 
   @override
   String get mapAreaLabel => '地图区域';
@@ -81,11 +81,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapRetry => '重试';
 
   @override
-  String get mapInvalidZip => '请输入有效的 5 位邮政编码（例如 60605）';
+  String get mapInvalidZip => '请输入 5 位邮政编码。';
 
   @override
   String mapZipNotFound(String zipCode) {
-    return '找不到邮政编码 $zipCode 对应的位置。';
+    return '找不到邮政编码 $zipCode。';
   }
 
   @override
@@ -110,28 +110,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterApply => '应用';
 
   @override
-  String get commonYes => '是';
+  String get eligProofOfIncome => '收入证明';
 
   @override
-  String get commonNo => '否';
+  String get eligProofOfResidency => '住址证明';
 
   @override
-  String get eligProofOfIncome => '需要收入证明';
+  String get eligInsuranceRequired => '医疗保险';
 
   @override
-  String get eligProofOfResidency => '需要居住证明';
-
-  @override
-  String get eligInsuranceRequired => '需要医疗保险';
-
-  @override
-  String get eligReferralRequired => '需要转诊';
+  String get eligReferralRequired => '医生转诊单';
 
   @override
   String get prefAcceptsWalkIns => '接受无预约就诊';
 
   @override
-  String get prefAppointmentOnly => '仅限预约';
+  String get prefAppointmentOnly => '需要预约';
 
   @override
   String get prefOpenToImmigrants => '向移民开放';
@@ -140,7 +134,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prefFreeServices => '提供免费服务';
 
   @override
-  String get prefSlidingScale => '提供按收入浮动收费';
+  String get prefSlidingScale => '按收入浮动收费';
 
   @override
   String get prefOtherLanguages => '提供其他语言服务';
@@ -149,13 +143,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prefTelehealth => '提供远程医疗';
 
   @override
-  String get prefWheelchairAccessible => '无障碍通道';
+  String get prefWheelchairAccessible => '设有无障碍通道';
 
   @override
-  String get prefServesOutsideArea => '服务范围外人群';
-
-  @override
-  String get cardNextSteps => '下一步';
+  String get prefServesOutsideArea => '服务所在地区以外的人群';
 
   @override
   String get cardHours => '营业时间';
@@ -164,19 +155,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cardServices => '服务';
 
   @override
-  String get cardServicesAiDisclaimer => '摘要由 AI 生成，可能存在不准确之处';
+  String get cardServicesAiDisclaimer => '摘要由 AI 撰写，可能有误。';
 
   @override
   String get cardAtAGlance => '一览';
-
-  @override
-  String get cardVisitWebsite => '访问网站';
-
-  @override
-  String get cardWebsiteNotAvailable => '网站不可用';
-
-  @override
-  String get cardGetDirections => '获取路线';
 
   @override
   String get cardContactForHours => '请联系机构了解营业时间';
@@ -272,7 +254,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAskEachTime => '每次询问';
 
   @override
-  String get settingsSignInHint => '登录即可保存收藏、按偏好筛选等！';
+  String get settingsSignInHint => '登录即可保存收藏，并在任何设备上使用。';
 
   @override
   String get settingsZipUpdated => '邮政编码已更新';
@@ -281,7 +263,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsUpdateZipTitle => '更新邮政编码';
 
   @override
-  String get settingsZipValidation => '请输入 5 位邮政编码';
+  String get settingsZipValidation => '请输入 5 位邮政编码。';
 
   @override
   String get settingsZipNotFoundError => '找不到该邮政编码，请重试。';
@@ -328,16 +310,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppearance => '外观';
 
   @override
-  String get settingsEligibility => '资格';
+  String get settingsEligibility => '您能提供的材料';
 
   @override
   String get settingsZipCode => '邮政编码';
 
   @override
   String get settingsAbout => '关于';
-
-  @override
-  String get settingsVersion => '版本';
 
   @override
   String get settingsPrivacyPolicy => '隐私政策';
@@ -349,7 +328,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSignOut => '退出登录';
 
   @override
-  String get settingsSignOutConfirm => '确定要退出登录吗？';
+  String get settingsSignOutConfirm => '您的收藏和设置会保留在账户中，并从此手机上移除。';
 
   @override
   String get settingsDeleteAccount => '删除账户';
@@ -394,7 +373,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authOr => '或';
 
   @override
-  String get authTermsPrefix => '点击继续即表示您同意我们的';
+  String get authTermsPrefix => '继续即表示您同意我们的';
 
   @override
   String get authTermsOfService => '服务条款';
@@ -406,13 +385,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authPrivacyPolicy => '隐私政策';
 
   @override
-  String get authSelectLanguage => '选择语言 🌐';
+  String get authSelectLanguage => '选择语言';
 
   @override
   String get authSignInPromptTitle => '请登录以使用此功能';
 
   @override
-  String get authSignInPromptBody => '创建免费账户即可解锁收藏、资格筛选等功能。';
+  String get authSignInPromptBody => '登录即可保存收藏、按偏好筛选并评价机构。';
 
   @override
   String get authSignInError => '登录失败，请重试。';
@@ -424,29 +403,29 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationChoiceSubtitle => '我们将以此向您显示附近的资源。';
 
   @override
-  String get locationChoiceUseLocation => '启用基于位置的搜索';
+  String get locationChoiceUseLocation => '使用我的位置';
 
   @override
-  String get locationChoiceUseLocationDesc => '使用 GPS 获得最准确的结果。';
+  String get locationChoiceUseLocationDesc => '最准确。接下来会请求您的许可。';
 
   @override
   String get locationChoiceEnterZip => '输入邮政编码';
 
   @override
-  String get locationChoiceEnterZipDesc => '按邮政编码搜索。';
+  String get locationChoiceEnterZipDesc => '无需共享位置即可搜索某一地区。';
 
   @override
   String get locationCurrentLocation => '当前位置';
 
   @override
-  String get locationPermissionDenied => '位置访问被拒绝。请在「设置」>「隐私」>「定位服务」中启用。';
+  String get locationPermissionDenied => '位置访问已关闭。请在手机设置中为 Beacon 开启。';
 
   @override
   String get locationPermissionDeniedTitle => '需要位置访问权限';
 
   @override
   String get locationPermissionDeniedBody =>
-      '若要使用基于 GPS 的搜索，请在 iOS「设置」>「隐私」>「定位服务」中为 Beacon 启用位置权限。';
+      '若要按您的位置搜索，请在手机设置中为 Beacon 开启位置访问。';
 
   @override
   String get locationUseMyLocationTooltip => '使用我的位置';
@@ -455,7 +434,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsUseMyLocation => '使用我的位置';
 
   @override
-  String get settingsUseMyLocationDesc => '使用 GPS 而非邮政编码';
+  String get settingsUseMyLocationDesc => '代替邮政编码';
 
   @override
   String get settingsSignOutSuccess => '已退出登录';
@@ -467,10 +446,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navProfile => '个人资料';
 
   @override
-  String get profileApplyEligibility => '将资格条件应用于搜索';
+  String get profileApplyEligibility => '按我能提供的材料筛选';
 
   @override
-  String get profileApplyEligibilityDesc => '仅显示符合您资格的机构。';
+  String get profileApplyEligibilityDesc => '隐藏要求提供您未在下方勾选材料的机构。';
 
   @override
   String get profileSignedIn => '已登录';
@@ -505,11 +484,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonLinkFailed => '无法打开该链接。';
 
   @override
-  String get onboardingEligibilityTitle => '您的资格';
+  String get onboardingEligibilityTitle => '您能提供哪些材料？';
 
   @override
-  String get onboardingEligibilitySubtitle =>
-      '告诉我们哪些适用于您，以便显示您符合条件的机构。您可以随时在个人资料中更改。';
+  String get onboardingEligibilitySubtitle => '我们会隐藏您无法使用的机构。您可以随时在个人资料中更改。';
 
   @override
   String get onboardingContinue => '继续';
@@ -524,7 +502,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get zipEntrySubtitle => '我们将用它为您显示附近的资源。';
 
   @override
-  String get zipEntryInvalid => '请输入 5 位邮政编码';
+  String get zipEntryInvalid => '请输入 5 位邮政编码。';
 
   @override
   String get requestFieldWebsite => '机构网站 *';
@@ -687,7 +665,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mapNothingInViewHint => '缩小或移动地图以查看更多。';
 
   @override
-  String get eligAcceptsMedicaid => '接受 Medicaid（医疗补助）';
+  String get eligAcceptsMedicaid => 'Medicaid（医疗补助）';
 
   @override
   String get chipMedicaid => 'Medicaid';
@@ -709,4 +687,136 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get requestTypeClosure => '已报告关闭';
+
+  @override
+  String get homeOpenMap => '打开地图';
+
+  @override
+  String filterShowResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '显示 $count 个结果',
+      zero: '没有结果',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filterOnlyShowPlacesThat => '仅显示符合以下条件的机构';
+
+  @override
+  String get filterClose => '关闭筛选';
+
+  @override
+  String filterCategoriesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个类别',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cardDirections => '路线';
+
+  @override
+  String get cardCall => '致电';
+
+  @override
+  String cardCallNumber(String phone) {
+    return '致电 $phone';
+  }
+
+  @override
+  String get cardWebsite => '网站';
+
+  @override
+  String cardSave(String name) {
+    return '收藏 $name';
+  }
+
+  @override
+  String cardUnsave(String name) {
+    return '取消收藏 $name';
+  }
+
+  @override
+  String get cardShowDetails => '显示详情';
+
+  @override
+  String get cardHideDetails => '隐藏详情';
+
+  @override
+  String get eligProofOfIncomeHint => '工资单、报税表或福利证明信';
+
+  @override
+  String get eligProofOfResidencyHint => '身份证件、租约或水电费账单';
+
+  @override
+  String get onboardingSkip => '暂时跳过';
+
+  @override
+  String onboardingStep(int step, int total) {
+    return '第 $step 步，共 $total 步';
+  }
+
+  @override
+  String get authTermsSuffix => '。';
+
+  @override
+  String authLanguageButton(String language) {
+    return '语言：$language。更改语言';
+  }
+
+  @override
+  String get zipEntryHelper => '5 位数字';
+
+  @override
+  String get zipEntryLocationOff => '位置访问已关闭，请改为输入邮政编码。';
+
+  @override
+  String get settingsSignOutTitle => '退出登录？';
+
+  @override
+  String settingsVersionFooter(String version) {
+    return 'Beacon $version';
+  }
+
+  @override
+  String get settingsAccessibility => '无障碍';
+
+  @override
+  String get settingsMapAsList => '以列表形式打开地图';
+
+  @override
+  String get settingsMapAsListDesc => '更适合屏幕阅读器';
+
+  @override
+  String get settingsLargerPins => '放大地图标记';
+
+  @override
+  String get settingsLargerPinsDesc => '放大地图上的标记和名称';
+
+  @override
+  String get settingsAppearanceSystem => '跟随设备';
+
+  @override
+  String get settingsAppearanceLight => '浅色';
+
+  @override
+  String get settingsAppearanceDark => '深色';
+
+  @override
+  String get commonNotSet => '未设置';
+
+  @override
+  String get brandTagline => '让就医更轻松。';
+
+  @override
+  String get cardHoursClosed => '休息';
+
+  @override
+  String get cardHoursUnknown => '未知';
 }

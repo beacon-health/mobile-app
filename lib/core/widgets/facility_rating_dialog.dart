@@ -272,7 +272,10 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
   Widget _buildTagSelector(ColorScheme colorScheme) {
     if (_isThumbsUp == null) return const SizedBox.shrink();
     final tags = _isThumbsUp! ? _positiveTags : _negativeTags;
+    // The outline takes the brand tone; the words take its readable shade.
     final accent = _isThumbsUp! ? colorScheme.primary : colorScheme.tertiary;
+    final accentText =
+        _isThumbsUp! ? colorScheme.primaryText : colorScheme.tertiaryText;
     final labelStyle = Theme.of(context).textTheme.labelMedium;
     return Align(
       alignment: Alignment.centerLeft,
@@ -295,7 +298,7 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
               ),
               labelStyle: labelStyle?.copyWith(
                 color: _selectedTags.contains(tag)
-                    ? accent
+                    ? accentText
                     : colorScheme.onSurface,
                 fontWeight: _selectedTags.contains(tag)
                     ? FontWeight.w600
@@ -365,9 +368,7 @@ class _FacilityRatingDialogState extends State<_FacilityRatingDialog> {
               if (_hasExisting)
                 TextButton(
                   onPressed: _busy ? null : _remove,
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.tertiary,
-                  ),
+                  style: AppTheme.destructiveTextButton(context),
                   child: _isDeleting
                       ? const SizedBox.square(
                           dimension: AppIconSize.sm,

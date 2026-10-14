@@ -16,6 +16,12 @@ abstract final class AppColors {
   static const Color bittersweet = Color(0xFFFE6F5E);
   static const Color honeydew = Color(0xFFF0FFF0);
 
+  /// Bittersweet and reseda green darkened for text. The brand tones are
+  /// 2.7:1 and 4.5:1 on white — fine for fills and icons, too faint to read.
+  /// Reach them through `colorScheme.tertiaryText` / `primaryText`.
+  static const Color bittersweetText = Color(0xFFA5483D);
+  static const Color resedaGreenText = Color(0xFF5C694C);
+
   // --- Category palette ----------------------------------------------------
   // One per Home quick-action group. These double as marker pins, so they must
   // stay distinguishable at ~20px; paynesGray is reserved for the fallback.
@@ -28,12 +34,24 @@ abstract final class AppColors {
   static const Color specializedServices = Color(0xFF157F7A);
   static const Color categoryFallback = paynesGray;
 
+  /// The four category colors too dark to read on navy, lightened for icons
+  /// and labels in dark mode. Map pins keep the fixed colors above in both
+  /// modes: they sit on their own white-ringed circle, not on the surface.
+  static const Color healthCareOnDark = Color(0xFF829072);
+  static const Color mentalHealthOnDark = Color(0xFF9184B7);
+  static const Color specializedServicesOnDark = Color(0xFF449995);
+  static const Color categoryFallbackOnDark = Color(0xFF7E8E9A);
+
   // --- Surfaces ------------------------------------------------------------
 
   static const Color lightBackground = Colors.white;
   static const Color lightSurface = Colors.white;
+
+  /// Dark mode steps up in lightness as surfaces rise — page, card, bar —
+  /// because a shadow can't be seen on navy.
   static const Color darkBackground = Color(0xFF1A1A2E);
-  static const Color darkSurface = Color(0xFF222240);
+  static const Color darkSurface = Color(0xFF242444);
+  static const Color darkNavBar = Color(0xFF2E2E52);
 
   /// Onboarding / login / ZIP entry backdrop, top to bottom.
   static const Color lightGradientStart = Color(0xFFF4F7F5);
@@ -57,11 +75,15 @@ abstract final class AppColors {
   // --- Third-party brand marks ---------------------------------------------
 
   static const Color appleBlack = Colors.black;
-  static const Color googleBlue = Color(0xFF4285F4);
 
   /// Sign in with Google (light variant): near-black label, hairline border.
   static const Color googleButtonText = Color(0xDD000000);
   static const Color googleButtonBorder = Color(0x1F000000);
+
+  /// Sign in with Google (dark variant), from Google's branding guidelines.
+  static const Color googleDarkButton = Color(0xFF131314);
+  static const Color googleDarkButtonText = Color(0xFFE3E3E3);
+  static const Color googleDarkButtonBorder = Color(0xFF8E918F);
 }
 
 /// Standard alpha levels for tinting a color onto a surface, so selected
@@ -78,6 +100,20 @@ abstract final class AppOpacity {
 
   /// Disabled foreground (icons, locked controls).
   static const double disabled = 0.38;
+
+  /// The pill behind the active tab's icon.
+  static const double navIndicator = 0.16;
+
+  /// A rule between columns of one list, lighter than a section divider.
+  static const double subtleDivider = 0.6;
+
+  /// Keyboard-focus wash on rows and tiles that can't carry a ring.
+  static const double focus = 0.24;
+
+  /// Dimming behind dialogs and sheets. Navy needs more of it to read as
+  /// dimmed at all.
+  static const double scrim = 0.4;
+  static const double scrimDark = 0.6;
 }
 
 extension AppColorTint on Color {

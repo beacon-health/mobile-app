@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
@@ -331,7 +332,7 @@ void main() {
       await tester.tap(find.text('Near Clinic'));
       await settle(tester);
 
-      expect(find.text('Next Steps'), findsOneWidget);
+      expect(find.text('Directions'), findsOneWidget);
       expect(map.camera.zoom, 15, reason: 'never zooms out of a closer view');
       expect(map.camera.target, isNot(before.target));
       expect(listed(tester), orderBefore);
@@ -339,7 +340,7 @@ void main() {
       await tester.tap(find.text('Near Clinic'));
       await settle(tester);
 
-      expect(find.text('Next Steps'), findsNothing);
+      expect(find.text('Directions'), findsNothing);
       expect(map.camera, before);
     });
 
@@ -351,7 +352,7 @@ void main() {
       await settle(tester);
       await userMoves(tester, mid.location, 16);
 
-      expect(find.text('Next Steps'), findsNothing);
+      expect(find.text('Directions'), findsNothing);
       expect(listed(tester).first, 'mid');
     });
 
@@ -454,7 +455,7 @@ void main() {
         (tester) async {
       await pumpMap(tester);
 
-      await tester.tap(find.byIcon(Icons.tune));
+      await tester.tap(find.text('Filters'));
       await settle(tester);
       await tester.tap(find.text('Favorites').last);
       await settle(tester);
@@ -462,10 +463,24 @@ void main() {
       expect(find.byType(Dialog), findsOneWidget);
       await pressBack(tester);
 
-      await tester.tap(find.text('Apply'));
+      // The button counts everything loaded: all five, one of them off
+      // screen.
+      await tester.tap(find.text('Show 5 results'));
       await settle(tester);
 
       expect(listed(tester), hasLength(4));
+    });
+
+    testWidgets('a heart offers sign-in and saves nothing', (tester) async {
+      // It used to be greyed out, as if broken.
+      await pumpMap(tester);
+
+      await tester.tap(find.byTooltip('Save Near Clinic'));
+      await settle(tester);
+
+      expect(find.byType(Dialog), findsOneWidget);
+      await pressBack(tester);
+      expect(find.byIcon(Icons.favorite), findsNothing);
     });
   });
 
@@ -483,10 +498,12 @@ void main() {
       );
       map = maps.mapStartingAtZoom(MapConstants.defaultZoom);
 
-      await tester.tap(find.byIcon(Icons.favorite_border).first);
+      await tester.tap(find.byTooltip('Save Near Clinic'));
       await settle(tester);
       expect(find.byIcon(Icons.favorite), findsOneWidget);
+      expect(find.byTooltip('Remove Near Clinic from favorites'), findsOne);
 
+      await tester.ensureVisible(find.text('Favorites'));
       await tester.tap(find.text('Favorites'));
       await settle(tester);
 
@@ -517,8 +534,7 @@ void main() {
       await settle(tester);
     }
 
-    testWidgets('a switch left off hides what requires it; on shows it too',
-        (tester) async {
+    Future<void> pumpSignedIn(WidgetTester tester) async {
       await resetAppState(tester);
       await saveLocation(home);
       GuestModeService().debugUser = testUser();
@@ -529,34 +545,118 @@ void main() {
         home: const MapPage(),
       );
       map = maps.mapStartingAtZoom(MapConstants.defaultZoom);
+    }
 
-      expect(listed(tester), ['walk-in']);
+    testWidgets('an unchecked box hides what requires it; checked shows it too',
+        (tester) async {
+      await pumpSignedIn(tester);
 
-      // Switching it on adds the facility that asks for a referral and keeps
-      // the one that doesn't.
+      // Answered, with nothing checked: "I don't have a referral".
       await setEligibility(
         tester,
-        const EligibilityState(referralRequired: true),
+        const EligibilityState(applyToSearch: true),
+      );
+      expect(listed(tester), ['walk-in']);
+
+      // Checking it adds the facility that asks for a referral and keeps the
+      // one that doesn't.
+      await setEligibility(
+        tester,
+        const EligibilityState(referralRequired: true, applyToSearch: true),
       );
       expect(listed(tester), ['referral', 'walk-in']);
 
-      await setEligibility(
-        tester,
-        const EligibilityState(applyToSearch: false),
-      );
+      await setEligibility(tester, const EligibilityState());
       expect(listed(tester), ['referral', 'walk-in']);
     });
 
-    testWidgets('guests are shown everything', (tester) async {
-      // A guest can't reach the switches, so answers left on the device by
-      // an earlier account must not hide anything from them.
+    testWidgets('nothing is hidden from someone who has not answered',
+        (tester) async {
+      // Neither a guest nor a new account: unchecked boxes mean "I don't have
+      // it" only once the person has been asked.
       await pumpMap(tester, facilities: [needsReferral, noReferral]);
+      expect(listed(tester), ['referral', 'walk-in']);
+
+      await pumpSignedIn(tester);
+      expect(listed(tester), ['referral', 'walk-in']);
+    });
+
+    testWidgets('guests are shown everything, whatever was left behind',
+        (tester) async {
+      // Answers belong to an account. A guest can't see or change them, so
+      // stale ones on the device must not hide anything.
+      await pumpMap(tester, facilities: [needsReferral, noReferral]);
+
       await setEligibility(
         tester,
-        const EligibilityState(acceptsMedicaid: true),
+        const EligibilityState(applyToSearch: true),
       );
-
       expect(listed(tester), ['referral', 'walk-in']);
+    });
+  });
+
+  group('the facility sheet', () {
+    testWidgets('a tapped pin opens the same full-width sheet as the list',
+        (tester) async {
+      // It used to be an inset floating card: a second surface for the same
+      // facility.
+      await pumpMap(tester);
+      final listWidth = tester.getSize(find.byType(FacilityListPanel)).width;
+
+      maps.tapMarker(map, const MarkerId('near'));
+      await settle(tester);
+
+      final sheet = tester.getRect(find.byType(FacilityCard));
+      expect(sheet.left, 0);
+      expect(sheet.width, listWidth);
+      // Directions sits under the name, above everything else.
+      expect(
+        tester.getTopLeft(find.text('Directions')).dy,
+        lessThan(tester.getTopLeft(find.text('Services')).dy),
+      );
+    });
+  });
+
+  group('accessibility settings', () {
+    testWidgets('"Open Map as a list" starts with the list raised',
+        (tester) async {
+      await resetAppState(tester);
+      await saveLocation(home);
+      await AccessibilitySettings().setOpenMapAsList(true);
+      repository = FakeFacilityRepository(everything);
+      maps = await pumpAppShell(tester, repository: repository);
+      await openTab(tester, 'Map');
+
+      final panel =
+          tester.widget<FacilityListPanel>(find.byType(FacilityListPanel));
+      expect(panel.isFullyExpanded, isTrue);
+      // Still one back press from the map.
+      await pressBack(tester);
+      expect(
+        tester
+            .widget<FacilityListPanel>(find.byType(FacilityListPanel))
+            .isFullyExpanded,
+        isFalse,
+      );
+    });
+
+    testWidgets('with motion reduced the camera cuts instead of flying',
+        (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpMap(tester);
+      final flights = map.animations.length;
+      final before = map.camera;
+
+      maps.tapMarker(map, const MarkerId('near'));
+      await settle(tester);
+
+      expect(map.camera, isNot(before));
+      expect(map.animations, hasLength(flights));
+      expect(find.byType(FacilityCard), findsOneWidget);
     });
   });
 

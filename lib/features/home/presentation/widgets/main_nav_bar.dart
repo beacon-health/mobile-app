@@ -111,29 +111,45 @@ class _MainNavBarState extends State<MainNavBar> {
       ),
       bottomNavigationBar: Builder(
         builder: (context) {
-          final l10n = AppLocalizations.of(context);
-          // Colors, type, and label styles come from bottomNavigationBarTheme.
-          return BottomNavigationBar(
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: l10n?.navHome ?? 'Home',
+          final l10n = AppLocalizations.of(context)!;
+          // Colors, the indicator pill, and label styles come from
+          // navigationBarTheme. Each tab pairs an outlined icon with a filled
+          // one, so the active tab differs in shape as well as color.
+          return DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.map),
-                label: l10n?.navMap ?? 'Map',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.person),
-                label: l10n?.navProfile ?? 'Profile',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.settings),
-                label: l10n?.navSettings ?? 'Settings',
-              ),
-            ],
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
+            ),
+            child: NavigationBar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onItemTapped,
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.home_outlined),
+                  selectedIcon: const Icon(Icons.home),
+                  label: l10n.navHome,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.map_outlined),
+                  selectedIcon: const Icon(Icons.map),
+                  label: l10n.navMap,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.person_outline),
+                  selectedIcon: const Icon(Icons.person),
+                  label: l10n.navProfile,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.settings_outlined),
+                  selectedIcon: const Icon(Icons.settings),
+                  label: l10n.navSettings,
+                ),
+              ],
+            ),
           );
         },
       ),

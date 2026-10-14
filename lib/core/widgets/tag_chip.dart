@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 /// Non-interactive tinted label: facility services, "At a glance"
 /// eligibility attributes, and request status. [color] drives the text, icon,
 /// outline, and background wash, so one color reads as one meaning.
+///
+/// Because it is the text color, pass a shade that reads as text —
+/// `colorScheme.primaryText`, `tertiaryText`, or `secondary` — not a brand or
+/// category color.
 class TagChip extends StatelessWidget {
   const TagChip({
     super.key,

@@ -5,9 +5,9 @@ import 'package:flutter/widgets.dart';
 /// | Token | Use |
 /// |---|---|
 /// | [sm] | Buttons, text fields, option toggles, small badges |
-/// | [md] | Cards, list containers, chips, quick-action tiles |
-/// | [lg] | Large choice cards, dialogs, the Home map preview |
-/// | [xl] | Bottom sheets and the map's sliding panels (top corners) |
+/// | [md] | Cards, choice cards, list containers, chips, quick-action tiles, the Home map preview |
+/// | [lg] | Reserved: nothing uses it today |
+/// | [xl] | Dialogs, bottom sheets, and the map's sliding panels (top corners) |
 /// | [pill] | Fully rounded: search bar, floating pills, drag handles |
 abstract final class AppRadii {
   static const double sm = 8;

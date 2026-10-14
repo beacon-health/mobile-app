@@ -200,14 +200,6 @@ final _components = <String, Widget Function()>{
         children: [
           _label('PRIMARY — ElevatedButton / FilledButton'),
           ElevatedButton(onPressed: () {}, child: const Text('Apply filters')),
-          _label('ONBOARDING CTA — secondaryFilledButton'),
-          Builder(
-            builder: (context) => FilledButton(
-              onPressed: () {},
-              style: AppTheme.secondaryFilledButton(context),
-              child: const Text('Continue'),
-            ),
-          ),
           _label('SECONDARY — OutlinedButton'),
           OutlinedButton(onPressed: () {}, child: const Text('Clear all')),
           _label('TEXT AND DESTRUCTIVE — TextButton'),
@@ -216,9 +208,7 @@ final _components = <String, Widget Function()>{
             Builder(
               builder: (context) => TextButton.icon(
                 onPressed: () {},
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.tertiary,
-                ),
+                style: AppTheme.destructiveTextButton(context),
                 icon: const Icon(Icons.delete_outline),
                 label: const Text('Delete account'),
               ),
@@ -230,26 +220,30 @@ final _components = <String, Widget Function()>{
       ),
   'chips': () => _Sample(
         children: [
-          _label('TAGCHIP — category or role color, optional icon'),
-          _row(const [
-            TagChip(
-              label: 'Walk-ins',
-              color: AppColors.healthCare,
-              icon: Icons.directions_walk,
-            ),
-            TagChip(
-              label: 'Telehealth',
-              color: AppColors.mentalHealth,
-              icon: Icons.videocam,
-            ),
-            TagChip(label: 'Food pantry', color: AppColors.basicNeeds),
-            TagChip(label: 'Shelter', color: AppColors.housingShelter),
-            TagChip(label: 'Approved', color: AppColors.resedaGreen),
-          ]),
+          _label('TAGCHIP — a text-safe role color, optional icon'),
+          Builder(
+            builder: (context) {
+              final scheme = Theme.of(context).colorScheme;
+              return _row([
+                TagChip(
+                  label: 'Walk-ins',
+                  color: scheme.primaryText,
+                  icon: Icons.directions_walk,
+                ),
+                TagChip(
+                  label: 'Telehealth',
+                  color: scheme.primaryText,
+                  icon: Icons.videocam,
+                ),
+                TagChip(label: 'Food pantry', color: scheme.tertiaryText),
+                TagChip(label: 'pending', color: scheme.secondary),
+              ]);
+            },
+          ),
           _label('FILTER BAR CHIPS — default, selected, dropdown, locked'),
           _row([
             CustomFilterChip(
-              label: 'Open Now',
+              label: 'Open now',
               isSelected: false,
               hasDropdown: false,
               onTap: () {},
@@ -274,24 +268,10 @@ final _components = <String, Widget Function()>{
               onTap: () {},
             ),
           ]),
-          _label('SELECTION TILES — filter options, Yes / No toggles'),
-          _row(const [
-            SelectionTile(
-              label: 'Medical Care',
-              selected: true,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-            ),
-            SelectionTile(
-              label: 'Food',
-              selected: false,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-            ),
+          _label("SELECTION TILES — the filter sheet's category options"),
+          _row([
+            SelectionTile(label: 'Medical Care', selected: true, onTap: () {}),
+            SelectionTile(label: 'Food', selected: false, onTap: () {}),
           ]),
         ],
       ),
@@ -391,18 +371,28 @@ final _components = <String, Widget Function()>{
         children: [
           AppBar(title: const Text('Settings')),
           const SizedBox(height: AppSpacing.huge),
-          BottomNavigationBar(
-            currentIndex: 1,
-            onTap: (_) {},
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
+          NavigationBar(
+            selectedIndex: 1,
+            onDestinationSelected: (_) {},
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.map_outlined),
+                selectedIcon: Icon(Icons.map),
+                label: 'Map',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
                 label: 'Profile',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings),
                 label: 'Settings',
               ),
             ],

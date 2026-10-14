@@ -84,8 +84,51 @@ void main() {
       (tester) async {
     await submit(tester, '6060');
 
-    expect(find.text('Please enter a 5-digit zip code'), findsOneWidget);
+    expect(find.text('Enter a 5-digit ZIP code.'), findsOneWidget);
     expect(geocodeCalls, 0);
+  });
+
+  testWidgets('the field keeps its label, and no stand-in digits',
+      (tester) async {
+    await pumpThemed(tester, const ZipEntryPage());
+    final field = find.byType(TextFormField);
+    InputDecoration decoration() =>
+        tester.widget<TextField>(find.byType(TextField)).decoration!;
+
+    expect(decoration().labelText, 'ZIP code');
+    expect(decoration().helperText, '5 digits');
+    // A row of zeros read as a ZIP already filled in.
+    expect(decoration().hintText, isNull);
+
+    await tester.enterText(field, '606');
+    await tester.pump();
+
+    // Still labelled once there is something in it.
+    expect(find.text('ZIP code'), findsOneWidget);
+    expect(
+      decoration().floatingLabelBehavior,
+      FloatingLabelBehavior.always,
+    );
+  });
+
+  testWidgets('the field has an outline that stands out from the page',
+      (tester) async {
+    await pumpThemed(tester, const ZipEntryPage());
+    final theme = Theme.of(tester.element(find.byType(TextField)));
+    final border =
+        theme.inputDecorationTheme.enabledBorder! as OutlineInputBorder;
+
+    expect(border.borderSide.style, BorderStyle.solid);
+    expect(border.borderSide.color, theme.colorScheme.outline);
+  });
+
+  testWidgets('says so when the phone refused its location', (tester) async {
+    await pumpThemed(tester, const ZipEntryPage(locationOff: true));
+
+    expect(
+      find.text('Location access is off, so enter a ZIP code instead.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the field takes digits only, five at most', (tester) async {

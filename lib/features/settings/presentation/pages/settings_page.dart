@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/constants/legal_urls.dart';
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/map_launcher_service.dart';
 import 'package:beacon_app/core/services/theme_mode_provider.dart';
@@ -15,8 +16,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 /// App settings: language, appearance, location (ZIP / GPS), directions app,
-/// and About. Account, Ratings/Requests, and Eligibility now live on the
-/// Profile tab; service Preferences are Map filters.
+/// Beacon's own accessibility options, and About. Account, Ratings/Requests,
+/// and what you can provide live on the Profile tab; service Preferences are
+/// Map filters.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -48,6 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -56,9 +59,128 @@ class _SettingsPageState extends State<SettingsPage> {
         body: ListView(
           children: [
             _buildAppSection(l10n),
+            _buildAccessibilitySection(l10n),
             _buildAboutSection(l10n),
+            // The version is information, not a row to tap.
+            if (_versionString.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Text(
+                  l10n.settingsVersionFooter(_versionString),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             const SizedBox(height: AppSpacing.xxxl),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// The most of the screen's width a row gives to its trailing value.
+  static const double _valueWidthFraction = 0.4;
+
+  /// A row that shows its current [value] and opens something to change it.
+  /// The value sits at the trailing edge with a chevron; at large text sizes
+  /// it moves under the title, where it has the whole width.
+  Widget _valueTile({
+    required IconData icon,
+    required String title,
+    required String value,
+    required VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final stacked = MediaQuery.textScalerOf(context).scale(100) / 100 > 1.5;
+    final chevron = onTap == null
+        ? null
+        : Icon(Icons.chevron_right, size: AppIconSize.md, color: muted);
+    return ListTile(
+      enabled: onTap != null,
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: stacked ? Text(value) : null,
+      trailing: stacked
+          ? chevron
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Capped, so a long value (a language that runs long, a long
+                // app name) wraps instead of pushing the title off the row.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth:
+                        MediaQuery.sizeOf(context).width * _valueWidthFraction,
+                  ),
+                  child: Text(value, textAlign: TextAlign.end),
+                ),
+                if (chevron != null) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  chevron,
+                ],
+              ],
+            ),
+      onTap: onTap,
+    );
+  }
+
+  String _themeModeName(AppLocalizations l10n, ThemeMode mode) =>
+      switch (mode) {
+        ThemeMode.system => l10n.settingsAppearanceSystem,
+        ThemeMode.light => l10n.settingsAppearanceLight,
+        ThemeMode.dark => l10n.settingsAppearanceDark,
+      };
+
+  /// Bottom-sheet list of [options] with the [current] one checked.
+  Future<T?> _pickOption<T>({
+    required String title,
+    required List<T> options,
+    required T current,
+    required String Function(T) labelOf,
+    Locale? Function(T)? localeOf,
+  }) {
+    return showModalBottomSheet<T>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sheetGutter,
+                  AppSpacing.xs,
+                  AppSpacing.sheetGutter,
+                  AppSpacing.md,
+                ),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
+                ),
+              ),
+              for (final option in options)
+                ListTile(
+                  title: Text(labelOf(option), locale: localeOf?.call(option)),
+                  selected: option == current,
+                  trailing: option == current
+                      ? Icon(
+                          Icons.check,
+                          color: Theme.of(ctx).colorScheme.primary,
+                        )
+                      : null,
+                  onTap: () => Navigator.pop(ctx, option),
+                ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ),
         ),
       ),
     );
@@ -68,6 +190,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final localeProvider = context.watch<LocaleProvider>();
     final themeModeProvider = context.watch<ThemeModeProvider>();
     final currentCode = localeProvider.locale.languageCode;
+    String languageName(String code) =>
+        LocaleProvider.localeDisplayNames[code] ?? code;
 
     final zipService = context.watch<ZipCodeService>();
     final zipCode = zipService.zipCode;
@@ -79,73 +203,54 @@ class _SettingsPageState extends State<SettingsPage> {
         SectionHeader(l10n.settingsApp),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: Text(l10n.settingsLanguage),
-                trailing: DropdownButton<String>(
-                  value: currentCode,
-                  underline: const SizedBox.shrink(),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  items: LocaleProvider.supportedLocales.map((locale) {
-                    final code = locale.languageCode;
-                    final name =
-                        LocaleProvider.localeDisplayNames[code] ?? code;
-                    return DropdownMenuItem(value: code, child: Text(name));
-                  }).toList(),
-                  onChanged: (code) {
-                    if (code != null) {
-                      localeProvider.setLocale(Locale(code));
-                    }
-                  },
-                ),
+              _valueTile(
+                icon: Icons.language,
+                title: l10n.settingsLanguage,
+                value: languageName(currentCode),
+                onTap: () async {
+                  final code = await _pickOption<String>(
+                    title: l10n.authSelectLanguage,
+                    options: [
+                      for (final locale in LocaleProvider.supportedLocales)
+                        locale.languageCode,
+                    ],
+                    current: currentCode,
+                    // Each language under its own name.
+                    labelOf: languageName,
+                    localeOf: Locale.new,
+                  );
+                  if (code != null) {
+                    await localeProvider.setLocale(Locale(code));
+                  }
+                },
               ),
               const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.brightness_6),
-                title: Text(l10n.settingsAppearance),
-                trailing: DropdownButton<ThemeMode>(
-                  value: themeModeProvider.themeMode,
-                  underline: const SizedBox.shrink(),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  items: ThemeModeProvider.themeModeNames.entries
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e.key,
-                          child: Text(e.value),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (mode) {
-                    if (mode != null) {
-                      themeModeProvider.setThemeMode(mode);
-                    }
-                  },
-                ),
+              _valueTile(
+                icon: Icons.brightness_6,
+                title: l10n.settingsAppearance,
+                value: _themeModeName(l10n, themeModeProvider.themeMode),
+                onTap: () async {
+                  final mode = await _pickOption<ThemeMode>(
+                    title: l10n.settingsAppearance,
+                    options: ThemeMode.values,
+                    current: themeModeProvider.themeMode,
+                    labelOf: (mode) => _themeModeName(l10n, mode),
+                  );
+                  if (mode != null) {
+                    await themeModeProvider.setThemeMode(mode);
+                  }
+                },
               ),
               const Divider(height: 1),
-              ListTile(
-                enabled: !locationEnabled,
-                // ListTile fades the icon itself while disabled.
-                leading: const Icon(Icons.location_on_outlined),
-                title: Text(l10n.settingsZipCode),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      locationEnabled
-                          ? l10n.locationCurrentLocation
-                          : (zipCode ?? '—'),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceMuted,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    if (!locationEnabled)
-                      const Icon(Icons.chevron_right, size: AppIconSize.md),
-                  ],
-                ),
+              _valueTile(
+                icon: Icons.location_on_outlined,
+                title: l10n.settingsZipCode,
+                value: locationEnabled
+                    ? l10n.locationCurrentLocation
+                    : (zipCode ?? l10n.commonNotSet),
                 onTap: locationEnabled ? null : _showZipEditDialog,
               ),
               const Divider(height: 1),
@@ -157,23 +262,45 @@ class _SettingsPageState extends State<SettingsPage> {
                 onChanged: (value) => _onUseMyLocationChanged(value, l10n),
               ),
               const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.directions_outlined),
-                title: Text(l10n.settingsDirectionsApp),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _preferredMapApp?.displayName ?? l10n.settingsAskEachTime,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceMuted,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    const Icon(Icons.chevron_right, size: AppIconSize.md),
-                  ],
-                ),
+              _valueTile(
+                icon: Icons.directions_outlined,
+                title: l10n.settingsDirectionsApp,
+                value:
+                    _preferredMapApp?.displayName ?? l10n.settingsAskEachTime,
                 onTap: _pickDirectionsApp,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccessibilitySection(AppLocalizations l10n) {
+    final settings = context.watch<AccessibilitySettings>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(l10n.settingsAccessibility),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.view_list_outlined),
+                title: Text(l10n.settingsMapAsList),
+                subtitle: Text(l10n.settingsMapAsListDesc),
+                value: settings.openMapAsList,
+                onChanged: settings.setOpenMapAsList,
+              ),
+              const Divider(height: 1),
+              SwitchListTile(
+                secondary: const Icon(Icons.zoom_in),
+                title: Text(l10n.settingsLargerPins),
+                subtitle: Text(l10n.settingsLargerPinsDesc),
+                value: settings.largerMapPins,
+                onChanged: settings.setLargerMapPins,
               ),
             ],
           ),
@@ -296,26 +423,22 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAboutSection(AppLocalizations l10n) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final chevron =
+        Icon(Icons.chevron_right, size: AppIconSize.md, color: muted);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(l10n.settingsAbout),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: Text(l10n.settingsVersion),
-                trailing: Text(
-                  _versionString.isEmpty ? '—' : _versionString,
-                ),
-              ),
-              const Divider(height: 1),
-              ListTile(
                 leading: const Icon(Icons.privacy_tip_outlined),
                 title: Text(l10n.settingsPrivacyPolicy),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: chevron,
                 onTap: () => UrlLauncherService.launchUrlString(
                   LegalUrls.privacyPolicy,
                   context,
@@ -325,7 +448,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading: const Icon(Icons.description_outlined),
                 title: Text(l10n.settingsTermsOfService),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: chevron,
                 onTap: () => UrlLauncherService.launchUrlString(
                   LegalUrls.termsOfUse,
                   context,
@@ -390,7 +513,6 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return AlertDialog(
       title: Text(AppLocalizations.of(context)!.settingsUpdateZipTitle),
       content: Form(
@@ -406,14 +528,13 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
                 LengthLimitingTextInputFormatter(5),
               ],
               autofocus: true,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.postalCode],
               decoration: InputDecoration(
-                hintText: '00000',
-                hintStyle: AppTypography.zipInput.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(
-                    alpha: AppOpacity.disabled,
-                  ),
-                ),
                 labelText: AppLocalizations.of(context)!.settingsZipCode,
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                helperText: AppLocalizations.of(context)!.zipEntryHelper,
+                errorText: _errorMessage,
               ),
               style: AppTypography.zipInput,
               validator: (value) {
@@ -423,15 +544,6 @@ class _ZipEditDialogState extends State<_ZipEditDialog> {
                 return null;
               },
             ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                _errorMessage!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ],
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/widgets/dashed_vertical_divider.dart';
 import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -14,11 +15,11 @@ Future<void> _pumpCard(
   WidgetTester tester,
   Facility facility, {
   bool isExpanded = false,
-  bool canFavorite = true,
   VoidCallback? onToggleExpand,
   VoidCallback? onToggleFavorite,
   VoidCallback? onRate,
   VoidCallback? onSubmitCorrection,
+  Size size = phoneSize,
 }) {
   mockPlatformServices();
   return pumpThemed(
@@ -28,7 +29,6 @@ Future<void> _pumpCard(
         child: FacilityCard(
           facility: facility,
           isExpanded: isExpanded,
-          canFavorite: canFavorite,
           onToggleExpand: onToggleExpand ?? () {},
           onToggleFavorite: onToggleFavorite ?? () {},
           buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
@@ -38,6 +38,7 @@ Future<void> _pumpCard(
         ),
       ),
     ),
+    size: size,
   );
 }
 
@@ -53,7 +54,7 @@ void main() {
     );
     expect(find.text('Near North Health'), findsOneWidget);
     expect(find.text('Clinic'), findsOneWidget);
-    expect(find.text(_l10n(tester).cardNextSteps), findsNothing);
+    expect(find.text(_l10n(tester).cardDirections), findsNothing);
   });
 
   testWidgets('the expand control reports taps', (tester) async {
@@ -67,13 +68,201 @@ void main() {
     expect(toggles, 1);
   });
 
-  testWidgets('expanded card shows next steps and hours', (tester) async {
+  group('hours', () {
+    const week = [
+      OperatingHours(day: 'mon', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'tue', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'wed', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'thu', opensAt: '09:00', closesAt: '17:00'),
+      OperatingHours(day: 'fri', opensAt: '09:00', closesAt: '16:00'),
+    ];
+
+    testWidgets('a week sits in two columns, read down then across',
+        (tester) async {
+      // One column left half the card empty beside it. The test font is
+      // about twice as wide as Inter, so the screen is too.
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        size: const Size(780, 844),
+      );
+
+      final mon = tester.getTopLeft(find.text('Mon'));
+      final wed = tester.getTopLeft(find.text('Wed'));
+      final thu = tester.getTopLeft(find.text('Thu'));
+      expect(wed.dx, mon.dx);
+      expect(wed.dy, greaterThan(mon.dy));
+      expect(thu.dy, mon.dy);
+      expect(thu.dx, greaterThan(mon.dx));
+    });
+
+    testWidgets('stays in one column when two would not fit', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 3.1;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('Thu')).dx,
+        tester.getTopLeft(find.text('Mon')).dx,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a rule runs between the two columns, and none beside one',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        size: const Size(780, 844),
+      );
+      final rule = tester.getRect(find.byType(DashedVerticalDivider));
+      expect(rule.left, greaterThan(tester.getTopLeft(find.text('Mon')).dx));
+      expect(
+        rule.right,
+        lessThanOrEqualTo(tester.getTopLeft(find.text('Thu')).dx),
+      );
+      // As tall as the longer column.
+      expect(rule.top, lessThanOrEqualTo(tester.getRect(find.text('Mon')).top));
+      expect(
+        rule.bottom,
+        greaterThanOrEqualTo(tester.getRect(find.text('Wed')).bottom),
+      );
+
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week.sublist(0, 3)),
+        isExpanded: true,
+      );
+      expect(find.byType(DashedVerticalDivider), findsNothing);
+    });
+
+    testWidgets('a closed day and an unknown day say which they are',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(
+          hours: const [
+            OperatingHours(day: 'mon', opensAt: '09:00', closesAt: '17:00'),
+            OperatingHours(day: 'sat'),
+            OperatingHours(day: 'sun', isClosed: true),
+          ],
+        ),
+        isExpanded: true,
+      );
+      final l10n = _l10n(tester);
+
+      double rowOf(String text) => tester.getTopLeft(find.text(text)).dy;
+      expect(rowOf(l10n.cardHoursUnknown), rowOf('Sat'));
+      expect(rowOf(l10n.cardHoursClosed), rowOf('Sun'));
+    });
+
+    testWidgets('a divider closes the section before the links under it',
+        (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week),
+        isExpanded: true,
+        onRate: () {},
+      );
+      final l10n = _l10n(tester);
+      final hours = tester.getTopLeft(find.text(l10n.cardHours)).dy;
+      final rate = tester
+          .getTopLeft(find.textContaining(l10n.cardRatePromptAction).last)
+          .dy;
+
+      final between =
+          tester.widgetList<Divider>(find.byType(Divider)).where((divider) {
+        final y = tester.getTopLeft(find.byWidget(divider)).dy;
+        return y > hours && y < rate;
+      });
+      expect(between, hasLength(1));
+    });
+
+    testWidgets('a few days stay in one column', (tester) async {
+      await _pumpCard(
+        tester,
+        createTestFacility(hours: week.sublist(0, 3)),
+        isExpanded: true,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('Wed')).dx,
+        tester.getTopLeft(find.text('Mon')).dx,
+      );
+    });
+  });
+
+  testWidgets('the address is heavier than the preview under it',
+      (tester) async {
+    final facility = createTestFacility(
+      address: '205 N Michigan Ave, Chicago, IL 60601',
+      description: 'Safe, affordable housing.',
+    );
+    await _pumpCard(tester, facility);
+
+    final address = tester.widget<Text>(find.text(facility.address)).style!;
+    final preview = tester.widget<Text>(find.text(facility.description)).style!;
+    expect(address.fontWeight!.value, greaterThan(preview.fontWeight!.value));
+    expect(address.color, isNot(preview.color));
+  });
+
+  testWidgets('expanded card puts directions under the name, then hours',
+      (tester) async {
     await _pumpCard(tester, createTestFacility(), isExpanded: true);
     final l10n = _l10n(tester);
-    expect(find.text(l10n.cardNextSteps), findsOneWidget);
+    expect(find.text(l10n.cardDirections), findsOneWidget);
     expect(find.text(l10n.cardHours), findsOneWidget);
-    expect(find.text(l10n.cardWebsiteNotAvailable), findsOneWidget);
     expect(find.text(l10n.cardContactForHours), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text(l10n.cardDirections)).dy,
+      lessThan(tester.getTopLeft(find.text(l10n.cardHours)).dy),
+    );
+  });
+
+  testWidgets('call and website appear only when the facility has them',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility(), isExpanded: true);
+    var l10n = _l10n(tester);
+    expect(find.text(l10n.cardCall), findsNothing);
+    expect(find.text(l10n.cardWebsite), findsNothing);
+
+    final launched = <String>[];
+    final semantics = tester.ensureSemantics();
+    mockPlatformServices();
+    await pumpThemed(
+      tester,
+      Scaffold(
+        body: SingleChildScrollView(
+          child: FacilityCard(
+            facility: createTestFacility(
+              phones: const [PhoneContact(number: '3125550100')],
+              website: 'https://example.org',
+            ),
+            isExpanded: true,
+            onToggleExpand: () {},
+            onToggleFavorite: () {},
+            buildCategoryIcon: FacilityCategoryIcons.buildCategoryIcon,
+            onLaunchUrl: (url) async => launched.add(url),
+          ),
+        ),
+      ),
+    );
+    l10n = _l10n(tester);
+    await tester.tap(find.text(l10n.cardCall));
+    await tester.tap(find.text(l10n.cardWebsite));
+    expect(launched, ['tel:3125550100', 'https://example.org']);
+    // A screen reader hears the number, not just "Call".
+    expect(
+      find.bySemanticsLabel(l10n.cardCallNumber('(312) 555-0100')),
+      findsOneWidget,
+    );
+    semantics.dispose();
   });
 
   testWidgets('only "yes" eligibility attributes become chips', (tester) async {
@@ -125,18 +314,33 @@ void main() {
     expect(find.byType(TagChip), findsNothing);
   });
 
-  testWidgets('guests see a disabled favorite button', (tester) async {
-    await _pumpCard(tester, createTestFacility(), canFavorite: false);
-    final button = tester.widget<IconButton>(
-      find.ancestor(
-        of: find.byIcon(Icons.favorite_border),
-        matching: find.byType(IconButton),
-      ),
-    );
-    expect(button.onPressed, isNull);
+  testWidgets('the heart and the expand control are full-size and named',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
+    final l10n = _l10n(tester);
+    for (final tooltip in [l10n.cardSave('CARPLS'), l10n.cardShowDetails]) {
+      final button = find.byTooltip(tooltip);
+      expect(button, findsOneWidget, reason: tooltip);
+      final size = tester.getSize(
+        find.ancestor(of: button, matching: find.byType(IconButton)).first,
+      );
+      expect(size.width, greaterThanOrEqualTo(48), reason: tooltip);
+      expect(size.height, greaterThanOrEqualTo(48), reason: tooltip);
+    }
   });
 
-  testWidgets('signed-in users can toggle the favorite', (tester) async {
+  testWidgets('a saved facility offers to remove it', (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS', isFavorite: true),
+    );
+    expect(
+      find.byTooltip(_l10n(tester).cardUnsave('CARPLS')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the heart reports taps', (tester) async {
     var toggles = 0;
     await _pumpCard(
       tester,

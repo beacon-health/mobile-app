@@ -2,6 +2,7 @@ import 'package:beacon_app/core/constants/legal_urls.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
+import 'package:beacon_app/core/widgets/beacon_logo.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
@@ -10,8 +11,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Sign-in entry point: the platform's native provider (Apple on iOS, Google
-/// on Android) + Continue as Guest. [isGuestUpgrade]
+/// Sign-in entry point: a language picker, the platform's native provider
+/// (Apple on iOS, Google on Android), and Continue as guest. [isGuestUpgrade]
 /// routes through [LocationChoicePage] with the guest's ZIP pre-filled and
 /// replaces the navigation stack.
 class LoginPage extends StatefulWidget {
@@ -26,6 +27,23 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Owned here, not built inline: a recognizer made in `build` is never
+  // disposed.
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = () => _openLegal(LegalUrls.termsOfUse);
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = () => _openLegal(LegalUrls.privacyPolicy);
+
+  void _openLegal(String url) =>
+      UrlLauncherService.launchUrlString(url, context);
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
 
   void _continueAsGuest() {
     _goToLocationChoice();
@@ -78,10 +96,13 @@ class _LoginPageState extends State<LoginPage> {
               ),
               for (final locale in LocaleProvider.supportedLocales)
                 ListTile(
+                  // Each language under its own name, not the current one's.
                   title: Text(
                     LocaleProvider.localeDisplayNames[locale.languageCode] ??
                         locale.languageCode,
+                    locale: locale,
                   ),
+                  selected: locale.languageCode == currentCode,
                   trailing: locale.languageCode == currentCode
                       ? Icon(
                           Icons.check,
@@ -104,20 +125,28 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceMuted;
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final languageCode = context.watch<LocaleProvider>().locale.languageCode;
+    final language =
+        LocaleProvider.localeDisplayNames[languageCode] ?? languageCode;
+    final legalLink = TextStyle(
+      color: theme.colorScheme.onSurface,
+      decoration: TextDecoration.underline,
+      fontWeight: FontWeight.w600,
+    );
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: AppGradients.onboarding(context),
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.onboardingGutter,
-        ),
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.onboardingGutter,
+                ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Column(
@@ -125,12 +154,44 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Column(
                         children: [
-                          const SizedBox(height: AppSpacing.xxxl),
-                          Image.asset(
-                            'assets/beacon-logo.png',
-                            width: AppSizes.logoHero,
+                          // First thing on the first screen, and in the
+                          // language itself, so nobody has to read English to
+                          // find it.
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              onPressed:
+                                  _isLoading ? null : _showLanguagePicker,
+                              icon: const Icon(Icons.language),
+                              label: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      language,
+                                      // "Language: English. Change language"
+                                      semanticsLabel:
+                                          l10n.authLanguageButton(language),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_drop_down),
+                                ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: AppSpacing.xxl),
+                          const SizedBox(height: AppSpacing.sm),
+                          const BeaconLogo(width: AppSizes.logoHero),
+                          const SizedBox(height: AppSpacing.sm),
+                          // Live text, not part of the logo artwork: it is
+                          // translated, scales, and is read aloud.
+                          Text(
+                            l10n.brandTagline,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: theme.colorScheme.secondary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
                           Text(
                             l10n.onboardingTagline,
                             textAlign: TextAlign.center,
@@ -138,9 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: theme.colorScheme.secondary,
                             ),
                           ),
-                          const SizedBox(
-                            height: AppSpacing.huge + AppSpacing.xxl,
-                          ),
+                          const SizedBox(height: AppSpacing.huge),
                           NativeSignInButton(
                             onSuccess: _goToLocationChoice,
                             onFailure: (message) =>
@@ -152,15 +211,18 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           if (_errorMessage != null) ...[
                             const SizedBox(height: AppSpacing.md),
-                            Text(
-                              _errorMessage!,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.error,
+                            Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                _errorMessage!,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
-                          const SizedBox(height: AppSpacing.xxl),
+                          const SizedBox(height: AppSpacing.xl),
                           Row(
                             children: [
                               const Expanded(child: Divider()),
@@ -170,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 child: Text(
                                   l10n.authOr,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                  style: theme.textTheme.bodyLarge?.copyWith(
                                     color: muted,
                                   ),
                                 ),
@@ -178,65 +240,43 @@ class _LoginPageState extends State<LoginPage> {
                               const Expanded(child: Divider()),
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.xxl),
+                          const SizedBox(height: AppSpacing.xl),
                           SizedBox(
                             width: double.infinity,
                             child: FilledButton(
                               onPressed: _isLoading ? null : _continueAsGuest,
-                              style: AppTheme.secondaryFilledButton(context),
                               child: Text(l10n.authContinueAsGuest),
                             ),
                           ),
                         ],
                       ),
-                      Column(
-                        children: [
-                          const SizedBox(height: AppSpacing.lg),
-                          Text.rich(
-                            TextSpan(
-                              text: l10n.authTermsPrefix,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: muted,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: l10n.authTermsOfService,
-                                  style: const TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () =>
-                                        UrlLauncherService.launchUrlString(
-                                          LegalUrls.termsOfUse,
-                                          context,
-                                        ),
-                                ),
-                                TextSpan(text: l10n.authAnd),
-                                TextSpan(
-                                  text: l10n.authPrivacyPolicy,
-                                  style: const TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () =>
-                                        UrlLauncherService.launchUrlString(
-                                          LegalUrls.privacyPolicy,
-                                          context,
-                                        ),
-                                ),
-                              ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.xxl,
+                        ),
+                        child: Text.rich(
+                          TextSpan(
+                            text: l10n.authTermsPrefix,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: muted,
                             ),
-                            textAlign: TextAlign.center,
+                            children: [
+                              TextSpan(
+                                text: l10n.authTermsOfService,
+                                style: legalLink,
+                                recognizer: _termsTap,
+                              ),
+                              TextSpan(text: l10n.authAnd),
+                              TextSpan(
+                                text: l10n.authPrivacyPolicy,
+                                style: legalLink,
+                                recognizer: _privacyTap,
+                              ),
+                              TextSpan(text: l10n.authTermsSuffix),
+                            ],
                           ),
-                          const SizedBox(height: AppSpacing.md),
-                          TextButton(
-                            onPressed: _isLoading ? null : _showLanguagePicker,
-                            child: Text(l10n.authSelectLanguage),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                        ],
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ],
                   ),

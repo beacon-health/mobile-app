@@ -23,7 +23,8 @@ class CategoryFilter extends StatelessWidget {
         selectedCategories.first,
       );
     } else {
-      label = '${selectedCategories.length} selected';
+      label = AppLocalizations.of(context)!
+          .filterCategoriesSelected(selectedCategories.length);
     }
 
     return CustomFilterChip(

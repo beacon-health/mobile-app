@@ -7,13 +7,13 @@
   "homeFavorites": "您的收藏",
   "homeNoFavorites": "暂无收藏",
   "homeNoFavoritesHint": "从地图页面添加收藏即可在此查看",
-  "homeFavoritesSignInTitle": "登录以使用收藏",
+  "homeFavoritesSignInTitle": "登录以保存收藏",
   "homeFavoritesSignInHint": "登录即可收藏您喜欢的机构。",
-  "homeRecentlyViewed": "最近浏览的机构",
+  "homeRecentlyViewed": "最近浏览",
   "homeNoRecentlyViewed": "暂无最近浏览的机构",
   "homeNoRecentlyViewedHint": "在地图上点击机构即可在此查看。",
   "mapSearchLocation": "输入邮政编码",
-  "mapSearchResourcesHint": "搜索资源...",
+  "mapSearchResourcesHint": "搜索资源",
   "mapAreaLabel": "地图区域",
   "mapSearchThisArea": "搜索此区域",
   "mapSearching": "搜索中…",
@@ -24,8 +24,8 @@
   "mapRequestFacility": "请求添加机构",
   "mapLoadFailed": "加载机构失败，请重试。",
   "mapRetry": "重试",
-  "mapInvalidZip": "请输入有效的 5 位邮政编码（例如 60605）",
-  "mapZipNotFound": "找不到邮政编码 {zipCode} 对应的位置。",
+  "mapInvalidZip": "请输入 5 位邮政编码。",
+  "mapZipNotFound": "找不到邮政编码 {zipCode}。",
   "@mapZipNotFound": {
     "placeholders": {
       "zipCode": {
@@ -40,29 +40,23 @@
   "filterFilters": "筛选",
   "filterClearAll": "全部清除",
   "filterApply": "应用",
-  "commonYes": "是",
-  "commonNo": "否",
-  "eligProofOfIncome": "需要收入证明",
-  "eligProofOfResidency": "需要居住证明",
-  "eligInsuranceRequired": "需要医疗保险",
-  "eligReferralRequired": "需要转诊",
+  "eligProofOfIncome": "收入证明",
+  "eligProofOfResidency": "住址证明",
+  "eligInsuranceRequired": "医疗保险",
+  "eligReferralRequired": "医生转诊单",
   "prefAcceptsWalkIns": "接受无预约就诊",
-  "prefAppointmentOnly": "仅限预约",
+  "prefAppointmentOnly": "需要预约",
   "prefOpenToImmigrants": "向移民开放",
   "prefFreeServices": "提供免费服务",
-  "prefSlidingScale": "提供按收入浮动收费",
+  "prefSlidingScale": "按收入浮动收费",
   "prefOtherLanguages": "提供其他语言服务",
   "prefTelehealth": "提供远程医疗",
-  "prefWheelchairAccessible": "无障碍通道",
-  "prefServesOutsideArea": "服务范围外人群",
-  "cardNextSteps": "下一步",
+  "prefWheelchairAccessible": "设有无障碍通道",
+  "prefServesOutsideArea": "服务所在地区以外的人群",
   "cardHours": "营业时间",
   "cardServices": "服务",
-  "cardServicesAiDisclaimer": "摘要由 AI 生成，可能存在不准确之处",
+  "cardServicesAiDisclaimer": "摘要由 AI 撰写，可能有误。",
   "cardAtAGlance": "一览",
-  "cardVisitWebsite": "访问网站",
-  "cardWebsiteNotAvailable": "网站不可用",
-  "cardGetDirections": "获取路线",
   "cardContactForHours": "请联系机构了解营业时间",
   "cardOpen247": "24/7 全天开放",
   "cardAddressNotAvailable": "该机构的地址信息不可用",
@@ -94,10 +88,10 @@
   "settingsYourRequests": "您的请求",
   "settingsDirectionsApp": "导航应用",
   "settingsAskEachTime": "每次询问",
-  "settingsSignInHint": "登录即可保存收藏、按偏好筛选等！",
+  "settingsSignInHint": "登录即可保存收藏，并在任何设备上使用。",
   "settingsZipUpdated": "邮政编码已更新",
   "settingsUpdateZipTitle": "更新邮政编码",
-  "settingsZipValidation": "请输入 5 位邮政编码",
+  "settingsZipValidation": "请输入 5 位邮政编码。",
   "settingsZipNotFoundError": "找不到该邮政编码，请重试。",
   "ratingsEmptyTitle": "您还没有评价任何机构。",
   "ratingsEmptyHint": "在地图上或首页的最近浏览中评价机构，您的评价将显示在这里。",
@@ -119,10 +113,9 @@
   "settingsApp": "应用",
   "settingsLanguage": "语言",
   "settingsAppearance": "外观",
-  "settingsEligibility": "资格",
+  "settingsEligibility": "您能提供的材料",
   "settingsZipCode": "邮政编码",
   "settingsAbout": "关于",
-  "settingsVersion": "版本",
   "settingsPrivacyPolicy": "隐私政策",
   "settingsTermsOfService": "服务条款",
   "settingsSignOut": "退出登录",
@@ -141,38 +134,38 @@
       }
     }
   },
-  "settingsSignOutConfirm": "确定要退出登录吗？",
+  "settingsSignOutConfirm": "您的收藏和设置会保留在账户中，并从此手机上移除。",
   "profileTitle": "个人资料",
   "authContinueWithGoogle": "使用 Google 继续",
   "authContinueWithApple": "使用 Apple 继续",
   "authContinueAsGuest": "以访客身份继续",
   "authOr": "或",
-  "authTermsPrefix": "点击继续即表示您同意我们的",
+  "authTermsPrefix": "继续即表示您同意我们的",
   "authTermsOfService": "服务条款",
   "authAnd": "和",
   "authPrivacyPolicy": "隐私政策",
-  "authSelectLanguage": "选择语言 🌐",
+  "authSelectLanguage": "选择语言",
   "authSignInPromptTitle": "请登录以使用此功能",
-  "authSignInPromptBody": "创建免费账户即可解锁收藏、资格筛选等功能。",
+  "authSignInPromptBody": "登录即可保存收藏、按偏好筛选并评价机构。",
   "authSignInError": "登录失败，请重试。",
   "locationChoiceTitle": "您希望如何查找资源？",
   "locationChoiceSubtitle": "我们将以此向您显示附近的资源。",
-  "locationChoiceUseLocation": "启用基于位置的搜索",
-  "locationChoiceUseLocationDesc": "使用 GPS 获得最准确的结果。",
+  "locationChoiceUseLocation": "使用我的位置",
+  "locationChoiceUseLocationDesc": "最准确。接下来会请求您的许可。",
   "locationChoiceEnterZip": "输入邮政编码",
-  "locationChoiceEnterZipDesc": "按邮政编码搜索。",
+  "locationChoiceEnterZipDesc": "无需共享位置即可搜索某一地区。",
   "locationCurrentLocation": "当前位置",
-  "locationPermissionDenied": "位置访问被拒绝。请在「设置」>「隐私」>「定位服务」中启用。",
+  "locationPermissionDenied": "位置访问已关闭。请在手机设置中为 Beacon 开启。",
   "locationPermissionDeniedTitle": "需要位置访问权限",
-  "locationPermissionDeniedBody": "若要使用基于 GPS 的搜索，请在 iOS「设置」>「隐私」>「定位服务」中为 Beacon 启用位置权限。",
+  "locationPermissionDeniedBody": "若要按您的位置搜索，请在手机设置中为 Beacon 开启位置访问。",
   "locationUseMyLocationTooltip": "使用我的位置",
   "settingsUseMyLocation": "使用我的位置",
-  "settingsUseMyLocationDesc": "使用 GPS 而非邮政编码",
+  "settingsUseMyLocationDesc": "代替邮政编码",
   "settingsSignOutSuccess": "已退出登录",
   "commonCancel": "取消",
   "navProfile": "个人资料",
-  "profileApplyEligibility": "将资格条件应用于搜索",
-  "profileApplyEligibilityDesc": "仅显示符合您资格的机构。",
+  "profileApplyEligibility": "按我能提供的材料筛选",
+  "profileApplyEligibilityDesc": "隐藏要求提供您未在下方勾选材料的机构。",
   "profileSignedIn": "已登录",
   "profileSignedInThrough": "已通过 {provider} 登录",
   "@profileSignedInThrough": {
@@ -190,13 +183,13 @@
   "homeCategoryCommunity": "社区资源",
   "homeCategorySpecialized": "专项服务",
   "commonLinkFailed": "无法打开该链接。",
-  "onboardingEligibilityTitle": "您的资格",
-  "onboardingEligibilitySubtitle": "告诉我们哪些适用于您，以便显示您符合条件的机构。您可以随时在个人资料中更改。",
+  "onboardingEligibilityTitle": "您能提供哪些材料？",
+  "onboardingEligibilitySubtitle": "我们会隐藏您无法使用的机构。您可以随时在个人资料中更改。",
   "onboardingContinue": "继续",
   "onboardingTagline": "查找您附近的免费和低价资源。",
   "zipEntryTitle": "您的邮政编码是什么？",
   "zipEntrySubtitle": "我们将用它为您显示附近的资源。",
-  "zipEntryInvalid": "请输入 5 位邮政编码",
+  "zipEntryInvalid": "请输入 5 位邮政编码。",
   "requestFieldWebsite": "机构网站 *",
   "requestFieldWebsiteError": "请输入机构网站",
   "correctionDialogTitle": "提交更正",
@@ -285,12 +278,115 @@
   },
   "mapNothingInView": "地图的这一区域没有资源",
   "mapNothingInViewHint": "缩小或移动地图以查看更多。",
-  "eligAcceptsMedicaid": "接受 Medicaid（医疗补助）",
+  "eligAcceptsMedicaid": "Medicaid（医疗补助）",
   "chipMedicaid": "Medicaid",
   "cardIncomeLimit": "收入限制",
   "cardServiceArea": "服务区域",
   "labelSeparator": "：",
   "correctionFieldClosed": "已永久关闭",
   "correctionFieldClosedHint": "如果该机构已永久停业，请开启此项。",
-  "requestTypeClosure": "已报告关闭"
+  "requestTypeClosure": "已报告关闭",
+  "homeOpenMap": "打开地图",
+  "filterShowResults": "{count, plural, =0{没有结果} other{显示 {count} 个结果}}",
+  "@filterShowResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterOnlyShowPlacesThat": "仅显示符合以下条件的机构",
+  "filterClose": "关闭筛选",
+  "filterCategoriesSelected": "{count, plural, other{{count} 个类别}}",
+  "@filterCategoriesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardDirections": "路线",
+  "cardCall": "致电",
+  "cardCallNumber": "致电 {phone}",
+  "@cardCallNumber": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "cardWebsite": "网站",
+  "cardSave": "收藏 {name}",
+  "@cardSave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardUnsave": "取消收藏 {name}",
+  "@cardUnsave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardShowDetails": "显示详情",
+  "cardHideDetails": "隐藏详情",
+  "eligProofOfIncomeHint": "工资单、报税表或福利证明信",
+  "eligProofOfResidencyHint": "身份证件、租约或水电费账单",
+  "onboardingSkip": "暂时跳过",
+  "onboardingStep": "第 {step} 步，共 {total} 步",
+  "@onboardingStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "authTermsSuffix": "。",
+  "authLanguageButton": "语言：{language}。更改语言",
+  "@authLanguageButton": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "zipEntryHelper": "5 位数字",
+  "zipEntryLocationOff": "位置访问已关闭，请改为输入邮政编码。",
+  "settingsSignOutTitle": "退出登录？",
+  "settingsVersionFooter": "Beacon {version}",
+  "@settingsVersionFooter": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAccessibility": "无障碍",
+  "settingsMapAsList": "以列表形式打开地图",
+  "settingsMapAsListDesc": "更适合屏幕阅读器",
+  "settingsLargerPins": "放大地图标记",
+  "settingsLargerPinsDesc": "放大地图上的标记和名称",
+  "settingsAppearanceSystem": "跟随设备",
+  "settingsAppearanceLight": "浅色",
+  "settingsAppearanceDark": "深色",
+  "commonNotSet": "未设置",
+  "brandTagline": "让就医更轻松。",
+  "@brandTagline": {
+    "description": "Tagline shown under the logo on the sign-in screen."
+  },
+  "cardHoursClosed": "休息",
+  "@cardHoursClosed": {
+    "description": "Beside a day the facility is closed."
+  },
+  "cardHoursUnknown": "未知",
+  "@cardHoursUnknown": {
+    "description": "Beside a day whose hours are not known."
+  }
 }

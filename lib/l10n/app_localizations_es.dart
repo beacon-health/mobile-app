@@ -31,15 +31,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Agrega favoritos desde el mapa para verlos aquí';
 
   @override
-  String get homeFavoritesSignInTitle =>
-      'Inicia sesión para acceder a Favoritos';
+  String get homeFavoritesSignInTitle => 'Inicia sesión para guardar favoritos';
 
   @override
   String get homeFavoritesSignInHint =>
       'Inicia sesión para guardar tus centros favoritos.';
 
   @override
-  String get homeRecentlyViewed => 'Centros vistos recientemente';
+  String get homeRecentlyViewed => 'Vistos recientemente';
 
   @override
   String get homeNoRecentlyViewed => 'No hay centros vistos recientemente';
@@ -52,7 +51,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mapSearchLocation => 'Ingresa código postal';
 
   @override
-  String get mapSearchResourcesHint => 'Buscar recursos...';
+  String get mapSearchResourcesHint => 'Buscar recursos';
 
   @override
   String get mapAreaLabel => 'Área del mapa';
@@ -87,12 +86,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mapRetry => 'Reintentar';
 
   @override
-  String get mapInvalidZip =>
-      'Ingresa un código postal válido de 5 dígitos (p. ej., 60605)';
+  String get mapInvalidZip => 'Ingresa un código postal de 5 dígitos.';
 
   @override
   String mapZipNotFound(String zipCode) {
-    return 'No se encontró la ubicación para el código postal $zipCode.';
+    return 'No encontramos el código postal $zipCode.';
   }
 
   @override
@@ -117,52 +115,43 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterApply => 'Aplicar';
 
   @override
-  String get commonYes => 'Sí';
+  String get eligProofOfIncome => 'Comprobante de ingresos';
 
   @override
-  String get commonNo => 'No';
+  String get eligProofOfResidency => 'Comprobante de domicilio';
 
   @override
-  String get eligProofOfIncome => 'Requiere comprobante de ingresos';
+  String get eligInsuranceRequired => 'Seguro médico';
 
   @override
-  String get eligProofOfResidency => 'Requiere comprobante de residencia';
+  String get eligReferralRequired => 'Una referencia médica';
 
   @override
-  String get eligInsuranceRequired => 'Requiere seguro médico';
+  String get prefAcceptsWalkIns => 'Atienden sin cita';
 
   @override
-  String get eligReferralRequired => 'Requiere referencia médica';
+  String get prefAppointmentOnly => 'Requieren cita';
 
   @override
-  String get prefAcceptsWalkIns => 'Acepta visitas sin cita';
+  String get prefOpenToImmigrants => 'Atienden a inmigrantes';
 
   @override
-  String get prefAppointmentOnly => 'Solo con cita';
+  String get prefFreeServices => 'Ofrecen servicios gratuitos';
 
   @override
-  String get prefOpenToImmigrants => 'Abierto a inmigrantes';
+  String get prefSlidingScale => 'Cobran según tus ingresos';
 
   @override
-  String get prefFreeServices => 'Servicios gratuitos disponibles';
+  String get prefOtherLanguages => 'Atienden en otros idiomas';
 
   @override
-  String get prefSlidingScale => 'Tarifa según ingresos disponible';
+  String get prefTelehealth => 'Ofrecen telemedicina';
 
   @override
-  String get prefOtherLanguages => 'Otros idiomas disponibles';
+  String get prefWheelchairAccessible => 'Son accesibles en silla de ruedas';
 
   @override
-  String get prefTelehealth => 'Telemedicina disponible';
-
-  @override
-  String get prefWheelchairAccessible => 'Accesible en silla de ruedas';
-
-  @override
-  String get prefServesOutsideArea => 'Atiende fuera del área';
-
-  @override
-  String get cardNextSteps => 'Próximos pasos';
+  String get prefServesOutsideArea => 'Atienden a personas de fuera de su zona';
 
   @override
   String get cardHours => 'Horario';
@@ -172,19 +161,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardServicesAiDisclaimer =>
-      'Resumen generado por IA; puede contener imprecisiones';
+      'Resumen escrito por IA. Puede contener errores.';
 
   @override
   String get cardAtAGlance => 'De un vistazo';
-
-  @override
-  String get cardVisitWebsite => 'Visitar sitio web';
-
-  @override
-  String get cardWebsiteNotAvailable => 'Sitio web no disponible';
-
-  @override
-  String get cardGetDirections => 'Cómo llegar';
 
   @override
   String get cardContactForHours =>
@@ -290,7 +270,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSignInHint =>
-      '¡Inicia sesión para guardar favoritos, filtrar por preferencias y más!';
+      'Inicia sesión para guardar favoritos y usarlos en cualquier dispositivo.';
 
   @override
   String get settingsZipUpdated => 'Código postal actualizado';
@@ -299,7 +279,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsUpdateZipTitle => 'Actualizar código postal';
 
   @override
-  String get settingsZipValidation => 'Ingresa un código postal de 5 dígitos';
+  String get settingsZipValidation => 'Ingresa un código postal de 5 dígitos.';
 
   @override
   String get settingsZipNotFoundError =>
@@ -349,16 +329,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAppearance => 'Apariencia';
 
   @override
-  String get settingsEligibility => 'Elegibilidad';
+  String get settingsEligibility => 'Lo que puedes presentar';
 
   @override
   String get settingsZipCode => 'Código postal';
 
   @override
   String get settingsAbout => 'Acerca de';
-
-  @override
-  String get settingsVersion => 'Versión';
 
   @override
   String get settingsPrivacyPolicy => 'Política de privacidad';
@@ -371,7 +348,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSignOutConfirm =>
-      '¿Estás seguro de que deseas cerrar sesión?';
+      'Tus favoritos y ajustes se quedan en tu cuenta. Se quitarán de este teléfono.';
 
   @override
   String get settingsDeleteAccount => 'Eliminar cuenta';
@@ -417,7 +394,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authOr => 'o';
 
   @override
-  String get authTermsPrefix => 'Al hacer clic en continuar, aceptas nuestros ';
+  String get authTermsPrefix => 'Al continuar, aceptas nuestros ';
 
   @override
   String get authTermsOfService => 'Términos de servicio';
@@ -429,14 +406,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authPrivacyPolicy => 'Política de privacidad';
 
   @override
-  String get authSelectLanguage => 'Seleccionar un idioma 🌐';
+  String get authSelectLanguage => 'Seleccionar un idioma';
 
   @override
   String get authSignInPromptTitle => 'Inicia sesión para usar esta función';
 
   @override
   String get authSignInPromptBody =>
-      'Crea una cuenta gratuita para desbloquear Favoritos, filtros de elegibilidad y más.';
+      'Inicia sesión para guardar favoritos, filtrar por preferencias y calificar lugares.';
 
   @override
   String get authSignInError => 'Error al iniciar sesión. Inténtalo de nuevo.';
@@ -449,32 +426,33 @@ class AppLocalizationsEs extends AppLocalizations {
       'Usaremos esto para mostrarte recursos cercanos.';
 
   @override
-  String get locationChoiceUseLocation => 'Activar búsqueda por ubicación';
+  String get locationChoiceUseLocation => 'Usar mi ubicación';
 
   @override
   String get locationChoiceUseLocationDesc =>
-      'Usa el GPS para obtener los resultados más precisos.';
+      'Lo más preciso. Te pediremos permiso a continuación.';
 
   @override
-  String get locationChoiceEnterZip => 'Ingresar código postal';
+  String get locationChoiceEnterZip => 'Ingresar un código postal';
 
   @override
-  String get locationChoiceEnterZipDesc => 'Buscar por código postal.';
+  String get locationChoiceEnterZipDesc =>
+      'Busca en una zona sin compartir tu ubicación.';
 
   @override
   String get locationCurrentLocation => 'Ubicación actual';
 
   @override
   String get locationPermissionDenied =>
-      'Acceso a la ubicación denegado. Actívalo en Ajustes > Privacidad > Servicios de ubicación.';
+      'El acceso a la ubicación está desactivado. Actívalo para Beacon en los ajustes de tu teléfono.';
 
   @override
   String get locationPermissionDeniedTitle =>
-      'Se requiere acceso a la ubicación';
+      'Se necesita acceso a la ubicación';
 
   @override
   String get locationPermissionDeniedBody =>
-      'Para usar la búsqueda por GPS, activa la ubicación de Beacon en Ajustes de iOS > Privacidad > Servicios de ubicación.';
+      'Para buscar por tu ubicación, activa el acceso a la ubicación para Beacon en los ajustes de tu teléfono.';
 
   @override
   String get locationUseMyLocationTooltip => 'Usar mi ubicación';
@@ -483,7 +461,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsUseMyLocation => 'Usar mi ubicación';
 
   @override
-  String get settingsUseMyLocationDesc => 'Usar GPS en lugar del código postal';
+  String get settingsUseMyLocationDesc => 'En lugar de un código postal';
 
   @override
   String get settingsSignOutSuccess => 'Sesión cerrada';
@@ -495,12 +473,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
-  String get profileApplyEligibility =>
-      'Aplicar criterios de elegibilidad a la búsqueda';
+  String get profileApplyEligibility => 'Filtrar por lo que puedo presentar';
 
   @override
   String get profileApplyEligibilityDesc =>
-      'Mostrar solo centros que coincidan con tu elegibilidad.';
+      'Oculta los lugares que piden algo que no has marcado abajo.';
 
   @override
   String get profileSignedIn => 'Sesión iniciada';
@@ -535,11 +512,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonLinkFailed => 'No se pudo abrir el enlace.';
 
   @override
-  String get onboardingEligibilityTitle => 'Tu elegibilidad';
+  String get onboardingEligibilityTitle => '¿Qué puedes presentar?';
 
   @override
   String get onboardingEligibilitySubtitle =>
-      'Cuéntanos qué aplica a ti para mostrarte centros para los que calificas. Puedes cambiarlo cuando quieras en tu Perfil.';
+      'Ocultaremos los lugares que no podrías usar. Puedes cambiarlo cuando quieras en Perfil.';
 
   @override
   String get onboardingContinue => 'Continuar';
@@ -556,7 +533,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Lo usaremos para mostrarte recursos cercanos.';
 
   @override
-  String get zipEntryInvalid => 'Ingresa un código postal de 5 dígitos';
+  String get zipEntryInvalid => 'Ingresa un código postal de 5 dígitos.';
 
   @override
   String get requestFieldWebsite => 'Sitio web del centro *';
@@ -723,7 +700,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mapNothingInViewHint => 'Aleja o mueve el mapa para ver más.';
 
   @override
-  String get eligAcceptsMedicaid => 'Acepta Medicaid';
+  String get eligAcceptsMedicaid => 'Medicaid';
 
   @override
   String get chipMedicaid => 'Medicaid';
@@ -746,4 +723,142 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get requestTypeClosure => 'Cierre reportado';
+
+  @override
+  String get homeOpenMap => 'Abrir mapa';
+
+  @override
+  String filterShowResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ver $count resultados',
+      one: 'Ver 1 resultado',
+      zero: 'Sin resultados',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filterOnlyShowPlacesThat => 'Mostrar solo lugares que';
+
+  @override
+  String get filterClose => 'Cerrar filtros';
+
+  @override
+  String filterCategoriesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categorías',
+      one: '1 categoría',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cardDirections => 'Cómo llegar';
+
+  @override
+  String get cardCall => 'Llamar';
+
+  @override
+  String cardCallNumber(String phone) {
+    return 'Llamar al $phone';
+  }
+
+  @override
+  String get cardWebsite => 'Sitio web';
+
+  @override
+  String cardSave(String name) {
+    return 'Guardar $name';
+  }
+
+  @override
+  String cardUnsave(String name) {
+    return 'Quitar $name de favoritos';
+  }
+
+  @override
+  String get cardShowDetails => 'Ver detalles';
+
+  @override
+  String get cardHideDetails => 'Ocultar detalles';
+
+  @override
+  String get eligProofOfIncomeHint =>
+      'Recibo de sueldo, declaración de impuestos o carta de beneficios';
+
+  @override
+  String get eligProofOfResidencyHint =>
+      'Identificación, contrato de alquiler o factura de servicios';
+
+  @override
+  String get onboardingSkip => 'Omitir por ahora';
+
+  @override
+  String onboardingStep(int step, int total) {
+    return 'Paso $step de $total';
+  }
+
+  @override
+  String get authTermsSuffix => '.';
+
+  @override
+  String authLanguageButton(String language) {
+    return 'Idioma: $language. Cambiar idioma';
+  }
+
+  @override
+  String get zipEntryHelper => '5 dígitos';
+
+  @override
+  String get zipEntryLocationOff =>
+      'El acceso a la ubicación está desactivado; ingresa un código postal.';
+
+  @override
+  String get settingsSignOutTitle => '¿Cerrar sesión?';
+
+  @override
+  String settingsVersionFooter(String version) {
+    return 'Beacon $version';
+  }
+
+  @override
+  String get settingsAccessibility => 'Accesibilidad';
+
+  @override
+  String get settingsMapAsList => 'Abrir el mapa como lista';
+
+  @override
+  String get settingsMapAsListDesc => 'Más fácil con lectores de pantalla';
+
+  @override
+  String get settingsLargerPins => 'Marcadores más grandes';
+
+  @override
+  String get settingsLargerPinsDesc =>
+      'Marcadores y nombres más grandes en el mapa';
+
+  @override
+  String get settingsAppearanceSystem => 'Igual que el dispositivo';
+
+  @override
+  String get settingsAppearanceLight => 'Claro';
+
+  @override
+  String get settingsAppearanceDark => 'Oscuro';
+
+  @override
+  String get commonNotSet => 'Sin definir';
+
+  @override
+  String get brandTagline => 'Atención médica más llevadera.';
+
+  @override
+  String get cardHoursClosed => 'Cerrado';
+
+  @override
+  String get cardHoursUnknown => 'Sin datos';
 }

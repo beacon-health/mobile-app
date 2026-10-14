@@ -35,7 +35,10 @@ class _FacilitySearchState extends State<FacilitySearch> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceFaded),
+        Icon(
+          Icons.search,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: TextField(
@@ -44,7 +47,11 @@ class _FacilitySearchState extends State<FacilitySearch> {
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)?.mapSearchResourcesHint ??
                   'Search for resources...',
+              // The pill around the row is the field's outline; the theme's
+              // own would draw a second box inside it.
               border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 vertical: AppSpacing.md,
               ),
@@ -58,8 +65,9 @@ class _FacilitySearchState extends State<FacilitySearch> {
           IconButton(
             icon: Icon(
               Icons.clear,
-              color: Theme.of(context).colorScheme.onSurfaceFaded,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
+            tooltip: MaterialLocalizations.of(context).clearButtonTooltip,
             onPressed: () {
               widget.controller.clear();
               widget.onClear();

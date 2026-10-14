@@ -112,7 +112,7 @@ lib/
       domain/models/           Facility, eligibility, hours
       presentation/            Map page, filters, cards, markers
       utils/                   Map geometry, category icons
-    profile/                   Profile tab (account, ratings, eligibility)
+    profile/                   Profile tab (account, ratings, what you can provide)
     settings/                  Settings, "Your Ratings", "Your Requests"
   l10n/                        ARB files (en/es/zh) + generated localizations
 test/                          Unit, widget, and golden tests mirroring lib/
@@ -123,16 +123,21 @@ tool/                          Repo scripts: golden adoption, Claude Design bund
 
 ### Architecture at a glance
 
-**Entry flow:** `AuthGate` → `LoginPage` (Apple on iOS, Google on Android, or
-guest) → `LocationChoicePage` (GPS, or a ZIP on `ZipEntryPage`) →
-`EligibilityOnboardingPage` (signed-in only) → `MainNavBar`. Returning users go
-straight to `MainNavBar`; the `hasCompletedOnboarding` flag in
-`SharedPreferences` decides.
+**Entry flow:** `AuthGate` → `LoginPage` (a language picker, then Apple on
+iOS, Google on Android, or guest) → `LocationChoicePage` (GPS, or a ZIP on
+`ZipEntryPage`) → `EligibilityOnboardingPage` (signed in only; a guest skips
+it) → `MainNavBar`. The steps after
+sign-in share `OnboardingScaffold`, which draws the step count and the back
+button; each step is pushed over the one before it, so back returns there.
+Returning users go straight to `MainNavBar`; the `hasCompletedOnboarding`
+flag in `SharedPreferences` decides.
 
 **Guest mode is a first-class state.** `GuestModeService.isGuest` is derived
 from the Supabase session. Guests can browse, search, and get directions;
-Favorites, ratings, requests, and the whole Profile tab are gated by checking
-`isGuest` and calling `showSignInPromptDialog(context)`. When adding a feature
+Favorites, the preference filters, ratings, and requests are gated by checking `isGuest` and calling
+`showSignInPromptDialog(context)`. A gated control stays live and
+full-contrast, with a lock — it does something when tapped, so it must not
+look disabled. When adding a feature
 that writes to Supabase, gate it — RLS will reject anonymous writes anyway, and
 a sign-in prompt is a far better experience than a silent failure.
 
@@ -159,19 +164,26 @@ moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
 (`MarkerManagementService.groupForZoom`).
 
-**Eligibility switches only ever hide what a person can't use.** The rule is
-`FacilityFilterService.eligibilityGates`. The four "required" switches (proof
-of income, proof of residency, insurance, referral) say what the person can
-provide: left off, facilities that require it are hidden; switched on, they
-are shown along with everything else. Medicaid runs the other way — only
-switching it on filters, hiding places known not to accept it. A facility with
-no answer on file always passes, and guests, who can't reach the switches, are
-never filtered.
+**"What can you provide?" only ever hides what a person can't use.** It
+belongs to an account: the question is asked once, in onboarding after sign-in,
+and stays editable on Profile; both use `EligibilityChecklist`. A guest is
+never asked and never filtered by it. The rule is `FacilityFilterService.eligibilityGates`.
+Four boxes are documents (proof of income, proof of address, insurance, a
+referral): unchecked, facilities that require it are hidden; checked, they are
+shown along with everything else. Medicaid runs the other way — only checking
+it filters, hiding places known not to accept it. A facility with no answer on
+file always passes. Nothing is hidden until the person has answered:
+`applyToSearch` starts off, "Continue" in onboarding turns it on, and "Skip for
+now" leaves it off.
 
 **Nav pages live in an `IndexedStack`** and keep state alive, so `initState`
 runs once. Pages that must react to changes made elsewhere (Settings editing the
-ZIP, Profile editing eligibility, favorites finishing their load) subscribe to
-the relevant service in `initState` and re-filter on notify.
+ZIP, Profile editing what you can provide, favorites finishing their load)
+subscribe to the relevant service in `initState` and re-filter on notify.
+
+**A facility is one card on one surface.** `FacilityCard` is a row of the
+map's list, expanding in place, and the whole of the sheet a tapped pin opens.
+Directions, Call, and Website sit directly under the name.
 
 **Tabs and map overlays are not routes, so Android's back button is handled by
 hand.** `MainNavBar` wraps the shell in a `PopScope`: back first asks
@@ -193,7 +205,8 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
 | `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
-| `EligibilityPreferencesService` | Eligibility answers (income, residency, insurance, referral, Medicaid) + map preferences; auto-applies to search |
+| `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
+| `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |
 | `UserSettingsService` | Mirrors settings to the `user_settings` Supabase row |
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |
@@ -300,6 +313,34 @@ The full guide is in [`design/README.md`](design/README.md). The Claude Design
 project is built from these tokens with `dart run tool/build_design_bundle.dart`
 (see [`.design-sync/NOTES.md`](.design-sync/NOTES.md)).
 
+### Accessibility
+
+The bar is WCAG 2.2 AA, and the app answers to the OS settings rather than
+only tolerating them:
+
+| Setting | What Beacon does | Where |
+|---|---|---|
+| Text size | Every screen reflows to 310%: rows grow, grids drop columns, trailing values move under their titles | each screen; `test/accessibility/large_text_test.dart` |
+| Bold text | Steps every weight up (Inter is bundled, so the OS can't) | `AppTheme.adapted` |
+| Increase contrast | Switches to themes with stronger outlines | `AppTheme.highContrast*Theme` |
+| Reduce motion | Sheets cut instead of sliding; the map jumps instead of flying | `AppMotion.of` / `AppMotion.reduced` |
+| Screen readers, Voice Control | Every control has a name that contains its visible label; headings are marked; the result count is announced when it changes | `tooltip` / `Semantics` at each control |
+| Keyboard and switch access | Buttons draw a focus ring | `FocusRingBorder` |
+
+Rules that follow from it:
+
+- **Text is at least 11pt and 4.5:1.** Brand colors are for fills and icons;
+  text takes `colorScheme.primaryText` / `tertiaryText`.
+  `test/core/theme/contrast_test.dart` pins the pairings.
+- **Anything tappable is at least 48×48** (`AppSizes.minTouchTarget`), sized
+  with a minimum, never a fixed height.
+- **State never shows by color alone**: the active tab has a pill and a filled
+  icon, a selected option a check mark and a thicker outline.
+- **Anything that moves takes its duration from `AppMotion.of(context, …)`.**
+
+Settings → Accessibility adds two options of Beacon's own (`AccessibilitySettings`):
+opening the Map tab as a list, and larger pins.
+
 ### Localization
 
 User-facing strings must never be hardcoded. Add the key to **all three** ARB
@@ -326,11 +367,15 @@ render widgets with the real theme, localizations, and providers.
 - **Unit tests** cover services, models, filtering, map geometry, marker
   grouping, and the category taxonomy.
 - **Widget tests** cover the shared components, the facility card and list
-  panel, the dialogs, Settings, Profile, and the first-run flow.
+  panel, the dialogs, sign-in, Settings, Profile, and the first-run flow.
+- **Accessibility tests** (`test/accessibility/`) run every screen at 200% and
+  310% text on a small phone, in English and Spanish, and fail on any
+  overflow. `test/core/theme/contrast_test.dart` holds the painted color
+  pairings to WCAG AA.
 - **Shell tests** run the real `MainNavBar` — Home, Map, Profile, Settings —
   over a fake map and a fake data source: Android back in every state, the
   list following the map, cluster taps, selection, location changes, guest
-  locks, eligibility. `pumpAppShell` and `FakeFacilityRepository` are in
+  locks, what you can provide. `pumpAppShell` and `FakeFacilityRepository` are in
   `test/helpers/app_shell.dart`; `FakeGoogleMaps`
   (`test/helpers/fake_google_maps.dart`) stands in for the Maps SDK and lets a
   test move the camera or tap a marker. `pressBack(tester)` presses Android's

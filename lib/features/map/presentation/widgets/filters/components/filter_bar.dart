@@ -1,5 +1,7 @@
 import 'package:beacon_app/core/theme/theme.dart';
-import 'package:beacon_app/features/map/constants/filter_constants.dart';
+import 'package:beacon_app/features/map/constants/filter_constants.dart'
+    show PreferenceRequirement;
+import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_chip.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/category_filter.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/filter_widgets.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/types/preferences_filter.dart';
@@ -34,63 +36,52 @@ class FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        SizedBox(
-          height: FilterConstants.barHeight,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(
-              left: AppSpacing.lg,
-              right: AppSpacing.sm,
-            ),
-            children: [
-              GestureDetector(
-                onTap: onFiltersTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                  ),
-                  decoration: BoxDecoration(
-                    color: scheme.primary,
-                    borderRadius: AppRadii.mdAll,
-                  ),
-                  child: Icon(
-                    Icons.tune,
-                    color: scheme.onPrimary,
-                    size: AppIconSize.md,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              ToggleFilter(
-                label: AppLocalizations.of(context)!.filterOpenNow,
-                isActive: showOpenNowOnly,
-                onTap: onOpenNowTap,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              ToggleFilter(
-                label: AppLocalizations.of(context)!.filterFavorites,
-                isActive: showFavoritesOnly,
-                isLocked: isGuestMode,
-                onTap: onFavoritesTap,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              CategoryFilter(
-                selectedCategories: selectedCategories,
-                onTap: onCategoryTap,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              PreferencesFilter(
-                selectedRequirements: selectedPreferenceRequirements,
-                isLocked: isGuestMode,
-                onTap: onPreferencesTap,
-              ),
-            ],
+    final l10n = AppLocalizations.of(context)!;
+    // A scrolling row sized by its chips, not a fixed-height list: the chips
+    // grow with the text size and the bar grows with them.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        // Room for the chips' shadows, which a scroll view would clip.
+        vertical: AppSpacing.xs,
+      ),
+      child: Row(
+        children: [
+          CustomFilterChip(
+            label: l10n.filterFilters,
+            icon: Icons.tune,
+            isProminent: true,
+            isSelected: false,
+            hasDropdown: false,
+            onTap: onFiltersTap,
           ),
-        ),
-      ],
+          const SizedBox(width: AppSpacing.sm),
+          ToggleFilter(
+            label: l10n.filterOpenNow,
+            isActive: showOpenNowOnly,
+            onTap: onOpenNowTap,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          ToggleFilter(
+            label: l10n.filterFavorites,
+            isActive: showFavoritesOnly,
+            isLocked: isGuestMode,
+            onTap: onFavoritesTap,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          CategoryFilter(
+            selectedCategories: selectedCategories,
+            onTap: onCategoryTap,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          PreferencesFilter(
+            selectedRequirements: selectedPreferenceRequirements,
+            isLocked: isGuestMode,
+            onTap: onPreferencesTap,
+          ),
+        ],
+      ),
     );
   }
 }

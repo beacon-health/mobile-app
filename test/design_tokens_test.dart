@@ -62,6 +62,13 @@ Map<String, Object> _tokens() {
         'specializedServices': _hex(AppColors.specializedServices),
         'fallback': _hex(AppColors.categoryFallback),
       },
+      // The four that change in dark mode, for icons and labels. Pins don't.
+      'categoryDark': {
+        'healthCare': _hex(AppColors.healthCareOnDark),
+        'mentalHealth': _hex(AppColors.mentalHealthOnDark),
+        'specializedServices': _hex(AppColors.specializedServicesOnDark),
+        'fallback': _hex(AppColors.categoryFallbackOnDark),
+      },
       'status': {
         'favorite': _hex(AppColors.favorite),
         'warning': _hex(AppColors.warning),
@@ -85,6 +92,7 @@ Map<String, Object> _tokens() {
       'tintStrong': AppOpacity.tintStrong,
       'tintBorder': AppOpacity.tintBorder,
       'disabled': AppOpacity.disabled,
+      'focus': AppOpacity.focus,
       'onSurfaceFaded': 0.5,
       'onSurfaceMuted': 0.6,
       'onSurfaceSecondary': 0.7,
@@ -127,6 +135,8 @@ Map<String, Object> _tokens() {
       'borderSelected': _n(AppSizes.borderSelected),
       'handleWidth': _n(AppSizes.handleWidth),
       'handleHeight': _n(AppSizes.handleHeight),
+      'focusRingWidth': _n(AppSizes.focusRingWidth),
+      'focusRingGap': _n(AppSizes.focusRingGap),
     },
     'shadow': {
       'card': _shadows(AppShadows.card),
@@ -145,7 +155,7 @@ Map<String, Object> _tokens() {
           entry.key: _textStyle(entry.value),
       },
       'special': {
-        'quickActionLabel': _textStyle(AppTypography.quickActionLabel),
+        'navLabel': _textStyle(AppTypography.navLabel),
         'zipInput': _textStyle(AppTypography.zipInput),
       },
     },
@@ -170,7 +180,8 @@ Map<String, String> _schemeRoles(ThemeData theme) {
   return {
     'background': _hex(theme.scaffoldBackgroundColor),
     'card': _hex(theme.cardTheme.color!),
-    'navBar': _hex(theme.bottomNavigationBarTheme.backgroundColor!),
+    'navBar': _hex(theme.navigationBarTheme.backgroundColor!),
+    'navIndicator': _hex(s.navIndicator),
     'primary': _hex(s.primary),
     'onPrimary': _hex(s.onPrimary),
     'primaryContainer': _hex(s.primaryContainer),
@@ -181,6 +192,11 @@ Map<String, String> _schemeRoles(ThemeData theme) {
     'onSecondaryContainer': _hex(s.onSecondaryContainer),
     'tertiary': _hex(s.tertiary),
     'onTertiary': _hex(s.onTertiary),
+    'primaryText': _hex(s.primaryText),
+    'tertiaryText': _hex(s.tertiaryText),
+    'facilityCard': _hex(s.facilityCard),
+    'focusRing': _hex(s.focusRing),
+    'scrim': _hex(s.modalScrim),
     'error': _hex(s.error),
     'onError': _hex(s.onError),
     'surface': _hex(s.surface),
@@ -255,9 +271,17 @@ String _css(Map<String, Object> t) {
       ..writeln('}');
   }
 
-  void vars(String prefix, Map<String, Object> group, String unit) {
+  // Claude Design sorts tokens by value shape; `@kind` names the group for
+  // the ones whose value doesn't give it away.
+  void vars(
+    String prefix,
+    Map<String, Object> group,
+    String unit, {
+    String? kind,
+  }) {
+    final tag = kind == null ? '' : ' /* @kind $kind */';
     for (final e in group.entries) {
-      b.writeln('  --$prefix-${_kebab(e.key)}: ${e.value}$unit;');
+      b.writeln('  --$prefix-${_kebab(e.key)}: ${e.value}$unit;$tag');
     }
   }
 
@@ -278,9 +302,9 @@ String _css(Map<String, Object> t) {
   final gradient = color['gradient']! as Map<String, Object>;
   final gLight = gradient['onboardingLight']! as List;
   b.writeln('  --gradient-onboarding: linear-gradient(180deg, '
-      '${gLight[0]}, ${gLight[1]});');
+      '${gLight[0]}, ${gLight[1]}); /* @kind color */');
   schemeVars(color['light']! as Map<String, Object>);
-  vars('opacity', t['opacity']! as Map<String, Object>, '');
+  vars('opacity', t['opacity']! as Map<String, Object>, '', kind: 'other');
   vars('space', t['spacing']! as Map<String, Object>, 'px');
   vars('radius', t['radius']! as Map<String, Object>, 'px');
   vars('icon', t['iconSize']! as Map<String, Object>, 'px');
@@ -295,34 +319,25 @@ String _css(Map<String, Object> t) {
   }
   final motion = t['motion']! as Map<String, Object>;
   b
-    ..writeln('  --motion-fast: ${motion['fastMs']}ms;')
-    ..writeln('  --motion-medium: ${motion['mediumMs']}ms;')
-    ..writeln('  --motion-curve: ${motion['curve']};')
+    ..writeln('  --motion-fast: ${motion['fastMs']}ms; /* @kind other */')
+    ..writeln('  --motion-medium: ${motion['mediumMs']}ms; /* @kind other */')
+    ..writeln('  --motion-curve: ${motion['curve']}; /* @kind other */')
     ..writeln('}')
     ..writeln();
 
-  // Dark roles apply for the OS preference unless a page pins
-  // data-theme="light", and always under data-theme="dark".
+  // Dark roles apply under data-theme="dark": Claude Design pins the theme on
+  // every page, and can't register tokens declared under a media query.
   final gDark = gradient['onboardingDark']! as List;
-  void darkVars(String indent) {
-    for (final e in (color['dark']! as Map<String, Object>).entries) {
-      b.writeln('$indent  --color-${_kebab(e.key)}: ${e.value};');
-    }
-    b.writeln('$indent  --gradient-onboarding: linear-gradient(180deg, '
-        '${gDark[0]}, ${gDark[1]});');
+  b.writeln(':root[data-theme="dark"] {');
+  for (final e in (color['categoryDark']! as Map<String, Object>).entries) {
+    b.writeln('  --color-category-${_kebab(e.key)}: ${e.value};');
   }
-
+  for (final e in (color['dark']! as Map<String, Object>).entries) {
+    b.writeln('  --color-${_kebab(e.key)}: ${e.value};');
+  }
   b
-    ..writeln('@media (prefers-color-scheme: dark) {')
-    ..writeln('  :root:not([data-theme="light"]) {');
-  darkVars('  ');
-  b
-    ..writeln('  }')
-    ..writeln('}')
-    ..writeln()
-    ..writeln(':root[data-theme="dark"] {');
-  darkVars('');
-  b
+    ..writeln('  --gradient-onboarding: linear-gradient(180deg, '
+        '${gDark[0]}, ${gDark[1]}); /* @kind color */')
     ..writeln('}')
     ..writeln()
     ..writeln('body {')

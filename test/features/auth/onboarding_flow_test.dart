@@ -1,5 +1,8 @@
 import 'package:beacon_app/core/services/coverage_service.dart';
+import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/features/auth/presentation/pages/eligibility_onboarding_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/auth/presentation/pages/zip_entry_page.dart';
@@ -14,7 +17,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../helpers/app_shell.dart';
 import '../../helpers/test_facility.dart';
 
-/// First run, from the login screen to the tabs, as a guest.
+/// First run, from the login screen to the tabs. A guest says where to look
+/// and is done; someone signed in is then asked what they can provide.
 void main() {
   const tulsa = LatLng(36.1540, -95.9928);
   final zipService = ZipCodeService();
@@ -45,8 +49,32 @@ void main() {
     );
   }
 
+  /// A first run by someone who has just signed in: the location step, with
+  /// nothing beneath it.
+  Future<void> pumpSignedInFirstRun(WidgetTester tester) async {
+    await pumpFirstRun(tester);
+    GuestModeService().debugUser = testUser();
+    await pumpAppShell(
+      tester,
+      repository: repository,
+      home: const LocationChoicePage(),
+    );
+  }
+
   Future<void> continueAsGuest(WidgetTester tester) async {
-    await tester.tap(find.text('Continue as Guest'));
+    await tester.tap(find.text('Continue as guest'));
+    await settle(tester);
+  }
+
+  Future<void> chooseZip(WidgetTester tester) async {
+    await tester.tap(find.text('Enter a ZIP code'));
+    await settle(tester);
+  }
+
+  /// Leaves the last step without answering it.
+  Future<void> skipEligibility(WidgetTester tester) async {
+    expect(find.byType(EligibilityOnboardingPage), findsOneWidget);
+    await tester.tap(find.text('Skip for now'));
     await settle(tester);
   }
 
@@ -86,10 +114,14 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Enter Zip Code'));
-    await settle(tester);
+    // One step has nothing to count.
+    expect(find.textContaining('Step 1'), findsNothing);
+
+    await chooseZip(tester);
     await enterZip(tester, '74103');
 
+    // What you can provide belongs to an account: a guest is never asked.
+    expect(find.byType(EligibilityOnboardingPage), findsNothing);
     expect(find.byType(MainNavBar), findsOneWidget);
     expect(zipService.zipCode, '74103');
     expect(zipService.hasCompletedOnboarding, isTrue);
@@ -102,13 +134,12 @@ void main() {
   testWidgets('a ZIP outside coverage stops at the ZIP screen', (tester) async {
     await pumpFirstRun(tester);
     await continueAsGuest(tester);
-    await tester.tap(find.text('Enter Zip Code'));
-    await settle(tester);
+    await chooseZip(tester);
 
     await enterZip(tester, '90001');
 
     expect(find.byType(ZipEntryPage), findsOneWidget);
-    expect(find.byType(MainNavBar), findsNothing);
+    expect(find.byType(EligibilityOnboardingPage), findsNothing);
     expect(
       find.textContaining('It currently covers Illinois and Oklahoma.'),
       findsOneWidget,
@@ -121,6 +152,98 @@ void main() {
     expect(find.byType(MainNavBar), findsOneWidget);
   });
 
+  group('signed in', () {
+    testWidgets('is asked what they can provide, as the second of two steps',
+        (tester) async {
+      await pumpSignedInFirstRun(tester);
+      expect(find.text('Step 1 of 2'), findsOneWidget);
+
+      await chooseZip(tester);
+      expect(find.text('Step 1 of 2'), findsOneWidget);
+      await enterZip(tester, '74103');
+
+      expect(find.byType(EligibilityOnboardingPage), findsOneWidget);
+      expect(find.text('Step 2 of 2'), findsOneWidget);
+      await skipEligibility(tester);
+      expect(find.byType(MainNavBar), findsOneWidget);
+    });
+
+    testWidgets('skipping the last step filters nothing', (tester) async {
+      await pumpSignedInFirstRun(tester);
+      await chooseZip(tester);
+      await enterZip(tester, '74103');
+
+      // Checked, then skipped: the answer is kept but not applied.
+      await tester.tap(find.text('Proof of income'));
+      await tester.pump();
+      await skipEligibility(tester);
+
+      final answers = EligibilityPreferencesService().eligibility;
+      expect(answers.applyToSearch, isFalse);
+      expect(answers.proofOfIncome, isTrue);
+    });
+
+    testWidgets('continuing saves the answers and applies them',
+        (tester) async {
+      await pumpSignedInFirstRun(tester);
+      await chooseZip(tester);
+      await enterZip(tester, '74103');
+
+      await tester.tap(find.text('Medicaid'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+      await settle(tester);
+
+      expect(find.byType(MainNavBar), findsOneWidget);
+      final answers = EligibilityPreferencesService().eligibility;
+      expect(answers.applyToSearch, isTrue);
+      expect(answers.acceptsMedicaid, isTrue);
+      expect(answers.proofOfIncome, isFalse);
+    });
+
+    testWidgets('the last step goes back to the location just given',
+        (tester) async {
+      await pumpSignedInFirstRun(tester);
+      await chooseZip(tester);
+      await enterZip(tester, '74103');
+      expect(find.byType(EligibilityOnboardingPage), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Back'));
+      await settle(tester);
+      expect(find.byType(ZipEntryPage), findsOneWidget);
+
+      await pressBack(tester);
+      expect(find.byType(LocationChoicePage), findsOneWidget);
+    });
+
+    testWidgets('coming back from the last step leaves GPS usable again',
+        (tester) async {
+      await resetAppState(
+        tester,
+        locationPermission: LocationPermission.whileInUse,
+      );
+      await zipService.clear();
+      GuestModeService().debugUser = testUser();
+      await pumpAppShell(
+        tester,
+        repository: FakeFacilityRepository(),
+        home: const LocationChoicePage(),
+      );
+      await tester.tap(find.text('Use my location'));
+      await settle(tester);
+      expect(find.byType(EligibilityOnboardingPage), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Back'));
+      await settle(tester);
+
+      // Not stuck on the spinner it showed while finding the position.
+      expect(find.byType(LocationChoicePage), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      await chooseZip(tester);
+      expect(find.byType(ZipEntryPage), findsOneWidget);
+    });
+  });
+
   testWidgets('choosing GPS with permission skips the ZIP screen',
       (tester) async {
     await pumpFirstRun(
@@ -129,9 +252,10 @@ void main() {
     );
     await continueAsGuest(tester);
 
-    await tester.tap(find.text('Location-Based Search'));
+    await tester.tap(find.text('Use my location'));
     await settle(tester);
 
+    expect(find.byType(ZipEntryPage), findsNothing);
     expect(find.byType(MainNavBar), findsOneWidget);
     expect(zipService.locationSearchEnabled, isTrue);
     expect(zipService.zipCode, ZipCodeService.currentLocationSentinel);
@@ -144,31 +268,70 @@ void main() {
     await pumpFirstRun(tester);
     await continueAsGuest(tester);
 
-    await tester.tap(find.text('Location-Based Search'));
+    await tester.tap(find.text('Use my location'));
     await settle(tester);
 
     expect(find.byType(ZipEntryPage), findsOneWidget);
     expect(zipService.locationSearchEnabled, isFalse);
+    // Says why they are looking at the option they didn't pick.
+    expect(find.textContaining('Location access is off'), findsOneWidget);
   });
 
-  testWidgets('back on the ZIP screen returns to the location choice',
-      (tester) async {
-    final platform = await resetAppState(tester);
-    await zipService.clear();
-    await pumpAppShell(
-      tester,
-      repository: FakeFacilityRepository(),
-      home: const AuthGate(),
-    );
-    await continueAsGuest(tester);
-    await tester.tap(find.text('Enter Zip Code'));
-    await settle(tester);
-    expect(find.byType(ZipEntryPage), findsOneWidget);
+  group('going back', () {
+    Future<PlatformLog> pumpAtLogin(WidgetTester tester) async {
+      final platform = await resetAppState(tester);
+      await zipService.clear();
+      zipService.debugGeocode = (_) async => [
+            Location(
+              latitude: chicago.latitude,
+              longitude: chicago.longitude,
+              timestamp: DateTime(2026),
+            ),
+          ];
+      addTearDown(() => zipService.debugGeocode = null);
+      await pumpAppShell(
+        tester,
+        repository: FakeFacilityRepository(),
+        home: const AuthGate(),
+      );
+      return platform;
+    }
 
-    await pressBack(tester);
+    Future<void> tapBack(WidgetTester tester) async {
+      await tester.tap(find.byTooltip('Back'));
+      await settle(tester);
+    }
 
-    expect(find.byType(ZipEntryPage), findsNothing);
-    expect(find.byType(LocationChoicePage), findsOneWidget);
-    expect(platform.exits, 0);
+    testWidgets('each step has a way back, to the step before it',
+        (tester) async {
+      await pumpAtLogin(tester);
+      await continueAsGuest(tester);
+      await chooseZip(tester);
+      expect(find.byType(ZipEntryPage), findsOneWidget);
+
+      await tapBack(tester);
+      expect(find.byType(LocationChoicePage), findsOneWidget);
+      expect(find.byType(ZipEntryPage), findsNothing);
+
+      await tapBack(tester);
+      expect(find.byType(LoginPage), findsOneWidget);
+      expect(find.byType(LocationChoicePage), findsNothing);
+    });
+
+    testWidgets('Android back follows the same steps without leaving the app',
+        (tester) async {
+      final platform = await pumpAtLogin(tester);
+      await continueAsGuest(tester);
+      await chooseZip(tester);
+      expect(find.byType(ZipEntryPage), findsOneWidget);
+
+      await pressBack(tester);
+      expect(find.byType(ZipEntryPage), findsNothing);
+      expect(find.byType(LocationChoicePage), findsOneWidget);
+
+      await pressBack(tester);
+      expect(find.byType(LoginPage), findsOneWidget);
+      expect(platform.exits, 0);
+    });
   });
 }

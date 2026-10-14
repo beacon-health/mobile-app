@@ -1,6 +1,9 @@
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers/pump_app.dart';
 
 void main() {
   group('nativeSignInProviderFor', () {
@@ -39,5 +42,57 @@ void main() {
         isNull,
       );
     });
+  });
+
+  group('NativeSignInButton', () {
+    ButtonStyle styleOf(WidgetTester tester) =>
+        tester.widget<ElevatedButton>(find.bySubtype<ElevatedButton>()).style!;
+    Color background(WidgetTester tester) =>
+        styleOf(tester).backgroundColor!.resolve({})!;
+    Color foreground(WidgetTester tester) =>
+        styleOf(tester).foregroundColor!.resolve({})!;
+
+    testWidgets(
+      'Apple is black in light mode and white in dark',
+      (tester) async {
+        // A black button on a navy screen has no visible edge.
+        mockPlatformServices();
+        await pumpThemed(tester, const Scaffold(body: NativeSignInButton()));
+        expect(background(tester), Colors.black);
+        expect(foreground(tester), Colors.white);
+
+        await pumpThemed(
+          tester,
+          const Scaffold(body: NativeSignInButton()),
+          brightness: Brightness.dark,
+        );
+        expect(background(tester), Colors.white);
+        expect(foreground(tester), Colors.black);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+
+    testWidgets(
+      "Google is white in light mode and Google's dark style in dark",
+      (tester) async {
+        // The white button was the brightest thing on a dark screen.
+        mockPlatformServices();
+        await pumpThemed(tester, const Scaffold(body: NativeSignInButton()));
+        expect(background(tester), Colors.white);
+
+        await pumpThemed(
+          tester,
+          const Scaffold(body: NativeSignInButton()),
+          brightness: Brightness.dark,
+        );
+        expect(background(tester), AppColors.googleDarkButton);
+        expect(foreground(tester), AppColors.googleDarkButtonText);
+        expect(
+          styleOf(tester).side!.resolve({})!.color,
+          AppColors.googleDarkButtonBorder,
+        );
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
   });
 }

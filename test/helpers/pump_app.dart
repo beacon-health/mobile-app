@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -71,6 +72,9 @@ Future<void> pumpThemed(
         ),
         ChangeNotifierProvider<EligibilityPreferencesService>.value(
           value: EligibilityPreferencesService(),
+        ),
+        ChangeNotifierProvider<AccessibilitySettings>.value(
+          value: AccessibilitySettings(),
         ),
       ],
       child: MaterialApp(

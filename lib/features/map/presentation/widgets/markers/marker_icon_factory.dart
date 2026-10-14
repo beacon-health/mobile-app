@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui show ImageByteFormat, PictureRecorder;
 
+import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,12 @@ class MarkerUtils {
   }) async {
     if (debugDescriptorOverride case final override?) return override;
 
-    final cacheKey = '${name}_${primaryCategory ?? 'default'}_$showName';
+    // A pin's name is drawn for the map style beneath it, and the whole pin
+    // at the size the person asked for.
+    final onDark = Theme.of(context).brightness == Brightness.dark;
+    final scale = AccessibilitySettings().pinScale;
+    final cacheKey =
+        '${name}_${primaryCategory ?? 'default'}_${showName}_${onDark}_$scale';
 
     if (_markerCache.containsKey(cacheKey)) {
       return _markerCache[cacheKey]!;
@@ -46,11 +52,12 @@ class MarkerUtils {
     final bytes = await facilityMarkerPng(
       primaryCategory,
       name: showName ? name : '',
+      onDark: onDark,
     );
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
-      imagePixelRatio: devicePixelRatio,
+      imagePixelRatio: devicePixelRatio / scale,
     );
 
     _markerCache[cacheKey] = descriptor;
@@ -65,6 +72,7 @@ class MarkerUtils {
   static Future<Uint8List> facilityMarkerPng(
     String? primaryCategory, {
     String name = '',
+    bool onDark = false,
   }) async {
     final canvasWidth = facilityMarkerCanvasSize.width;
     final markerX = (canvasWidth - _markerSize) / 2;
@@ -78,7 +86,7 @@ class MarkerUtils {
     canvas.restore();
 
     if (name.isNotEmpty) {
-      _drawName(canvas, name, canvasWidth, markerX, _markerSize);
+      _drawName(canvas, name, canvasWidth, onDark: onDark);
     }
 
     final picture = recorder.endRecording();
@@ -106,17 +114,19 @@ class MarkerUtils {
   ) async {
     if (debugDescriptorOverride case final override?) return override;
 
-    final cacheKey = 'cluster_$count';
+    final onDark = Theme.of(context).brightness == Brightness.dark;
+    final scale = AccessibilitySettings().pinScale;
+    final cacheKey = 'cluster_${count}_${onDark}_$scale';
     if (_markerCache.containsKey(cacheKey)) {
       return _markerCache[cacheKey]!;
     }
 
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-    final bytes = await clusterMarkerPng(count);
+    final bytes = await clusterMarkerPng(count, onDark: onDark);
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
-      imagePixelRatio: devicePixelRatio,
+      imagePixelRatio: devicePixelRatio / scale,
     );
 
     _markerCache[cacheKey] = descriptor;
@@ -125,7 +135,13 @@ class MarkerUtils {
 
   /// The cluster bubble bitmap as PNG (square, centered on the point). Also
   /// exported for the Claude Design map kit.
-  static Future<Uint8List> clusterMarkerPng(int count) async {
+  ///
+  /// [onDark] rings the bubble in the dark map's own color: a white ring
+  /// glares there.
+  static Future<Uint8List> clusterMarkerPng(
+    int count, {
+    bool onDark = false,
+  }) async {
     // Bubble grows with magnitude so large clusters read clearly.
     final double size = count < 10
         ? 90.0
@@ -150,12 +166,12 @@ class MarkerUtils {
       radius,
       Paint()..color = AppColors.resedaGreen,
     );
-    // White border.
+    // Border.
     canvas.drawCircle(
       center,
       radius,
       Paint()
-        ..color = Colors.white
+        ..color = onDark ? AppColors.darkBackground : Colors.white
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.0,
     );
@@ -184,49 +200,35 @@ class MarkerUtils {
     return byteData!.buffer.asUint8List();
   }
 
+  /// Draws [text] under the pin: dark with a white halo on the light map,
+  /// light with a dark halo on the dark one.
   static void _drawName(
     Canvas canvas,
     String text,
-    double canvasWidth,
-    double markerX,
-    double markerWidth,
-  ) {
+    double canvasWidth, {
+    required bool onDark,
+  }) {
     if (text.isEmpty) return;
 
+    final halo = onDark ? AppColors.darkBackground : Colors.white;
     // Canvas-painted, so the family must be set explicitly — a bare
     // TextStyle falls back to SF Pro on iOS and Roboto on Android.
-    const textStyle = TextStyle(
+    final textStyle = TextStyle(
       fontFamily: AppTypography.fontFamily,
-      color: Colors.black,
+      fontFamilyFallback: AppTypography.fontFamilyFallback,
+      color: onDark ? Colors.white : Colors.black,
       fontSize: _baseFontSize,
       fontWeight: FontWeight.w700,
       height: 1.1,
       shadows: [
-        Shadow(
-          color: Colors.white,
-          offset: Offset(1, 1),
-          blurRadius: 3,
-        ),
-        Shadow(
-          color: Colors.white,
-          offset: Offset(-1, -1),
-          blurRadius: 3,
-        ),
-        Shadow(
-          color: Colors.white,
-          offset: Offset(1, -1),
-          blurRadius: 3,
-        ),
-        Shadow(
-          color: Colors.white,
-          offset: Offset(-1, 1),
-          blurRadius: 3,
-        ),
-        Shadow(
-          color: Colors.white,
-          offset: Offset(0, 0),
-          blurRadius: 6,
-        ),
+        for (final offset in const [
+          Offset(1, 1),
+          Offset(-1, -1),
+          Offset(1, -1),
+          Offset(-1, 1),
+        ])
+          Shadow(color: halo, offset: offset, blurRadius: 3),
+        Shadow(color: halo, blurRadius: 6),
       ],
     );
 
@@ -327,12 +329,19 @@ class MarkerUtils {
   /// Returns the color for one of the [FacilityCategories] group names.
   ///
   /// Uses the [AppColors] category palette as the single source of truth.
-  static Color getColorForCategory(String? category) {
+  /// Pins keep the default, fixed colors in both modes; icons and labels in
+  /// the widget tree pass the theme's [brightness], which lightens the four
+  /// tones that would otherwise sink into navy.
+  static Color getColorForCategory(
+    String? category, {
+    Brightness brightness = Brightness.light,
+  }) {
+    final onDark = brightness == Brightness.dark;
     switch (category) {
       case FacilityCategories.groupHealthCare:
-        return AppColors.healthCare;
+        return onDark ? AppColors.healthCareOnDark : AppColors.healthCare;
       case FacilityCategories.groupMentalHealth:
-        return AppColors.mentalHealth;
+        return onDark ? AppColors.mentalHealthOnDark : AppColors.mentalHealth;
       case FacilityCategories.groupBasicNeeds:
         return AppColors.basicNeeds;
       case FacilityCategories.groupHousingShelter:
@@ -340,9 +349,13 @@ class MarkerUtils {
       case FacilityCategories.groupCommunity:
         return AppColors.communityResources;
       case FacilityCategories.groupSpecialized:
-        return AppColors.specializedServices;
+        return onDark
+            ? AppColors.specializedServicesOnDark
+            : AppColors.specializedServices;
       default:
-        return AppColors.categoryFallback;
+        return onDark
+            ? AppColors.categoryFallbackOnDark
+            : AppColors.categoryFallback;
     }
   }
 
