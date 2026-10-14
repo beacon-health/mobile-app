@@ -22,7 +22,7 @@ stay inside this system.
 Use these, never raw hex or pixel values:
 
 - **Color roles:** `--color-primary` (reseda green: filled buttons,
-  selection, switches), `--color-secondary` (Payne's gray: onboarding CTAs,
+  selection, switches), `--color-secondary` (Payne's gray: headings,
   section headers, list icons, selected filter chips, the focus ring),
   `--color-tertiary` (bittersweet: fills and icons only), `--color-error`
   (destructive actions and error text), `--color-background`, `--color-card`,

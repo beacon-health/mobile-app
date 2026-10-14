@@ -331,10 +331,10 @@ final List<_Card> _componentCards = [
           '<b>Primary</b>: fill <code>--color-primary</code>, text '
               '<code>--color-on-primary</code> — the main action on a screen, '
               'in onboarding as everywhere else.',
-          '<b>Secondary</b>: transparent, 1px <code>--color-primary</code> '
-              'outline and text.',
-          '<b>Text</b>: bare <code>--color-primary</code> text; destructive '
-              'actions use <code>--color-tertiary</code>.',
+          '<b>Secondary</b>: transparent, a 1px <code>--color-primary</code> '
+              'outline and a <code>--color-primary-text</code> label.',
+          '<b>Text</b>: bare <code>--color-primary-text</code> text; '
+              'destructive actions use <code>--color-error</code>.',
           '<b>Disabled</b>: content at 38% opacity on a faint fill.',
         ]),
   ),
@@ -548,8 +548,8 @@ final List<_Card> _screenCards = [
     group: 'Screens',
     title: 'Sign in',
     lede: 'One sign-in provider per platform: Apple on iOS, Google on '
-        'Android — never both. (The 🌐 after "Select a language" shows on '
-        'devices; the render tool has no emoji font.)',
+        'Android — never both. The logo carries no tagline: "Healthcare '
+        'made lighter." is live text under it, so it is translated.',
     viewport: '1000x900',
     body: '''
 <div class="pair phone">
@@ -572,13 +572,14 @@ final List<_Card> _screenCards = [
       'zip-entry',
       'ZIP entry',
       'screen_zip_entry',
-      'The onboarding CTA fills <code>--color-secondary</code>.',
+      'The CTA is a primary filled button, as everywhere else.',
     ),
     (
       'eligibility',
       'Eligibility onboarding',
       'screen_eligibility_onboarding',
-      'A card of switch rows between the title and the CTA.',
+      'Signed-in users only: what they can provide, as a checklist, then '
+          'Continue or Skip for now.',
     ),
     (
       'settings',

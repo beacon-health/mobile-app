@@ -200,7 +200,6 @@ final _components = <String, Widget Function()>{
         children: [
           _label('PRIMARY — ElevatedButton / FilledButton'),
           ElevatedButton(onPressed: () {}, child: const Text('Apply filters')),
-          FilledButton(onPressed: () {}, child: const Text('Continue')),
           _label('SECONDARY — OutlinedButton'),
           OutlinedButton(onPressed: () {}, child: const Text('Clear all')),
           _label('TEXT AND DESTRUCTIVE — TextButton'),
@@ -209,9 +208,7 @@ final _components = <String, Widget Function()>{
             Builder(
               builder: (context) => TextButton.icon(
                 onPressed: () {},
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.tertiary,
-                ),
+                style: AppTheme.destructiveTextButton(context),
                 icon: const Icon(Icons.delete_outline),
                 label: const Text('Delete account'),
               ),

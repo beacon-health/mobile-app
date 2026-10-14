@@ -54,8 +54,6 @@ iPhone 17e simulator and writes `.design-sync/captures/map_bg_*.jpg`.
 
 ## Known quirks
 
-- The login render shows a box after "Select a language": the string ends in
-  🌐 and the test engine has no emoji font. Devices render it. The card says so.
 - `.claude/launch.json` static servers don't work for previewing: python's
   `http.server` never binds under the app's launcher, and the built-in browser
   can't open servers Claude starts anyway. Use Quick Look.
