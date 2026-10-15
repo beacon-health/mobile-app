@@ -24,7 +24,7 @@ dependencies:
   package_info_plus: ^10.2.1
   path_provider: ^2.1.4
   provider: ^6.1.2
-  sentry_flutter: ^9.6.0
+  sentry_flutter: ^10.0.0
   shared_preferences: ^2.5.5
   sign_in_with_apple: ^8.2.0
   supabase_flutter: ^2.18.0
