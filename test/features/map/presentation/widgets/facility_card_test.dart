@@ -240,21 +240,63 @@ void main() {
     );
   });
 
-  testWidgets('the arrow sits centered under the text, with no gap above',
+  testWidgets('a long name is one line until the row opens', (tester) async {
+    const name = 'Public Health Institute Of Metropolitan Chicago Downtown';
+    Text nameText() => tester.widget<Text>(find.text(name));
+
+    await _pumpCard(tester, createTestFacility(name: name));
+    expect(nameText().maxLines, 1);
+    expect(nameText().overflow, TextOverflow.ellipsis);
+
+    await _pumpCard(tester, createTestFacility(name: name), isExpanded: true);
+    expect(nameText().maxLines, isNull);
+  });
+
+  testWidgets('the arrow sits at the bottom-right of a longer header',
       (tester) async {
-    // It used to sit under the heart, leaving a band of empty space beneath
-    // short names.
+    // A name that wraps once the row opens: the arrow follows it down rather
+    // than sitting halfway up the text.
+    const name = 'Public Health Institute Of Metropolitan Chicago Downtown';
+    await _pumpCard(
+      tester,
+      createTestFacility(name: name, categoryDetail: 'Community Clinic'),
+      isExpanded: true,
+    );
+    final caption = tester.getRect(
+      find.text('Chicago, IL • Community Clinic'),
+    );
+    final arrow = tester.getRect(find.byIcon(Icons.expand_less));
+    final card = tester.getRect(find.byType(Card));
+
+    expect(arrow.bottom, greaterThanOrEqualTo(caption.bottom));
+    expect(card.right - arrow.right, lessThan(AppSizes.minTouchTarget / 2));
+    expect(
+      arrow.bottom,
+      lessThanOrEqualTo(tester.getTopLeft(find.text('Directions')).dy),
+    );
+  });
+
+  testWidgets('the arrow tucks under the heart, keeping a short row short',
+      (tester) async {
     await _pumpCard(
       tester,
       createTestFacility(name: 'CARPLS', categoryDetail: 'Legal'),
     );
-    final card = tester.getRect(find.byType(FacilityCard));
+    final heart = tester.getRect(
+      find.ancestor(
+        of: find.byTooltip(_l10n(tester).cardSave('CARPLS')),
+        matching: find.byType(IconButton),
+      ),
+    );
     final arrow = tester.getRect(find.byIcon(Icons.expand_more));
-    final line = tester.getRect(find.text('Chicago, IL • Legal'));
 
-    expect(arrow.center.dx, closeTo(card.center.dx, 1));
-    expect(arrow.top - line.bottom, lessThan(AppSpacing.sm));
-    expect(card.height, lessThan(2 * AppSizes.minTouchTarget));
+    expect(arrow.center.dx, closeTo(heart.center.dx, 1));
+    expect(arrow.top, greaterThan(heart.top));
+    // It was 72 tall when the arrow was a button of its own.
+    expect(
+      tester.getSize(find.byType(Card)).height,
+      lessThan(AppSizes.minTouchTarget + AppIconSize.lg + 2 * AppSpacing.xs),
+    );
   });
 
   group('hours', () {

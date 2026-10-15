@@ -12,12 +12,12 @@ import '../../../../helpers/test_facility.dart';
 /// Home inside the real tab shell.
 void main() {
   const groups = [
-    'Health care',
-    'Mental health',
-    'Housing & shelter',
-    'Basic needs',
-    'Community resources',
-    'Specialized services',
+    'Health Care',
+    'Mental Health',
+    'Housing & Shelter',
+    'Basic Needs',
+    'Community Resources',
+    'Specialized Services',
   ];
 
   Future<void> pumpHome(WidgetTester tester, {Size? size}) async {
@@ -63,7 +63,7 @@ void main() {
         );
       }
 
-      await tester.tap(find.text('Mental health'));
+      await tester.tap(find.text('Mental Health'));
       await settle(tester);
       expect(selectedTab(tester), NavTab.map);
       expect(find.byType(FacilityListPanel), findsOneWidget);

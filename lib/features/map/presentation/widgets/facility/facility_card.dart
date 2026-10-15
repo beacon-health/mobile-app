@@ -112,8 +112,9 @@ class _FacilityCardState extends State<FacilityCard> {
     return AppLocalizations.of(context)!.cardPlaceAndCategory(place, category);
   }
 
-  /// Name, then where and what kind of place. The name runs to two lines
-  /// before it truncates; expanded, it shows in full.
+  /// Name, then where and what kind of place. Collapsed, the name is one
+  /// line ("Public Health Institute Of…"), so every row is the same height;
+  /// expanded, and in the sheet, it shows in full.
   Widget _buildTitleBlock(ThemeData theme) {
     final placeLine = _placeLine;
     return Column(
@@ -125,7 +126,7 @@ class _FacilityCardState extends State<FacilityCard> {
           style: widget.showExpandButton
               ? theme.textTheme.titleSmall
               : theme.textTheme.titleMedium,
-          maxLines: widget.isExpanded ? null : 2,
+          maxLines: widget.isExpanded ? null : 1,
           overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
         ),
         if (placeLine.isNotEmpty) ...[
@@ -175,10 +176,9 @@ class _FacilityCardState extends State<FacilityCard> {
         start: AppSpacing.md,
         // Under the handle's band, which already leaves room above.
         top: widget.showDragHandle ? 0 : AppSpacing.md,
-        // In a list row, room for the heart.
+        // In a list row, room for the heart and the arrow under it.
         end: expandable ? AppSizes.minTouchTarget : 0,
-        // In a list row, the arrow under the name closes the header.
-        bottom: expandable ? 0 : AppSpacing.md,
+        bottom: AppSpacing.md,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,9 +205,10 @@ class _FacilityCardState extends State<FacilityCard> {
     );
   }
 
-  /// A row of the list: the header, then an arrow centered across the row,
-  /// then the details when expanded. The whole row shows and hides them, so
-  /// the arrow is only a cue and needs no target of its own.
+  /// A row of the list: the header, with the details growing beneath it when
+  /// expanded. The whole row shows and hides them, so the arrow is only a cue
+  /// and needs no target of its own. It sits at the header's bottom-right,
+  /// tucked under the heart in a one-line row and below a longer name.
   Widget _buildListRow(ThemeData theme, AppLocalizations l10n, Widget header) {
     return Stack(
       children: [
@@ -227,21 +228,30 @@ class _FacilityCardState extends State<FacilityCard> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // At least as tall as the heart beside it.
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: AppSizes.minTouchTarget,
-                  ),
-                  child: header,
-                ),
-                ExcludeSemantics(
-                  child: Center(
-                    child: Icon(
-                      widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-                      size: AppIconSize.lg,
-                      color: theme.colorScheme.onSurfaceVariant,
+                Stack(
+                  children: [
+                    // Tall enough for the heart and the arrow under it.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: _arrowTop + AppIconSize.lg,
+                      ),
+                      child: header,
                     ),
-                  ),
+                    // Taps fall through to the row.
+                    PositionedDirectional(
+                      bottom: 0,
+                      end: (AppSizes.minTouchTarget - AppIconSize.lg) / 2,
+                      child: ExcludeSemantics(
+                        child: Icon(
+                          widget.isExpanded
+                              ? Icons.expand_less
+                              : Icons.expand_more,
+                          size: AppIconSize.lg,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (widget.isExpanded) _buildFacilityDetails(widget.facility),
               ],
@@ -256,6 +266,10 @@ class _FacilityCardState extends State<FacilityCard> {
       ],
     );
   }
+
+  /// Where the arrow starts in a one-line row: just inside the bottom of the
+  /// heart's target, below its icon.
+  static const double _arrowTop = AppSizes.minTouchTarget - AppSpacing.sm;
 
   /// The whole of the facility sheet: a fixed handle, and everything else —
   /// name included — scrolling beneath it, so a long name at a large text

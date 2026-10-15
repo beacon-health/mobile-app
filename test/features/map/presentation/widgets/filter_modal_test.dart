@@ -67,27 +67,29 @@ void main() {
       size: const Size(400, 3000),
     );
 
-    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    // A heading can share its text with a category under it ("Mental
+    // Health"); the heading comes first.
+    double top(String text) => tester.getTopLeft(find.text(text).first).dy;
     const headings = [
-      'Health care',
-      'Mental health',
-      'Housing & shelter',
-      'Basic needs',
-      'Community resources',
-      'Specialized services',
+      'Health Care',
+      'Mental Health',
+      'Housing & Shelter',
+      'Basic Needs',
+      'Community Resources',
+      'Specialized Services',
     ];
     for (var i = 1; i < headings.length; i++) {
       expect(top(headings[i]), greaterThan(top(headings[i - 1])));
     }
     // Each category under its own group, above the next one.
-    expect(top('Hospitals'), greaterThan(top('Health care')));
-    expect(top('Hospitals'), lessThan(top('Mental health')));
-    expect(top('Addiction Recovery'), greaterThan(top('Mental health')));
-    expect(top('Addiction Recovery'), lessThan(top('Housing & shelter')));
-    expect(top('Veterans'), greaterThan(top('Specialized services')));
+    expect(top('Hospitals'), greaterThan(top('Health Care')));
+    expect(top('Hospitals'), lessThan(top('Mental Health')));
+    expect(top('Addiction Recovery'), greaterThan(top('Mental Health')));
+    expect(top('Addiction Recovery'), lessThan(top('Housing & Shelter')));
+    expect(top('Veterans'), greaterThan(top('Specialized Services')));
     // A heading to a screen reader, not another button.
     expect(
-      tester.getSemantics(find.text('Health care')),
+      tester.getSemantics(find.text('Health Care')),
       isSemantics(isHeader: true),
     );
   });

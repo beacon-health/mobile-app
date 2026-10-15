@@ -400,7 +400,7 @@ class _FilterModalState extends State<FilterModal> {
                   // The group's own icon and color, as on Home.
                   Icon(
                     MarkerUtils.getIconForCategory(group),
-                    size: AppIconSize.md,
+                    size: AppIconSize.sm,
                     color: MarkerUtils.getColorForCategory(
                       group,
                       brightness: theme.brightness,
@@ -410,7 +410,11 @@ class _FilterModalState extends State<FilterModal> {
                   Expanded(
                     child: Text(
                       FacilityCategoryIcons.groupLabel(l10n, group),
-                      style: theme.textTheme.labelLarge,
+                      // Below "Category" in weight and size, so the section
+                      // title still leads.
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],

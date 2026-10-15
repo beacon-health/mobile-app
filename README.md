@@ -188,8 +188,9 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 **A facility is one card on one surface.** `FacilityCard` is a row of the
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
 Its header is kept short: the name, then "City, ST • kind of place"
-(`category_detail`). In the list the whole row shows and hides the details;
-the arrow centered under the header is only a cue. Directions, Call, and Website sit directly under the
+(`category_detail`); in a collapsed row the name is one line, in full once
+the row opens. The whole row shows and hides the details; the arrow at the
+header's bottom-right is only a cue. Directions, Call, and Website sit directly under the
 header, with the street address below them; a tap copies it. In the sheet, a
 band a full touch target tall around the handle takes the swipes, since
 everything beneath it scrolls. "Last updated" closes the details for listings

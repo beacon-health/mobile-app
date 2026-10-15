@@ -985,37 +985,37 @@ abstract class AppLocalizations {
   /// No description provided for @homeCategoryHealthCare.
   ///
   /// In en, this message translates to:
-  /// **'Health care'**
+  /// **'Health Care'**
   String get homeCategoryHealthCare;
 
   /// No description provided for @homeCategoryMentalHealth.
   ///
   /// In en, this message translates to:
-  /// **'Mental health'**
+  /// **'Mental Health'**
   String get homeCategoryMentalHealth;
 
   /// No description provided for @homeCategoryHousing.
   ///
   /// In en, this message translates to:
-  /// **'Housing & shelter'**
+  /// **'Housing & Shelter'**
   String get homeCategoryHousing;
 
   /// No description provided for @homeCategoryBasicNeeds.
   ///
   /// In en, this message translates to:
-  /// **'Basic needs'**
+  /// **'Basic Needs'**
   String get homeCategoryBasicNeeds;
 
   /// No description provided for @homeCategoryCommunity.
   ///
   /// In en, this message translates to:
-  /// **'Community resources'**
+  /// **'Community Resources'**
   String get homeCategoryCommunity;
 
   /// No description provided for @homeCategorySpecialized.
   ///
   /// In en, this message translates to:
-  /// **'Specialized services'**
+  /// **'Specialized Services'**
   String get homeCategorySpecialized;
 
   /// No description provided for @commonLinkFailed.

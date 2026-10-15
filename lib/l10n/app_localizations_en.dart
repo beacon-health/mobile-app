@@ -480,22 +480,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSave => 'Save';
 
   @override
-  String get homeCategoryHealthCare => 'Health care';
+  String get homeCategoryHealthCare => 'Health Care';
 
   @override
-  String get homeCategoryMentalHealth => 'Mental health';
+  String get homeCategoryMentalHealth => 'Mental Health';
 
   @override
-  String get homeCategoryHousing => 'Housing & shelter';
+  String get homeCategoryHousing => 'Housing & Shelter';
 
   @override
-  String get homeCategoryBasicNeeds => 'Basic needs';
+  String get homeCategoryBasicNeeds => 'Basic Needs';
 
   @override
-  String get homeCategoryCommunity => 'Community resources';
+  String get homeCategoryCommunity => 'Community Resources';
 
   @override
-  String get homeCategorySpecialized => 'Specialized services';
+  String get homeCategorySpecialized => 'Specialized Services';
 
   @override
   String get commonLinkFailed => 'Could not open that link.';
