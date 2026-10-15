@@ -115,6 +115,10 @@ void main() {
         FacilityCategories.serviceTagKeys,
       );
       expect(
+        FacilityCategories.serviceTagGroups.keys,
+        FacilityCategories.serviceTagKeys,
+      );
+      expect(
         FacilityCategories.serviceTagKeys,
         containsAll([
           'medical_clinic',

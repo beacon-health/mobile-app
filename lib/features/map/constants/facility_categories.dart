@@ -91,7 +91,34 @@ class FacilityCategories {
   };
 
   /// The 24 chip keys, in filter-sheet order: the Category filter's options.
-  static List<String> get serviceTagKeys => serviceTagGroups.keys.toList();
+  /// Const so widgets can take it in a const constructor; tests pin that it
+  /// lists exactly [serviceTagGroups]'s keys, in the same order.
+  static const List<String> serviceTagKeys = [
+    'medical_clinic',
+    'hospital',
+    'dental_vision',
+    'home_care',
+    'mental_health_care',
+    'crisis',
+    'addiction',
+    'recovery',
+    'emergency_shelter',
+    'abuse_shelter',
+    'transitional_housing',
+    'affordable_housing',
+    'food_pantry',
+    'meals',
+    'essentials',
+    'baby_supplies',
+    'legal',
+    'jobs_education',
+    'financial_support',
+    'transportation',
+    'children_families',
+    'disability',
+    'seniors',
+    'veterans',
+  ];
 
   /// Each chip's English label, for search (screens show the localized label
   /// from the ARB files).
