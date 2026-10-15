@@ -6,9 +6,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
-import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
-import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -295,7 +293,7 @@ class _HomePageState extends State<HomePage>
             const SizedBox(height: AppSpacing.xl),
             sectionTitle(l10n.homeRecentlyViewed),
             const SizedBox(height: AppSpacing.md),
-            _buildRecentlyViewedSection(isGuest: isGuest),
+            _buildRecentlyViewedSection(),
             const SizedBox(height: AppSpacing.xl),
             sectionTitle(l10n.homeFavorites),
             const SizedBox(height: AppSpacing.md),
@@ -559,7 +557,7 @@ class _HomePageState extends State<HomePage>
 
   /// "Recently Viewed Facilities". Height is bounded so this never pushes the
   /// Favorites section off-screen.
-  Widget _buildRecentlyViewedSection({required bool isGuest}) {
+  Widget _buildRecentlyViewedSection() {
     return Consumer<RecentFacilitiesService>(
       builder: (context, service, _) {
         final recent = service.recentFacilities;
@@ -580,10 +578,7 @@ class _HomePageState extends State<HomePage>
                 if (i > 0) const Divider(height: 1),
                 _buildFacilityRow(
                   recent[i],
-                  onTap: () => _onRecentFacilityTap(
-                    recent[i],
-                    isGuest: isGuest,
-                  ),
+                  onTap: () => _openRecentFacility(recent[i]),
                 ),
               ],
             ],
@@ -623,18 +618,16 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// Routes a tap on a recently-viewed facility:
-  ///   - guest → sign-in prompt
-  ///   - signed in → rating dialog
-  void _onRecentFacilityTap(
-    Facility facility, {
-    required bool isGuest,
-  }) {
-    if (isGuest) {
-      showSignInPromptDialog(context);
-      return;
-    }
-    showFacilityRatingDialog(context, facility: facility);
+  /// Opens a recently viewed facility's card on the Map, as Favorites do;
+  /// feedback is given from the card. The device keeps only a short record
+  /// of each (name, address, location), so the full one is found first —
+  /// among what the Map has loaded, else from the database. Offline, the
+  /// short record still opens, with its name and directions.
+  Future<void> _openRecentFacility(Facility recent) async {
+    final full = context.read<FacilityProvider>().getFacilityById(recent.id) ??
+        await _facilityRepository.getFacilityById(recent.id);
+    if (!mounted) return;
+    _navigateToFacility(full ?? recent);
   }
 
   Widget _buildFavoritesSection(AppLocalizations l10n,

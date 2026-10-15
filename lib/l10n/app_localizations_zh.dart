@@ -819,4 +819,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cardHoursUnknown => '未知';
+
+  @override
+  String cardPlaceAndCategory(String place, String category) {
+    return '$place · $category';
+  }
+
+  @override
+  String cardLastUpdated(DateTime date) {
+    final intl.DateFormat dateDateFormat =
+        intl.DateFormat('dd/MM/yyyy', localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '最后更新：$dateString';
+  }
 }

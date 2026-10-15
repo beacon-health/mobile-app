@@ -130,6 +130,10 @@ class Facility {
   /// Structured eligibility data from DM_Supabase_Eligibility.
   final FacilityEligibility? eligibility;
 
+  /// When the team last checked this listing (`last_checked_at`). Null for
+  /// most facilities: only checked ones have a date.
+  final DateTime? lastCheckedAt;
+
   /// Eligibility requirement flags derived from [eligibility].
   ///
   /// Y → true, N → false, U → omitted. Used by the filter system.
@@ -235,6 +239,7 @@ class Facility {
     this.categoryBroad,
     this.categoryDetail,
     this.eligibility,
+    this.lastCheckedAt,
     this.eligibilityRequirements = const {},
     this.servicesSummary,
     this.otherEligibilitySummary,
@@ -298,8 +303,13 @@ class Facility {
       eligibilityRequirements: eligReqs,
       servicesSummary: eligibility?.servicesSummary,
       otherEligibilitySummary: eligibility?.otherEligibilitySummary,
+      lastCheckedAt: _parseTimestamp(data['last_checked_at']),
     );
   }
+
+  /// A `timestamptz` arrives as an ISO 8601 string; anything else is no date.
+  static DateTime? _parseTimestamp(Object? value) =>
+      value is String ? DateTime.tryParse(value) : null;
 
   static List<PhoneContact> _extractPhones(Map<String, dynamic> data) {
     final phones = <PhoneContact>[];
@@ -487,6 +497,7 @@ class Facility {
       categoryBroad: categoryBroad,
       categoryDetail: categoryDetail,
       eligibility: eligibility,
+      lastCheckedAt: lastCheckedAt,
       eligibilityRequirements: eligibilityRequirements,
       servicesSummary: servicesSummary,
       otherEligibilitySummary: otherEligibilitySummary,

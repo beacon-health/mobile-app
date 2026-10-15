@@ -52,6 +52,37 @@ void main() {
     });
   });
 
+  group('last checked', () {
+    Facility withChecked(Object? value) => Facility.fromSupabase({
+          'id': 'x',
+          'facility_name': 'Test',
+          'latitude': 41.8781,
+          'longitude': -87.6298,
+          'city': 'Chicago',
+          'state': 'IL',
+          'last_checked_at': value,
+        });
+
+    test('reads a timestamptz as the moment it names', () {
+      final checked = withChecked('2026-10-03T14:05:00+00:00').lastCheckedAt;
+      expect(checked, DateTime.utc(2026, 10, 3, 14, 5));
+    });
+
+    test('anything else is no date', () {
+      for (final value in [null, '', 'soon', 42]) {
+        expect(withChecked(value).lastCheckedAt, isNull, reason: '$value');
+      }
+    });
+
+    test('survives copyWith', () {
+      final facility = withChecked('2026-10-03T14:05:00Z');
+      expect(
+        facility.copyWith(isFavorite: true).lastCheckedAt,
+        facility.lastCheckedAt,
+      );
+    });
+  });
+
   group('Facility.fromSupabase eligibility extras', () {
     Map<String, dynamic> row(Map<String, dynamic> extra) => {
           'id': 'x',

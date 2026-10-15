@@ -388,5 +388,30 @@
   "cardHoursUnknown": "Sin datos",
   "@cardHoursUnknown": {
     "description": "Beside a day whose hours are not known."
+  },
+  "cardPlaceAndCategory": "{place} • {category}",
+  "@cardPlaceAndCategory": {
+    "description": "A facility row's second line: city and state, then the kind of place.",
+    "placeholders": {
+      "place": {
+        "type": "String",
+        "example": "Chicago, IL"
+      },
+      "category": {
+        "type": "String",
+        "example": "Senior Services"
+      }
+    }
+  },
+  "cardLastUpdated": "Última actualización: {date}",
+  "@cardLastUpdated": {
+    "description": "When the team last checked a facility's details. The date is always DD/MM/YYYY.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "dd/MM/yyyy",
+        "isCustomDateFormat": "true"
+      }
+    }
   }
 }

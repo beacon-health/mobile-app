@@ -861,4 +861,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardHoursUnknown => 'Sin datos';
+
+  @override
+  String cardPlaceAndCategory(String place, String category) {
+    return '$place • $category';
+  }
+
+  @override
+  String cardLastUpdated(DateTime date) {
+    final intl.DateFormat dateDateFormat =
+        intl.DateFormat('dd/MM/yyyy', localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Última actualización: $dateString';
+  }
 }

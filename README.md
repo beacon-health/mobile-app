@@ -183,7 +183,11 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 
 **A facility is one card on one surface.** `FacilityCard` is a row of the
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
-Directions, Call, and Website sit directly under the name.
+Its header is kept short: the name, then "City, ST • kind of place"
+(`category_detail`). Directions, Call, and Website sit directly under it, with
+the street address below them. "Last updated" closes the details for listings
+the team has checked (`last_checked_at`). Home's Favorites and Recently viewed
+both open the card on the Map; feedback is given from the card.
 
 **Tabs and map overlays are not routes, so Android's back button is handled by
 hand.** `MainNavBar` wraps the shell in a `PopScope`: back first asks
@@ -211,7 +215,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |
 | `FacilityRequestService` | New-facility requests, corrections, and "permanently closed" reports |
-| `RecentFacilitiesService` | Last 3 viewed facilities, persisted locally |
+| `RecentFacilitiesService` | Last 3 viewed facilities, persisted locally as a short record; Home looks up the full one before opening it on the Map |
 | `MapLauncherService` | Directions chooser + remembered choice. Apple Maps, Google Maps, Waze on iOS; Google Maps, Waze on Android |
 | `ErrorReporter` | `developer.log` in debug, Sentry in release |
 
@@ -250,7 +254,8 @@ Supabase Postgres with PostGIS. The app talks to:
 |---|---|
 | `FCT_Supabase` | Facility master table (geocoded, `geom` + GiST index) |
 | `DM_Supabase_Eligibility` | Per-facility eligibility attributes |
-| `fct_supabase_full` | View joining the two — used for favorites and single-facility lookups by id |
+| `facility_last_checked` | When each listing was last checked (`last_checked_at`); the view and the RPC both return it |
+| `fct_supabase_full` | View joining the facility, eligibility, and last-checked tables — used for favorites, recently viewed, and single-facility lookups by id |
 | `facilities_near(...)` | PostGIS RPC — bounded, distance-sorted proximity search; enforces the state allow-list. Must return the same facility and eligibility columns as the view |
 | `launched_states` | Allow-list of live states (`ALL` = nationwide). Enforced by the RPC and read by the app |
 | `user_favorites`, `user_settings`, `facility_feedback`, `facility_requests` | Per-user data, all protected by owner-only RLS |

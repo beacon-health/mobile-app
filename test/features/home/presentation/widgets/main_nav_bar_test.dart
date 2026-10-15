@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/features/home/presentation/widgets/main_nav_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
@@ -103,6 +104,49 @@ void main() {
     expect(find.byType(FacilityListPanel), findsOneWidget);
     expect(selectedTab(tester), NavTab.map);
 
+    await pressBack(tester);
+    expect(selectedTab(tester), NavTab.home);
+    expect(platform.exits, 0);
+  });
+
+  testWidgets(
+      'a recently viewed facility opens its full card on the Map, '
+      'and back returns Home', (tester) async {
+    // It used to open a rating dialog, or a sign-in prompt for a guest.
+    final full = createTestFacility(
+      id: 'far',
+      name: 'Far Legal Aid',
+      servicesSummary: 'Free legal advice for renters.',
+      location: LatLng(home.latitude + 0.2, home.longitude),
+    );
+    platform = await resetAppState(tester);
+    await saveLocation(home);
+    // What the device keeps of it: name, address, location, nothing more.
+    RecentFacilitiesService().addFacility(
+      createTestFacility(
+        id: 'far',
+        name: 'Far Legal Aid',
+        location: full.location,
+        services: const [],
+      ),
+    );
+    maps = await pumpAppShell(
+      tester,
+      repository: FakeFacilityRepository([...facilities, full]),
+    );
+    map = maps.mapStartingAtZoom(12);
+
+    await tester.ensureVisible(find.text('Far Legal Aid'));
+    await tester.tap(find.text('Far Legal Aid'));
+    await settle(tester);
+
+    expect(selectedTab(tester), NavTab.map);
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.text('Directions'), findsOneWidget);
+    expect(find.text('Free legal advice for renters.'), findsOneWidget);
+
+    await pressBack(tester);
+    expect(find.text('Directions'), findsNothing);
     await pressBack(tester);
     expect(selectedTab(tester), NavTab.home);
     expect(platform.exits, 0);

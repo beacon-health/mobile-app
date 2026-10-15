@@ -46,15 +46,72 @@ AppLocalizations _l10n(WidgetTester tester) =>
     AppLocalizations.of(tester.element(find.byType(FacilityCard)))!;
 
 void main() {
-  testWidgets('collapsed card previews the description, not the details',
+  testWidgets('a collapsed row is the name, then city, state and kind',
+      (tester) async {
+    // Less to read on the Map: no street address, no description preview.
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        name: 'Near North Health',
+        description: 'Clinic for the whole family',
+        address: '1276 N Clybourn Ave, Chicago, IL 60610',
+        categoryDetail: 'Community Health Center',
+      ),
+    );
+
+    expect(find.text('Near North Health'), findsOneWidget);
+    expect(find.text('Chicago, IL • Community Health Center'), findsOneWidget);
+    expect(find.textContaining('Clybourn'), findsNothing);
+    expect(find.text('Clinic for the whole family'), findsNothing);
+    expect(find.text(_l10n(tester).cardDirections), findsNothing);
+  });
+
+  testWidgets('the second line drops whichever part is missing',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility());
+    expect(find.text('Chicago, IL'), findsOneWidget);
+
+    await _pumpCard(
+      tester,
+      createTestFacility(city: '', state: '', categoryDetail: 'Food Pantry'),
+    );
+    expect(find.text('Food Pantry'), findsOneWidget);
+  });
+
+  testWidgets('expanded, the street address sits under Directions',
       (tester) async {
     await _pumpCard(
       tester,
-      createTestFacility(name: 'Near North Health', description: 'Clinic'),
+      createTestFacility(
+        address: '35 E Wacker Dr, Chicago, IL 60601',
+        categoryDetail: 'Legal Aid',
+      ),
+      isExpanded: true,
     );
-    expect(find.text('Near North Health'), findsOneWidget);
-    expect(find.text('Clinic'), findsOneWidget);
-    expect(find.text(_l10n(tester).cardDirections), findsNothing);
+
+    final address = find.text('35 E Wacker Dr, Chicago, IL 60601');
+    expect(address, findsOneWidget);
+    expect(
+      tester.getTopLeft(address).dy,
+      greaterThan(
+        tester.getTopLeft(find.text(_l10n(tester).cardDirections)).dy,
+      ),
+    );
+    // The header keeps its short line.
+    expect(find.text('Chicago, IL • Legal Aid'), findsOneWidget);
+  });
+
+  testWidgets('shows when the listing was last checked, and only then',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(lastCheckedAt: DateTime(2026, 10, 3, 12)),
+      isExpanded: true,
+    );
+    expect(find.text('Last updated: 03/10/2026'), findsOneWidget);
+
+    await _pumpCard(tester, createTestFacility(), isExpanded: true);
+    expect(find.textContaining('Last updated'), findsNothing);
   });
 
   testWidgets('the expand control reports taps', (tester) async {
@@ -198,20 +255,6 @@ void main() {
     });
   });
 
-  testWidgets('the address is heavier than the preview under it',
-      (tester) async {
-    final facility = createTestFacility(
-      address: '205 N Michigan Ave, Chicago, IL 60601',
-      description: 'Safe, affordable housing.',
-    );
-    await _pumpCard(tester, facility);
-
-    final address = tester.widget<Text>(find.text(facility.address)).style!;
-    final preview = tester.widget<Text>(find.text(facility.description)).style!;
-    expect(address.fontWeight!.value, greaterThan(preview.fontWeight!.value));
-    expect(address.color, isNot(preview.color));
-  });
-
   testWidgets('expanded card puts directions under the name, then hours',
       (tester) async {
     await _pumpCard(tester, createTestFacility(), isExpanded: true);
@@ -349,25 +392,6 @@ void main() {
     );
     await tester.tap(find.byIcon(Icons.favorite_border));
     expect(toggles, 1);
-  });
-
-  testWidgets('a collapsed row shows the address above the description',
-      (tester) async {
-    // The address used to be reachable only by asking for directions.
-    await _pumpCard(
-      tester,
-      createTestFacility(
-        address: '35 E Wacker Dr, Chicago, IL 60601',
-        description: 'Free legal aid',
-      ),
-    );
-
-    expect(find.text('35 E Wacker Dr, Chicago, IL 60601'), findsOneWidget);
-    expect(find.text('Free legal aid'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.text('35 E Wacker Dr, Chicago, IL 60601')).dy,
-      lessThan(tester.getTopLeft(find.text('Free legal aid')).dy),
-    );
   });
 
   testWidgets('an expanded card keeps the address in its header',

@@ -41,6 +41,8 @@ void main() {
     description: 'Food pantry and hot meals, with referrals to housing help.',
     address: '1613 W Washington Blvd, Chicago, IL 60612',
     categoryBroad: FacilityCategories.categoryBroadValues.first,
+    categoryDetail: 'Crisis & Mental Health Support',
+    lastCheckedAt: DateTime(2026, 10, 3),
     website: 'https://example.org',
     phones: const [PhoneContact(number: '3125550100')],
     services: const ['Food pantry', 'Hot meals', 'Housing referrals'],

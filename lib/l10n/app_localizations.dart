@@ -1491,6 +1491,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown'**
   String get cardHoursUnknown;
+
+  /// A facility row's second line: city and state, then the kind of place.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} • {category}'**
+  String cardPlaceAndCategory(String place, String category);
+
+  /// When the team last checked a facility's details. The date is always DD/MM/YYYY.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: {date}'**
+  String cardLastUpdated(DateTime date);
 }
 
 class _AppLocalizationsDelegate

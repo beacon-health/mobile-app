@@ -92,33 +92,24 @@ class _FacilityCardState extends State<FacilityCard> {
     super.dispose();
   }
 
-  /// What a collapsed row says about the facility beneath its address, so
-  /// users can judge relevance: the description, else the services summary.
-  /// Empty when expanded — the full text renders in the body.
-  String get _previewText {
-    if (widget.isExpanded) return '';
-    final description = widget.facility.description.trim();
-    if (description.isNotEmpty) return description;
-    return widget.facility.servicesSummary?.trim() ?? '';
-  }
-
-  /// The address, always visible: people who navigate from memory look for it
-  /// before they ask for directions. Falls back to "city, state" for the few
-  /// records without one.
-  String get _addressText {
+  /// "Chicago, IL • Community Health Center": where it is and what kind of
+  /// place, in one short line. The street address waits in the details,
+  /// beside Directions, so the list stays light.
+  String get _placeLine {
     final facility = widget.facility;
-    if (facility.hasAddress) return facility.address;
-    return [facility.city, facility.state]
-        .where((part) => part.isNotEmpty)
+    final place = [facility.city, facility.state]
+        .where((part) => part.trim().isNotEmpty)
         .join(', ');
+    final category = facility.categoryDetail?.trim() ?? '';
+    if (place.isEmpty) return category;
+    if (category.isEmpty) return place;
+    return AppLocalizations.of(context)!.cardPlaceAndCategory(place, category);
   }
 
-  /// Name, address, and (collapsed) a two-line preview. The name runs to two
-  /// lines before it truncates; expanded, it shows in full.
+  /// Name, then where and what kind of place. The name runs to two lines
+  /// before it truncates; expanded, it shows in full.
   Widget _buildTitleBlock(ThemeData theme) {
-    final address = _addressText;
-    final preview = _previewText;
-    final muted = theme.colorScheme.onSurfaceVariant;
+    final placeLine = _placeLine;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -131,27 +122,16 @@ class _FacilityCardState extends State<FacilityCard> {
           maxLines: widget.isExpanded ? null : 2,
           overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
         ),
-        if (address.isNotEmpty) ...[
+        if (placeLine.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xxs),
-          // Heavier and darker than the preview under it: an address is a
-          // fact to act on, the preview a description to skim.
           Text(
-            address,
+            placeLine,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
-            maxLines: widget.isExpanded ? null : 1,
+            maxLines: widget.isExpanded ? null : 2,
             overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
-          ),
-        ],
-        if (preview.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xxs),
-          Text(
-            preview,
-            style: theme.textTheme.bodySmall?.copyWith(color: muted),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ],
@@ -429,6 +409,10 @@ class _FacilityCardState extends State<FacilityCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildActions(facility),
+          if (facility.hasAddress) ...[
+            const SizedBox(height: AppSpacing.md),
+            _buildFactRow(Icons.place_outlined, facility.address),
+          ],
           const SizedBox(height: AppSpacing.md),
           if (facility.description.isNotEmpty) ...[
             const Divider(height: AppSpacing.md),
@@ -439,6 +423,14 @@ class _FacilityCardState extends State<FacilityCard> {
           ..._buildServicesSection(facility),
           const Divider(height: AppSpacing.md),
           _buildHours(facility),
+          // How fresh all of the above is, where the team has checked it.
+          if (facility.lastCheckedAt case final DateTime checked)
+            Text(
+              l10n.cardLastUpdated(checked.toLocal()),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           if (widget.onRate != null || widget.onSubmitCorrection != null)
             const Divider(height: AppSpacing.md),
           // Full width so these don't wrap awkwardly in a narrow column.
@@ -709,9 +701,9 @@ class _FacilityCardState extends State<FacilityCard> {
     final l10n = AppLocalizations.of(context)!;
     final facts = [
       if (facility.eligibility?.incomeLimit case final String limit)
-        _buildFactRow(Icons.payments_outlined, l10n.cardIncomeLimit, limit),
+        _buildFactRow(Icons.payments_outlined, limit, l10n.cardIncomeLimit),
       if (facility.eligibility?.serviceArea case final String area)
-        _buildFactRow(Icons.map_outlined, l10n.cardServiceArea, area),
+        _buildFactRow(Icons.map_outlined, area, l10n.cardServiceArea),
     ];
     if (eligibilityChips.isEmpty && !hasSummary && facts.isEmpty) {
       return const [];
@@ -747,8 +739,9 @@ class _FacilityCardState extends State<FacilityCard> {
     ];
   }
 
-  /// A labelled line of free text under the chips ("Income limit: …").
-  Widget _buildFactRow(IconData icon, String label, String value) {
+  /// A line of free text beside an icon, labelled when [label] is given
+  /// ("Income limit: …"); the street address needs none.
+  Widget _buildFactRow(IconData icon, String value, [String? label]) {
     final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -759,10 +752,11 @@ class _FacilityCardState extends State<FacilityCard> {
           child: Text.rich(
             TextSpan(
               children: [
-                TextSpan(
-                  text: label + AppLocalizations.of(context)!.labelSeparator,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
+                if (label != null)
+                  TextSpan(
+                    text: label + AppLocalizations.of(context)!.labelSeparator,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 TextSpan(text: value),
               ],
             ),
