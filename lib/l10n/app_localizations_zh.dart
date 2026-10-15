@@ -463,13 +463,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCategoryHealthCare => '医疗保健';
 
   @override
-  String get homeCategoryMentalHealth => '心理健康';
+  String get homeCategoryMentalHealth => '心理健康与康复';
 
   @override
   String get homeCategoryHousing => '住房与庇护';
 
   @override
-  String get homeCategoryBasicNeeds => '基本需求';
+  String get homeCategoryBasicNeeds => '食品与必需品';
 
   @override
   String get homeCategoryCommunity => '社区资源';

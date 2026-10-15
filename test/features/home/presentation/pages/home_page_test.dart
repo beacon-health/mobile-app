@@ -13,9 +13,9 @@ import '../../../../helpers/test_facility.dart';
 void main() {
   const groups = [
     'Health Care',
-    'Mental Health',
+    'Mental Health & Recovery',
     'Housing & Shelter',
-    'Basic Needs',
+    'Food & Essentials',
     'Community Resources',
     'Specialized Services',
   ];
@@ -63,7 +63,7 @@ void main() {
         );
       }
 
-      await tester.tap(find.text('Mental Health'));
+      await tester.tap(find.text('Mental Health & Recovery'));
       await settle(tester);
       expect(selectedTab(tester), NavTab.map);
       expect(find.byType(FacilityListPanel), findsOneWidget);

@@ -72,9 +72,9 @@ void main() {
     double top(String text) => tester.getTopLeft(find.text(text).first).dy;
     const headings = [
       'Health Care',
-      'Mental Health',
+      'Mental Health & Recovery',
       'Housing & Shelter',
-      'Basic Needs',
+      'Food & Essentials',
       'Community Resources',
       'Specialized Services',
     ];
@@ -83,8 +83,9 @@ void main() {
     }
     // Each category under its own group, above the next one.
     expect(top('Hospitals'), greaterThan(top('Health Care')));
-    expect(top('Hospitals'), lessThan(top('Mental Health')));
-    expect(top('Addiction Recovery'), greaterThan(top('Mental Health')));
+    expect(top('Hospitals'), lessThan(top('Mental Health & Recovery')));
+    expect(top('Addiction Recovery'),
+        greaterThan(top('Mental Health & Recovery')));
     expect(top('Addiction Recovery'), lessThan(top('Housing & Shelter')));
     expect(top('Veterans'), greaterThan(top('Specialized Services')));
     // A heading to a screen reader, not another button.

@@ -483,13 +483,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCategoryHealthCare => 'Health Care';
 
   @override
-  String get homeCategoryMentalHealth => 'Mental Health';
+  String get homeCategoryMentalHealth => 'Mental Health & Recovery';
 
   @override
   String get homeCategoryHousing => 'Housing & Shelter';
 
   @override
-  String get homeCategoryBasicNeeds => 'Basic Needs';
+  String get homeCategoryBasicNeeds => 'Food & Essentials';
 
   @override
   String get homeCategoryCommunity => 'Community Resources';

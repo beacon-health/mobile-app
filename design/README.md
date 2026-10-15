@@ -40,7 +40,7 @@ Each color has one job. Where two look alike, this is the difference:
 
 | Color | Job | Not for |
 |---|---|---|
-| Bittersweet (`tertiary`) | Fills and icons: the Basic needs category, the active tab's pill | Text (2.7:1 on white), anything destructive |
+| Bittersweet (`tertiary`) | Fills and icons: the Food & Essentials category, the active tab's pill | Text (2.7:1 on white), anything destructive |
 | `tertiaryText` | Inline links, the active tab label, chip text | Fills |
 | Reseda green (`primary`) | Filled buttons, selected outlines, icons | Text on the onboarding gradient (3.5:1) |
 | `primaryText` | Text buttons, outlined-button labels, selected options, chip text | Fills |

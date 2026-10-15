@@ -991,7 +991,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeCategoryMentalHealth.
   ///
   /// In en, this message translates to:
-  /// **'Mental Health'**
+  /// **'Mental Health & Recovery'**
   String get homeCategoryMentalHealth;
 
   /// No description provided for @homeCategoryHousing.
@@ -1003,7 +1003,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeCategoryBasicNeeds.
   ///
   /// In en, this message translates to:
-  /// **'Basic Needs'**
+  /// **'Food & Essentials'**
   String get homeCategoryBasicNeeds;
 
   /// No description provided for @homeCategoryCommunity.
