@@ -73,6 +73,17 @@ void main() {
       );
     });
 
+    test('chip keys group under their own Home group', () {
+      expect(
+        FacilityCategories.groupFor('abuse_shelter'),
+        FacilityCategories.groupHousingShelter,
+      );
+      expect(
+        FacilityCategories.groupFor('baby_supplies'),
+        FacilityCategories.groupBasicNeeds,
+      );
+    });
+
     test('every known broad value maps to a real group, never the fallback',
         () {
       for (final value in FacilityCategories.categoryBroadValues) {
@@ -86,47 +97,101 @@ void main() {
   });
 
   group('FacilityCategories.valuesForGroup', () {
-    test('every category_broad value belongs to exactly one group', () {
-      for (final value in FacilityCategories.categoryBroadValues) {
-        final group = FacilityCategories.groupFor(value);
-        expect(FacilityCategories.valuesForGroup(group), contains(value));
+    test('every group has two to four chips, and every chip one group', () {
+      final covered = <String>[];
+      for (final group in FacilityCategories.quickActionGroups) {
+        final chips = FacilityCategories.valuesForGroup(group);
+        expect(chips.length, inInclusiveRange(2, 4), reason: group);
+        covered.addAll(chips);
       }
+      expect(covered, FacilityCategories.serviceTagKeys);
     });
 
-    test('the broad value list matches the database exactly', () {
-      expect(FacilityCategories.categoryBroadValues, hasLength(13));
+    test('the chip keys match the data pipeline exactly', () {
+      // beacon-data service_tags.py KEYS; the database CHECK refuses others.
+      expect(FacilityCategories.serviceTagKeys, hasLength(24));
       expect(
-        FacilityCategories.categoryBroadValues,
-        containsAll(['Medical Care', 'Hospitals', 'Housing', 'Veterans']),
+        FacilityCategories.serviceTagEnglish.keys,
+        FacilityCategories.serviceTagKeys,
+      );
+      expect(
+        FacilityCategories.serviceTagKeys,
+        containsAll([
+          'medical_clinic',
+          'abuse_shelter',
+          'baby_supplies',
+          'veterans',
+        ]),
       );
     });
 
-    test('Health Care group includes hospitals but not mental health', () {
+    test('Health Care holds hospitals and clinics, not mental health', () {
       final values = FacilityCategories.valuesForGroup(
         FacilityCategories.groupHealthCare,
       );
-      expect(values, contains('Hospitals'));
-      expect(values, contains('Medical Care'));
-      expect(values, isNot(contains('Mental Health')));
+      expect(values, containsAll(['hospital', 'medical_clinic']));
+      expect(values, isNot(contains('mental_health_care')));
     });
 
-    test('the six quick-action groups cover all 13 broad values', () {
-      expect(FacilityCategories.quickActionGroups, hasLength(6));
-      final covered = [
-        for (final g in FacilityCategories.quickActionGroups)
-          ...FacilityCategories.valuesForGroup(g),
-      ];
-      expect(covered..sort(), FacilityCategories.categoryBroadValues.toList());
+    test('every chip groups under its own Home group', () {
+      for (final chip in FacilityCategories.serviceTagKeys) {
+        expect(
+          FacilityCategories.valuesForGroup(FacilityCategories.groupFor(chip)),
+          contains(chip),
+        );
+      }
     });
 
-    test('isGroup accepts group names and rejects raw broad values', () {
+    test('isGroup accepts group names and rejects chips and broad values', () {
       expect(FacilityCategories.isGroup(FacilityCategories.groupCommunity),
           isTrue);
       expect(FacilityCategories.isGroup(FacilityCategories.groupSpecialized),
           isTrue);
       expect(FacilityCategories.isGroup('Medical Care'), isFalse);
+      expect(FacilityCategories.isGroup('medical_clinic'), isFalse);
       expect(
           FacilityCategories.isGroup(FacilityCategories.groupOther), isFalse);
+    });
+  });
+
+  group('FacilityCategories.matchesSelection', () {
+    final housing = FacilityCategories.valuesForGroup(
+      FacilityCategories.groupHousingShelter,
+    ).toSet();
+
+    test('nothing selected matches everything', () {
+      expect(FacilityCategories.matchesSelection(const [], null, {}), isTrue);
+    });
+
+    test('a tagged facility matches any chip it carries, and only those', () {
+      const tags = ['food_pantry', 'seniors'];
+      expect(
+        FacilityCategories.matchesSelection(tags, 'Basic Needs', {'seniors'}),
+        isTrue,
+      );
+      expect(
+        FacilityCategories.matchesSelection(tags, 'Basic Needs', {'meals'}),
+        isFalse,
+      );
+    });
+
+    test('an untagged facility matches its whole group, never one chip', () {
+      expect(
+        FacilityCategories.matchesSelection(const [], 'Housing', housing),
+        isTrue,
+      );
+      expect(
+        FacilityCategories.matchesSelection(
+          const [],
+          'Housing',
+          {'emergency_shelter'},
+        ),
+        isFalse,
+      );
+      expect(
+        FacilityCategories.matchesSelection(const [], null, housing),
+        isFalse,
+      );
     });
   });
 }

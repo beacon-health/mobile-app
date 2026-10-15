@@ -19,7 +19,8 @@ class CategoryFilter extends StatelessWidget {
     if (selectedCategories.isEmpty) {
       label = AppLocalizations.of(context)!.filterCategory;
     } else if (selectedCategories.length == 1) {
-      label = FacilityCategoryIcons.getCategoryDisplayName(
+      label = FacilityCategoryIcons.tagLabel(
+        AppLocalizations.of(context)!,
         selectedCategories.first,
       );
     } else {

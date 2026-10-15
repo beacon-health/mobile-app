@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
@@ -18,6 +19,7 @@ void main() {
       createTestFacility(
         id: '2',
         name: 'Food Pantry A',
+        serviceTags: const ['food_pantry', 'jobs_education'],
         categoryBroad: 'Community Services',
       ),
       createTestFacility(
@@ -56,11 +58,56 @@ void main() {
       expect(result.first.name, 'Free Clinic');
     });
 
+    test('filters by chip: every chip a facility carries matches', () {
+      for (final chip in ['food_pantry', 'jobs_education']) {
+        final result = FacilityFilterService.filterFacilities(
+          facilities,
+          searchText: '',
+          selectedCategories: {chip},
+          showFavoritesOnly: false,
+          showOpenNowOnly: false,
+        );
+        expect(result.map((f) => f.id), ['2'], reason: chip);
+      }
+    });
+
+    test('an untagged facility matches a whole group, not a single chip', () {
+      List<String> ids(Set<String> chips) => FacilityFilterService
+          .filterFacilities(
+            facilities,
+            searchText: '',
+            selectedCategories: chips,
+            showFavoritesOnly: false,
+            showOpenNowOnly: false,
+          )
+          .map((f) => f.id)
+          .toList();
+      // Shelter B has no tags yet; category_broad 'Housing'.
+      expect(ids({'emergency_shelter'}), isEmpty);
+      expect(
+        ids(FacilityCategories.valuesForGroup(
+          FacilityCategories.groupHousingShelter,
+        ).toSet()),
+        ['3'],
+      );
+    });
+
+    test('search matches a chip name', () {
+      final result = FacilityFilterService.filterFacilities(
+        facilities,
+        searchText: 'jobs & education',
+        selectedCategories: {},
+        showFavoritesOnly: false,
+        showOpenNowOnly: false,
+      );
+      expect(result.map((f) => f.id), ['2']);
+    });
+
     test('filters by category', () {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: '',
-        selectedCategories: {'Community Services'},
+        selectedCategories: {'food_pantry'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -84,7 +131,7 @@ void main() {
       final result = FacilityFilterService.filterFacilities(
         facilities,
         searchText: 'pantry',
-        selectedCategories: {'Community Services'},
+        selectedCategories: {'food_pantry'},
         showFavoritesOnly: false,
         showOpenNowOnly: false,
       );
@@ -354,15 +401,17 @@ void main() {
   });
 
   group('FacilityFilterService.getAvailableCategories', () {
-    test('returns unique category_broad values', () {
+    test('returns the unique chips present', () {
       final facilities = [
-        createTestFacility(categoryBroad: 'Medical Care'),
-        createTestFacility(categoryBroad: 'Medical Care'),
+        createTestFacility(serviceTags: const ['medical_clinic']),
+        createTestFacility(
+          serviceTags: const ['medical_clinic', 'dental_vision'],
+        ),
         createTestFacility(categoryBroad: 'Addiction Recovery'),
       ];
       final categories =
           FacilityFilterService.getAvailableCategories(facilities);
-      expect(categories, {'Medical Care', 'Addiction Recovery'});
+      expect(categories, {'medical_clinic', 'dental_vision'});
     });
   });
 }

@@ -30,7 +30,10 @@ void main() {
                 isScrollControlled: true,
                 builder: (_) => FilterModal(
                   selectedCategories: const {},
-                  availableCategories: const ['Medical Care', 'Housing'],
+                  availableCategories: const [
+                    'medical_clinic',
+                    'emergency_shelter',
+                  ],
                   selectedPreferenceRequirements: preferences,
                   showFavoritesOnly: showFavoritesOnly,
                   showOpenNowOnly: false,
@@ -58,7 +61,7 @@ void main() {
       const Scaffold(
         body: FilterModal(
           selectedCategories: {},
-          availableCategories: FacilityCategories.categoryBroadValues,
+          availableCategories: FacilityCategories.serviceTagKeys,
           selectedPreferenceRequirements: {},
           showFavoritesOnly: false,
           showOpenNowOnly: false,
@@ -67,8 +70,8 @@ void main() {
       size: const Size(400, 3000),
     );
 
-    // A heading can share its text with a category under it ("Mental
-    // Health"); the heading comes first.
+    // A heading can share its text with a chip under it; the heading comes
+    // first.
     double top(String text) => tester.getTopLeft(find.text(text).first).dy;
     const headings = [
       'Health Care',
@@ -84,9 +87,12 @@ void main() {
     // Each category under its own group, above the next one.
     expect(top('Hospitals'), greaterThan(top('Health Care')));
     expect(top('Hospitals'), lessThan(top('Mental Health & Recovery')));
-    expect(top('Addiction Recovery'),
+    expect(top('Addiction Treatment'),
         greaterThan(top('Mental Health & Recovery')));
-    expect(top('Addiction Recovery'), lessThan(top('Housing & Shelter')));
+    expect(top('Addiction Treatment'), lessThan(top('Housing & Shelter')));
+    expect(top('Shelter from Abuse'), greaterThan(top('Housing & Shelter')));
+    expect(top('Baby Supplies'), greaterThan(top('Food & Essentials')));
+    expect(top('Baby Supplies'), lessThan(top('Community Resources')));
     expect(top('Veterans'), greaterThan(top('Specialized Services')));
     // A heading to a screen reader, not another button.
     expect(
@@ -137,12 +143,12 @@ void main() {
       expect(switchFor(tester, 'Open now').onChanged, isNotNull);
       await tapRow(tester, 'Open now');
       // The categories are simply there: no section to open first.
-      await tapRow(tester, 'Medical Care');
+      await tapRow(tester, 'Medical Clinics');
 
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
       expect(result()!['showOpenNowOnly'], isTrue);
-      expect(result()!['categories'], {'Medical Care'});
+      expect(result()!['categories'], {'medical_clinic'});
     });
 
     testWidgets('never applies a favorites or preference filter',

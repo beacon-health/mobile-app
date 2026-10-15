@@ -378,7 +378,7 @@ class _FilterModalState extends State<FilterModal> {
               }
             });
           },
-          getLabel: FacilityCategoryIcons.getCategoryDisplayName,
+          getLabel: (key) => FacilityCategoryIcons.tagLabel(l10n, key),
         );
 
     return Column(

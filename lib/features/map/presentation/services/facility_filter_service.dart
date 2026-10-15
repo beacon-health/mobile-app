@@ -1,4 +1,5 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/utils/map_geometry.dart';
@@ -63,8 +64,8 @@ class FacilityFilterService {
   }
 
   /// Filters by search text, categories, and preferences.
-  /// [selectedCategories] holds `category_broad` values; Home quick-actions
-  /// expand a group into its members first.
+  /// [selectedCategories] holds `service_tags` chip keys; Home quick-actions
+  /// expand a group into all of its chips first.
   static List<Facility> filterFacilities(
     List<Facility> allFacilities, {
     required String searchText,
@@ -85,6 +86,11 @@ class FacilityFilterService {
             (s) => s.toLowerCase().contains(q),
           ) ||
           (facility.servicesSummary?.toLowerCase().contains(q) ?? false) ||
+          facility.serviceTags.any(
+            (t) => (FacilityCategories.serviceTagEnglish[t] ?? '')
+                .toLowerCase()
+                .contains(q),
+          ) ||
           (facility.categoryBroad?.toLowerCase().contains(q) ?? false) ||
           (facility.categoryDetail?.toLowerCase().contains(q) ?? false) ||
           facility.city.toLowerCase().contains(q);
@@ -95,10 +101,13 @@ class FacilityFilterService {
       // Open Now filter
       final matchesOpenNow = !showOpenNowOnly || facility.isOpenNow;
 
-      // Category filter — match on category_broad (the filter dimension).
-      final matchesCategory = selectedCategories.isEmpty ||
-          (facility.categoryBroad != null &&
-              selectedCategories.contains(facility.categoryBroad));
+      // Category filter — the chips; an untagged facility still matches a
+      // whole group through its category_broad.
+      final matchesCategory = FacilityCategories.matchesSelection(
+        facility.serviceTags,
+        facility.categoryBroad,
+        selectedCategories,
+      );
 
       // Eligibility requirements filter
       // null values are unset and always pass through.
@@ -140,17 +149,12 @@ class FacilityFilterService {
     }).toList();
   }
 
-  /// Distinct `category_broad` values present in [facilities]. The Category
-  /// filter uses the fixed `FacilityCategories` list instead, so every option
-  /// shows regardless of region.
+  /// Distinct chip keys present in [facilities]. The Category filter uses
+  /// the fixed `FacilityCategories` list instead, so every option shows
+  /// regardless of region.
   static Set<String> getAvailableCategories(
     List<Facility> facilities,
   ) {
-    final categories = <String>{};
-    for (final facility in facilities) {
-      final c = facility.categoryBroad;
-      if (c != null && c.isNotEmpty) categories.add(c);
-    }
-    return categories;
+    return {for (final facility in facilities) ...facility.serviceTags};
   }
 }

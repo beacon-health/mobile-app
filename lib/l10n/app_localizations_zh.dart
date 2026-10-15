@@ -478,6 +478,78 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCategorySpecialized => '专项服务';
 
   @override
+  String get chipMedicalClinic => '医疗诊所';
+
+  @override
+  String get chipHospital => '医院';
+
+  @override
+  String get chipDentalVision => '牙科与视力';
+
+  @override
+  String get chipHomeCare => '居家护理与临终关怀';
+
+  @override
+  String get chipMentalHealthCare => '心理健康护理';
+
+  @override
+  String get chipCrisis => '危机支持';
+
+  @override
+  String get chipAddiction => '成瘾治疗';
+
+  @override
+  String get chipRecovery => '康复';
+
+  @override
+  String get chipEmergencyShelter => '紧急庇护所';
+
+  @override
+  String get chipAbuseShelter => '受虐者庇护所';
+
+  @override
+  String get chipTransitionalHousing => '过渡性住房';
+
+  @override
+  String get chipAffordableHousing => '经济适用房';
+
+  @override
+  String get chipFoodPantry => '食物银行';
+
+  @override
+  String get chipMeals => '免费餐食';
+
+  @override
+  String get chipEssentials => '衣物与家居用品';
+
+  @override
+  String get chipBabySupplies => '婴儿用品';
+
+  @override
+  String get chipLegal => '法律支持';
+
+  @override
+  String get chipJobsEducation => '就业与教育';
+
+  @override
+  String get chipFinancialSupport => '经济援助';
+
+  @override
+  String get chipTransportation => '交通';
+
+  @override
+  String get chipChildrenFamilies => '儿童与家庭';
+
+  @override
+  String get chipDisability => '残障服务';
+
+  @override
+  String get chipSeniors => '长者';
+
+  @override
+  String get chipVeterans => '退伍军人';
+
+  @override
   String get commonLinkFailed => '无法打开该链接。';
 
   @override

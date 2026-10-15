@@ -498,6 +498,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCategorySpecialized => 'Specialized Services';
 
   @override
+  String get chipMedicalClinic => 'Medical Clinics';
+
+  @override
+  String get chipHospital => 'Hospitals';
+
+  @override
+  String get chipDentalVision => 'Dental & Vision';
+
+  @override
+  String get chipHomeCare => 'Home Care & Hospice';
+
+  @override
+  String get chipMentalHealthCare => 'Mental Health Care';
+
+  @override
+  String get chipCrisis => 'Crisis Support';
+
+  @override
+  String get chipAddiction => 'Addiction Treatment';
+
+  @override
+  String get chipRecovery => 'Recovery';
+
+  @override
+  String get chipEmergencyShelter => 'Emergency Shelter';
+
+  @override
+  String get chipAbuseShelter => 'Shelter from Abuse';
+
+  @override
+  String get chipTransitionalHousing => 'Transitional Housing';
+
+  @override
+  String get chipAffordableHousing => 'Affordable Housing';
+
+  @override
+  String get chipFoodPantry => 'Food Pantries';
+
+  @override
+  String get chipMeals => 'Free Meals';
+
+  @override
+  String get chipEssentials => 'Clothing & Household Items';
+
+  @override
+  String get chipBabySupplies => 'Baby Supplies';
+
+  @override
+  String get chipLegal => 'Legal Support';
+
+  @override
+  String get chipJobsEducation => 'Jobs & Education';
+
+  @override
+  String get chipFinancialSupport => 'Financial Support';
+
+  @override
+  String get chipTransportation => 'Transportation';
+
+  @override
+  String get chipChildrenFamilies => 'Children & Families';
+
+  @override
+  String get chipDisability => 'Disability Services';
+
+  @override
+  String get chipSeniors => 'Seniors';
+
+  @override
+  String get chipVeterans => 'Veterans';
+
+  @override
   String get commonLinkFailed => 'Could not open that link.';
 
   @override

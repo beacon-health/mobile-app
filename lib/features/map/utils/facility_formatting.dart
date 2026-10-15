@@ -27,6 +27,37 @@ class FacilityCategoryIcons {
         _ => group,
       };
 
+  /// A subcategory chip's label (`FacilityCategories.serviceTagGroups` key)
+  /// in the reader's language. Anything else is shown through
+  /// [getCategoryDisplayName].
+  static String tagLabel(AppLocalizations l10n, String key) => switch (key) {
+        'medical_clinic' => l10n.chipMedicalClinic,
+        'hospital' => l10n.chipHospital,
+        'dental_vision' => l10n.chipDentalVision,
+        'home_care' => l10n.chipHomeCare,
+        'mental_health_care' => l10n.chipMentalHealthCare,
+        'crisis' => l10n.chipCrisis,
+        'addiction' => l10n.chipAddiction,
+        'recovery' => l10n.chipRecovery,
+        'emergency_shelter' => l10n.chipEmergencyShelter,
+        'abuse_shelter' => l10n.chipAbuseShelter,
+        'transitional_housing' => l10n.chipTransitionalHousing,
+        'affordable_housing' => l10n.chipAffordableHousing,
+        'food_pantry' => l10n.chipFoodPantry,
+        'meals' => l10n.chipMeals,
+        'essentials' => l10n.chipEssentials,
+        'baby_supplies' => l10n.chipBabySupplies,
+        'legal' => l10n.chipLegal,
+        'jobs_education' => l10n.chipJobsEducation,
+        'financial_support' => l10n.chipFinancialSupport,
+        'transportation' => l10n.chipTransportation,
+        'children_families' => l10n.chipChildrenFamilies,
+        'disability' => l10n.chipDisability,
+        'seniors' => l10n.chipSeniors,
+        'veterans' => l10n.chipVeterans,
+        _ => getCategoryDisplayName(key),
+      };
+
   /// Returns a display-friendly name for a category.
   static String getCategoryDisplayName(String? category) {
     if (category == null || category.isEmpty) return 'Community Resource';
