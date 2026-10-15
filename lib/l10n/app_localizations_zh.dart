@@ -449,9 +449,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileApplyEligibility => '按我能提供的材料筛选';
 
   @override
-  String get profileApplyEligibilityDesc => '隐藏要求提供您未在下方勾选材料的机构。';
-
-  @override
   String get profileSignedIn => '已登录';
 
   @override
@@ -791,7 +788,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsMapAsList => '以列表形式打开地图';
 
   @override
-  String get settingsMapAsListDesc => '更适合屏幕阅读器';
+  String get settingsMapAsListDesc => '地图页打开时列表展开，便于屏幕阅读器使用';
 
   @override
   String get settingsLargerPins => '放大地图标记';
@@ -828,9 +825,15 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String cardLastUpdated(DateTime date) {
     final intl.DateFormat dateDateFormat =
-        intl.DateFormat('dd/MM/yyyy', localeName);
+        intl.DateFormat('MM/dd/yyyy', localeName);
     final String dateString = dateDateFormat.format(date);
 
     return '最后更新：$dateString';
   }
+
+  @override
+  String get cardCopyAddress => '复制地址';
+
+  @override
+  String get cardAddressCopied => '地址已复制';
 }

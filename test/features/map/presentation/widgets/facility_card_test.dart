@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/dashed_vertical_divider.dart';
 import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
@@ -6,6 +7,7 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_c
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/pump_app.dart';
@@ -101,6 +103,47 @@ void main() {
     expect(find.text('Chicago, IL • Legal Aid'), findsOneWidget);
   });
 
+  testWidgets('a tap copies the street address and says so on iOS',
+      (tester) async {
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    await _pumpCard(
+      tester,
+      createTestFacility(address: '35 E Wacker Dr, Chicago, IL 60601'),
+      isExpanded: true,
+    );
+    final l10n = _l10n(tester);
+
+    // The copy icon is the cue; the whole row is the target.
+    expect(find.byIcon(Icons.content_copy_outlined), findsOneWidget);
+    await tester.tap(find.text('35 E Wacker Dr, Chicago, IL 60601'));
+    await tester.pump();
+
+    expect(copied, '35 E Wacker Dr, Chicago, IL 60601');
+    expect(find.text(l10n.cardAddressCopied), findsOneWidget);
+    expect(
+      tester.getSemantics(find.text('35 E Wacker Dr, Chicago, IL 60601')),
+      isSemantics(onTapHint: l10n.cardCopyAddress),
+    );
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  test('only iOS gets the app\'s own "copied" message', () {
+    expect(FacilityCard.confirmsCopy(TargetPlatform.iOS), isTrue);
+    expect(FacilityCard.confirmsCopy(TargetPlatform.android), isFalse);
+  });
+
   testWidgets('shows when the listing was last checked, and only then',
       (tester) async {
     await _pumpCard(
@@ -108,21 +151,62 @@ void main() {
       createTestFacility(lastCheckedAt: DateTime(2026, 10, 3, 12)),
       isExpanded: true,
     );
-    expect(find.text('Last updated: 03/10/2026'), findsOneWidget);
+    expect(find.text('Last updated: 10/03/2026'), findsOneWidget);
 
     await _pumpCard(tester, createTestFacility(), isExpanded: true);
     expect(find.textContaining('Last updated'), findsNothing);
   });
 
-  testWidgets('the expand control reports taps', (tester) async {
+  testWidgets('the whole row shows the details, the arrow included',
+      (tester) async {
     var toggles = 0;
     await _pumpCard(
       tester,
-      createTestFacility(),
+      createTestFacility(name: 'CARPLS'),
       onToggleExpand: () => toggles++,
     );
+    await tester.tap(find.text('CARPLS'));
+    // The arrow is only a cue: a tap on it lands on the row beneath.
     await tester.tap(find.byIcon(Icons.expand_more));
-    expect(toggles, 1);
+    expect(toggles, 2);
+  });
+
+  testWidgets('a row is one button that says what it will do', (tester) async {
+    await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
+    final l10n = _l10n(tester);
+
+    expect(
+      tester.getSemantics(find.text('CARPLS')),
+      isSemantics(isButton: true, onTapHint: l10n.cardShowDetails),
+    );
+    // The arrow isn't a second control to find.
+    expect(find.byTooltip(l10n.cardShowDetails), findsNothing);
+
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS'),
+      isExpanded: true,
+    );
+    expect(
+      tester.getSemantics(find.text('CARPLS')),
+      isSemantics(isButton: true, onTapHint: l10n.cardHideDetails),
+    );
+  });
+
+  testWidgets('a short row is no taller than the heart and the arrow',
+      (tester) async {
+    // It was two full buttons tall, with empty space under short names.
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS', categoryDetail: 'Legal'),
+    );
+    final card = tester.getSize(find.byType(Card)).height;
+    expect(
+      card,
+      lessThanOrEqualTo(
+        AppSizes.minTouchTarget + AppIconSize.lg + 2 * AppSpacing.xs,
+      ),
+    );
   });
 
   group('hours', () {
@@ -357,19 +441,15 @@ void main() {
     expect(find.byType(TagChip), findsNothing);
   });
 
-  testWidgets('the heart and the expand control are full-size and named',
-      (tester) async {
+  testWidgets('the heart is full-size and named', (tester) async {
     await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
-    final l10n = _l10n(tester);
-    for (final tooltip in [l10n.cardSave('CARPLS'), l10n.cardShowDetails]) {
-      final button = find.byTooltip(tooltip);
-      expect(button, findsOneWidget, reason: tooltip);
-      final size = tester.getSize(
-        find.ancestor(of: button, matching: find.byType(IconButton)).first,
-      );
-      expect(size.width, greaterThanOrEqualTo(48), reason: tooltip);
-      expect(size.height, greaterThanOrEqualTo(48), reason: tooltip);
-    }
+    final heart = find.byTooltip(_l10n(tester).cardSave('CARPLS'));
+    expect(heart, findsOneWidget);
+    final size = tester.getSize(
+      find.ancestor(of: heart, matching: find.byType(IconButton)).first,
+    );
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
   });
 
   testWidgets('a saved facility offers to remove it', (tester) async {

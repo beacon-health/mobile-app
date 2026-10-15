@@ -123,6 +123,9 @@ class MapPageState extends State<MapPage>
 
   bool _isPanelOpen = false;
   bool _isFullyExpanded = false;
+
+  /// Settings → Accessibility → "Open Map as a list", as last applied.
+  bool _openMapAsList = false;
   bool _isSearchActive = false;
   bool _isKeyboardVisible = false;
   Timer? _keyboardHideDebounce;
@@ -228,7 +231,8 @@ class MapPageState extends State<MapPage>
     _isPanelOpen = true;
     // Settings → Accessibility: start on the list, the part of this tab a
     // screen reader can read.
-    _isFullyExpanded = AccessibilitySettings().openMapAsList;
+    _openMapAsList = AccessibilitySettings().openMapAsList;
+    _isFullyExpanded = _openMapAsList;
     _pinScale = AccessibilitySettings().pinScale;
     _searchFocusNode.addListener(_onSearchFocusChange);
 
@@ -244,8 +248,21 @@ class MapPageState extends State<MapPage>
   double _pinScale = 1;
 
   void _onAccessibilityChanged() {
-    final scale = AccessibilitySettings().pinScale;
-    if (!mounted || scale == _pinScale) return;
+    if (!mounted) return;
+    final settings = AccessibilitySettings();
+    // The tab is built once, at launch: without this, turning "Open Map as a
+    // list" on or off showed nothing until the app restarted.
+    if (settings.openMapAsList != _openMapAsList) {
+      _openMapAsList = settings.openMapAsList;
+      if (!_showSingleFacility) {
+        setState(() {
+          _isPanelOpen = true;
+          _isFullyExpanded = _openMapAsList;
+        });
+      }
+    }
+    final scale = settings.pinScale;
+    if (scale == _pinScale) return;
     _pinScale = scale;
     _redrawMarkers();
   }

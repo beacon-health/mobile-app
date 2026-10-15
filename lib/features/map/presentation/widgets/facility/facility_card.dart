@@ -8,6 +8,7 @@ import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// One facility: a row in the map's list, which expands in place, and the
 /// whole of the sheet a tapped pin opens. Both are the same card on the same
@@ -61,6 +62,11 @@ class FacilityCard extends StatefulWidget {
     this.showDragHandle = false,
   });
 
+  /// Whether the app says "Address copied" itself. Android (13 and later)
+  /// already shows what was copied, and a second message would repeat it;
+  /// iOS shows nothing.
+  static bool confirmsCopy(TargetPlatform platform) =>
+      platform != TargetPlatform.android;
   @override
   State<FacilityCard> createState() => _FacilityCardState();
 }
@@ -124,11 +130,12 @@ class _FacilityCardState extends State<FacilityCard> {
         ),
         if (placeLine.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xxs),
+          // Regular and muted, so it reads as the name's caption rather than
+          // a second title.
           Text(
             placeLine,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
             maxLines: widget.isExpanded ? null : 2,
             overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
@@ -166,8 +173,9 @@ class _FacilityCardState extends State<FacilityCard> {
     final header = Padding(
       padding: EdgeInsetsDirectional.only(
         start: AppSpacing.md,
-        top: AppSpacing.md,
-        // In a list row, room for the heart and the expand control under it.
+        // Under the handle's band, which already leaves room above.
+        top: widget.showDragHandle ? 0 : AppSpacing.md,
+        // In a list row, room for the heart and the arrow under it.
         end: expandable ? AppSizes.minTouchTarget : 0,
         bottom: AppSpacing.md,
       ),
@@ -197,29 +205,37 @@ class _FacilityCardState extends State<FacilityCard> {
   }
 
   /// A row of the list: the header, with the details growing beneath it when
-  /// expanded. The heart and the expand control sit over its trailing edge.
+  /// expanded. The whole row shows and hides the details, so the arrow under
+  /// the heart is only a cue and needs no target of its own: a row is as tall
+  /// as the heart and the arrow, not two buttons.
   Widget _buildListRow(ThemeData theme, AppLocalizations l10n, Widget header) {
     return Stack(
       children: [
-        // GestureDetector, not InkWell — an InkWell ripple would fire across
-        // the whole card.
-        GestureDetector(
-          onTap: widget.onToggleExpand,
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // At least two controls tall, so the heart and the expand
-              // control each keep a full-size target.
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: 2 * AppSizes.minTouchTarget,
+        // One button to a screen reader: "Show details" or "Hide details".
+        Semantics(
+          container: true,
+          button: true,
+          expanded: widget.isExpanded,
+          onTapHint:
+              widget.isExpanded ? l10n.cardHideDetails : l10n.cardShowDetails,
+          // GestureDetector, not InkWell — an InkWell ripple would fire
+          // across the whole card.
+          child: GestureDetector(
+            onTap: widget.onToggleExpand,
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: AppSizes.minTouchTarget + AppIconSize.lg,
+                  ),
+                  child: header,
                 ),
-                child: header,
-              ),
-              if (widget.isExpanded) _buildFacilityDetails(widget.facility),
-            ],
+                if (widget.isExpanded) _buildFacilityDetails(widget.facility),
+              ],
+            ),
           ),
         ),
         PositionedDirectional(
@@ -228,17 +244,17 @@ class _FacilityCardState extends State<FacilityCard> {
           child: _buildFavoriteButton(theme),
         ),
         PositionedDirectional(
-          // Stays beside the header when the card grows beneath it.
+          // Under the heart, centered on it; taps fall through to the row.
           top: AppSizes.minTouchTarget,
-          end: 0,
-          child: IconButton(
-            tooltip:
-                widget.isExpanded ? l10n.cardHideDetails : l10n.cardShowDetails,
-            icon: Icon(
-              widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: theme.colorScheme.onSurfaceVariant,
+          end: (AppSizes.minTouchTarget - AppIconSize.lg) / 2,
+          child: IgnorePointer(
+            child: ExcludeSemantics(
+              child: Icon(
+                widget.isExpanded ? Icons.expand_less : Icons.expand_more,
+                size: AppIconSize.lg,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-            onPressed: widget.onToggleExpand,
           ),
         ),
       ],
@@ -253,9 +269,12 @@ class _FacilityCardState extends State<FacilityCard> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Everything below scrolls, so the scroll view takes drags there:
+        // this band, a full touch target tall and the sheet's width, is
+        // where a swipe moves the sheet.
         if (widget.showDragHandle)
-          const Padding(
-            padding: EdgeInsets.only(top: AppSpacing.sm),
+          const SizedBox(
+            height: AppSizes.minTouchTarget,
             child: Center(child: DragHandle()),
           ),
         Flexible(
@@ -410,8 +429,9 @@ class _FacilityCardState extends State<FacilityCard> {
         children: [
           _buildActions(facility),
           if (facility.hasAddress) ...[
-            const SizedBox(height: AppSpacing.md),
-            _buildFactRow(Icons.place_outlined, facility.address),
+            // The row is a full target tall, which spaces it on its own.
+            const SizedBox(height: AppSpacing.xs),
+            _buildAddressRow(facility.address),
           ],
           const SizedBox(height: AppSpacing.md),
           if (facility.description.isNotEmpty) ...[
@@ -701,9 +721,9 @@ class _FacilityCardState extends State<FacilityCard> {
     final l10n = AppLocalizations.of(context)!;
     final facts = [
       if (facility.eligibility?.incomeLimit case final String limit)
-        _buildFactRow(Icons.payments_outlined, limit, l10n.cardIncomeLimit),
+        _buildFactRow(Icons.payments_outlined, l10n.cardIncomeLimit, limit),
       if (facility.eligibility?.serviceArea case final String area)
-        _buildFactRow(Icons.map_outlined, area, l10n.cardServiceArea),
+        _buildFactRow(Icons.map_outlined, l10n.cardServiceArea, area),
     ];
     if (eligibilityChips.isEmpty && !hasSummary && facts.isEmpty) {
       return const [];
@@ -739,9 +759,52 @@ class _FacilityCardState extends State<FacilityCard> {
     ];
   }
 
-  /// A line of free text beside an icon, labelled when [label] is given
-  /// ("Income limit: …"); the street address needs none.
-  Widget _buildFactRow(IconData icon, String value, [String? label]) {
+  /// The street address, which a tap copies; the copy icon says so. Pasting
+  /// it beats retyping it into a maps app, a message, or a form.
+  Widget _buildAddressRow(String address) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final muted = theme.colorScheme.onSurfaceVariant;
+    return Semantics(
+      onTapHint: l10n.cardCopyAddress,
+      child: InkWell(
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: address));
+          if (!mounted ||
+              !FacilityCard.confirmsCopy(Theme.of(context).platform)) {
+            return;
+          }
+          ScaffoldMessenger.maybeOf(context)
+            ?..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l10n.cardAddressCopied)));
+        },
+        borderRadius: AppRadii.smAll,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppSizes.minTouchTarget,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.place_outlined, size: AppIconSize.sm, color: muted),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(address, style: theme.textTheme.bodyMedium),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(
+                Icons.content_copy_outlined,
+                size: AppIconSize.sm,
+                color: muted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// A labelled line of free text under the chips ("Income limit: …").
+  Widget _buildFactRow(IconData icon, String label, String value) {
     final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,11 +815,10 @@ class _FacilityCardState extends State<FacilityCard> {
           child: Text.rich(
             TextSpan(
               children: [
-                if (label != null)
-                  TextSpan(
-                    text: label + AppLocalizations.of(context)!.labelSeparator,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                TextSpan(
+                  text: label + AppLocalizations.of(context)!.labelSeparator,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
                 TextSpan(text: value),
               ],
             ),

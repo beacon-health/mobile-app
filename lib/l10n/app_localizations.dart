@@ -964,12 +964,6 @@ abstract class AppLocalizations {
   /// **'Filter by what I can provide'**
   String get profileApplyEligibility;
 
-  /// No description provided for @profileApplyEligibilityDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Hides places that ask for something you haven\'t checked below.'**
-  String get profileApplyEligibilityDesc;
-
   /// No description provided for @profileSignedIn.
   ///
   /// In en, this message translates to:
@@ -1435,7 +1429,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapAsListDesc.
   ///
   /// In en, this message translates to:
-  /// **'Easier with screen readers'**
+  /// **'The Map tab opens with its list raised, for screen readers'**
   String get settingsMapAsListDesc;
 
   /// No description provided for @settingsLargerPins.
@@ -1498,11 +1492,23 @@ abstract class AppLocalizations {
   /// **'{place} • {category}'**
   String cardPlaceAndCategory(String place, String category);
 
-  /// When the team last checked a facility's details. The date is always DD/MM/YYYY.
+  /// When the team last checked a facility's details. The date is always MM/DD/YYYY.
   ///
   /// In en, this message translates to:
   /// **'Last updated: {date}'**
   String cardLastUpdated(DateTime date);
+
+  /// What tapping a facility's street address does, for screen readers.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy address'**
+  String get cardCopyAddress;
+
+  /// Shown after a facility's address is copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied'**
+  String get cardAddressCopied;
 }
 
 class _AppLocalizationsDelegate

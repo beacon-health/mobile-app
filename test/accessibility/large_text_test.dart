@@ -204,12 +204,12 @@ void main() {
 
         // Map: the list, a row opened in place, then the facility sheet.
         await openTab(tester, 'Map');
-        // The expand control, not the name: an open row's name can sit below
-        // the fold of the panel.
-        await tester.tap(find.byTooltip('Show details').first);
+        // The arrow, not the name: an open row's name can sit below the fold
+        // of the panel. A tap on the arrow lands on its row.
+        await tester.tap(find.byIcon(Icons.expand_more).first);
         await settle(tester);
         expect(find.text('Directions'), findsOneWidget);
-        await tester.tap(find.byTooltip('Hide details'));
+        await tester.tap(find.byIcon(Icons.expand_less));
         await settle(tester);
 
         maps.tapMarker(map, const MarkerId('busy'));

@@ -165,7 +165,6 @@
   "commonCancel": "Cancel",
   "navProfile": "Profile",
   "profileApplyEligibility": "Filter by what I can provide",
-  "profileApplyEligibilityDesc": "Hides places that ask for something you haven't checked below.",
   "profileSignedIn": "Signed in",
   "profileSignedInThrough": "Signed in through {provider}",
   "@profileSignedInThrough": {
@@ -370,7 +369,7 @@
   },
   "settingsAccessibility": "Accessibility",
   "settingsMapAsList": "Open Map as a list",
-  "settingsMapAsListDesc": "Easier with screen readers",
+  "settingsMapAsListDesc": "The Map tab opens with its list raised, for screen readers",
   "settingsLargerPins": "Larger map pins",
   "settingsLargerPinsDesc": "Bigger pins and names on the map",
   "settingsAppearanceSystem": "Match device",
@@ -405,13 +404,21 @@
   },
   "cardLastUpdated": "Last updated: {date}",
   "@cardLastUpdated": {
-    "description": "When the team last checked a facility's details. The date is always DD/MM/YYYY.",
+    "description": "When the team last checked a facility's details. The date is always MM/DD/YYYY.",
     "placeholders": {
       "date": {
         "type": "DateTime",
-        "format": "dd/MM/yyyy",
+        "format": "MM/dd/yyyy",
         "isCustomDateFormat": "true"
       }
     }
+  },
+  "cardCopyAddress": "Copy address",
+  "@cardCopyAddress": {
+    "description": "What tapping a facility's street address does, for screen readers."
+  },
+  "cardAddressCopied": "Address copied",
+  "@cardAddressCopied": {
+    "description": "Shown after a facility's address is copied."
   }
 }

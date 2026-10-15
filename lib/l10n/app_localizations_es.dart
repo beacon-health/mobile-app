@@ -476,10 +476,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileApplyEligibility => 'Filtrar por lo que puedo presentar';
 
   @override
-  String get profileApplyEligibilityDesc =>
-      'Oculta los lugares que piden algo que no has marcado abajo.';
-
-  @override
   String get profileSignedIn => 'Sesión iniciada';
 
   @override
@@ -832,7 +828,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsMapAsList => 'Abrir el mapa como lista';
 
   @override
-  String get settingsMapAsListDesc => 'Más fácil con lectores de pantalla';
+  String get settingsMapAsListDesc =>
+      'La pestaña Mapa se abre con la lista arriba, para lectores de pantalla';
 
   @override
   String get settingsLargerPins => 'Marcadores más grandes';
@@ -870,9 +867,15 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String cardLastUpdated(DateTime date) {
     final intl.DateFormat dateDateFormat =
-        intl.DateFormat('dd/MM/yyyy', localeName);
+        intl.DateFormat('MM/dd/yyyy', localeName);
     final String dateString = dateDateFormat.format(date);
 
     return 'Última actualización: $dateString';
   }
+
+  @override
+  String get cardCopyAddress => 'Copiar dirección';
+
+  @override
+  String get cardAddressCopied => 'Dirección copiada';
 }

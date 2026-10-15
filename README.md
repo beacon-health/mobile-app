@@ -184,8 +184,11 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 **A facility is one card on one surface.** `FacilityCard` is a row of the
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
 Its header is kept short: the name, then "City, ST • kind of place"
-(`category_detail`). Directions, Call, and Website sit directly under it, with
-the street address below them. "Last updated" closes the details for listings
+(`category_detail`). In the list the whole row shows and hides the details;
+the arrow is only a cue. Directions, Call, and Website sit directly under the
+header, with the street address below them; a tap copies it. In the sheet, a
+band a full touch target tall around the handle takes the swipes, since
+everything beneath it scrolls. "Last updated" closes the details for listings
 the team has checked (`last_checked_at`). Home's Favorites and Recently viewed
 both open the card on the Map; feedback is given from the card.
 
@@ -344,7 +347,8 @@ Rules that follow from it:
 - **Anything that moves takes its duration from `AppMotion.of(context, …)`.**
 
 Settings → Accessibility adds two options of Beacon's own (`AccessibilitySettings`):
-opening the Map tab as a list, and larger pins.
+opening the Map tab with its list raised, and larger pins. Both apply as soon
+as they're switched.
 
 ### Localization
 
