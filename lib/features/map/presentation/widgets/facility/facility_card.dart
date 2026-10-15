@@ -175,10 +175,16 @@ class _FacilityCardState extends State<FacilityCard> {
       padding: EdgeInsetsDirectional.only(
         start: AppSpacing.md,
         // Under the handle's band, which already leaves room above.
-        top: widget.showDragHandle ? 0 : AppSpacing.md,
+        // Under the handle's band, which already leaves room above; a list
+        // row gets more air than the sheet's header.
+        top: widget.showDragHandle
+            ? 0
+            : expandable
+                ? AppSpacing.lg
+                : AppSpacing.md,
         // In a list row, room for the heart and the arrow under it.
         end: expandable ? AppSizes.minTouchTarget : 0,
-        bottom: AppSpacing.md,
+        bottom: expandable ? AppSpacing.lg : AppSpacing.md,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,13 +239,13 @@ class _FacilityCardState extends State<FacilityCard> {
                     // Tall enough for the heart and the arrow under it.
                     ConstrainedBox(
                       constraints: const BoxConstraints(
-                        minHeight: _arrowTop + AppIconSize.lg,
+                        minHeight: _arrowTop + AppIconSize.lg + AppSpacing.xs,
                       ),
                       child: header,
                     ),
                     // Taps fall through to the row.
                     PositionedDirectional(
-                      bottom: 0,
+                      bottom: AppSpacing.xs,
                       end: (AppSizes.minTouchTarget - AppIconSize.lg) / 2,
                       child: ExcludeSemantics(
                         child: Icon(

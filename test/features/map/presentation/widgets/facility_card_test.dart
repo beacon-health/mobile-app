@@ -292,10 +292,13 @@ void main() {
 
     expect(arrow.center.dx, closeTo(heart.center.dx, 1));
     expect(arrow.top, greaterThan(heart.top));
-    // It was 72 tall when the arrow was a button of its own.
+    // No taller than the heart, the arrow, and the card's margins: the
+    // arrow is a cue, not a second button.
     expect(
       tester.getSize(find.byType(Card)).height,
-      lessThan(AppSizes.minTouchTarget + AppIconSize.lg + 2 * AppSpacing.xs),
+      lessThanOrEqualTo(
+        AppSizes.minTouchTarget + AppIconSize.lg + 4 * AppSpacing.xs,
+      ),
     );
   });
 

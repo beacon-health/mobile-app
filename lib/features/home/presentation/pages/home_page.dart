@@ -575,8 +575,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// One row of the Recently viewed and Favorites lists. The name gets two
-  /// lines — most facility names don't fit one — and the address one.
+  /// One row of the Recently viewed and Favorites lists: the name and the
+  /// address, a line each, as in the Map's list; the card shows it in full.
   Widget _buildFacilityRow(Facility facility, {required VoidCallback onTap}) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
@@ -591,7 +591,7 @@ class _HomePageState extends State<HomePage>
       title: Text(
         facility.name,
         style: theme.textTheme.titleSmall,
-        maxLines: 2,
+        maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(

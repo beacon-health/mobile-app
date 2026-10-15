@@ -116,7 +116,7 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('a facility name gets two lines before it is cut',
+  testWidgets('a facility name is one line, cut with an ellipsis',
       (tester) async {
     await pumpHome(tester);
     RecentFacilitiesService().addFacility(
@@ -130,7 +130,8 @@ void main() {
     final name = tester.widget<Text>(
       find.text('First Baptist Congregational Church of Chicago'),
     );
-    expect(name.maxLines, 2);
+    expect(name.maxLines, 1);
+    expect(name.overflow, TextOverflow.ellipsis);
   });
 
   testWidgets('section titles are sentence case', (tester) async {
