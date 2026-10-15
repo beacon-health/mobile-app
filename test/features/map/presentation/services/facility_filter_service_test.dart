@@ -72,24 +72,23 @@ void main() {
     });
 
     test('an untagged facility matches a whole group, not a single chip', () {
-      List<String> ids(Set<String> chips) => FacilityFilterService
-          .filterFacilities(
-            facilities,
-            searchText: '',
-            selectedCategories: chips,
-            showFavoritesOnly: false,
-            showOpenNowOnly: false,
-          )
-          .map((f) => f.id)
-          .toList();
+      List<String> ids(Set<String> chips) {
+        final result = FacilityFilterService.filterFacilities(
+          facilities,
+          searchText: '',
+          selectedCategories: chips,
+          showFavoritesOnly: false,
+          showOpenNowOnly: false,
+        );
+        return result.map((f) => f.id).toList();
+      }
+
       // Shelter B has no tags yet; category_broad 'Housing'.
+      final housing = FacilityCategories.valuesForGroup(
+        FacilityCategories.groupHousingShelter,
+      ).toSet();
       expect(ids({'emergency_shelter'}), isEmpty);
-      expect(
-        ids(FacilityCategories.valuesForGroup(
-          FacilityCategories.groupHousingShelter,
-        ).toSet()),
-        ['3'],
-      );
+      expect(ids(housing), ['3']);
     });
 
     test('search matches a chip name', () {
