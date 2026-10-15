@@ -1,3 +1,4 @@
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,6 +30,21 @@ void main() {
       expect(facility.location.longitude, -87.6298);
       expect(facility.city, 'Chicago');
       expect(facility.categoryBroad, 'Medical Care');
+      expect(facility.serviceTags, isEmpty);
+    });
+
+    test('reads service_tags, main tag first, and drops unknown keys', () {
+      final facility = Facility.fromSupabase(<String, dynamic>{
+        'id': 'tags-1',
+        'facility_name': 'Hope Center',
+        'latitude': 41.0,
+        'longitude': -87.0,
+        'category_broad': 'Community Services',
+        'service_tags': ['food_pantry', 'not_a_chip', 'seniors'],
+      });
+      expect(facility.serviceTags, ['food_pantry', 'seniors']);
+      // The pin follows the main chip, not category_broad.
+      expect(facility.primaryCategory, FacilityCategories.groupBasicNeeds);
     });
 
     test('handles null optional fields gracefully', () {

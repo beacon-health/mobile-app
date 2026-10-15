@@ -159,9 +159,8 @@ void main() {
                     context: context,
                     isScrollControlled: true,
                     builder: (_) => FilterModal(
-                      selectedCategories: const {'Medical Care'},
-                      availableCategories:
-                          FacilityCategories.categoryBroadValues,
+                      selectedCategories: const {'medical_clinic'},
+                      availableCategories: FacilityCategories.serviceTagKeys,
                       selectedPreferenceRequirements: const {},
                       showFavoritesOnly: false,
                       showOpenNowOnly: true,
