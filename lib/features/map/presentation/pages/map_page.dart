@@ -572,8 +572,9 @@ class MapPageState extends State<MapPage>
   Future<void> _onLocationChanged(
     String displayName,
     double? latitude,
-    double? longitude,
-  ) async {
+    double? longitude, {
+    double zoom = MapConstants.radiusFramingZoom,
+  }) async {
     if (latitude == null || longitude == null) return;
     final isCurrent = displayName == ZipCodeService.currentLocationSentinel;
 
@@ -602,10 +603,7 @@ class MapPageState extends State<MapPage>
     if (controller != null && mounted) {
       await _moveCamera(
         controller,
-        CameraUpdate.newLatLngZoom(
-          LatLng(latitude, longitude),
-          MapConstants.radiusFramingZoom,
-        ),
+        CameraUpdate.newLatLngZoom(LatLng(latitude, longitude), zoom),
       );
     }
   }
@@ -626,6 +624,7 @@ class MapPageState extends State<MapPage>
         ZipCodeService.currentLocationSentinel,
         result.latitude,
         result.longitude,
+        zoom: MapConstants.myLocationZoom,
       );
       return;
     }

@@ -1,8 +1,10 @@
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/drag_handle.dart';
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/constants/filter_l10n.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/selection_chip_builder.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -348,21 +350,80 @@ class _FilterModalState extends State<FilterModal> {
     );
   }
 
+  /// The categories under the six names Home uses for them, in Home's
+  /// order, each with its group's icon. Anything outside the six (none
+  /// today) follows, unheaded.
   Widget _buildCategoryContent() {
-    return SelectionChipBuilder.buildMultiSelection<String>(
-      context: context,
-      options: widget.availableCategories,
-      selectedValues: _tempCategories,
-      onToggle: (category, selected) {
-        setState(() {
-          if (selected) {
-            _tempCategories.add(category);
-          } else {
-            _tempCategories.remove(category);
-          }
-        });
-      },
-      getLabel: FacilityCategoryIcons.getCategoryDisplayName,
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final grouped = <String, List<String>>{
+      for (final group in FacilityCategories.quickActionGroups) group: [],
+    };
+    final rest = <String>[];
+    for (final category in widget.availableCategories) {
+      (grouped[FacilityCategories.groupFor(category)] ?? rest).add(category);
+    }
+
+    Widget options(List<String> categories) =>
+        SelectionChipBuilder.buildMultiSelection<String>(
+          context: context,
+          options: categories,
+          selectedValues: _tempCategories,
+          onToggle: (category, selected) {
+            setState(() {
+              if (selected) {
+                _tempCategories.add(category);
+              } else {
+                _tempCategories.remove(category);
+              }
+            });
+          },
+          getLabel: FacilityCategoryIcons.getCategoryDisplayName,
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final (index, MapEntry(key: group, value: categories))
+            in grouped.entries.where((e) => e.value.isNotEmpty).indexed) ...[
+          Padding(
+            // More room above a heading than below it, so each reads as
+            // the start of its own group.
+            padding: EdgeInsets.only(
+              top: index == 0 ? AppSpacing.xs : AppSpacing.lg,
+              bottom: AppSpacing.sm,
+            ),
+            child: Semantics(
+              header: true,
+              child: Row(
+                children: [
+                  // The group's own icon and color, as on Home.
+                  Icon(
+                    MarkerUtils.getIconForCategory(group),
+                    size: AppIconSize.md,
+                    color: MarkerUtils.getColorForCategory(
+                      group,
+                      brightness: theme.brightness,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      FacilityCategoryIcons.groupLabel(l10n, group),
+                      style: theme.textTheme.labelLarge,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          options(categories),
+        ],
+        if (rest.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
+          options(rest),
+        ],
+      ],
     );
   }
 }

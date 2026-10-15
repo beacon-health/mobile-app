@@ -390,6 +390,20 @@ void main() {
       expect(maps.mapStartingAtZoom(14).camera.target, springfield);
     });
 
+    testWidgets(
+        '"Use my location" lands where pins are apart but still unnamed',
+        (tester) async {
+      // It framed the whole search radius, where pins cluster.
+      await pumpMap(tester, locationPermission: LocationPermission.whileInUse);
+
+      await tester.tap(find.byTooltip('Use my location'));
+      await settle(tester);
+
+      final zoom = map.lastAnimation!.zoom;
+      expect(zoom, greaterThanOrEqualTo(MapConstants.clusterZoomThreshold));
+      expect(zoom, lessThan(MapConstants.detailZoom));
+    });
+
     testWidgets('the blue dot shows only in GPS mode', (tester) async {
       await pumpMap(tester, locationPermission: LocationPermission.whileInUse);
       final homeMap = maps.mapStartingAtZoom(MapConstants.homeCutoutZoom);

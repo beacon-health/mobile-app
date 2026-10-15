@@ -139,6 +139,53 @@ void main() {
     );
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
+  testWidgets('a one-line address sits midway between buttons and divider',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        address: '35 E Wacker Dr, Chicago, IL 60601',
+        description: 'Free legal aid',
+      ),
+      isExpanded: true,
+      size: const Size(1200, 844),
+    );
+    final address =
+        tester.getRect(find.text('35 E Wacker Dr, Chicago, IL 60601'));
+    final buttons = tester.getRect(
+      find
+          .ancestor(
+            of: find.text(_l10n(tester).cardDirections),
+            matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+          )
+          .first,
+    );
+    // The divider's line is drawn at the middle of its box.
+    final divider = tester
+        .widgetList<Divider>(find.byType(Divider))
+        .map((d) => tester.getRect(find.byWidget(d)))
+        .where((r) => r.top > address.bottom)
+        .reduce((a, b) => a.top < b.top ? a : b);
+
+    final above = address.top - buttons.bottom;
+    final below = divider.center.dy - address.bottom;
+    expect((above - below).abs(), lessThanOrEqualTo(AppSpacing.xs));
+  });
+
+  testWidgets('the free chip says what is free', (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        eligibility: const FacilityEligibility(
+          freeServicesAvailable: EligibilityValue.yes,
+        ),
+      ),
+      isExpanded: true,
+    );
+    expect(find.text('Free services available'), findsOneWidget);
+    expect(find.text('Free'), findsNothing);
+  });
+
   test('only iOS gets the app\'s own "copied" message', () {
     expect(FacilityCard.confirmsCopy(TargetPlatform.iOS), isTrue);
     expect(FacilityCard.confirmsCopy(TargetPlatform.android), isFalse);
@@ -193,20 +240,21 @@ void main() {
     );
   });
 
-  testWidgets('a short row is no taller than the heart and the arrow',
+  testWidgets('the arrow sits centered under the text, with no gap above',
       (tester) async {
-    // It was two full buttons tall, with empty space under short names.
+    // It used to sit under the heart, leaving a band of empty space beneath
+    // short names.
     await _pumpCard(
       tester,
       createTestFacility(name: 'CARPLS', categoryDetail: 'Legal'),
     );
-    final card = tester.getSize(find.byType(Card)).height;
-    expect(
-      card,
-      lessThanOrEqualTo(
-        AppSizes.minTouchTarget + AppIconSize.lg + 2 * AppSpacing.xs,
-      ),
-    );
+    final card = tester.getRect(find.byType(FacilityCard));
+    final arrow = tester.getRect(find.byIcon(Icons.expand_more));
+    final line = tester.getRect(find.text('Chicago, IL • Legal'));
+
+    expect(arrow.center.dx, closeTo(card.center.dx, 1));
+    expect(arrow.top - line.bottom, lessThan(AppSpacing.sm));
+    expect(card.height, lessThan(2 * AppSizes.minTouchTarget));
   });
 
   group('hours', () {

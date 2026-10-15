@@ -9,7 +9,9 @@ import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
+import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
@@ -204,12 +206,18 @@ void main() {
 
         // Map: the list, a row opened in place, then the facility sheet.
         await openTab(tester, 'Map');
-        // The arrow, not the name: an open row's name can sit below the fold
-        // of the panel. A tap on the arrow lands on its row.
-        await tester.tap(find.byIcon(Icons.expand_more).first);
+        // The row's icon, at its top: the rest of a row can sit below the
+        // fold of the panel at these sizes, and the whole row is the button.
+        final rowIcon = find
+            .descendant(
+              of: find.byType(FacilityListPanel),
+              matching: find.byType(CategoryIcon),
+            )
+            .first;
+        await tester.tap(rowIcon);
         await settle(tester);
         expect(find.text('Directions'), findsOneWidget);
-        await tester.tap(find.byIcon(Icons.expand_less));
+        await tester.tap(rowIcon);
         await settle(tester);
 
         maps.tapMarker(map, const MarkerId('busy'));

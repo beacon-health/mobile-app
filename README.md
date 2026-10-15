@@ -162,7 +162,11 @@ Favorites filter lists every match in the loaded area instead. Selecting a
 facility remembers the camera and deselecting returns to it, unless the user
 moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
-(`MarkerManagementService.groupForZoom`).
+(`MarkerManagementService.groupForZoom`). "Use my location" lands at
+`MapConstants.myLocationZoom`: pins apart, names not yet shown. The filter
+sheet lists categories under Home's six groups
+(`FacilityCategories.quickActionGroups`), named by
+`FacilityCategoryIcons.groupLabel`.
 
 **"What can you provide?" only ever hides what a person can't use.** It
 belongs to an account: the question is asked once, in onboarding after sign-in,
@@ -185,7 +189,7 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
 Its header is kept short: the name, then "City, ST • kind of place"
 (`category_detail`). In the list the whole row shows and hides the details;
-the arrow is only a cue. Directions, Call, and Website sit directly under the
+the arrow centered under the header is only a cue. Directions, Call, and Website sit directly under the
 header, with the street address below them; a tap copies it. In the sheet, a
 band a full touch target tall around the handle takes the swipes, since
 everything beneath it scrolls. "Last updated" closes the details for listings

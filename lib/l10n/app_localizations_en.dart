@@ -179,7 +179,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chipWalkIns => 'Walk-ins';
 
   @override
-  String get chipFree => 'Free';
+  String get chipFree => 'Free services available';
 
   @override
   String get chipTelehealth => 'Telehealth';

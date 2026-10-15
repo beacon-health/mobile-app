@@ -175,9 +175,10 @@ class _FacilityCardState extends State<FacilityCard> {
         start: AppSpacing.md,
         // Under the handle's band, which already leaves room above.
         top: widget.showDragHandle ? 0 : AppSpacing.md,
-        // In a list row, room for the heart and the arrow under it.
+        // In a list row, room for the heart.
         end: expandable ? AppSizes.minTouchTarget : 0,
-        bottom: AppSpacing.md,
+        // In a list row, the arrow under the name closes the header.
+        bottom: expandable ? 0 : AppSpacing.md,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,10 +205,9 @@ class _FacilityCardState extends State<FacilityCard> {
     );
   }
 
-  /// A row of the list: the header, with the details growing beneath it when
-  /// expanded. The whole row shows and hides the details, so the arrow under
-  /// the heart is only a cue and needs no target of its own: a row is as tall
-  /// as the heart and the arrow, not two buttons.
+  /// A row of the list: the header, then an arrow centered across the row,
+  /// then the details when expanded. The whole row shows and hides them, so
+  /// the arrow is only a cue and needs no target of its own.
   Widget _buildListRow(ThemeData theme, AppLocalizations l10n, Widget header) {
     return Stack(
       children: [
@@ -227,11 +227,21 @@ class _FacilityCardState extends State<FacilityCard> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // At least as tall as the heart beside it.
                 ConstrainedBox(
                   constraints: const BoxConstraints(
-                    minHeight: AppSizes.minTouchTarget + AppIconSize.lg,
+                    minHeight: AppSizes.minTouchTarget,
                   ),
                   child: header,
+                ),
+                ExcludeSemantics(
+                  child: Center(
+                    child: Icon(
+                      widget.isExpanded ? Icons.expand_less : Icons.expand_more,
+                      size: AppIconSize.lg,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
                 if (widget.isExpanded) _buildFacilityDetails(widget.facility),
               ],
@@ -242,20 +252,6 @@ class _FacilityCardState extends State<FacilityCard> {
           top: 0,
           end: 0,
           child: _buildFavoriteButton(theme),
-        ),
-        PositionedDirectional(
-          // Under the heart, centered on it; taps fall through to the row.
-          top: AppSizes.minTouchTarget,
-          end: (AppSizes.minTouchTarget - AppIconSize.lg) / 2,
-          child: IgnorePointer(
-            child: ExcludeSemantics(
-              child: Icon(
-                widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-                size: AppIconSize.lg,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
         ),
       ],
     );
@@ -428,12 +424,14 @@ class _FacilityCardState extends State<FacilityCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildActions(facility),
+          // The address row is a full target tall and centers its text, so
+          // the same small gap above it as the divider leaves below it puts
+          // a one-line address midway between the buttons and the divider.
           if (facility.hasAddress) ...[
-            // The row is a full target tall, which spaces it on its own.
             const SizedBox(height: AppSpacing.xs),
             _buildAddressRow(facility.address),
-          ],
-          const SizedBox(height: AppSpacing.md),
+          ] else
+            const SizedBox(height: AppSpacing.md),
           if (facility.description.isNotEmpty) ...[
             const Divider(height: AppSpacing.md),
             Text(facility.description, style: theme.textTheme.bodyMedium),

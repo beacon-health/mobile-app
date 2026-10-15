@@ -427,7 +427,7 @@ abstract class AppLocalizations {
   /// No description provided for @chipFree.
   ///
   /// In en, this message translates to:
-  /// **'Free'**
+  /// **'Free services available'**
   String get chipFree;
 
   /// No description provided for @chipTelehealth.

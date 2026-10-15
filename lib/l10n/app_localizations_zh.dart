@@ -173,7 +173,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chipWalkIns => '无需预约';
 
   @override
-  String get chipFree => '免费';
+  String get chipFree => '提供免费服务';
 
   @override
   String get chipTelehealth => '远程医疗';

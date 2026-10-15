@@ -305,19 +305,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// Localized label for a quick-action group. The group constant itself stays
-  /// canonical English — it's the filter value and the icon/color key — so only
-  /// the display string is translated.
-  String _groupLabel(AppLocalizations l10n, String group) => switch (group) {
-        FacilityCategories.groupHealthCare => l10n.homeCategoryHealthCare,
-        FacilityCategories.groupMentalHealth => l10n.homeCategoryMentalHealth,
-        FacilityCategories.groupHousingShelter => l10n.homeCategoryHousing,
-        FacilityCategories.groupBasicNeeds => l10n.homeCategoryBasicNeeds,
-        FacilityCategories.groupCommunity => l10n.homeCategoryCommunity,
-        FacilityCategories.groupSpecialized => l10n.homeCategorySpecialized,
-        _ => group,
-      };
-
   /// Height of the map preview, and the least a quick-action tile stands.
   static const double _mapPreviewHeight = 120;
   static const double _tileMinHeight = 76;
@@ -419,7 +406,7 @@ class _HomePageState extends State<HomePage>
       for (final group in FacilityCategories.quickActionGroups)
         _QuickAction(
           icon: MarkerUtils.getIconForCategory(group),
-          label: _groupLabel(l10n, group),
+          label: FacilityCategoryIcons.groupLabel(l10n, group),
           color: MarkerUtils.getColorForCategory(group, brightness: brightness),
           category: group,
         ),
