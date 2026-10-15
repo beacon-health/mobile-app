@@ -1,3 +1,4 @@
+import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/dashed_vertical_divider.dart';
 import 'package:beacon_app/core/widgets/tag_chip.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
@@ -6,6 +7,7 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_c
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/pump_app.dart';
@@ -46,26 +48,258 @@ AppLocalizations _l10n(WidgetTester tester) =>
     AppLocalizations.of(tester.element(find.byType(FacilityCard)))!;
 
 void main() {
-  testWidgets('collapsed card previews the description, not the details',
+  testWidgets('a collapsed row is the name, then city, state and kind',
       (tester) async {
+    // Less to read on the Map: no street address, no description preview.
     await _pumpCard(
       tester,
-      createTestFacility(name: 'Near North Health', description: 'Clinic'),
+      createTestFacility(
+        name: 'Near North Health',
+        description: 'Clinic for the whole family',
+        address: '1276 N Clybourn Ave, Chicago, IL 60610',
+        categoryDetail: 'Community Health Center',
+      ),
     );
+
     expect(find.text('Near North Health'), findsOneWidget);
-    expect(find.text('Clinic'), findsOneWidget);
+    expect(find.text('Chicago, IL • Community Health Center'), findsOneWidget);
+    expect(find.textContaining('Clybourn'), findsNothing);
+    expect(find.text('Clinic for the whole family'), findsNothing);
     expect(find.text(_l10n(tester).cardDirections), findsNothing);
   });
 
-  testWidgets('the expand control reports taps', (tester) async {
+  testWidgets('the second line drops whichever part is missing',
+      (tester) async {
+    await _pumpCard(tester, createTestFacility());
+    expect(find.text('Chicago, IL'), findsOneWidget);
+
+    await _pumpCard(
+      tester,
+      createTestFacility(city: '', state: '', categoryDetail: 'Food Pantry'),
+    );
+    expect(find.text('Food Pantry'), findsOneWidget);
+  });
+
+  testWidgets('expanded, the street address sits under Directions',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        address: '35 E Wacker Dr, Chicago, IL 60601',
+        categoryDetail: 'Legal Aid',
+      ),
+      isExpanded: true,
+    );
+
+    final address = find.text('35 E Wacker Dr, Chicago, IL 60601');
+    expect(address, findsOneWidget);
+    expect(
+      tester.getTopLeft(address).dy,
+      greaterThan(
+        tester.getTopLeft(find.text(_l10n(tester).cardDirections)).dy,
+      ),
+    );
+    // The header keeps its short line.
+    expect(find.text('Chicago, IL • Legal Aid'), findsOneWidget);
+  });
+
+  testWidgets('a tap copies the street address and says so on iOS',
+      (tester) async {
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    await _pumpCard(
+      tester,
+      createTestFacility(address: '35 E Wacker Dr, Chicago, IL 60601'),
+      isExpanded: true,
+    );
+    final l10n = _l10n(tester);
+
+    // The copy icon is the cue; the whole row is the target.
+    expect(find.byIcon(Icons.content_copy_outlined), findsOneWidget);
+    await tester.tap(find.text('35 E Wacker Dr, Chicago, IL 60601'));
+    await tester.pump();
+
+    expect(copied, '35 E Wacker Dr, Chicago, IL 60601');
+    expect(find.text(l10n.cardAddressCopied), findsOneWidget);
+    expect(
+      tester.getSemantics(find.text('35 E Wacker Dr, Chicago, IL 60601')),
+      isSemantics(onTapHint: l10n.cardCopyAddress),
+    );
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  testWidgets('a one-line address sits midway between buttons and divider',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        address: '35 E Wacker Dr, Chicago, IL 60601',
+        description: 'Free legal aid',
+      ),
+      isExpanded: true,
+      size: const Size(1200, 844),
+    );
+    final address =
+        tester.getRect(find.text('35 E Wacker Dr, Chicago, IL 60601'));
+    final buttons = tester.getRect(
+      find
+          .ancestor(
+            of: find.text(_l10n(tester).cardDirections),
+            matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+          )
+          .first,
+    );
+    // The divider's line is drawn at the middle of its box.
+    final divider = tester
+        .widgetList<Divider>(find.byType(Divider))
+        .map((d) => tester.getRect(find.byWidget(d)))
+        .where((r) => r.top > address.bottom)
+        .reduce((a, b) => a.top < b.top ? a : b);
+
+    final above = address.top - buttons.bottom;
+    final below = divider.center.dy - address.bottom;
+    expect((above - below).abs(), lessThanOrEqualTo(AppSpacing.xs));
+  });
+
+  testWidgets('the free chip says what is free', (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(
+        eligibility: const FacilityEligibility(
+          freeServicesAvailable: EligibilityValue.yes,
+        ),
+      ),
+      isExpanded: true,
+    );
+    expect(find.text('Free services available'), findsOneWidget);
+    expect(find.text('Free'), findsNothing);
+  });
+
+  test('only iOS gets the app\'s own "copied" message', () {
+    expect(FacilityCard.confirmsCopy(TargetPlatform.iOS), isTrue);
+    expect(FacilityCard.confirmsCopy(TargetPlatform.android), isFalse);
+  });
+
+  testWidgets('shows when the listing was last checked, and only then',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(lastCheckedAt: DateTime(2026, 10, 3, 12)),
+      isExpanded: true,
+    );
+    expect(find.text('Last updated: 10/03/2026'), findsOneWidget);
+
+    await _pumpCard(tester, createTestFacility(), isExpanded: true);
+    expect(find.textContaining('Last updated'), findsNothing);
+  });
+
+  testWidgets('the whole row shows the details, the arrow included',
+      (tester) async {
     var toggles = 0;
     await _pumpCard(
       tester,
-      createTestFacility(),
+      createTestFacility(name: 'CARPLS'),
       onToggleExpand: () => toggles++,
     );
+    await tester.tap(find.text('CARPLS'));
+    // The arrow is only a cue: a tap on it lands on the row beneath.
     await tester.tap(find.byIcon(Icons.expand_more));
-    expect(toggles, 1);
+    expect(toggles, 2);
+  });
+
+  testWidgets('a row is one button that says what it will do', (tester) async {
+    await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
+    final l10n = _l10n(tester);
+
+    expect(
+      tester.getSemantics(find.text('CARPLS')),
+      isSemantics(isButton: true, onTapHint: l10n.cardShowDetails),
+    );
+    // The arrow isn't a second control to find.
+    expect(find.byTooltip(l10n.cardShowDetails), findsNothing);
+
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS'),
+      isExpanded: true,
+    );
+    expect(
+      tester.getSemantics(find.text('CARPLS')),
+      isSemantics(isButton: true, onTapHint: l10n.cardHideDetails),
+    );
+  });
+
+  testWidgets('a long name is one line until the row opens', (tester) async {
+    const name = 'Public Health Institute Of Metropolitan Chicago Downtown';
+    Text nameText() => tester.widget<Text>(find.text(name));
+
+    await _pumpCard(tester, createTestFacility(name: name));
+    expect(nameText().maxLines, 1);
+    expect(nameText().overflow, TextOverflow.ellipsis);
+
+    await _pumpCard(tester, createTestFacility(name: name), isExpanded: true);
+    expect(nameText().maxLines, isNull);
+  });
+
+  testWidgets('the arrow sits at the bottom-right of a longer header',
+      (tester) async {
+    // A name that wraps once the row opens: the arrow follows it down rather
+    // than sitting halfway up the text.
+    const name = 'Public Health Institute Of Metropolitan Chicago Downtown';
+    await _pumpCard(
+      tester,
+      createTestFacility(name: name, categoryDetail: 'Community Clinic'),
+      isExpanded: true,
+    );
+    final caption = tester.getRect(
+      find.text('Chicago, IL • Community Clinic'),
+    );
+    final arrow = tester.getRect(find.byIcon(Icons.expand_less));
+    final card = tester.getRect(find.byType(Card));
+
+    expect(arrow.bottom, greaterThanOrEqualTo(caption.bottom));
+    expect(card.right - arrow.right, lessThan(AppSizes.minTouchTarget / 2));
+    expect(
+      arrow.bottom,
+      lessThanOrEqualTo(tester.getTopLeft(find.text('Directions')).dy),
+    );
+  });
+
+  testWidgets('the arrow tucks under the heart, keeping a short row short',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      createTestFacility(name: 'CARPLS', categoryDetail: 'Legal'),
+    );
+    final heart = tester.getRect(
+      find.ancestor(
+        of: find.byTooltip(_l10n(tester).cardSave('CARPLS')),
+        matching: find.byType(IconButton),
+      ),
+    );
+    final arrow = tester.getRect(find.byIcon(Icons.expand_more));
+
+    expect(arrow.center.dx, closeTo(heart.center.dx, 1));
+    expect(arrow.top, greaterThan(heart.top));
+    // No taller than the heart, the arrow, and the card's margins: the
+    // arrow is a cue, not a second button.
+    expect(
+      tester.getSize(find.byType(Card)).height,
+      lessThanOrEqualTo(
+        AppSizes.minTouchTarget + AppIconSize.lg + 4 * AppSpacing.xs,
+      ),
+    );
   });
 
   group('hours', () {
@@ -198,20 +432,6 @@ void main() {
     });
   });
 
-  testWidgets('the address is heavier than the preview under it',
-      (tester) async {
-    final facility = createTestFacility(
-      address: '205 N Michigan Ave, Chicago, IL 60601',
-      description: 'Safe, affordable housing.',
-    );
-    await _pumpCard(tester, facility);
-
-    final address = tester.widget<Text>(find.text(facility.address)).style!;
-    final preview = tester.widget<Text>(find.text(facility.description)).style!;
-    expect(address.fontWeight!.value, greaterThan(preview.fontWeight!.value));
-    expect(address.color, isNot(preview.color));
-  });
-
   testWidgets('expanded card puts directions under the name, then hours',
       (tester) async {
     await _pumpCard(tester, createTestFacility(), isExpanded: true);
@@ -314,19 +534,15 @@ void main() {
     expect(find.byType(TagChip), findsNothing);
   });
 
-  testWidgets('the heart and the expand control are full-size and named',
-      (tester) async {
+  testWidgets('the heart is full-size and named', (tester) async {
     await _pumpCard(tester, createTestFacility(name: 'CARPLS'));
-    final l10n = _l10n(tester);
-    for (final tooltip in [l10n.cardSave('CARPLS'), l10n.cardShowDetails]) {
-      final button = find.byTooltip(tooltip);
-      expect(button, findsOneWidget, reason: tooltip);
-      final size = tester.getSize(
-        find.ancestor(of: button, matching: find.byType(IconButton)).first,
-      );
-      expect(size.width, greaterThanOrEqualTo(48), reason: tooltip);
-      expect(size.height, greaterThanOrEqualTo(48), reason: tooltip);
-    }
+    final heart = find.byTooltip(_l10n(tester).cardSave('CARPLS'));
+    expect(heart, findsOneWidget);
+    final size = tester.getSize(
+      find.ancestor(of: heart, matching: find.byType(IconButton)).first,
+    );
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
   });
 
   testWidgets('a saved facility offers to remove it', (tester) async {
@@ -349,25 +565,6 @@ void main() {
     );
     await tester.tap(find.byIcon(Icons.favorite_border));
     expect(toggles, 1);
-  });
-
-  testWidgets('a collapsed row shows the address above the description',
-      (tester) async {
-    // The address used to be reachable only by asking for directions.
-    await _pumpCard(
-      tester,
-      createTestFacility(
-        address: '35 E Wacker Dr, Chicago, IL 60601',
-        description: 'Free legal aid',
-      ),
-    );
-
-    expect(find.text('35 E Wacker Dr, Chicago, IL 60601'), findsOneWidget);
-    expect(find.text('Free legal aid'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.text('35 E Wacker Dr, Chicago, IL 60601')).dy,
-      lessThan(tester.getTopLeft(find.text('Free legal aid')).dy),
-    );
   });
 
   testWidgets('an expanded card keeps the address in its header',

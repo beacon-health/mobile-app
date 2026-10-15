@@ -9,7 +9,9 @@ import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_card.dart';
+import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +43,8 @@ void main() {
     description: 'Food pantry and hot meals, with referrals to housing help.',
     address: '1613 W Washington Blvd, Chicago, IL 60612',
     categoryBroad: FacilityCategories.categoryBroadValues.first,
+    categoryDetail: 'Crisis & Mental Health Support',
+    lastCheckedAt: DateTime(2026, 10, 3),
     website: 'https://example.org',
     phones: const [PhoneContact(number: '3125550100')],
     services: const ['Food pantry', 'Hot meals', 'Housing referrals'],
@@ -202,12 +206,18 @@ void main() {
 
         // Map: the list, a row opened in place, then the facility sheet.
         await openTab(tester, 'Map');
-        // The expand control, not the name: an open row's name can sit below
-        // the fold of the panel.
-        await tester.tap(find.byTooltip('Show details').first);
+        // The row's icon, at its top: the rest of a row can sit below the
+        // fold of the panel at these sizes, and the whole row is the button.
+        final rowIcon = find
+            .descendant(
+              of: find.byType(FacilityListPanel),
+              matching: find.byType(CategoryIcon),
+            )
+            .first;
+        await tester.tap(rowIcon);
         await settle(tester);
         expect(find.text('Directions'), findsOneWidget);
-        await tester.tap(find.byTooltip('Hide details'));
+        await tester.tap(rowIcon);
         await settle(tester);
 
         maps.tapMarker(map, const MarkerId('busy'));

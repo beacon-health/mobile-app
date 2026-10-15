@@ -181,7 +181,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chipWalkIns => 'Sin cita';
 
   @override
-  String get chipFree => 'Gratis';
+  String get chipFree => 'Servicios gratuitos disponibles';
 
   @override
   String get chipTelehealth => 'Telemedicina';
@@ -476,10 +476,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileApplyEligibility => 'Filtrar por lo que puedo presentar';
 
   @override
-  String get profileApplyEligibilityDesc =>
-      'Oculta los lugares que piden algo que no has marcado abajo.';
-
-  @override
   String get profileSignedIn => 'Sesión iniciada';
 
   @override
@@ -494,13 +490,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeCategoryHealthCare => 'Atención médica';
 
   @override
-  String get homeCategoryMentalHealth => 'Salud mental';
+  String get homeCategoryMentalHealth => 'Salud mental y recuperación';
 
   @override
   String get homeCategoryHousing => 'Vivienda y refugio';
 
   @override
-  String get homeCategoryBasicNeeds => 'Necesidades básicas';
+  String get homeCategoryBasicNeeds => 'Alimentos y artículos esenciales';
 
   @override
   String get homeCategoryCommunity => 'Recursos comunitarios';
@@ -832,7 +828,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsMapAsList => 'Abrir el mapa como lista';
 
   @override
-  String get settingsMapAsListDesc => 'Más fácil con lectores de pantalla';
+  String get settingsMapAsListDesc =>
+      'La pestaña Mapa se abre con la lista arriba, para lectores de pantalla';
 
   @override
   String get settingsLargerPins => 'Marcadores más grandes';
@@ -861,4 +858,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardHoursUnknown => 'Sin datos';
+
+  @override
+  String cardPlaceAndCategory(String place, String category) {
+    return '$place • $category';
+  }
+
+  @override
+  String cardLastUpdated(DateTime date) {
+    final intl.DateFormat dateDateFormat =
+        intl.DateFormat('MM/dd/yyyy', localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Última actualización: $dateString';
+  }
+
+  @override
+  String get cardCopyAddress => 'Copiar dirección';
+
+  @override
+  String get cardAddressCopied => 'Dirección copiada';
 }

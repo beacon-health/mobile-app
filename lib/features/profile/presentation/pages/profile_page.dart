@@ -293,7 +293,6 @@ class _ProfilePageState extends State<ProfilePage> {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
           child: SwitchListTile(
             title: Text(l10n.profileApplyEligibility),
-            subtitle: Text(l10n.profileApplyEligibilityDesc),
             secondary: const Icon(Icons.filter_alt_outlined),
             value: state.applyToSearch,
             onChanged: (v) =>

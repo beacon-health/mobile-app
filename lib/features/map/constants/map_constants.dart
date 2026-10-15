@@ -10,6 +10,11 @@ class MapConstants {
   /// facilities are clustered into count bubbles.
   static const double clusterZoomThreshold = 14.0;
 
+  /// Where the "use my location" button lands: close enough that pins are
+  /// no longer clustered, not so close that their names crowd in
+  /// ([detailZoom]).
+  static const double myLocationZoom = clusterZoomThreshold;
+
   static const double searchBarAreaHeight = 160.0;
   static const double panelMinHeight = 80.0;
   static const double panelDefaultHeightRatio = 0.30;

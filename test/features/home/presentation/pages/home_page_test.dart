@@ -12,12 +12,12 @@ import '../../../../helpers/test_facility.dart';
 /// Home inside the real tab shell.
 void main() {
   const groups = [
-    'Health care',
-    'Mental health',
-    'Housing & shelter',
-    'Basic needs',
-    'Community resources',
-    'Specialized services',
+    'Health Care',
+    'Mental Health & Recovery',
+    'Housing & Shelter',
+    'Food & Essentials',
+    'Community Resources',
+    'Specialized Services',
   ];
 
   Future<void> pumpHome(WidgetTester tester, {Size? size}) async {
@@ -63,7 +63,7 @@ void main() {
         );
       }
 
-      await tester.tap(find.text('Mental health'));
+      await tester.tap(find.text('Mental Health & Recovery'));
       await settle(tester);
       expect(selectedTab(tester), NavTab.map);
       expect(find.byType(FacilityListPanel), findsOneWidget);
@@ -116,7 +116,7 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('a facility name gets two lines before it is cut',
+  testWidgets('a facility name is one line, cut with an ellipsis',
       (tester) async {
     await pumpHome(tester);
     RecentFacilitiesService().addFacility(
@@ -130,7 +130,8 @@ void main() {
     final name = tester.widget<Text>(
       find.text('First Baptist Congregational Church of Chicago'),
     );
-    expect(name.maxLines, 2);
+    expect(name.maxLines, 1);
+    expect(name.overflow, TextOverflow.ellipsis);
   });
 
   testWidgets('section titles are sentence case', (tester) async {

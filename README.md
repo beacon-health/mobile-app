@@ -162,7 +162,11 @@ Favorites filter lists every match in the loaded area instead. Selecting a
 facility remembers the camera and deselecting returns to it, unless the user
 moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
-(`MarkerManagementService.groupForZoom`).
+(`MarkerManagementService.groupForZoom`). "Use my location" lands at
+`MapConstants.myLocationZoom`: pins apart, names not yet shown. The filter
+sheet lists categories under Home's six groups
+(`FacilityCategories.quickActionGroups`), named by
+`FacilityCategoryIcons.groupLabel`.
 
 **"What can you provide?" only ever hides what a person can't use.** It
 belongs to an account: the question is asked once, in onboarding after sign-in,
@@ -183,7 +187,15 @@ subscribe to the relevant service in `initState` and re-filter on notify.
 
 **A facility is one card on one surface.** `FacilityCard` is a row of the
 map's list, expanding in place, and the whole of the sheet a tapped pin opens.
-Directions, Call, and Website sit directly under the name.
+Its header is kept short: the name, then "City, ST • kind of place"
+(`category_detail`); in a collapsed row the name is one line, in full once
+the row opens. The whole row shows and hides the details; the arrow at the
+header's bottom-right is only a cue. Directions, Call, and Website sit directly under the
+header, with the street address below them; a tap copies it. In the sheet, a
+band a full touch target tall around the handle takes the swipes, since
+everything beneath it scrolls. "Last updated" closes the details for listings
+the team has checked (`last_checked_at`). Home's Favorites and Recently viewed
+both open the card on the Map; feedback is given from the card.
 
 **Tabs and map overlays are not routes, so Android's back button is handled by
 hand.** `MainNavBar` wraps the shell in a `PopScope`: back first asks
@@ -211,7 +223,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `UserFavoritesService` | Favorites sync, region-independent |
 | `FacilityFeedbackService` | Ratings: read / upsert / delete |
 | `FacilityRequestService` | New-facility requests, corrections, and "permanently closed" reports |
-| `RecentFacilitiesService` | Last 3 viewed facilities, persisted locally |
+| `RecentFacilitiesService` | Last 3 viewed facilities, persisted locally as a short record; Home looks up the full one before opening it on the Map |
 | `MapLauncherService` | Directions chooser + remembered choice. Apple Maps, Google Maps, Waze on iOS; Google Maps, Waze on Android |
 | `ErrorReporter` | `developer.log` in debug, Sentry in release |
 
@@ -250,7 +262,8 @@ Supabase Postgres with PostGIS. The app talks to:
 |---|---|
 | `FCT_Supabase` | Facility master table (geocoded, `geom` + GiST index) |
 | `DM_Supabase_Eligibility` | Per-facility eligibility attributes |
-| `fct_supabase_full` | View joining the two — used for favorites and single-facility lookups by id |
+| `facility_last_checked` | When each listing was last checked (`last_checked_at`); the view and the RPC both return it |
+| `fct_supabase_full` | View joining the facility, eligibility, and last-checked tables — used for favorites, recently viewed, and single-facility lookups by id |
 | `facilities_near(...)` | PostGIS RPC — bounded, distance-sorted proximity search; enforces the state allow-list. Must return the same facility and eligibility columns as the view |
 | `launched_states` | Allow-list of live states (`ALL` = nationwide). Enforced by the RPC and read by the app |
 | `user_favorites`, `user_settings`, `facility_feedback`, `facility_requests` | Per-user data, all protected by owner-only RLS |
@@ -339,7 +352,8 @@ Rules that follow from it:
 - **Anything that moves takes its duration from `AppMotion.of(context, …)`.**
 
 Settings → Accessibility adds two options of Beacon's own (`AccessibilitySettings`):
-opening the Map tab as a list, and larger pins.
+opening the Map tab with its list raised, and larger pins. Both apply as soon
+as they're switched.
 
 ### Localization
 

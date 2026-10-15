@@ -179,7 +179,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chipWalkIns => 'Walk-ins';
 
   @override
-  String get chipFree => 'Free';
+  String get chipFree => 'Free services available';
 
   @override
   String get chipTelehealth => 'Telehealth';
@@ -469,10 +469,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileApplyEligibility => 'Filter by what I can provide';
 
   @override
-  String get profileApplyEligibilityDesc =>
-      'Hides places that ask for something you haven\'t checked below.';
-
-  @override
   String get profileSignedIn => 'Signed in';
 
   @override
@@ -484,22 +480,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSave => 'Save';
 
   @override
-  String get homeCategoryHealthCare => 'Health care';
+  String get homeCategoryHealthCare => 'Health Care';
 
   @override
-  String get homeCategoryMentalHealth => 'Mental health';
+  String get homeCategoryMentalHealth => 'Mental Health & Recovery';
 
   @override
-  String get homeCategoryHousing => 'Housing & shelter';
+  String get homeCategoryHousing => 'Housing & Shelter';
 
   @override
-  String get homeCategoryBasicNeeds => 'Basic needs';
+  String get homeCategoryBasicNeeds => 'Food & Essentials';
 
   @override
-  String get homeCategoryCommunity => 'Community resources';
+  String get homeCategoryCommunity => 'Community Resources';
 
   @override
-  String get homeCategorySpecialized => 'Specialized services';
+  String get homeCategorySpecialized => 'Specialized Services';
 
   @override
   String get commonLinkFailed => 'Could not open that link.';
@@ -822,7 +818,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsMapAsList => 'Open Map as a list';
 
   @override
-  String get settingsMapAsListDesc => 'Easier with screen readers';
+  String get settingsMapAsListDesc =>
+      'The Map tab opens with its list raised, for screen readers';
 
   @override
   String get settingsLargerPins => 'Larger map pins';
@@ -850,4 +847,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cardHoursUnknown => 'Unknown';
+
+  @override
+  String cardPlaceAndCategory(String place, String category) {
+    return '$place • $category';
+  }
+
+  @override
+  String cardLastUpdated(DateTime date) {
+    final intl.DateFormat dateDateFormat =
+        intl.DateFormat('MM/dd/yyyy', localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Last updated: $dateString';
+  }
+
+  @override
+  String get cardCopyAddress => 'Copy address';
+
+  @override
+  String get cardAddressCopied => 'Address copied';
 }

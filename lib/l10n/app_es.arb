@@ -61,7 +61,7 @@
   "cardOpen247": "Abierto 24/7",
   "cardAddressNotAvailable": "La dirección de este centro no está disponible",
   "chipWalkIns": "Sin cita",
-  "chipFree": "Gratis",
+  "chipFree": "Servicios gratuitos disponibles",
   "chipTelehealth": "Telemedicina",
   "chipAccessible": "Accesible",
   "chipSlidingScale": "Tarifa variable",
@@ -165,7 +165,6 @@
   "commonCancel": "Cancelar",
   "navProfile": "Perfil",
   "profileApplyEligibility": "Filtrar por lo que puedo presentar",
-  "profileApplyEligibilityDesc": "Oculta los lugares que piden algo que no has marcado abajo.",
   "profileSignedIn": "Sesión iniciada",
   "profileSignedInThrough": "Sesión iniciada con {provider}",
   "@profileSignedInThrough": {
@@ -177,9 +176,9 @@
   },
   "commonSave": "Guardar",
   "homeCategoryHealthCare": "Atención médica",
-  "homeCategoryMentalHealth": "Salud mental",
+  "homeCategoryMentalHealth": "Salud mental y recuperación",
   "homeCategoryHousing": "Vivienda y refugio",
-  "homeCategoryBasicNeeds": "Necesidades básicas",
+  "homeCategoryBasicNeeds": "Alimentos y artículos esenciales",
   "homeCategoryCommunity": "Recursos comunitarios",
   "homeCategorySpecialized": "Servicios especializados",
   "commonLinkFailed": "No se pudo abrir el enlace.",
@@ -370,7 +369,7 @@
   },
   "settingsAccessibility": "Accesibilidad",
   "settingsMapAsList": "Abrir el mapa como lista",
-  "settingsMapAsListDesc": "Más fácil con lectores de pantalla",
+  "settingsMapAsListDesc": "La pestaña Mapa se abre con la lista arriba, para lectores de pantalla",
   "settingsLargerPins": "Marcadores más grandes",
   "settingsLargerPinsDesc": "Marcadores y nombres más grandes en el mapa",
   "settingsAppearanceSystem": "Igual que el dispositivo",
@@ -388,5 +387,38 @@
   "cardHoursUnknown": "Sin datos",
   "@cardHoursUnknown": {
     "description": "Beside a day whose hours are not known."
+  },
+  "cardPlaceAndCategory": "{place} • {category}",
+  "@cardPlaceAndCategory": {
+    "description": "A facility row's second line: city and state, then the kind of place.",
+    "placeholders": {
+      "place": {
+        "type": "String",
+        "example": "Chicago, IL"
+      },
+      "category": {
+        "type": "String",
+        "example": "Senior Services"
+      }
+    }
+  },
+  "cardLastUpdated": "Última actualización: {date}",
+  "@cardLastUpdated": {
+    "description": "When the team last checked a facility's details. The date is always MM/DD/YYYY.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MM/dd/yyyy",
+        "isCustomDateFormat": "true"
+      }
+    }
+  },
+  "cardCopyAddress": "Copiar dirección",
+  "@cardCopyAddress": {
+    "description": "What tapping a facility's street address does, for screen readers."
+  },
+  "cardAddressCopied": "Dirección copiada",
+  "@cardAddressCopied": {
+    "description": "Shown after a facility's address is copied."
   }
 }

@@ -61,7 +61,7 @@
   "cardOpen247": "24/7 全天开放",
   "cardAddressNotAvailable": "该机构的地址信息不可用",
   "chipWalkIns": "无需预约",
-  "chipFree": "免费",
+  "chipFree": "提供免费服务",
   "chipTelehealth": "远程医疗",
   "chipAccessible": "无障碍",
   "chipSlidingScale": "浮动收费",
@@ -165,7 +165,6 @@
   "commonCancel": "取消",
   "navProfile": "个人资料",
   "profileApplyEligibility": "按我能提供的材料筛选",
-  "profileApplyEligibilityDesc": "隐藏要求提供您未在下方勾选材料的机构。",
   "profileSignedIn": "已登录",
   "profileSignedInThrough": "已通过 {provider} 登录",
   "@profileSignedInThrough": {
@@ -177,9 +176,9 @@
   },
   "commonSave": "保存",
   "homeCategoryHealthCare": "医疗保健",
-  "homeCategoryMentalHealth": "心理健康",
+  "homeCategoryMentalHealth": "心理健康与康复",
   "homeCategoryHousing": "住房与庇护",
-  "homeCategoryBasicNeeds": "基本需求",
+  "homeCategoryBasicNeeds": "食品与必需品",
   "homeCategoryCommunity": "社区资源",
   "homeCategorySpecialized": "专项服务",
   "commonLinkFailed": "无法打开该链接。",
@@ -370,7 +369,7 @@
   },
   "settingsAccessibility": "无障碍",
   "settingsMapAsList": "以列表形式打开地图",
-  "settingsMapAsListDesc": "更适合屏幕阅读器",
+  "settingsMapAsListDesc": "地图页打开时列表展开，便于屏幕阅读器使用",
   "settingsLargerPins": "放大地图标记",
   "settingsLargerPinsDesc": "放大地图上的标记和名称",
   "settingsAppearanceSystem": "跟随设备",
@@ -388,5 +387,38 @@
   "cardHoursUnknown": "未知",
   "@cardHoursUnknown": {
     "description": "Beside a day whose hours are not known."
+  },
+  "cardPlaceAndCategory": "{place} · {category}",
+  "@cardPlaceAndCategory": {
+    "description": "A facility row's second line: city and state, then the kind of place.",
+    "placeholders": {
+      "place": {
+        "type": "String",
+        "example": "Chicago, IL"
+      },
+      "category": {
+        "type": "String",
+        "example": "Senior Services"
+      }
+    }
+  },
+  "cardLastUpdated": "最后更新：{date}",
+  "@cardLastUpdated": {
+    "description": "When the team last checked a facility's details. The date is always MM/DD/YYYY.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MM/dd/yyyy",
+        "isCustomDateFormat": "true"
+      }
+    }
+  },
+  "cardCopyAddress": "复制地址",
+  "@cardCopyAddress": {
+    "description": "What tapping a facility's street address does, for screen readers."
+  },
+  "cardAddressCopied": "地址已复制",
+  "@cardAddressCopied": {
+    "description": "Shown after a facility's address is copied."
   }
 }

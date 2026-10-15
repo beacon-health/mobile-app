@@ -173,7 +173,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chipWalkIns => '无需预约';
 
   @override
-  String get chipFree => '免费';
+  String get chipFree => '提供免费服务';
 
   @override
   String get chipTelehealth => '远程医疗';
@@ -449,9 +449,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileApplyEligibility => '按我能提供的材料筛选';
 
   @override
-  String get profileApplyEligibilityDesc => '隐藏要求提供您未在下方勾选材料的机构。';
-
-  @override
   String get profileSignedIn => '已登录';
 
   @override
@@ -466,13 +463,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCategoryHealthCare => '医疗保健';
 
   @override
-  String get homeCategoryMentalHealth => '心理健康';
+  String get homeCategoryMentalHealth => '心理健康与康复';
 
   @override
   String get homeCategoryHousing => '住房与庇护';
 
   @override
-  String get homeCategoryBasicNeeds => '基本需求';
+  String get homeCategoryBasicNeeds => '食品与必需品';
 
   @override
   String get homeCategoryCommunity => '社区资源';
@@ -791,7 +788,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsMapAsList => '以列表形式打开地图';
 
   @override
-  String get settingsMapAsListDesc => '更适合屏幕阅读器';
+  String get settingsMapAsListDesc => '地图页打开时列表展开，便于屏幕阅读器使用';
 
   @override
   String get settingsLargerPins => '放大地图标记';
@@ -819,4 +816,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cardHoursUnknown => '未知';
+
+  @override
+  String cardPlaceAndCategory(String place, String category) {
+    return '$place · $category';
+  }
+
+  @override
+  String cardLastUpdated(DateTime date) {
+    final intl.DateFormat dateDateFormat =
+        intl.DateFormat('MM/dd/yyyy', localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '最后更新：$dateString';
+  }
+
+  @override
+  String get cardCopyAddress => '复制地址';
+
+  @override
+  String get cardAddressCopied => '地址已复制';
 }

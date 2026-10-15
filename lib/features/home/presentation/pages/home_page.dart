@@ -6,9 +6,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
-import 'package:beacon_app/core/widgets/facility_rating_dialog.dart';
 import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
-import 'package:beacon_app/core/widgets/sign_in_prompt_dialog.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -295,7 +293,7 @@ class _HomePageState extends State<HomePage>
             const SizedBox(height: AppSpacing.xl),
             sectionTitle(l10n.homeRecentlyViewed),
             const SizedBox(height: AppSpacing.md),
-            _buildRecentlyViewedSection(isGuest: isGuest),
+            _buildRecentlyViewedSection(),
             const SizedBox(height: AppSpacing.xl),
             sectionTitle(l10n.homeFavorites),
             const SizedBox(height: AppSpacing.md),
@@ -306,19 +304,6 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
-  /// Localized label for a quick-action group. The group constant itself stays
-  /// canonical English — it's the filter value and the icon/color key — so only
-  /// the display string is translated.
-  String _groupLabel(AppLocalizations l10n, String group) => switch (group) {
-        FacilityCategories.groupHealthCare => l10n.homeCategoryHealthCare,
-        FacilityCategories.groupMentalHealth => l10n.homeCategoryMentalHealth,
-        FacilityCategories.groupHousingShelter => l10n.homeCategoryHousing,
-        FacilityCategories.groupBasicNeeds => l10n.homeCategoryBasicNeeds,
-        FacilityCategories.groupCommunity => l10n.homeCategoryCommunity,
-        FacilityCategories.groupSpecialized => l10n.homeCategorySpecialized,
-        _ => group,
-      };
 
   /// Height of the map preview, and the least a quick-action tile stands.
   static const double _mapPreviewHeight = 120;
@@ -421,7 +406,7 @@ class _HomePageState extends State<HomePage>
       for (final group in FacilityCategories.quickActionGroups)
         _QuickAction(
           icon: MarkerUtils.getIconForCategory(group),
-          label: _groupLabel(l10n, group),
+          label: FacilityCategoryIcons.groupLabel(l10n, group),
           color: MarkerUtils.getColorForCategory(group, brightness: brightness),
           category: group,
         ),
@@ -559,7 +544,7 @@ class _HomePageState extends State<HomePage>
 
   /// "Recently Viewed Facilities". Height is bounded so this never pushes the
   /// Favorites section off-screen.
-  Widget _buildRecentlyViewedSection({required bool isGuest}) {
+  Widget _buildRecentlyViewedSection() {
     return Consumer<RecentFacilitiesService>(
       builder: (context, service, _) {
         final recent = service.recentFacilities;
@@ -580,10 +565,7 @@ class _HomePageState extends State<HomePage>
                 if (i > 0) const Divider(height: 1),
                 _buildFacilityRow(
                   recent[i],
-                  onTap: () => _onRecentFacilityTap(
-                    recent[i],
-                    isGuest: isGuest,
-                  ),
+                  onTap: () => _openRecentFacility(recent[i]),
                 ),
               ],
             ],
@@ -593,8 +575,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// One row of the Recently viewed and Favorites lists. The name gets two
-  /// lines — most facility names don't fit one — and the address one.
+  /// One row of the Recently viewed and Favorites lists: the name and the
+  /// address, a line each, as in the Map's list; the card shows it in full.
   Widget _buildFacilityRow(Facility facility, {required VoidCallback onTap}) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
@@ -609,7 +591,7 @@ class _HomePageState extends State<HomePage>
       title: Text(
         facility.name,
         style: theme.textTheme.titleSmall,
-        maxLines: 2,
+        maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
@@ -623,18 +605,16 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  /// Routes a tap on a recently-viewed facility:
-  ///   - guest → sign-in prompt
-  ///   - signed in → rating dialog
-  void _onRecentFacilityTap(
-    Facility facility, {
-    required bool isGuest,
-  }) {
-    if (isGuest) {
-      showSignInPromptDialog(context);
-      return;
-    }
-    showFacilityRatingDialog(context, facility: facility);
+  /// Opens a recently viewed facility's card on the Map, as Favorites do;
+  /// feedback is given from the card. The device keeps only a short record
+  /// of each (name, address, location), so the full one is found first —
+  /// among what the Map has loaded, else from the database. Offline, the
+  /// short record still opens, with its name and directions.
+  Future<void> _openRecentFacility(Facility recent) async {
+    final full = context.read<FacilityProvider>().getFacilityById(recent.id) ??
+        await _facilityRepository.getFacilityById(recent.id);
+    if (!mounted) return;
+    _navigateToFacility(full ?? recent);
   }
 
   Widget _buildFavoritesSection(AppLocalizations l10n,

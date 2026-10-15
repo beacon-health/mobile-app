@@ -25,6 +25,7 @@ Facility createTestFacility({
   FacilityEligibility? eligibility,
   String? servicesSummary,
   String? otherEligibilitySummary,
+  DateTime? lastCheckedAt,
 }) {
   return Facility(
     id: id,
@@ -43,6 +44,7 @@ Facility createTestFacility({
     website: website,
     phones: phones,
     eligibility: eligibility,
+    lastCheckedAt: lastCheckedAt,
     servicesSummary: servicesSummary,
     otherEligibilitySummary: otherEligibilitySummary,
   );

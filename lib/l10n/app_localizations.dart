@@ -427,7 +427,7 @@ abstract class AppLocalizations {
   /// No description provided for @chipFree.
   ///
   /// In en, this message translates to:
-  /// **'Free'**
+  /// **'Free services available'**
   String get chipFree;
 
   /// No description provided for @chipTelehealth.
@@ -964,12 +964,6 @@ abstract class AppLocalizations {
   /// **'Filter by what I can provide'**
   String get profileApplyEligibility;
 
-  /// No description provided for @profileApplyEligibilityDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Hides places that ask for something you haven\'t checked below.'**
-  String get profileApplyEligibilityDesc;
-
   /// No description provided for @profileSignedIn.
   ///
   /// In en, this message translates to:
@@ -991,37 +985,37 @@ abstract class AppLocalizations {
   /// No description provided for @homeCategoryHealthCare.
   ///
   /// In en, this message translates to:
-  /// **'Health care'**
+  /// **'Health Care'**
   String get homeCategoryHealthCare;
 
   /// No description provided for @homeCategoryMentalHealth.
   ///
   /// In en, this message translates to:
-  /// **'Mental health'**
+  /// **'Mental Health & Recovery'**
   String get homeCategoryMentalHealth;
 
   /// No description provided for @homeCategoryHousing.
   ///
   /// In en, this message translates to:
-  /// **'Housing & shelter'**
+  /// **'Housing & Shelter'**
   String get homeCategoryHousing;
 
   /// No description provided for @homeCategoryBasicNeeds.
   ///
   /// In en, this message translates to:
-  /// **'Basic needs'**
+  /// **'Food & Essentials'**
   String get homeCategoryBasicNeeds;
 
   /// No description provided for @homeCategoryCommunity.
   ///
   /// In en, this message translates to:
-  /// **'Community resources'**
+  /// **'Community Resources'**
   String get homeCategoryCommunity;
 
   /// No description provided for @homeCategorySpecialized.
   ///
   /// In en, this message translates to:
-  /// **'Specialized services'**
+  /// **'Specialized Services'**
   String get homeCategorySpecialized;
 
   /// No description provided for @commonLinkFailed.
@@ -1435,7 +1429,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapAsListDesc.
   ///
   /// In en, this message translates to:
-  /// **'Easier with screen readers'**
+  /// **'The Map tab opens with its list raised, for screen readers'**
   String get settingsMapAsListDesc;
 
   /// No description provided for @settingsLargerPins.
@@ -1491,6 +1485,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown'**
   String get cardHoursUnknown;
+
+  /// A facility row's second line: city and state, then the kind of place.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} • {category}'**
+  String cardPlaceAndCategory(String place, String category);
+
+  /// When the team last checked a facility's details. The date is always MM/DD/YYYY.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: {date}'**
+  String cardLastUpdated(DateTime date);
+
+  /// What tapping a facility's street address does, for screen readers.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy address'**
+  String get cardCopyAddress;
+
+  /// Shown after a facility's address is copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied'**
+  String get cardAddressCopied;
 }
 
 class _AppLocalizationsDelegate

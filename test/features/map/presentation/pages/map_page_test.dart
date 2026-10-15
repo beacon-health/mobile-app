@@ -4,6 +4,7 @@ import 'package:beacon_app/core/services/accessibility_settings.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
+import 'package:beacon_app/core/widgets/drag_handle.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/pages/map_page.dart';
@@ -389,6 +390,20 @@ void main() {
       expect(maps.mapStartingAtZoom(14).camera.target, springfield);
     });
 
+    testWidgets(
+        '"Use my location" lands where pins are apart but still unnamed',
+        (tester) async {
+      // It framed the whole search radius, where pins cluster.
+      await pumpMap(tester, locationPermission: LocationPermission.whileInUse);
+
+      await tester.tap(find.byTooltip('Use my location'));
+      await settle(tester);
+
+      final zoom = map.lastAnimation!.zoom;
+      expect(zoom, greaterThanOrEqualTo(MapConstants.clusterZoomThreshold));
+      expect(zoom, lessThan(MapConstants.detailZoom));
+    });
+
     testWidgets('the blue dot shows only in GPS mode', (tester) async {
       await pumpMap(tester, locationPermission: LocationPermission.whileInUse);
       final homeMap = maps.mapStartingAtZoom(MapConstants.homeCutoutZoom);
@@ -596,6 +611,23 @@ void main() {
   });
 
   group('the facility sheet', () {
+    testWidgets('a swipe on the band around the handle moves the sheet',
+        (tester) async {
+      // Below the band the sheet scrolls, so the band is the only place a
+      // swipe moves it: it was just the handle and a few pixels of padding.
+      await pumpMap(tester);
+      maps.tapMarker(map, const MarkerId('near'));
+      await settle(tester);
+      expect(find.byType(FacilityCard), findsOneWidget);
+
+      final handle = tester.getCenter(find.byType(DragHandle));
+      // Well clear of the handle itself, still in the band.
+      final grip = handle + const Offset(120, 16);
+      await tester.flingFrom(grip, const Offset(0, 300), 1500);
+      await settle(tester);
+      expect(find.byType(FacilityCard), findsNothing);
+    });
+
     testWidgets('a tapped pin opens the same full-width sheet as the list',
         (tester) async {
       // It used to be an inset floating card: a second surface for the same
@@ -638,6 +670,28 @@ void main() {
             .isFullyExpanded,
         isFalse,
       );
+    });
+
+    testWidgets('switching "Open Map as a list" shows at once', (tester) async {
+      // The tab is built at launch, so the switch used to do nothing until
+      // the app restarted.
+      await resetAppState(tester);
+      await saveLocation(home);
+      repository = FakeFacilityRepository(everything);
+      maps = await pumpAppShell(tester, repository: repository);
+      await openTab(tester, 'Map');
+      bool raised() => tester
+          .widget<FacilityListPanel>(find.byType(FacilityListPanel))
+          .isFullyExpanded;
+      expect(raised(), isFalse);
+
+      await AccessibilitySettings().setOpenMapAsList(true);
+      await settle(tester);
+      expect(raised(), isTrue);
+
+      await AccessibilitySettings().setOpenMapAsList(false);
+      await settle(tester);
+      expect(raised(), isFalse);
     });
 
     testWidgets('with motion reduced the camera cuts instead of flying',

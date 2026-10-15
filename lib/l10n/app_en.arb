@@ -61,7 +61,7 @@
   "cardOpen247": "Open 24/7",
   "cardAddressNotAvailable": "Address information not available for this facility",
   "chipWalkIns": "Walk-ins",
-  "chipFree": "Free",
+  "chipFree": "Free services available",
   "chipTelehealth": "Telehealth",
   "chipAccessible": "Accessible",
   "chipSlidingScale": "Sliding scale",
@@ -165,7 +165,6 @@
   "commonCancel": "Cancel",
   "navProfile": "Profile",
   "profileApplyEligibility": "Filter by what I can provide",
-  "profileApplyEligibilityDesc": "Hides places that ask for something you haven't checked below.",
   "profileSignedIn": "Signed in",
   "profileSignedInThrough": "Signed in through {provider}",
   "@profileSignedInThrough": {
@@ -176,12 +175,12 @@
     }
   },
   "commonSave": "Save",
-  "homeCategoryHealthCare": "Health care",
-  "homeCategoryMentalHealth": "Mental health",
-  "homeCategoryHousing": "Housing & shelter",
-  "homeCategoryBasicNeeds": "Basic needs",
-  "homeCategoryCommunity": "Community resources",
-  "homeCategorySpecialized": "Specialized services",
+  "homeCategoryHealthCare": "Health Care",
+  "homeCategoryMentalHealth": "Mental Health & Recovery",
+  "homeCategoryHousing": "Housing & Shelter",
+  "homeCategoryBasicNeeds": "Food & Essentials",
+  "homeCategoryCommunity": "Community Resources",
+  "homeCategorySpecialized": "Specialized Services",
   "commonLinkFailed": "Could not open that link.",
   "onboardingEligibilityTitle": "What can you provide?",
   "onboardingEligibilitySubtitle": "We'll hide places you couldn't use. You can change this anytime in Profile.",
@@ -370,7 +369,7 @@
   },
   "settingsAccessibility": "Accessibility",
   "settingsMapAsList": "Open Map as a list",
-  "settingsMapAsListDesc": "Easier with screen readers",
+  "settingsMapAsListDesc": "The Map tab opens with its list raised, for screen readers",
   "settingsLargerPins": "Larger map pins",
   "settingsLargerPinsDesc": "Bigger pins and names on the map",
   "settingsAppearanceSystem": "Match device",
@@ -388,5 +387,38 @@
   "cardHoursUnknown": "Unknown",
   "@cardHoursUnknown": {
     "description": "Beside a day whose hours are not known."
+  },
+  "cardPlaceAndCategory": "{place} • {category}",
+  "@cardPlaceAndCategory": {
+    "description": "A facility row's second line: city and state, then the kind of place.",
+    "placeholders": {
+      "place": {
+        "type": "String",
+        "example": "Chicago, IL"
+      },
+      "category": {
+        "type": "String",
+        "example": "Senior Services"
+      }
+    }
+  },
+  "cardLastUpdated": "Last updated: {date}",
+  "@cardLastUpdated": {
+    "description": "When the team last checked a facility's details. The date is always MM/DD/YYYY.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MM/dd/yyyy",
+        "isCustomDateFormat": "true"
+      }
+    }
+  },
+  "cardCopyAddress": "Copy address",
+  "@cardCopyAddress": {
+    "description": "What tapping a facility's street address does, for screen readers."
+  },
+  "cardAddressCopied": "Address copied",
+  "@cardAddressCopied": {
+    "description": "Shown after a facility's address is copied."
   }
 }

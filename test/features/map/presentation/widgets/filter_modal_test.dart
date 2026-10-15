@@ -1,3 +1,4 @@
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,51 @@ void main() {
     await tester.pumpAndSettle();
     return () => result;
   }
+
+  testWidgets('categories sit under the six groups Home shows, in its order',
+      (tester) async {
+    // They were one unordered run of buttons.
+    await pumpThemed(
+      tester,
+      const Scaffold(
+        body: FilterModal(
+          selectedCategories: {},
+          availableCategories: FacilityCategories.categoryBroadValues,
+          selectedPreferenceRequirements: {},
+          showFavoritesOnly: false,
+          showOpenNowOnly: false,
+        ),
+      ),
+      size: const Size(400, 3000),
+    );
+
+    // A heading can share its text with a category under it ("Mental
+    // Health"); the heading comes first.
+    double top(String text) => tester.getTopLeft(find.text(text).first).dy;
+    const headings = [
+      'Health Care',
+      'Mental Health & Recovery',
+      'Housing & Shelter',
+      'Food & Essentials',
+      'Community Resources',
+      'Specialized Services',
+    ];
+    for (var i = 1; i < headings.length; i++) {
+      expect(top(headings[i]), greaterThan(top(headings[i - 1])));
+    }
+    // Each category under its own group, above the next one.
+    expect(top('Hospitals'), greaterThan(top('Health Care')));
+    expect(top('Hospitals'), lessThan(top('Mental Health & Recovery')));
+    expect(top('Addiction Recovery'),
+        greaterThan(top('Mental Health & Recovery')));
+    expect(top('Addiction Recovery'), lessThan(top('Housing & Shelter')));
+    expect(top('Veterans'), greaterThan(top('Specialized Services')));
+    // A heading to a screen reader, not another button.
+    expect(
+      tester.getSemantics(find.text('Health Care')),
+      isSemantics(isHeader: true),
+    );
+  });
 
   SwitchListTile switchFor(WidgetTester tester, String label) =>
       tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, label));

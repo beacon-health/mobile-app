@@ -8,6 +8,7 @@ import 'package:beacon_app/features/map/domain/models/eligibility_model.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// One facility: a row in the map's list, which expands in place, and the
 /// whole of the sheet a tapped pin opens. Both are the same card on the same
@@ -61,6 +62,11 @@ class FacilityCard extends StatefulWidget {
     this.showDragHandle = false,
   });
 
+  /// Whether the app says "Address copied" itself. Android (13 and later)
+  /// already shows what was copied, and a second message would repeat it;
+  /// iOS shows nothing.
+  static bool confirmsCopy(TargetPlatform platform) =>
+      platform != TargetPlatform.android;
   @override
   State<FacilityCard> createState() => _FacilityCardState();
 }
@@ -92,33 +98,25 @@ class _FacilityCardState extends State<FacilityCard> {
     super.dispose();
   }
 
-  /// What a collapsed row says about the facility beneath its address, so
-  /// users can judge relevance: the description, else the services summary.
-  /// Empty when expanded — the full text renders in the body.
-  String get _previewText {
-    if (widget.isExpanded) return '';
-    final description = widget.facility.description.trim();
-    if (description.isNotEmpty) return description;
-    return widget.facility.servicesSummary?.trim() ?? '';
-  }
-
-  /// The address, always visible: people who navigate from memory look for it
-  /// before they ask for directions. Falls back to "city, state" for the few
-  /// records without one.
-  String get _addressText {
+  /// "Chicago, IL • Community Health Center": where it is and what kind of
+  /// place, in one short line. The street address waits in the details,
+  /// beside Directions, so the list stays light.
+  String get _placeLine {
     final facility = widget.facility;
-    if (facility.hasAddress) return facility.address;
-    return [facility.city, facility.state]
-        .where((part) => part.isNotEmpty)
+    final place = [facility.city, facility.state]
+        .where((part) => part.trim().isNotEmpty)
         .join(', ');
+    final category = facility.categoryDetail?.trim() ?? '';
+    if (place.isEmpty) return category;
+    if (category.isEmpty) return place;
+    return AppLocalizations.of(context)!.cardPlaceAndCategory(place, category);
   }
 
-  /// Name, address, and (collapsed) a two-line preview. The name runs to two
-  /// lines before it truncates; expanded, it shows in full.
+  /// Name, then where and what kind of place. Collapsed, the name is one
+  /// line ("Public Health Institute Of…"), so every row is the same height;
+  /// expanded, and in the sheet, it shows in full.
   Widget _buildTitleBlock(ThemeData theme) {
-    final address = _addressText;
-    final preview = _previewText;
-    final muted = theme.colorScheme.onSurfaceVariant;
+    final placeLine = _placeLine;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -128,30 +126,20 @@ class _FacilityCardState extends State<FacilityCard> {
           style: widget.showExpandButton
               ? theme.textTheme.titleSmall
               : theme.textTheme.titleMedium,
-          maxLines: widget.isExpanded ? null : 2,
+          maxLines: widget.isExpanded ? null : 1,
           overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
         ),
-        if (address.isNotEmpty) ...[
+        if (placeLine.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xxs),
-          // Heavier and darker than the preview under it: an address is a
-          // fact to act on, the preview a description to skim.
+          // Regular and muted, so it reads as the name's caption rather than
+          // a second title.
           Text(
-            address,
+            placeLine,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-            maxLines: widget.isExpanded ? null : 1,
+            maxLines: widget.isExpanded ? null : 2,
             overflow: widget.isExpanded ? null : TextOverflow.ellipsis,
-          ),
-        ],
-        if (preview.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xxs),
-          Text(
-            preview,
-            style: theme.textTheme.bodySmall?.copyWith(color: muted),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ],
@@ -186,10 +174,17 @@ class _FacilityCardState extends State<FacilityCard> {
     final header = Padding(
       padding: EdgeInsetsDirectional.only(
         start: AppSpacing.md,
-        top: AppSpacing.md,
-        // In a list row, room for the heart and the expand control under it.
+        // Under the handle's band, which already leaves room above.
+        // Under the handle's band, which already leaves room above; a list
+        // row gets more air than the sheet's header.
+        top: widget.showDragHandle
+            ? 0
+            : expandable
+                ? AppSpacing.lg
+                : AppSpacing.md,
+        // In a list row, room for the heart and the arrow under it.
         end: expandable ? AppSizes.minTouchTarget : 0,
-        bottom: AppSpacing.md,
+        bottom: expandable ? AppSpacing.lg : AppSpacing.md,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,29 +212,56 @@ class _FacilityCardState extends State<FacilityCard> {
   }
 
   /// A row of the list: the header, with the details growing beneath it when
-  /// expanded. The heart and the expand control sit over its trailing edge.
+  /// expanded. The whole row shows and hides them, so the arrow is only a cue
+  /// and needs no target of its own. It sits at the header's bottom-right,
+  /// tucked under the heart in a one-line row and below a longer name.
   Widget _buildListRow(ThemeData theme, AppLocalizations l10n, Widget header) {
     return Stack(
       children: [
-        // GestureDetector, not InkWell — an InkWell ripple would fire across
-        // the whole card.
-        GestureDetector(
-          onTap: widget.onToggleExpand,
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // At least two controls tall, so the heart and the expand
-              // control each keep a full-size target.
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: 2 * AppSizes.minTouchTarget,
+        // One button to a screen reader: "Show details" or "Hide details".
+        Semantics(
+          container: true,
+          button: true,
+          expanded: widget.isExpanded,
+          onTapHint:
+              widget.isExpanded ? l10n.cardHideDetails : l10n.cardShowDetails,
+          // GestureDetector, not InkWell — an InkWell ripple would fire
+          // across the whole card.
+          child: GestureDetector(
+            onTap: widget.onToggleExpand,
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Stack(
+                  children: [
+                    // Tall enough for the heart and the arrow under it.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: _arrowTop + AppIconSize.lg + AppSpacing.xs,
+                      ),
+                      child: header,
+                    ),
+                    // Taps fall through to the row.
+                    PositionedDirectional(
+                      bottom: AppSpacing.xs,
+                      end: (AppSizes.minTouchTarget - AppIconSize.lg) / 2,
+                      child: ExcludeSemantics(
+                        child: Icon(
+                          widget.isExpanded
+                              ? Icons.expand_less
+                              : Icons.expand_more,
+                          size: AppIconSize.lg,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: header,
-              ),
-              if (widget.isExpanded) _buildFacilityDetails(widget.facility),
-            ],
+                if (widget.isExpanded) _buildFacilityDetails(widget.facility),
+              ],
+            ),
           ),
         ),
         PositionedDirectional(
@@ -247,23 +269,13 @@ class _FacilityCardState extends State<FacilityCard> {
           end: 0,
           child: _buildFavoriteButton(theme),
         ),
-        PositionedDirectional(
-          // Stays beside the header when the card grows beneath it.
-          top: AppSizes.minTouchTarget,
-          end: 0,
-          child: IconButton(
-            tooltip:
-                widget.isExpanded ? l10n.cardHideDetails : l10n.cardShowDetails,
-            icon: Icon(
-              widget.isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            onPressed: widget.onToggleExpand,
-          ),
-        ),
       ],
     );
   }
+
+  /// Where the arrow starts in a one-line row: just inside the bottom of the
+  /// heart's target, below its icon.
+  static const double _arrowTop = AppSizes.minTouchTarget - AppSpacing.sm;
 
   /// The whole of the facility sheet: a fixed handle, and everything else —
   /// name included — scrolling beneath it, so a long name at a large text
@@ -273,9 +285,12 @@ class _FacilityCardState extends State<FacilityCard> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Everything below scrolls, so the scroll view takes drags there:
+        // this band, a full touch target tall and the sheet's width, is
+        // where a swipe moves the sheet.
         if (widget.showDragHandle)
-          const Padding(
-            padding: EdgeInsets.only(top: AppSpacing.sm),
+          const SizedBox(
+            height: AppSizes.minTouchTarget,
             child: Center(child: DragHandle()),
           ),
         Flexible(
@@ -429,7 +444,14 @@ class _FacilityCardState extends State<FacilityCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildActions(facility),
-          const SizedBox(height: AppSpacing.md),
+          // The address row is a full target tall and centers its text, so
+          // the same small gap above it as the divider leaves below it puts
+          // a one-line address midway between the buttons and the divider.
+          if (facility.hasAddress) ...[
+            const SizedBox(height: AppSpacing.xs),
+            _buildAddressRow(facility.address),
+          ] else
+            const SizedBox(height: AppSpacing.md),
           if (facility.description.isNotEmpty) ...[
             const Divider(height: AppSpacing.md),
             Text(facility.description, style: theme.textTheme.bodyMedium),
@@ -439,6 +461,14 @@ class _FacilityCardState extends State<FacilityCard> {
           ..._buildServicesSection(facility),
           const Divider(height: AppSpacing.md),
           _buildHours(facility),
+          // How fresh all of the above is, where the team has checked it.
+          if (facility.lastCheckedAt case final DateTime checked)
+            Text(
+              l10n.cardLastUpdated(checked.toLocal()),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           if (widget.onRate != null || widget.onSubmitCorrection != null)
             const Divider(height: AppSpacing.md),
           // Full width so these don't wrap awkwardly in a narrow column.
@@ -745,6 +775,50 @@ class _FacilityCardState extends State<FacilityCard> {
       ],
       const SizedBox(height: AppSpacing.xs),
     ];
+  }
+
+  /// The street address, which a tap copies; the copy icon says so. Pasting
+  /// it beats retyping it into a maps app, a message, or a form.
+  Widget _buildAddressRow(String address) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final muted = theme.colorScheme.onSurfaceVariant;
+    return Semantics(
+      onTapHint: l10n.cardCopyAddress,
+      child: InkWell(
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: address));
+          if (!mounted ||
+              !FacilityCard.confirmsCopy(Theme.of(context).platform)) {
+            return;
+          }
+          ScaffoldMessenger.maybeOf(context)
+            ?..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l10n.cardAddressCopied)));
+        },
+        borderRadius: AppRadii.smAll,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppSizes.minTouchTarget,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.place_outlined, size: AppIconSize.sm, color: muted),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(address, style: theme.textTheme.bodyMedium),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(
+                Icons.content_copy_outlined,
+                size: AppIconSize.sm,
+                color: muted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// A labelled line of free text under the chips ("Income limit: …").
