@@ -317,10 +317,10 @@ class MarkerUtils {
         return Icons.volunteer_activism;
       case FacilityCategories.groupHousingShelter:
         return Icons.night_shelter;
-      case FacilityCategories.groupCommunity:
-        return Icons.groups;
-      case FacilityCategories.groupSpecialized:
+      case FacilityCategories.groupFamilyCommunity:
         return Icons.diversity_3;
+      case FacilityCategories.groupMoneyJobsLegal:
+        return Icons.work;
       default:
         return Icons.place;
     }
@@ -346,12 +346,14 @@ class MarkerUtils {
         return AppColors.basicNeeds;
       case FacilityCategories.groupHousingShelter:
         return AppColors.housingShelter;
-      case FacilityCategories.groupCommunity:
-        return AppColors.communityResources;
-      case FacilityCategories.groupSpecialized:
+      // The two newest groups took over the last two colors, whose token
+      // names predate them.
+      case FacilityCategories.groupFamilyCommunity:
         return onDark
             ? AppColors.specializedServicesOnDark
             : AppColors.specializedServices;
+      case FacilityCategories.groupMoneyJobsLegal:
+        return AppColors.communityResources;
       default:
         return onDark
             ? AppColors.categoryFallbackOnDark

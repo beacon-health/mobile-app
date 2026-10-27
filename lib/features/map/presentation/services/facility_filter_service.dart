@@ -2,10 +2,23 @@ import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
+import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/features/map/utils/map_geometry.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class FacilityFilterService {
+  static final AppLocalizations _english =
+      lookupAppLocalizations(const Locale('en'));
+
+  /// A chip's names to search: English, which other fields are in too, and
+  /// the reader's language.
+  static Iterable<String> _tagNames(String tag, AppLocalizations? l10n) => {
+        FacilityCategoryIcons.tagLabel(_english, tag),
+        if (l10n != null) FacilityCategoryIcons.tagLabel(l10n, tag),
+      };
+
   /// Orders [facilities] nearest to [center] first and, when [within] is
   /// given, keeps only those inside it — what the list shows, so it matches
   /// what is on the map. With no [center] (the map hasn't reported its view
@@ -65,7 +78,8 @@ class FacilityFilterService {
 
   /// Filters by search text, categories, and preferences.
   /// [selectedCategories] holds `service_tags` chip keys; Home quick-actions
-  /// expand a group into all of its chips first.
+  /// expand a group into all of its chips first. Search matches a chip's
+  /// name in English and, given [l10n], in the reader's language.
   static List<Facility> filterFacilities(
     List<Facility> allFacilities, {
     required String searchText,
@@ -74,6 +88,7 @@ class FacilityFilterService {
     Map<PreferenceRequirement, bool?>? selectedPreferenceRequirements,
     required bool showFavoritesOnly,
     required bool showOpenNowOnly,
+    AppLocalizations? l10n,
   }) {
     return allFacilities.where((facility) {
       // Client-side over the loaded region pool (≤250 rows), so matching
@@ -87,9 +102,7 @@ class FacilityFilterService {
           ) ||
           (facility.servicesSummary?.toLowerCase().contains(q) ?? false) ||
           facility.serviceTags.any(
-            (t) => (FacilityCategories.serviceTagEnglish[t] ?? '')
-                .toLowerCase()
-                .contains(q),
+            (t) => _tagNames(t, l10n).any((n) => n.toLowerCase().contains(q)),
           ) ||
           (facility.categoryBroad?.toLowerCase().contains(q) ?? false) ||
           (facility.categoryDetail?.toLowerCase().contains(q) ?? false) ||
@@ -147,14 +160,5 @@ class FacilityFilterService {
           matchesRequirements &&
           matchesPreferences;
     }).toList();
-  }
-
-  /// Distinct chip keys present in [facilities]. The Category filter uses
-  /// the fixed `FacilityCategories` list instead, so every option shows
-  /// regardless of region.
-  static Set<String> getAvailableCategories(
-    List<Facility> facilities,
-  ) {
-    return {for (final facility in facilities) ...facility.serviceTags};
   }
 }

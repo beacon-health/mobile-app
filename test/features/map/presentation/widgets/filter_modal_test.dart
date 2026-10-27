@@ -58,11 +58,11 @@ void main() {
     // They were one unordered run of buttons.
     await pumpThemed(
       tester,
-      const Scaffold(
+      Scaffold(
         body: FilterModal(
-          selectedCategories: {},
+          selectedCategories: const {},
           availableCategories: FacilityCategories.serviceTagKeys,
-          selectedPreferenceRequirements: {},
+          selectedPreferenceRequirements: const {},
           showFavoritesOnly: false,
           showOpenNowOnly: false,
         ),
@@ -78,8 +78,8 @@ void main() {
       'Mental Health & Recovery',
       'Housing & Shelter',
       'Food & Essentials',
-      'Community Resources',
-      'Specialized Services',
+      'Family & Community',
+      'Money, Jobs & Legal Help',
     ];
     for (var i = 1; i < headings.length; i++) {
       expect(top(headings[i]), greaterThan(top(headings[i - 1])));
@@ -90,10 +90,15 @@ void main() {
     expect(top('Addiction Treatment'),
         greaterThan(top('Mental Health & Recovery')));
     expect(top('Addiction Treatment'), lessThan(top('Housing & Shelter')));
-    expect(top('Shelter from Abuse'), greaterThan(top('Housing & Shelter')));
+    expect(top('Domestic Violence Shelters'),
+        greaterThan(top('Housing & Shelter')));
     expect(top('Baby Supplies'), greaterThan(top('Food & Essentials')));
-    expect(top('Baby Supplies'), lessThan(top('Community Resources')));
-    expect(top('Veterans'), greaterThan(top('Specialized Services')));
+    expect(top('Baby Supplies'), lessThan(top('Family & Community')));
+    expect(
+        top('Rides & Transportation'), greaterThan(top('Family & Community')));
+    expect(top('Rides & Transportation'),
+        lessThan(top('Money, Jobs & Legal Help')));
+    expect(top('Legal Aid'), greaterThan(top('Money, Jobs & Legal Help')));
     // A heading to a screen reader, not another button.
     expect(
       tester.getSemantics(find.text('Health Care')),

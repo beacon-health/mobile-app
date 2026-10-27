@@ -1001,6 +1001,7 @@ class MapPageState extends State<MapPage>
           isGuest ? const {} : preferenceRequirements,
       showFavoritesOnly: showFavoritesOnly && !isGuest,
       showOpenNowOnly: showOpenNowOnly,
+      l10n: AppLocalizations.of(context),
     );
   }
 

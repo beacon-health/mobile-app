@@ -472,82 +472,82 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCategoryBasicNeeds => '食品与必需品';
 
   @override
-  String get homeCategoryCommunity => '社区资源';
+  String get homeCategoryFamilyCommunity => '家庭与社区';
 
   @override
-  String get homeCategorySpecialized => '专项服务';
+  String get homeCategoryMoneyJobsLegal => '财务、就业与法律';
 
   @override
-  String get chipMedicalClinic => '医疗诊所';
+  String get categoryChipMedicalClinic => '医疗诊所';
 
   @override
-  String get chipHospital => '医院';
+  String get categoryChipHospital => '医院';
 
   @override
-  String get chipDentalVision => '牙科与视力';
+  String get categoryChipDentalVision => '牙科与眼科';
 
   @override
-  String get chipHomeCare => '居家护理与临终关怀';
+  String get categoryChipHomeCare => '居家护理与临终关怀';
 
   @override
-  String get chipMentalHealthCare => '心理健康护理';
+  String get categoryChipMentalHealthCare => '心理健康护理';
 
   @override
-  String get chipCrisis => '危机支持';
+  String get categoryChipCrisis => '危机支持';
 
   @override
-  String get chipAddiction => '成瘾治疗';
+  String get categoryChipAddiction => '成瘾治疗';
 
   @override
-  String get chipRecovery => '康复';
+  String get categoryChipRecovery => '戒瘾康复之家';
 
   @override
-  String get chipEmergencyShelter => '紧急庇护所';
+  String get categoryChipEmergencyShelter => '紧急庇护所';
 
   @override
-  String get chipAbuseShelter => '受虐者庇护所';
+  String get categoryChipAbuseShelter => '家暴庇护所';
 
   @override
-  String get chipTransitionalHousing => '过渡性住房';
+  String get categoryChipTransitionalHousing => '过渡性住房';
 
   @override
-  String get chipAffordableHousing => '经济适用房';
+  String get categoryChipAffordableHousing => '平价住房';
 
   @override
-  String get chipFoodPantry => '食物银行';
+  String get categoryChipFoodPantry => '食物银行';
 
   @override
-  String get chipMeals => '免费餐食';
+  String get categoryChipMeals => '免费餐食';
 
   @override
-  String get chipEssentials => '衣物与家居用品';
+  String get categoryChipEssentials => '衣物与家居用品';
 
   @override
-  String get chipBabySupplies => '婴儿用品';
+  String get categoryChipBabySupplies => '婴儿用品';
 
   @override
-  String get chipLegal => '法律支持';
+  String get categoryChipLegal => '法律援助';
 
   @override
-  String get chipJobsEducation => '就业与教育';
+  String get categoryChipJobsEducation => '就业与教育';
 
   @override
-  String get chipFinancialSupport => '经济援助';
+  String get categoryChipFinancialSupport => '经济援助';
 
   @override
-  String get chipTransportation => '交通';
+  String get categoryChipTransportation => '交通接送';
 
   @override
-  String get chipChildrenFamilies => '儿童与家庭';
+  String get categoryChipChildrenFamilies => '儿童与家庭';
 
   @override
-  String get chipDisability => '残障服务';
+  String get categoryChipDisability => '残障服务';
 
   @override
-  String get chipSeniors => '长者';
+  String get categoryChipSeniors => '长者';
 
   @override
-  String get chipVeterans => '退伍军人';
+  String get categoryChipVeterans => '退伍军人';
 
   @override
   String get commonLinkFailed => '无法打开该链接。';

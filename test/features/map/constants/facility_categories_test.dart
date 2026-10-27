@@ -43,26 +43,22 @@ void main() {
       );
     });
 
-    test('population-specific services map to Specialized Services', () {
+    test(
+        'population-specific and community services map to Family & '
+        'Community', () {
       for (final value in [
         'Children and Families',
         'Seniors',
         'Veterans',
         'Disability Services',
+        'Community Services',
       ]) {
         expect(
           FacilityCategories.groupFor(value),
-          FacilityCategories.groupSpecialized,
-          reason: '$value should group as Specialized Services',
+          FacilityCategories.groupFamilyCommunity,
+          reason: '$value should group as Family & Community',
         );
       }
-    });
-
-    test('community nonprofits map to Community Resources', () {
-      expect(
-        FacilityCategories.groupFor('Community Services'),
-        FacilityCategories.groupCommunity,
-      );
     });
 
     test('only null / unrecognized values fall back to Other', () {
@@ -82,6 +78,24 @@ void main() {
         FacilityCategories.groupFor('baby_supplies'),
         FacilityCategories.groupBasicNeeds,
       );
+      expect(
+        FacilityCategories.groupFor('transportation'),
+        FacilityCategories.groupFamilyCommunity,
+      );
+      expect(
+        FacilityCategories.groupFor('legal'),
+        FacilityCategories.groupMoneyJobsLegal,
+      );
+    });
+
+    test('the broad value list matches the database exactly', () {
+      // An untagged facility's group comes from category_broad, so a new or
+      // renamed value would fall back to the grey pin unnoticed.
+      expect(FacilityCategories.categoryBroadValues, hasLength(13));
+      expect(
+        FacilityCategories.categoryBroadValues,
+        containsAll(['Medical Care', 'Hospitals', 'Housing', 'Veterans']),
+      );
     });
 
     test('every known broad value maps to a real group, never the fallback',
@@ -97,11 +111,11 @@ void main() {
   });
 
   group('FacilityCategories.valuesForGroup', () {
-    test('every group has two to four chips, and every chip one group', () {
+    test('every group has three to five chips, and every chip one group', () {
       final covered = <String>[];
       for (final group in FacilityCategories.quickActionGroups) {
         final chips = FacilityCategories.valuesForGroup(group);
-        expect(chips.length, inInclusiveRange(2, 4), reason: group);
+        expect(chips.length, inInclusiveRange(3, 5), reason: group);
         covered.addAll(chips);
       }
       expect(covered, FacilityCategories.serviceTagKeys);
@@ -109,24 +123,33 @@ void main() {
 
     test('the chip keys match the data pipeline exactly', () {
       // beacon-data service_tags.py KEYS; the database CHECK refuses others.
+      expect(FacilityCategories.serviceTagKeys.toSet(), {
+        'medical_clinic',
+        'hospital',
+        'dental_vision',
+        'home_care',
+        'mental_health_care',
+        'crisis',
+        'addiction',
+        'recovery',
+        'emergency_shelter',
+        'abuse_shelter',
+        'transitional_housing',
+        'affordable_housing',
+        'food_pantry',
+        'meals',
+        'essentials',
+        'baby_supplies',
+        'legal',
+        'jobs_education',
+        'financial_support',
+        'transportation',
+        'children_families',
+        'disability',
+        'seniors',
+        'veterans',
+      });
       expect(FacilityCategories.serviceTagKeys, hasLength(24));
-      expect(
-        FacilityCategories.serviceTagEnglish.keys,
-        FacilityCategories.serviceTagKeys,
-      );
-      expect(
-        FacilityCategories.serviceTagGroups.keys,
-        FacilityCategories.serviceTagKeys,
-      );
-      expect(
-        FacilityCategories.serviceTagKeys,
-        containsAll([
-          'medical_clinic',
-          'abuse_shelter',
-          'baby_supplies',
-          'veterans',
-        ]),
-      );
     });
 
     test('Health Care holds hospitals and clinics, not mental health', () {
@@ -147,9 +170,10 @@ void main() {
     });
 
     test('isGroup accepts group names and rejects chips and broad values', () {
-      expect(FacilityCategories.isGroup(FacilityCategories.groupCommunity),
+      expect(
+          FacilityCategories.isGroup(FacilityCategories.groupFamilyCommunity),
           isTrue);
-      expect(FacilityCategories.isGroup(FacilityCategories.groupSpecialized),
+      expect(FacilityCategories.isGroup(FacilityCategories.groupMoneyJobsLegal),
           isTrue);
       expect(FacilityCategories.isGroup('Medical Care'), isFalse);
       expect(FacilityCategories.isGroup('medical_clinic'), isFalse);

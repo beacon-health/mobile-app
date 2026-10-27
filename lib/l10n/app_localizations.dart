@@ -1006,161 +1006,161 @@ abstract class AppLocalizations {
   /// **'Food & Essentials'**
   String get homeCategoryBasicNeeds;
 
-  /// No description provided for @homeCategoryCommunity.
+  /// No description provided for @homeCategoryFamilyCommunity.
   ///
   /// In en, this message translates to:
-  /// **'Community Resources'**
-  String get homeCategoryCommunity;
+  /// **'Family & Community'**
+  String get homeCategoryFamilyCommunity;
 
-  /// No description provided for @homeCategorySpecialized.
+  /// No description provided for @homeCategoryMoneyJobsLegal.
   ///
   /// In en, this message translates to:
-  /// **'Specialized Services'**
-  String get homeCategorySpecialized;
+  /// **'Money, Jobs & Legal Help'**
+  String get homeCategoryMoneyJobsLegal;
 
   /// Map filter chip for the service tag 'medical_clinic' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Medical Clinics'**
-  String get chipMedicalClinic;
+  String get categoryChipMedicalClinic;
 
   /// Map filter chip for the service tag 'hospital' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Hospitals'**
-  String get chipHospital;
+  String get categoryChipHospital;
 
   /// Map filter chip for the service tag 'dental_vision' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Dental & Vision'**
-  String get chipDentalVision;
+  String get categoryChipDentalVision;
 
   /// Map filter chip for the service tag 'home_care' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Home Care & Hospice'**
-  String get chipHomeCare;
+  String get categoryChipHomeCare;
 
   /// Map filter chip for the service tag 'mental_health_care' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Mental Health Care'**
-  String get chipMentalHealthCare;
+  String get categoryChipMentalHealthCare;
 
   /// Map filter chip for the service tag 'crisis' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Crisis Support'**
-  String get chipCrisis;
+  String get categoryChipCrisis;
 
   /// Map filter chip for the service tag 'addiction' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Addiction Treatment'**
-  String get chipAddiction;
+  String get categoryChipAddiction;
 
   /// Map filter chip for the service tag 'recovery' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Recovery'**
-  String get chipRecovery;
+  /// **'Sober Living'**
+  String get categoryChipRecovery;
 
   /// Map filter chip for the service tag 'emergency_shelter' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Emergency Shelter'**
-  String get chipEmergencyShelter;
+  /// **'Emergency Shelters'**
+  String get categoryChipEmergencyShelter;
 
   /// Map filter chip for the service tag 'abuse_shelter' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Shelter from Abuse'**
-  String get chipAbuseShelter;
+  /// **'Domestic Violence Shelters'**
+  String get categoryChipAbuseShelter;
 
   /// Map filter chip for the service tag 'transitional_housing' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Transitional Housing'**
-  String get chipTransitionalHousing;
+  String get categoryChipTransitionalHousing;
 
   /// Map filter chip for the service tag 'affordable_housing' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Affordable Housing'**
-  String get chipAffordableHousing;
+  String get categoryChipAffordableHousing;
 
   /// Map filter chip for the service tag 'food_pantry' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Food Pantries'**
-  String get chipFoodPantry;
+  String get categoryChipFoodPantry;
 
   /// Map filter chip for the service tag 'meals' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Free Meals'**
-  String get chipMeals;
+  String get categoryChipMeals;
 
   /// Map filter chip for the service tag 'essentials' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Clothing & Household Items'**
-  String get chipEssentials;
+  String get categoryChipEssentials;
 
   /// Map filter chip for the service tag 'baby_supplies' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Baby Supplies'**
-  String get chipBabySupplies;
+  String get categoryChipBabySupplies;
 
   /// Map filter chip for the service tag 'legal' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Legal Support'**
-  String get chipLegal;
+  /// **'Legal Aid'**
+  String get categoryChipLegal;
 
   /// Map filter chip for the service tag 'jobs_education' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Jobs & Education'**
-  String get chipJobsEducation;
+  String get categoryChipJobsEducation;
 
   /// Map filter chip for the service tag 'financial_support' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Financial Support'**
-  String get chipFinancialSupport;
+  /// **'Financial Help'**
+  String get categoryChipFinancialSupport;
 
   /// Map filter chip for the service tag 'transportation' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
-  /// **'Transportation'**
-  String get chipTransportation;
+  /// **'Rides & Transportation'**
+  String get categoryChipTransportation;
 
   /// Map filter chip for the service tag 'children_families' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Children & Families'**
-  String get chipChildrenFamilies;
+  String get categoryChipChildrenFamilies;
 
   /// Map filter chip for the service tag 'disability' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Disability Services'**
-  String get chipDisability;
+  String get categoryChipDisability;
 
   /// Map filter chip for the service tag 'seniors' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Seniors'**
-  String get chipSeniors;
+  String get categoryChipSeniors;
 
   /// Map filter chip for the service tag 'veterans' (beacon-data service_tags.py).
   ///
   /// In en, this message translates to:
   /// **'Veterans'**
-  String get chipVeterans;
+  String get categoryChipVeterans;
 
   /// No description provided for @commonLinkFailed.
   ///

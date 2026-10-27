@@ -282,16 +282,21 @@ insert into public.launched_states (state_code) values ('OK');
 ```
 
 **Categories** come from `service_tags` (24 chip keys, the filter dimension:
-2-4 under each Home group, every chip a facility offers, main one first),
+3-5 under each Home group, every chip a facility offers, main one first),
 `category_broad` (13 values, the group of a facility not tagged yet) and
 `category_detail` (21 values, searchable). `FacilityCategories` is the single
-source of truth: it maps chips and broad values into the 6 Home quick-action
+source of truth: `serviceTagGroups` is the one list of chips, in filter-sheet
+order, and it maps chips and broad values into the 6 Home quick-action
 groups, each with its own marker icon and color, plus a neutral fallback used
-only for unknown/null values. A Home group tap selects all of its chips, which
-also finds untagged facilities of that group. The chip keys must match the
-data pipeline's (`service_tags.py`; a database CHECK refuses others), and the
-labels live in the ARB files. If the taxonomy changes, update that file —
-tests assert the key count and full group coverage, so drift fails CI.
+only for unknown/null values. The keys belong to the data pipeline
+(`service_tags.py`; a database CHECK refuses others), so regrouping or
+renaming chips is an app change: their group in `serviceTagGroups`, their
+names in the ARB files (`categoryChip*`, `homeCategory*`). No chip may share
+its group's name or one part of it (`facility_formatting_test.dart`). A Home
+group tap selects all of its chips, which also finds untagged facilities of
+that group; a single chip finds tagged ones only. Search matches chip names in
+English and in the reader's language. If the taxonomy changes, update that
+file — tests assert the key list and full group coverage, so drift fails CI.
 
 > **Schema and migrations are applied by hand** through the Supabase SQL Editor;
 > there is no migration tool in this repo, and the DDL is not tracked here.

@@ -1,7 +1,7 @@
 /// Category taxonomy for the map.
 ///
 /// Three dimensions, all sourced from `FCT_Supabase`:
-/// * **`service_tags`** (24 keys) drive the map's Category filter: the 2-4
+/// * **`service_tags`** (24 keys) drive the map's Category filter: the 3-5
 ///   chips under each of the six Home groups. A facility carries every chip
 ///   it offers (a health center with a pantry is both a Medical Clinic and a
 ///   Food Pantry); the first is its main one. Keys, not prose: the labels are
@@ -16,7 +16,9 @@
 /// quick-action groups, plus a neutral fallback.
 class FacilityCategories {
   /// The 13 distinct `category_broad` values. A facility may have a null
-  /// value — it simply won't match any group.
+  /// value — it simply won't match any group. None of them is money, work or
+  /// legal help, so an untagged facility never lands in
+  /// [groupMoneyJobsLegal].
   static const List<String> categoryBroadValues = [
     'Addiction Recovery',
     'Basic Needs',
@@ -34,20 +36,22 @@ class FacilityCategories {
   ];
 
   // The six consolidated groups that drive marker icons/colors and the Home
-  // quick-action grid, plus a neutral fallback.
+  // quick-action grid, plus a neutral fallback. These strings are keys — the
+  // filter value and the icon/color key — not what anyone reads: the names on
+  // screen come from `FacilityCategoryIcons.groupLabel`.
   static const String groupHealthCare = 'Health Care';
   static const String groupMentalHealth = 'Mental Health';
   static const String groupBasicNeeds = 'Basic Needs';
   static const String groupHousingShelter = 'Housing & Shelter';
-  static const String groupCommunity = 'Community Resources';
-  static const String groupSpecialized = 'Specialized Services';
+  static const String groupFamilyCommunity = 'Family & Community';
+  static const String groupMoneyJobsLegal = 'Money, Jobs & Legal Help';
 
   /// Fallback for facilities whose category is null or unrecognized.
   ///
   /// Every known value maps to one of the six groups above, so this only ever
   /// applies to unknown data — it is **not** a quick-action button. Keeping it
-  /// separate from [groupCommunity] means a grey pin unambiguously reads as
-  /// "uncategorized" rather than "community nonprofit".
+  /// separate from [groupFamilyCommunity] means a grey pin unambiguously reads
+  /// as "uncategorized" rather than "community nonprofit".
   static const String groupOther = 'Other';
 
   /// The six quick-action groups, in Home grid order (3 columns × 2 rows).
@@ -56,13 +60,15 @@ class FacilityCategories {
     groupMentalHealth,
     groupHousingShelter,
     groupBasicNeeds,
-    groupCommunity,
-    groupSpecialized,
+    groupFamilyCommunity,
+    groupMoneyJobsLegal,
   ];
 
   /// The `service_tags` keys and the group each sits under, in filter-sheet
-  /// order. Within a group the chips split one dimension, so they don't
-  /// overlap.
+  /// order — the one list of chips. Grouped by what someone comes looking
+  /// for: rides sit with the families, seniors, veterans and people with
+  /// disabilities most of those programs serve, and money, work and legal
+  /// help share a group of their own.
   static const Map<String, String> serviceTagGroups = {
     'medical_clinic': groupHealthCare,
     'hospital': groupHealthCare,
@@ -80,74 +86,19 @@ class FacilityCategories {
     'meals': groupBasicNeeds,
     'essentials': groupBasicNeeds,
     'baby_supplies': groupBasicNeeds,
-    'legal': groupCommunity,
-    'jobs_education': groupCommunity,
-    'financial_support': groupCommunity,
-    'transportation': groupCommunity,
-    'children_families': groupSpecialized,
-    'disability': groupSpecialized,
-    'seniors': groupSpecialized,
-    'veterans': groupSpecialized,
+    'children_families': groupFamilyCommunity,
+    'seniors': groupFamilyCommunity,
+    'disability': groupFamilyCommunity,
+    'veterans': groupFamilyCommunity,
+    'transportation': groupFamilyCommunity,
+    'financial_support': groupMoneyJobsLegal,
+    'jobs_education': groupMoneyJobsLegal,
+    'legal': groupMoneyJobsLegal,
   };
 
   /// The 24 chip keys, in filter-sheet order: the Category filter's options.
-  /// Const so widgets can take it in a const constructor; tests pin that it
-  /// lists exactly [serviceTagGroups]'s keys, in the same order.
-  static const List<String> serviceTagKeys = [
-    'medical_clinic',
-    'hospital',
-    'dental_vision',
-    'home_care',
-    'mental_health_care',
-    'crisis',
-    'addiction',
-    'recovery',
-    'emergency_shelter',
-    'abuse_shelter',
-    'transitional_housing',
-    'affordable_housing',
-    'food_pantry',
-    'meals',
-    'essentials',
-    'baby_supplies',
-    'legal',
-    'jobs_education',
-    'financial_support',
-    'transportation',
-    'children_families',
-    'disability',
-    'seniors',
-    'veterans',
-  ];
-
-  /// Each chip's English label, for search (screens show the localized label
-  /// from the ARB files).
-  static const Map<String, String> serviceTagEnglish = {
-    'medical_clinic': 'Medical Clinics',
-    'hospital': 'Hospitals',
-    'dental_vision': 'Dental & Vision',
-    'home_care': 'Home Care & Hospice',
-    'mental_health_care': 'Mental Health Care',
-    'crisis': 'Crisis Support',
-    'addiction': 'Addiction Treatment',
-    'recovery': 'Recovery',
-    'emergency_shelter': 'Emergency Shelter',
-    'abuse_shelter': 'Shelter from Abuse',
-    'transitional_housing': 'Transitional Housing',
-    'affordable_housing': 'Affordable Housing',
-    'food_pantry': 'Food Pantries',
-    'meals': 'Free Meals',
-    'essentials': 'Clothing & Household Items',
-    'baby_supplies': 'Baby Supplies',
-    'legal': 'Legal Support',
-    'jobs_education': 'Jobs & Education',
-    'financial_support': 'Financial Support',
-    'transportation': 'Transportation',
-    'children_families': 'Children & Families',
-    'disability': 'Disability Services',
-    'seniors': 'Seniors',
-    'veterans': 'Veterans',
-  };
+  static final List<String> serviceTagKeys =
+      List.unmodifiable(serviceTagGroups.keys);
 
   static bool isServiceTag(String value) => serviceTagGroups.containsKey(value);
 
@@ -170,12 +121,11 @@ class FacilityCategories {
       case 'Basic Needs':
         return groupBasicNeeds;
       case 'Community Services':
-        return groupCommunity;
       case 'Children and Families':
       case 'Seniors':
       case 'Veterans':
       case 'Disability Services':
-        return groupSpecialized;
+        return groupFamilyCommunity;
       default:
         return groupOther;
     }

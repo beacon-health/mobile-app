@@ -3,6 +3,8 @@ import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/filter_constants.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:beacon_app/features/map/presentation/services/facility_filter_service.dart';
+import 'package:beacon_app/l10n/app_localizations.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -89,6 +91,24 @@ void main() {
       ).toSet();
       expect(ids({'emergency_shelter'}), isEmpty);
       expect(ids(housing), ['3']);
+    });
+
+    test("search matches a chip name in the reader's language too", () {
+      List<String> ids(String query, {AppLocalizations? l10n}) =>
+          FacilityFilterService.filterFacilities(
+            facilities,
+            searchText: query,
+            selectedCategories: {},
+            showFavoritesOnly: false,
+            showOpenNowOnly: false,
+            l10n: l10n,
+          ).map((f) => f.id).toList();
+
+      final spanish = lookupAppLocalizations(const Locale('es'));
+      expect(ids('despensas'), isEmpty);
+      expect(ids('despensas', l10n: spanish), ['2']);
+      // English still matches, as the other fields are in English.
+      expect(ids('food pantries', l10n: spanish), ['2']);
     });
 
     test('search matches a chip name', () {
@@ -396,21 +416,6 @@ void main() {
       final output = FacilityFilterService.nearestFirst(input, center: center);
       expect(ids(input), ['distant', 'close']);
       expect(identical(input, output), isFalse);
-    });
-  });
-
-  group('FacilityFilterService.getAvailableCategories', () {
-    test('returns the unique chips present', () {
-      final facilities = [
-        createTestFacility(serviceTags: const ['medical_clinic']),
-        createTestFacility(
-          serviceTags: const ['medical_clinic', 'dental_vision'],
-        ),
-        createTestFacility(categoryBroad: 'Addiction Recovery'),
-      ];
-      final categories =
-          FacilityFilterService.getAvailableCategories(facilities);
-      expect(categories, {'medical_clinic', 'dental_vision'});
     });
   });
 }
