@@ -521,8 +521,10 @@ Required GitHub secrets:
 ## Releasing
 
 1. Bump `version` in `pubspec.yaml`.
-2. Merge the release PRs in one sitting; the last merge's builds land on
-   TestFlight and Play's internal track.
+2. Merge the release's PRs into a `release/<version>` branch (`git merge
+   --no-ff`, one merge per PR), let CI run on the combination, and merge
+   that PR into `main` with a **merge commit**, so each PR shows as merged.
+   One push to `main` means one TestFlight and one Play build.
 3. **Smoke-test the store-installed builds** before promoting them. Play
    re-signs with its own key and TestFlight builds use the release SDK, so
    these only show up there: sign in, check that map tiles load, open

@@ -22,6 +22,7 @@ commits, PR text, and docs.
 
 - **Never commit to `main`** (a local `pre-push` hook blocks it). Branch as
   `feat/`, `fix/`, `chore/`, or `docs/`, push, and open a PR with `gh pr create`.
+  A release gathers its PRs on `release/<version>` (README → Releasing).
 - Commit style follows history: `feat: …`, `fix: …`, `chore: …`. Push as
   **Rohan-50**; never commit as `beacon-health` (the org account). Never
   force-push a shared branch.
