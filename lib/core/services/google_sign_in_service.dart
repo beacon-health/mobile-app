@@ -1,25 +1,32 @@
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/sign_in_result.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Native Sign in with Google (Android): Credential Manager shows the system
-/// account picker and returns a Google ID token, which is handed to Supabase
-/// via [GoTrueClient.signInWithIdToken] — the same shape as
-/// `AppleSignInService` on iOS, with no browser redirect.
+/// Native Sign in with Google: Credential Manager's account picker on
+/// Android, Google's sign-in sheet on iOS. Either returns a Google ID token,
+/// which is handed to Supabase via [GoTrueClient.signInWithIdToken] — the same
+/// shape as `AppleSignInService`.
 ///
 /// Configuration lives outside the code:
-/// - `GOOGLE_WEB_CLIENT_ID` dart-define: the **Web** OAuth client ID (not the
-///   Android one). It must also be listed first under Client IDs on the
-///   Supabase Google provider.
+/// - `GOOGLE_WEB_CLIENT_ID` dart-define: the **Web** OAuth client ID, passed
+///   as the server client ID on both platforms. It must also be listed first
+///   under Client IDs on the Supabase Google provider.
 /// - An **Android** OAuth client in Google Cloud for `org.beaconhealth.app`
 ///   carrying every signing SHA-1 (debug, upload, Play App Signing). Its ID is
 ///   never referenced in code — Credential Manager matches it by package name
 ///   and signature.
+/// - An **iOS** OAuth client for the same bundle ID. Its ID is the
+///   `GOOGLE_IOS_CLIENT_ID` build setting (from `ios/Flutter/Secrets.xcconfig`),
+///   which Info.plist turns into `GIDClientID` and the reversed-ID URL scheme
+///   the sheet returns through. It is also listed under Client IDs on
+///   Supabase.
 ///
-/// No nonce is sent, matching Supabase's Flutter guide: google_sign_in 7.x
-/// fixes the nonce at `initialize`, which may run only once per process, so a
-/// fresh nonce per attempt isn't possible.
+/// No nonce is sent: google_sign_in 7.x fixes the nonce at `initialize`, which
+/// may run only once per process, so a fresh nonce per attempt isn't
+/// possible. Google's iOS SDK puts a nonce of its own in every ID token, so
+/// the Supabase Google provider has "Skip nonce check" on.
 class GoogleSignInService {
   GoogleSignInService._();
 
@@ -28,12 +35,12 @@ class GoogleSignInService {
   static Future<void>? _initialization;
 
   /// Shows the Google account picker and, on success, completes the Supabase
-  /// session via `signInWithIdToken`. Safe to call only on Android.
+  /// session via `signInWithIdToken`.
   static Future<SignInResult> signIn() async {
     if (_webClientId.isEmpty) {
       // A build-configuration mistake, not something a user can act on — and
       // this layer has no BuildContext to localize with. Report the specifics
-      // and let NativeSignInButton show the localized authSignInError.
+      // and let NativeSignInButtons show the localized authSignInError.
       ErrorReporter.instance.report(
         StateError('GOOGLE_WEB_CLIENT_ID dart-define is missing'),
         StackTrace.current,
@@ -62,7 +69,8 @@ class GoogleSignInService {
 
       return const SignInResult(SignInOutcome.success);
     } on GoogleSignInException catch (e, stack) {
-      // Credential Manager reports configuration failures as `canceled`, the
+      // On Android, Credential Manager reports configuration failures as
+      // `canceled`, the
       // same code a user gets for dismissing the sheet. Four real failures
       // during Android bring-up — a missing client ID, a Play-less emulator
       // image, device check-in disabled, and an unregistered signing key
@@ -79,6 +87,9 @@ class GoogleSignInService {
       //     something is actually wrong. This is a heuristic, which is why (1)
       //     is the guarantee and this is the improvement.
       if (e.code == GoogleSignInExceptionCode.canceled) {
+        if (!cancelMayHideFailure(defaultTargetPlatform)) {
+          return const SignInResult(SignInOutcome.cancelled);
+        }
         final detail = e.description;
         ErrorReporter.instance.report(
           e,
@@ -115,6 +126,14 @@ class GoogleSignInService {
       return SignInResult(SignInOutcome.failed, errorMessage: e.toString());
     }
   }
+
+  /// Whether a `canceled` result on [platform] may be a failure in disguise.
+  /// Android's Credential Manager gives configuration problems the same code
+  /// as a dismissed sheet. Google's iOS sheet reports them as errors of their
+  /// own, so there a cancel is only the person changing their mind — a
+  /// choice, not a bug, and not reported.
+  static bool cancelMayHideFailure(TargetPlatform platform) =>
+      platform == TargetPlatform.android;
 
   /// google_sign_in 7.x requires exactly one awaited `initialize` per process
   /// before any other call. Cache it so repeat taps share a single call, and

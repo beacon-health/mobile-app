@@ -62,7 +62,7 @@ flutter test
 | File | Holds |
 |---|---|
 | `config/dart_defines.json` | Supabase URL + anon key, Sentry DSN, Google Web client ID |
-| `ios/Flutter/Secrets.xcconfig` | Google Maps iOS key |
+| `ios/Flutter/Secrets.xcconfig` | Google Maps iOS key, Google iOS OAuth client ID |
 | `sentry.properties` | Sentry auth token |
 | `android/local.properties` | Google Maps Android key |
 | `android/key.properties` | Upload keystore path + passwords |
@@ -97,8 +97,9 @@ commands, or make text edits with the file tools instead of the shell.
 - `FacilityCategories` is the single source of truth for the taxonomy,
   `FacilityFilterService.eligibilityGates` for what the "what can you provide"
   answers hide, and `EligibilityChecklist` for how the question is worded.
-- One sign-in provider per platform: the rule lives only in
-  `nativeSignInProviderFor`, and every sign-in surface uses `NativeSignInButton`.
+- Which sign-in providers a platform offers (Apple then Google on iOS,
+  Google on Android) lives only in `nativeSignInProvidersFor`, and every
+  sign-in surface uses `NativeSignInButtons`.
 - Anything else that differs by platform goes in a function that takes the
   platform (as `MapLauncherService.appsFor` does) so both sides are tested. If
   it relies on a native declaration (`<queries>`, `Info.plist`), add the pair

@@ -464,7 +464,8 @@ void main() {
       });
     }
 
-    // The one intentionally platform-specific surface: Apple on iOS.
+    // The one intentionally platform-specific surface: Apple above Google on
+    // iOS.
     testWidgets(
       'screen login on iOS ($suffix)',
       (tester) async {

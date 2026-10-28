@@ -38,9 +38,13 @@ jobs:
         run: flutter pub get
 
       - name: Create Secrets.xcconfig
+        # GOOGLE_IOS_CLIENT_ID becomes GIDClientID and Sign in with Google's
+        # URL scheme in Info.plist; without it, tapping the button fails.
         run: |
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" \
             > ios/Flutter/Secrets.xcconfig
+          echo "GOOGLE_IOS_CLIENT_ID=${{ secrets.GOOGLE_IOS_CLIENT_ID }}" \
+            >> ios/Flutter/Secrets.xcconfig
 
       - name: Build iOS
         # Build number = a monotonic, unique value so TestFlight never rejects
@@ -52,7 +56,8 @@ jobs:
             --build-number=$(( 1000 + ${{ github.run_number }} )) \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}
 
       # Symbolicates release crashes. `secrets` isn't readable from a step-level
       # `if`, hence the env hop; skipped entirely when the token is absent.

@@ -6,7 +6,7 @@ import 'package:beacon_app/core/services/recent_facilities_service.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/constants/map_constants.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
@@ -649,7 +649,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Builder(
-                  builder: (innerContext) => NativeSignInButton(
+                  builder: (innerContext) => NativeSignInButtons(
                     onFailure: (msg) {
                       if (!innerContext.mounted) return;
                       ScaffoldMessenger.of(innerContext).showSnackBar(

@@ -101,7 +101,7 @@ void main() {
             await pumpPage(tester, page);
             expect(tester.takeException(), isNull, reason: '$page');
           }
-        });
+        }, variant: shippingPlatforms);
 
         testWidgets('Settings fits ($language)', (tester) async {
           await resetAppState(tester);
