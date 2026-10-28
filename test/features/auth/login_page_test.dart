@@ -1,6 +1,6 @@
 import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +21,16 @@ void main() {
     'offers the platform sign-in, then guest, in that order',
     (tester) async {
       await pumpThemed(tester, const LoginPage());
-      final provider =
-          defaultTargetPlatform == TargetPlatform.iOS ? 'Apple' : 'Google';
+      final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
 
-      expect(find.byType(NativeSignInButton), findsOneWidget);
-      expect(find.text('Continue with $provider'), findsOneWidget);
+      expect(find.byType(NativeSignInButtons), findsOneWidget);
+      expect(find.text('Continue with Google'), findsOneWidget);
       expect(
-        top(tester, find.byType(NativeSignInButton)),
+        find.text('Continue with Apple'),
+        isIOS ? findsOneWidget : findsNothing,
+      );
+      expect(
+        top(tester, find.byType(NativeSignInButtons)),
         lessThan(top(tester, find.text('Continue as guest'))),
       );
       // The quieter choice: outlined, not a second filled button.

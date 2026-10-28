@@ -1,6 +1,6 @@
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/guest_mode_service.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +37,7 @@ void main() {
 
       expect(find.text('Pat Example'), findsOneWidget);
       expect(find.text('pat@example.org'), findsOneWidget);
-      expect(find.byType(NativeSignInButton), findsNothing);
+      expect(find.byType(NativeSignInButtons), findsNothing);
     });
 
     testWidgets('has a Sign out button, with a confirmation', (tester) async {
@@ -126,7 +126,7 @@ void main() {
         (tester) async {
       await pumpProfile(tester, signedIn: false);
 
-      expect(find.byType(NativeSignInButton), findsOneWidget);
+      expect(find.byType(NativeSignInButtons), findsOneWidget);
       expect(find.text('Sign out'), findsNothing);
       expect(find.text('Delete account'), findsNothing);
     });

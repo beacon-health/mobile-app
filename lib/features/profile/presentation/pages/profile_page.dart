@@ -8,7 +8,7 @@ import 'package:beacon_app/core/services/local_user_data.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/apple_mark.dart';
 import 'package:beacon_app/core/widgets/eligibility_checklist.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/core/widgets/section_header.dart';
 import 'package:beacon_app/features/auth/presentation/pages/login_page.dart';
 import 'package:beacon_app/features/settings/presentation/pages/my_ratings_page.dart';
@@ -98,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Builder(
-                  builder: (innerContext) => NativeSignInButton(
+                  builder: (innerContext) => NativeSignInButtons(
                     onFailure: (msg) {
                       if (!innerContext.mounted) return;
                       ScaffoldMessenger.of(innerContext).showSnackBar(

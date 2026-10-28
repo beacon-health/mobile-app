@@ -1,5 +1,5 @@
 import 'package:beacon_app/core/theme/theme.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -74,7 +74,7 @@ class _SignInPromptDialog extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Builder(
-                builder: (innerContext) => NativeSignInButton(
+                builder: (innerContext) => NativeSignInButtons(
                   onFailure: (msg) {
                     if (!innerContext.mounted) return;
                     ScaffoldMessenger.of(innerContext).showSnackBar(

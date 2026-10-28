@@ -14,7 +14,7 @@ new state goes live with a single SQL `insert` and no app release.
 | **Platform** | iOS (App Store) and Android (Google Play) |
 | **Flutter / Dart** | 3.47.0 stable / 3.13.0 (SDK constraint `^3.6.0`) |
 | **Android toolchain** | Gradle 8.14.5 · AGP 8.11.1 · Kotlin 2.2.20 |
-| **Backend** | Supabase — Postgres + PostGIS, RLS, native Sign in with Apple (iOS) / Google (Android) |
+| **Backend** | Supabase — Postgres + PostGIS, RLS, native Sign in with Apple and Google (iOS) / Google (Android) |
 | **State management** | `provider` + `ChangeNotifier` singletons |
 | **Maps** | `google_maps_flutter` (Maps SDK for iOS and for Android — separate keys) |
 | **Languages** | English, Spanish, Chinese |
@@ -53,13 +53,17 @@ cd mobile-app
 flutter pub get
 ```
 
-**1. Add the Google Maps keys** (gitignored — never commit them). iOS and
-Android each need their own platform-restricted key:
+**1. Add the Google keys** (gitignored — never commit them). iOS and Android
+each need their own platform-restricted Maps key, and iOS also needs the iOS
+OAuth client ID for Sign in with Google (see "Key services"):
 
 ```bash
 echo "GOOGLE_MAPS_API_KEY=<your-ios-maps-key>" > ios/Flutter/Secrets.xcconfig
+echo "GOOGLE_IOS_CLIENT_ID=<your-ios-oauth-client-id>" >> ios/Flutter/Secrets.xcconfig
 echo "GOOGLE_MAPS_API_KEY=<your-android-maps-key>" >> android/local.properties
 ```
+
+Without `GOOGLE_IOS_CLIENT_ID`, "Continue with Google" fails on iOS.
 
 **2. Install the iOS pods:**
 
@@ -84,7 +88,7 @@ events.
 To avoid retyping the defines, put them in a JSON file and use
 `--dart-define-from-file=config/dart_defines.json` (that path is gitignored). Copy
 `config/dart_defines.json.example` for the full key list — `make run` and the VS Code
-launch configs read that file. Android sign-in additionally needs
+launch configs read that file. Sign in with Google additionally needs
 `GOOGLE_WEB_CLIENT_ID` (see "Key services").
 
 > Always open **`ios/Runner.xcworkspace`** in Xcode, never `Runner.xcodeproj`.
@@ -123,8 +127,8 @@ tool/                          Repo scripts: golden adoption, Claude Design bund
 
 ### Architecture at a glance
 
-**Entry flow:** `AuthGate` → `LoginPage` (a language picker, then Apple on
-iOS, Google on Android, or guest) → `LocationChoicePage` (GPS, or a ZIP on
+**Entry flow:** `AuthGate` → `LoginPage` (a language picker, then Apple and
+Google on iOS, Google on Android, or guest) → `LocationChoicePage` (GPS, or a ZIP on
 `ZipEntryPage`) → `EligibilityOnboardingPage` (signed in only; a guest skips
 it) → `MainNavBar`. The steps after
 sign-in share `OnboardingScaffold`, which draws the step count and the back
@@ -215,7 +219,7 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 | `GuestModeService` | Signed-in vs guest, and the current user, from the Supabase session |
 | `CoverageService` | Which states are live, from `launched_states`; drives the ZIP gate and coverage notice |
 | `AppleSignInService` | Native Sign in with Apple (iOS) → `signInWithIdToken` |
-| `GoogleSignInService` | Native Sign in with Google (Android, Credential Manager) → `signInWithIdToken` |
+| `GoogleSignInService` | Native Sign in with Google (Android: Credential Manager; iOS: Google's sign-in sheet) → `signInWithIdToken` |
 | `ZipCodeService` | ZIP ↔ coordinates (covered ZIPs only), GPS toggle, onboarding flag |
 | `EligibilityPreferencesService` | What the person can provide (income, address, insurance, referral, Medicaid) and whether it filters the map; account-only: guests aren't asked and are never filtered by it |
 | `AccessibilitySettings` | Beacon's own accessibility options (open Map as a list, larger pins); device-only |
@@ -231,21 +235,32 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 calls `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
 Report bugs, not user choices: expected outcomes such as a declined location
 prompt return a status instead of reaching Sentry. The deliberate exception is
-`GoogleSignInService`, which reports every Credential Manager `canceled`
-because configuration failures arrive with that same code.
+`GoogleSignInService`, which on Android reports every Credential Manager
+`canceled` because configuration failures arrive with that same code
+(`GoogleSignInService.cancelMayHideFailure`).
 
-**One sign-in provider per platform:** Sign in with Apple on iOS, Sign in with
-Google on Android — never both. `nativeSignInProviderFor` is the only place the
-rule lives (unit-tested), and every sign-in surface uses `NativeSignInButton`.
+**Sign-in providers by platform:** Sign in with Apple, then Sign in with
+Google on iOS (Apple first, the option the App Store asks to see beside any
+other); Sign in with Google alone on Android. `nativeSignInProvidersFor` is the
+only place the rule lives (unit-tested), and every sign-in surface uses
+`NativeSignInButtons`. Supabase links an Apple and a Google sign-in with the
+same verified email into one account; someone who chose Apple's "Hide My
+Email" gets a second account if they later use Google.
+
 Google needs the **Web** OAuth client ID as the `GOOGLE_WEB_CLIENT_ID`
-dart-define (also listed first under Client IDs on the Supabase Google
-provider), plus an **Android** OAuth client in Google Cloud for
-`org.beaconhealth.app` for every key that signs a build people run: debug,
-upload, and Play's app-signing key. The Android Maps key restriction needs the
-same SHA-1s.
+dart-define on both platforms, listed first under Client IDs on the Supabase
+Google provider. Android also needs an **Android** OAuth client in Google
+Cloud for `org.beaconhealth.app` for every key that signs a build people run:
+debug, upload, and Play's app-signing key; the Android Maps key restriction
+needs the same SHA-1s. iOS needs an **iOS** OAuth client for the same bundle
+ID: its ID is `GOOGLE_IOS_CLIENT_ID` in `ios/Flutter/Secrets.xcconfig`, which
+`Info.plist` turns into `GIDClientID` and the reversed-ID URL scheme Google's
+sheet returns through. It is also listed under Client IDs on Supabase, and
+the provider's "Skip nonce check" is on, since Google's iOS SDK adds a nonce
+of its own to every ID token.
 
 **Platform differences live in one function each** and take the platform as an
-argument so both can be tested: `nativeSignInProviderFor` for sign-in,
+argument so both can be tested: `nativeSignInProvidersFor` for sign-in,
 `MapLauncherService.appsFor` / `probeUri` / `directionsUri` for map apps. A map
 app's URL scheme must also be declared natively — `<queries>` in
 `AndroidManifest.xml`, `LSApplicationQueriesSchemes` in `Info.plist` — or the OS
@@ -485,8 +500,9 @@ Required GitHub secrets:
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY` | both release workflows |
 | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | both (symbol upload is skipped when the token is absent) |
-| `GOOGLE_MAPS_API_KEY` | iOS |
-| `GOOGLE_MAPS_API_KEY_ANDROID`, `GOOGLE_WEB_CLIENT_ID` | Android |
+| `GOOGLE_WEB_CLIENT_ID` | both (Sign in with Google) |
+| `GOOGLE_MAPS_API_KEY`, `GOOGLE_IOS_CLIENT_ID` | iOS |
+| `GOOGLE_MAPS_API_KEY_ANDROID` | Android |
 | `APP_STORE_CONNECT_API_KEY_ID`, `..._ISSUER_ID`, `..._CONTENT` | iOS / TestFlight |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
@@ -530,6 +546,12 @@ match the signing key of the build you're running.
 Credential Manager reports misconfiguration as a user cancel. Check the Android
 OAuth client's package name and SHA-1 against the build, and that
 `GOOGLE_WEB_CLIENT_ID` is the **Web** client ID, not the Android one.
+
+**iOS: tapping "Continue with Google" fails or closes the app.**
+`GOOGLE_IOS_CLIENT_ID` is missing from `ios/Flutter/Secrets.xcconfig` (or from
+the iOS workflow's secrets), so `Info.plist` has no client ID or URL scheme.
+"Unacceptable audience" from Supabase means the iOS client ID isn't listed
+under Client IDs on the Google provider.
 
 **Android: Google sign-in works locally but fails on Play installs** with
 `[16] Account reauth failed`. Play re-signs releases with the Play App Signing
