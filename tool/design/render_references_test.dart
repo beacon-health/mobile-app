@@ -144,8 +144,9 @@ const _pinCategories = <String, String?>{
   'mental-health': FacilityCategories.groupMentalHealth,
   'basic-needs': FacilityCategories.groupBasicNeeds,
   'housing-shelter': FacilityCategories.groupHousingShelter,
-  'community-resources': FacilityCategories.groupCommunity,
-  'specialized-services': FacilityCategories.groupSpecialized,
+  // Named after their color tokens, which predate the groups now using them.
+  'community-resources': FacilityCategories.groupMoneyJobsLegal,
+  'specialized-services': FacilityCategories.groupFamilyCommunity,
   'fallback': null,
 };
 
@@ -463,7 +464,8 @@ void main() {
       });
     }
 
-    // The one intentionally platform-specific surface: Apple on iOS.
+    // The one intentionally platform-specific surface: Apple above Google on
+    // iOS.
     testWidgets(
       'screen login on iOS ($suffix)',
       (tester) async {

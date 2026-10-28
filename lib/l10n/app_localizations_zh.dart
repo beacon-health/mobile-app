@@ -472,10 +472,82 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeCategoryBasicNeeds => '食品与必需品';
 
   @override
-  String get homeCategoryCommunity => '社区资源';
+  String get homeCategoryFamilyCommunity => '家庭与社区';
 
   @override
-  String get homeCategorySpecialized => '专项服务';
+  String get homeCategoryMoneyJobsLegal => '财务、就业与法律';
+
+  @override
+  String get categoryChipMedicalClinic => '医疗诊所';
+
+  @override
+  String get categoryChipHospital => '医院';
+
+  @override
+  String get categoryChipDentalVision => '牙科与眼科';
+
+  @override
+  String get categoryChipHomeCare => '居家护理与临终关怀';
+
+  @override
+  String get categoryChipMentalHealthCare => '心理健康护理';
+
+  @override
+  String get categoryChipCrisis => '危机支持';
+
+  @override
+  String get categoryChipAddiction => '成瘾治疗';
+
+  @override
+  String get categoryChipRecovery => '戒瘾康复之家';
+
+  @override
+  String get categoryChipEmergencyShelter => '紧急庇护所';
+
+  @override
+  String get categoryChipAbuseShelter => '家暴庇护所';
+
+  @override
+  String get categoryChipTransitionalHousing => '过渡性住房';
+
+  @override
+  String get categoryChipAffordableHousing => '平价住房';
+
+  @override
+  String get categoryChipFoodPantry => '食物银行';
+
+  @override
+  String get categoryChipMeals => '免费餐食';
+
+  @override
+  String get categoryChipEssentials => '衣物与家居用品';
+
+  @override
+  String get categoryChipBabySupplies => '婴儿用品';
+
+  @override
+  String get categoryChipLegal => '法律援助';
+
+  @override
+  String get categoryChipJobsEducation => '就业与教育';
+
+  @override
+  String get categoryChipFinancialSupport => '经济援助';
+
+  @override
+  String get categoryChipTransportation => '交通接送';
+
+  @override
+  String get categoryChipChildrenFamilies => '儿童与家庭';
+
+  @override
+  String get categoryChipDisability => '残障服务';
+
+  @override
+  String get categoryChipSeniors => '长者';
+
+  @override
+  String get categoryChipVeterans => '退伍军人';
 
   @override
   String get commonLinkFailed => '无法打开该链接。';

@@ -3,7 +3,7 @@ import 'package:beacon_app/core/services/locale_provider.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/beacon_logo.dart';
-import 'package:beacon_app/core/widgets/native_sign_in_button.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:beacon_app/features/auth/presentation/pages/location_choice_page.dart';
 import 'package:beacon_app/features/map/presentation/services/url_launcher_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
@@ -200,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.huge),
-                          NativeSignInButton(
+                          NativeSignInButtons(
                             onSuccess: _goToLocationChoice,
                             onFailure: (message) =>
                                 setState(() => _errorMessage = message),

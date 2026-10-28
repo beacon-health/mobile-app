@@ -38,7 +38,9 @@ Use these, never raw hex or pixel values:
 - **Facility categories** (map pins, quick-action icons, category tiles):
   `--color-category-health-care`, `-mental-health`, `-basic-needs`,
   `-housing-shelter`, `-community-resources`, `-specialized-services`. Icons
-  only: labels beside them stay `--color-on-surface`.
+  only: labels beside them stay `--color-on-surface`. Three are named for
+  older groups: `-basic-needs` is Food & Essentials, `-community-resources`
+  Money, Jobs & Legal Help, and `-specialized-services` Family & Community.
 - **Type classes:** `.text-headline-medium` (onboarding titles),
   `.text-title-large` (section headings, app bar, dialogs),
   `.text-title-medium`, `.text-title-small` (list-row titles),
@@ -125,9 +127,9 @@ already loaded by `styles.css`):
 - Dark mode: surfaces step up in lightness as they rise (background, card,
   tab bar) and cards take a 1px `--color-outline-variant` outline, since
   shadows don't show.
-- iOS and Android look the same, except sign-in: "Continue with Apple" on iOS
-  (black; white in dark mode), "Continue with Google" on Android (white; near
-  black in dark mode) — never both on one screen.
+- iOS and Android look the same, except sign-in: iOS stacks "Continue with
+  Apple" (black; white in dark mode) above "Continue with Google" (white; near
+  black in dark mode), the same size; Android shows Google alone.
 - Mobile only: no hover-only affordances, sidebars, or desktop navigation.
 - Copy is short and plain. The app ships in English, Spanish, and Chinese, so
   leave room for strings about 30% longer.

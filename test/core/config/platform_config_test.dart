@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:beacon_app/core/services/map_launcher_service.dart';
+import 'package:beacon_app/core/widgets/native_sign_in_buttons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -113,6 +114,28 @@ void main() {
         infoPlist,
         isNot(contains('NSLocationAlwaysAndWhenInUseUsageDescription')),
       );
+    });
+
+    test('carries what Sign in with Google needs, from the build', () {
+      // iOS offers Google, and Google's SDK reads its client from GIDClientID
+      // and returns through the reversed client ID — a missing scheme crashes
+      // the app the moment the button is tapped.
+      expect(
+        nativeSignInProvidersFor(TargetPlatform.iOS, isWeb: false),
+        contains(NativeSignInProvider.google),
+      );
+      expect(
+        infoPlist,
+        contains('<key>GIDClientID</key>\n\t<string>\$(GOOGLE_IOS_CLIENT_ID)'),
+      );
+      expect(
+        infoPlist,
+        contains(
+          '<string>com.googleusercontent.apps.'
+          r'$(GOOGLE_IOS_CLIENT_ID:base:base:base)</string>',
+        ),
+      );
+      expect(infoPlist, isNot(contains('.apps.googleusercontent.com')));
     });
 
     test('reads the Maps key from the build, not from source', () {

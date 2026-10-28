@@ -101,7 +101,7 @@ void main() {
             await pumpPage(tester, page);
             expect(tester.takeException(), isNull, reason: '$page');
           }
-        });
+        }, variant: shippingPlatforms);
 
         testWidgets('Settings fits ($language)', (tester) async {
           await resetAppState(tester);
@@ -159,9 +159,8 @@ void main() {
                     context: context,
                     isScrollControlled: true,
                     builder: (_) => FilterModal(
-                      selectedCategories: const {'Medical Care'},
-                      availableCategories:
-                          FacilityCategories.categoryBroadValues,
+                      selectedCategories: const {'medical_clinic'},
+                      availableCategories: FacilityCategories.serviceTagKeys,
                       selectedPreferenceRequirements: const {},
                       showFavoritesOnly: false,
                       showOpenNowOnly: true,

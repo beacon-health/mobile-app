@@ -63,7 +63,7 @@ void main() {
     'literal alpha': {
       'lib/features/map/presentation/widgets/markers/marker_icon_factory.dart',
       // Brand buttons dim by a fixed amount while a sign-in is in flight.
-      'lib/core/widgets/native_sign_in_button.dart',
+      'lib/core/widgets/native_sign_in_buttons.dart',
     },
   };
 

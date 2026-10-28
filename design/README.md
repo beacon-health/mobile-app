@@ -80,7 +80,7 @@ Build from these before writing a new widget:
 | `BeaconLogo` | The wordmark, in brand colors on light and white on dark. No tagline in the artwork: that is the `brandTagline` string |
 | `AppleMark` | Apple's logo, for the sign-in button and the Profile badge; never `Icons.apple` |
 | `DashedVerticalDivider` | A light dashed rule between columns of one list (the two halves of a week's hours) |
-| `NativeSignInButton` | The only sign-in button; Apple on iOS, Google on Android, each in its brand's light and dark style |
+| `NativeSignInButtons` | The only sign-in buttons; Apple above Google on iOS, Google alone on Android, each in its brand's light and dark style |
 | `AppTheme.destructiveTextButton` / `destructiveFilledButton` | Deleting an account, removing a rating |
 | `FocusRingBorder` | The ring a button draws while it holds keyboard focus (applied by the theme) |
 

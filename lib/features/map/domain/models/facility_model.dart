@@ -118,9 +118,13 @@ class Facility {
   /// List of service names offered by this facility.
   final List<String> services;
 
-  /// `category_broad` (13 known values + null) — the dimension the map's
-  /// Category filter operates on. Consolidated into a high-level group by
-  /// [primaryCategory] for icons/colors.
+  /// `service_tags`: every subcategory chip the facility offers, main one
+  /// first (`FacilityCategories.serviceTagGroups`). The dimension the map's
+  /// Category filter operates on. Empty until the data pipeline tags it.
+  final List<String> serviceTags;
+
+  /// `category_broad` (13 known values + null) — the fallback group for a
+  /// facility with no [serviceTags] yet.
   final String? categoryBroad;
 
   /// `category_detail` (21 known values + null) — the finer grain beneath
@@ -218,9 +222,11 @@ class Facility {
   }
 
   /// Consolidated high-level group used for marker icons/colors and the small
-  /// category icon on cards/lists. Derived from [categoryBroad] so the four
-  /// Home-page groups stay consistent across the app.
-  String get primaryCategory => FacilityCategories.groupFor(categoryBroad);
+  /// category icon on cards/lists: the main chip's group, else
+  /// [categoryBroad]'s, so the Home groups stay consistent across the app.
+  String get primaryCategory => FacilityCategories.groupFor(
+        serviceTags.isNotEmpty ? serviceTags.first : categoryBroad,
+      );
 
   const Facility({
     required this.id,
@@ -236,6 +242,7 @@ class Facility {
     this.phones = const [],
     this.hours = const [],
     this.services = const [],
+    this.serviceTags = const [],
     this.categoryBroad,
     this.categoryDetail,
     this.eligibility,
@@ -297,6 +304,7 @@ class Facility {
       phones: phones,
       hours: hours,
       services: services,
+      serviceTags: _parseServiceTags(data['service_tags']),
       categoryBroad: data['category_broad'] as String?,
       categoryDetail: data['category_detail'] as String?,
       eligibility: eligibility,
@@ -364,6 +372,16 @@ class Facility {
         .whereType<Map>()
         .map((h) => OperatingHours.fromJson(Map<String, dynamic>.from(h)))
         .toList();
+  }
+
+  /// `service_tags` is a text[]: a list of known keys. An unknown key (a
+  /// newer pipeline than this app) is dropped, never shown raw.
+  static List<String> _parseServiceTags(dynamic data) {
+    if (data is! List) return const [];
+    return [
+      for (final tag in data)
+        if (tag is String && FacilityCategories.isServiceTag(tag)) tag,
+    ];
   }
 
   static List<String> _extractServiceNames(dynamic servicesData) {
@@ -494,6 +512,7 @@ class Facility {
       phones: phones,
       hours: hours,
       services: services,
+      serviceTags: serviceTags,
       categoryBroad: categoryBroad,
       categoryDetail: categoryDetail,
       eligibility: eligibility,

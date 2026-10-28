@@ -492,10 +492,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCategoryBasicNeeds => 'Food & Essentials';
 
   @override
-  String get homeCategoryCommunity => 'Community Resources';
+  String get homeCategoryFamilyCommunity => 'Family & Community';
 
   @override
-  String get homeCategorySpecialized => 'Specialized Services';
+  String get homeCategoryMoneyJobsLegal => 'Money, Jobs & Legal Help';
+
+  @override
+  String get categoryChipMedicalClinic => 'Medical Clinics';
+
+  @override
+  String get categoryChipHospital => 'Hospitals';
+
+  @override
+  String get categoryChipDentalVision => 'Dental & Vision';
+
+  @override
+  String get categoryChipHomeCare => 'Home Care & Hospice';
+
+  @override
+  String get categoryChipMentalHealthCare => 'Mental Health Care';
+
+  @override
+  String get categoryChipCrisis => 'Crisis Support';
+
+  @override
+  String get categoryChipAddiction => 'Addiction Treatment';
+
+  @override
+  String get categoryChipRecovery => 'Sober Living';
+
+  @override
+  String get categoryChipEmergencyShelter => 'Emergency Shelters';
+
+  @override
+  String get categoryChipAbuseShelter => 'Domestic Violence Shelters';
+
+  @override
+  String get categoryChipTransitionalHousing => 'Transitional Housing';
+
+  @override
+  String get categoryChipAffordableHousing => 'Affordable Housing';
+
+  @override
+  String get categoryChipFoodPantry => 'Food Pantries';
+
+  @override
+  String get categoryChipMeals => 'Free Meals';
+
+  @override
+  String get categoryChipEssentials => 'Clothing & Household Items';
+
+  @override
+  String get categoryChipBabySupplies => 'Baby Supplies';
+
+  @override
+  String get categoryChipLegal => 'Legal Aid';
+
+  @override
+  String get categoryChipJobsEducation => 'Jobs & Education';
+
+  @override
+  String get categoryChipFinancialSupport => 'Financial Help';
+
+  @override
+  String get categoryChipTransportation => 'Rides & Transportation';
+
+  @override
+  String get categoryChipChildrenFamilies => 'Children & Families';
+
+  @override
+  String get categoryChipDisability => 'Disability Services';
+
+  @override
+  String get categoryChipSeniors => 'Seniors';
+
+  @override
+  String get categoryChipVeterans => 'Veterans';
 
   @override
   String get commonLinkFailed => 'Could not open that link.';
