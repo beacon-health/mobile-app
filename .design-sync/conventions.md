@@ -38,7 +38,9 @@ Use these, never raw hex or pixel values:
 - **Facility categories** (map pins, quick-action icons, category tiles):
   `--color-category-health-care`, `-mental-health`, `-basic-needs`,
   `-housing-shelter`, `-community-resources`, `-specialized-services`. Icons
-  only: labels beside them stay `--color-on-surface`.
+  only: labels beside them stay `--color-on-surface`. Three are named for
+  older groups: `-basic-needs` is Food & Essentials, `-community-resources`
+  Money, Jobs & Legal Help, and `-specialized-services` Family & Community.
 - **Type classes:** `.text-headline-medium` (onboarding titles),
   `.text-title-large` (section headings, app bar, dialogs),
   `.text-title-medium`, `.text-title-small` (list-row titles),

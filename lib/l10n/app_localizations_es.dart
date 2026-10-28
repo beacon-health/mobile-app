@@ -499,10 +499,83 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeCategoryBasicNeeds => 'Alimentos y artículos esenciales';
 
   @override
-  String get homeCategoryCommunity => 'Recursos comunitarios';
+  String get homeCategoryFamilyCommunity => 'Familia y comunidad';
 
   @override
-  String get homeCategorySpecialized => 'Servicios especializados';
+  String get homeCategoryMoneyJobsLegal => 'Dinero, empleo y ayuda legal';
+
+  @override
+  String get categoryChipMedicalClinic => 'Clínicas médicas';
+
+  @override
+  String get categoryChipHospital => 'Hospitales';
+
+  @override
+  String get categoryChipDentalVision => 'Dental y visión';
+
+  @override
+  String get categoryChipHomeCare => 'Atención en casa y hospicio';
+
+  @override
+  String get categoryChipMentalHealthCare => 'Atención de salud mental';
+
+  @override
+  String get categoryChipCrisis => 'Apoyo en crisis';
+
+  @override
+  String get categoryChipAddiction => 'Tratamiento de adicciones';
+
+  @override
+  String get categoryChipRecovery => 'Hogares de vida sobria';
+
+  @override
+  String get categoryChipEmergencyShelter => 'Refugios de emergencia';
+
+  @override
+  String get categoryChipAbuseShelter => 'Refugios para violencia doméstica';
+
+  @override
+  String get categoryChipTransitionalHousing => 'Vivienda de transición';
+
+  @override
+  String get categoryChipAffordableHousing => 'Vivienda asequible';
+
+  @override
+  String get categoryChipFoodPantry => 'Despensas de alimentos';
+
+  @override
+  String get categoryChipMeals => 'Comidas gratis';
+
+  @override
+  String get categoryChipEssentials => 'Ropa y artículos del hogar';
+
+  @override
+  String get categoryChipBabySupplies => 'Artículos para bebés';
+
+  @override
+  String get categoryChipLegal => 'Asistencia legal';
+
+  @override
+  String get categoryChipJobsEducation => 'Empleo y educación';
+
+  @override
+  String get categoryChipFinancialSupport => 'Ayuda financiera';
+
+  @override
+  String get categoryChipTransportation => 'Traslados y transporte';
+
+  @override
+  String get categoryChipChildrenFamilies => 'Niños y familias';
+
+  @override
+  String get categoryChipDisability =>
+      'Servicios para personas con discapacidad';
+
+  @override
+  String get categoryChipSeniors => 'Personas mayores';
+
+  @override
+  String get categoryChipVeterans => 'Veteranos';
 
   @override
   String get commonLinkFailed => 'No se pudo abrir el enlace.';

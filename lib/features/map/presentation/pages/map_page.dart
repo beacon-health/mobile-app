@@ -1001,6 +1001,7 @@ class MapPageState extends State<MapPage>
           isGuest ? const {} : preferenceRequirements,
       showFavoritesOnly: showFavoritesOnly && !isGuest,
       showOpenNowOnly: showOpenNowOnly,
+      l10n: AppLocalizations.of(context),
     );
   }
 
@@ -1130,8 +1131,8 @@ class MapPageState extends State<MapPage>
     }
   }
 
-  /// Home quick-actions pass a group ("Health Care", …), which expands to its
-  /// `category_broad` values; a raw category_broad value is used as-is.
+  /// Home quick-actions pass a group ("Health Care", …), which expands to all
+  /// of its chip keys; a single chip key is used as-is.
   void filterByCategory(String category) {
     final values = FacilityCategories.isGroup(category)
         ? FacilityCategories.valuesForGroup(category)
@@ -1336,7 +1337,7 @@ class MapPageState extends State<MapPage>
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => FilterModal(
         selectedCategories: _selectedCategories,
-        availableCategories: FacilityCategories.categoryBroadValues,
+        availableCategories: FacilityCategories.serviceTagKeys,
         selectedPreferenceRequirements: _selectedPreferenceRequirements,
         showFavoritesOnly: _showFavoritesOnly,
         showOpenNowOnly: _showOpenNowOnly,

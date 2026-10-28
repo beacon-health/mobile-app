@@ -164,9 +164,9 @@ moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
 (`MarkerManagementService.groupForZoom`). "Use my location" lands at
 `MapConstants.myLocationZoom`: pins apart, names not yet shown. The filter
-sheet lists categories under Home's six groups
+sheet lists the subcategory chips under Home's six groups
 (`FacilityCategories.quickActionGroups`), named by
-`FacilityCategoryIcons.groupLabel`.
+`FacilityCategoryIcons.groupLabel` and `FacilityCategoryIcons.tagLabel`.
 
 **"What can you provide?" only ever hides what a person can't use.** It
 belongs to an account: the question is asked once, in onboarding after sign-in,
@@ -281,13 +281,22 @@ the facility has permanently closed.
 insert into public.launched_states (state_code) values ('OK');
 ```
 
-**Categories** come from `category_broad` (13 values, the filter dimension) and
+**Categories** come from `service_tags` (24 chip keys, the filter dimension:
+3-5 under each Home group, every chip a facility offers, main one first),
+`category_broad` (13 values, the group of a facility not tagged yet) and
 `category_detail` (21 values, searchable). `FacilityCategories` is the single
-source of truth: it maps the 13 broad values into the 6 Home quick-action
+source of truth: `serviceTagGroups` is the one list of chips, in filter-sheet
+order, and it maps chips and broad values into the 6 Home quick-action
 groups, each with its own marker icon and color, plus a neutral fallback used
-only for unknown/null values. If the database taxonomy changes, update that
-file — tests assert both the value count and full group coverage, so drift
-fails CI.
+only for unknown/null values. The keys belong to the data pipeline
+(`service_tags.py`; a database CHECK refuses others), so regrouping or
+renaming chips is an app change: their group in `serviceTagGroups`, their
+names in the ARB files (`categoryChip*`, `homeCategory*`). No chip may share
+its group's name or one part of it (`facility_formatting_test.dart`). A Home
+group tap selects all of its chips, which also finds untagged facilities of
+that group; a single chip finds tagged ones only. Search matches chip names in
+English and in the reader's language. If the taxonomy changes, update that
+file — tests assert the key list and full group coverage, so drift fails CI.
 
 > **Schema and migrations are applied by hand** through the Supabase SQL Editor;
 > there is no migration tool in this repo, and the DDL is not tracked here.
@@ -570,4 +579,5 @@ converting plugins to Swift Package Manager, disable SPM (see Prerequisites).
 
 **Every marker is a neutral grey pin and the Category filter matches nothing.**
 The `fct_supabase_full` view and the `facilities_near` RPC aren't returning
-`category_broad` / `category_detail`. Both must expose those columns.
+`service_tags` / `category_broad` / `category_detail`. Both must expose those
+columns.

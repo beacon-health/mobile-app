@@ -16,8 +16,8 @@ void main() {
     'Mental Health & Recovery',
     'Housing & Shelter',
     'Food & Essentials',
-    'Community Resources',
-    'Specialized Services',
+    'Family & Community',
+    'Money, Jobs & Legal Help',
   ];
 
   Future<void> pumpHome(WidgetTester tester, {Size? size}) async {

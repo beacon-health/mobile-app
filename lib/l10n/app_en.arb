@@ -179,8 +179,104 @@
   "homeCategoryMentalHealth": "Mental Health & Recovery",
   "homeCategoryHousing": "Housing & Shelter",
   "homeCategoryBasicNeeds": "Food & Essentials",
-  "homeCategoryCommunity": "Community Resources",
-  "homeCategorySpecialized": "Specialized Services",
+  "homeCategoryFamilyCommunity": "Family & Community",
+  "homeCategoryMoneyJobsLegal": "Money, Jobs & Legal Help",
+  "categoryChipMedicalClinic": "Medical Clinics",
+  "@categoryChipMedicalClinic": {
+    "description": "Map filter chip for the service tag 'medical_clinic' (beacon-data service_tags.py)."
+  },
+  "categoryChipHospital": "Hospitals",
+  "@categoryChipHospital": {
+    "description": "Map filter chip for the service tag 'hospital' (beacon-data service_tags.py)."
+  },
+  "categoryChipDentalVision": "Dental & Vision",
+  "@categoryChipDentalVision": {
+    "description": "Map filter chip for the service tag 'dental_vision' (beacon-data service_tags.py)."
+  },
+  "categoryChipHomeCare": "Home Care & Hospice",
+  "@categoryChipHomeCare": {
+    "description": "Map filter chip for the service tag 'home_care' (beacon-data service_tags.py)."
+  },
+  "categoryChipMentalHealthCare": "Mental Health Care",
+  "@categoryChipMentalHealthCare": {
+    "description": "Map filter chip for the service tag 'mental_health_care' (beacon-data service_tags.py)."
+  },
+  "categoryChipCrisis": "Crisis Support",
+  "@categoryChipCrisis": {
+    "description": "Map filter chip for the service tag 'crisis' (beacon-data service_tags.py)."
+  },
+  "categoryChipAddiction": "Addiction Treatment",
+  "@categoryChipAddiction": {
+    "description": "Map filter chip for the service tag 'addiction' (beacon-data service_tags.py)."
+  },
+  "categoryChipRecovery": "Sober Living",
+  "@categoryChipRecovery": {
+    "description": "Map filter chip for the service tag 'recovery' (beacon-data service_tags.py)."
+  },
+  "categoryChipEmergencyShelter": "Emergency Shelters",
+  "@categoryChipEmergencyShelter": {
+    "description": "Map filter chip for the service tag 'emergency_shelter' (beacon-data service_tags.py)."
+  },
+  "categoryChipAbuseShelter": "Domestic Violence Shelters",
+  "@categoryChipAbuseShelter": {
+    "description": "Map filter chip for the service tag 'abuse_shelter' (beacon-data service_tags.py)."
+  },
+  "categoryChipTransitionalHousing": "Transitional Housing",
+  "@categoryChipTransitionalHousing": {
+    "description": "Map filter chip for the service tag 'transitional_housing' (beacon-data service_tags.py)."
+  },
+  "categoryChipAffordableHousing": "Affordable Housing",
+  "@categoryChipAffordableHousing": {
+    "description": "Map filter chip for the service tag 'affordable_housing' (beacon-data service_tags.py)."
+  },
+  "categoryChipFoodPantry": "Food Pantries",
+  "@categoryChipFoodPantry": {
+    "description": "Map filter chip for the service tag 'food_pantry' (beacon-data service_tags.py)."
+  },
+  "categoryChipMeals": "Free Meals",
+  "@categoryChipMeals": {
+    "description": "Map filter chip for the service tag 'meals' (beacon-data service_tags.py)."
+  },
+  "categoryChipEssentials": "Clothing & Household Items",
+  "@categoryChipEssentials": {
+    "description": "Map filter chip for the service tag 'essentials' (beacon-data service_tags.py)."
+  },
+  "categoryChipBabySupplies": "Baby Supplies",
+  "@categoryChipBabySupplies": {
+    "description": "Map filter chip for the service tag 'baby_supplies' (beacon-data service_tags.py)."
+  },
+  "categoryChipLegal": "Legal Aid",
+  "@categoryChipLegal": {
+    "description": "Map filter chip for the service tag 'legal' (beacon-data service_tags.py)."
+  },
+  "categoryChipJobsEducation": "Jobs & Education",
+  "@categoryChipJobsEducation": {
+    "description": "Map filter chip for the service tag 'jobs_education' (beacon-data service_tags.py)."
+  },
+  "categoryChipFinancialSupport": "Financial Help",
+  "@categoryChipFinancialSupport": {
+    "description": "Map filter chip for the service tag 'financial_support' (beacon-data service_tags.py)."
+  },
+  "categoryChipTransportation": "Rides & Transportation",
+  "@categoryChipTransportation": {
+    "description": "Map filter chip for the service tag 'transportation' (beacon-data service_tags.py)."
+  },
+  "categoryChipChildrenFamilies": "Children & Families",
+  "@categoryChipChildrenFamilies": {
+    "description": "Map filter chip for the service tag 'children_families' (beacon-data service_tags.py)."
+  },
+  "categoryChipDisability": "Disability Services",
+  "@categoryChipDisability": {
+    "description": "Map filter chip for the service tag 'disability' (beacon-data service_tags.py)."
+  },
+  "categoryChipSeniors": "Seniors",
+  "@categoryChipSeniors": {
+    "description": "Map filter chip for the service tag 'seniors' (beacon-data service_tags.py)."
+  },
+  "categoryChipVeterans": "Veterans",
+  "@categoryChipVeterans": {
+    "description": "Map filter chip for the service tag 'veterans' (beacon-data service_tags.py)."
+  },
   "commonLinkFailed": "Could not open that link.",
   "onboardingEligibilityTitle": "What can you provide?",
   "onboardingEligibilitySubtitle": "We'll hide places you couldn't use. You can change this anytime in Profile.",

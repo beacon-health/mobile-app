@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -106,6 +107,7 @@ class RecentFacilitiesService extends ChangeNotifier {
         'address': f.address,
         'city': f.city,
         'state': f.state,
+        'serviceTags': f.serviceTags,
         'categoryBroad': f.categoryBroad,
         'categoryDetail': f.categoryDetail,
         'latitude': f.location.latitude,
@@ -130,6 +132,10 @@ class RecentFacilitiesService extends ChangeNotifier {
       address: json['address'] as String? ?? '',
       city: json['city'] as String? ?? '',
       state: json['state'] as String? ?? '',
+      serviceTags: [
+        for (final tag in (json['serviceTags'] as List?) ?? const [])
+          if (tag is String && FacilityCategories.isServiceTag(tag)) tag,
+      ],
       categoryBroad: json['categoryBroad'] as String?,
       categoryDetail: json['categoryDetail'] as String?,
     );
