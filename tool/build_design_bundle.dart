@@ -547,8 +547,8 @@ final List<_Card> _screenCards = [
     path: 'guidelines/screens/sign-in.html',
     group: 'Screens',
     title: 'Sign in',
-    lede: 'One sign-in provider per platform: Apple on iOS, Google on '
-        'Android — never both. The logo carries no tagline: "Healthcare '
+    lede: 'iOS stacks Apple above Google, the same size; Android shows '
+        'Google alone. The logo carries no tagline: "Healthcare '
         'made lighter." is live text under it, so it is translated.',
     viewport: '1000x900',
     body: '''
