@@ -116,6 +116,16 @@ void main() {
       );
     });
 
+    test("compiles out geolocator's request for location always", () {
+      // With the request in the binary, App Store Connect warns that the
+      // Always purpose string is missing (ITMS-90683). Beacon only asks while
+      // in use, so the request goes rather than a string for access it never
+      // wants.
+      final podfile = File('ios/Podfile').readAsStringSync();
+      expect(podfile, contains("target.name == 'geolocator_apple'"));
+      expect(podfile, contains("'BYPASS_PERMISSION_LOCATION_ALWAYS=1'"));
+    });
+
     test('carries what Sign in with Google needs, from the build', () {
       // iOS offers Google, and Google's SDK reads its client from GIDClientID
       // and returns through the reversed client ID — a missing scheme crashes
