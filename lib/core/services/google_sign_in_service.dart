@@ -161,7 +161,7 @@ class GoogleSignInService {
       description != null && _pickerClosed.hasMatch(description);
 
   static final RegExp _pickerClosed =
-      RegExp(r'cancell?ed by (the )?user', caseSensitive: false);
+      RegExp('cancell?ed by (the )?user', caseSensitive: false);
 
   /// google_sign_in_android's error when Credential Manager finds no Google
   /// account on the device (`NoCredentialException`).
