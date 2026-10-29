@@ -53,6 +53,11 @@ class AppleSignInService {
         stack,
         context: 'AppleSignInService.signIn',
       );
+      // iOS's own text for this ("The operation couldn't be completed …
+      // error 1000") tells the person nothing they can act on.
+      if (e.code == AuthorizationErrorCode.unknown) {
+        return const SignInResult(SignInOutcome.appleUnavailable);
+      }
       return SignInResult(
         SignInOutcome.failed,
         errorMessage: e.message,

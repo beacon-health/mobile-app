@@ -69,47 +69,17 @@ class GoogleSignInService {
 
       return const SignInResult(SignInOutcome.success);
     } on GoogleSignInException catch (e, stack) {
-      // On Android, Credential Manager reports configuration failures as
-      // `canceled`, the
-      // same code a user gets for dismissing the sheet. Four real failures
-      // during Android bring-up — a missing client ID, a Play-less emulator
-      // image, device check-in disabled, and an unregistered signing key
-      // (UNREGISTERED_ON_API_CONSOLE) — all arrived here as `canceled` and were
-      // silently swallowed, leaving a button that did nothing.
-      //
-      // Two defences, because the codes alone can't be trusted:
-      //
-      //  1. Every cancellation is reported, so failures are visible in Sentry
-      //     even when the UI stays quiet. A deliberate dismissal is cheap to
-      //     filter; an invisible outage is not.
-      //  2. A cancellation carrying a `description` is treated as a failure.
-      //     Dismissals come back bare; Play Services attaches detail when
-      //     something is actually wrong. This is a heuristic, which is why (1)
-      //     is the guarantee and this is the improvement.
-      if (e.code == GoogleSignInExceptionCode.canceled) {
-        if (!cancelMayHideFailure(defaultTargetPlatform)) {
-          return const SignInResult(SignInOutcome.cancelled);
-        }
-        final detail = e.description;
+      final (:result, :report) = interpret(e, defaultTargetPlatform);
+      if (report) {
         ErrorReporter.instance.report(
           e,
           stack,
-          context: 'GoogleSignInService.signIn/cancelled',
+          context: e.code == GoogleSignInExceptionCode.canceled
+              ? 'GoogleSignInService.signIn/cancelled'
+              : 'GoogleSignInService.signIn',
         );
-        if (detail == null || detail.isEmpty) {
-          return const SignInResult(SignInOutcome.cancelled);
-        }
-        return SignInResult(SignInOutcome.failed, errorMessage: detail);
       }
-      ErrorReporter.instance.report(
-        e,
-        stack,
-        context: 'GoogleSignInService.signIn',
-      );
-      return SignInResult(
-        SignInOutcome.failed,
-        errorMessage: e.description ?? e.code.name,
-      );
+      return result;
     } on AuthException catch (e, stack) {
       ErrorReporter.instance.report(
         e,
@@ -126,6 +96,78 @@ class GoogleSignInService {
       return SignInResult(SignInOutcome.failed, errorMessage: e.toString());
     }
   }
+
+  /// What a [GoogleSignInException] on [platform] means for the person, and
+  /// whether it is a bug worth reporting.
+  ///
+  /// On Android, Credential Manager reports configuration failures as
+  /// `canceled`, the same code a person gets for dismissing the sheet. Four
+  /// real failures during Android bring-up — a missing client ID, a Play-less
+  /// emulator image, device check-in disabled, and an unregistered signing key
+  /// (UNREGISTERED_ON_API_CONSOLE) — all arrived as `canceled` and were
+  /// silently swallowed, leaving a button that did nothing. So there:
+  ///
+  ///  1. A cancel is reported, so failures are visible in Sentry even when
+  ///     the UI stays quiet — except Credential Manager's own words for a
+  ///     closed picker ([isPickerClosed]), which are the person's choice.
+  ///  2. A cancel carrying any other description is treated as a failure:
+  ///     Play Services attaches detail when something is actually wrong.
+  ///
+  /// A phone with no Google account on it is not a bug either: the person is
+  /// told to add one ([SignInOutcome.noGoogleAccount]).
+  static ({SignInResult result, bool report}) interpret(
+    GoogleSignInException e,
+    TargetPlatform platform,
+  ) {
+    final detail = e.description;
+    if (e.code == GoogleSignInExceptionCode.canceled) {
+      if (!cancelMayHideFailure(platform) || isPickerClosed(detail)) {
+        return (
+          result: const SignInResult(SignInOutcome.cancelled),
+          report: false,
+        );
+      }
+      if (detail == null || detail.isEmpty) {
+        return (
+          result: const SignInResult(SignInOutcome.cancelled),
+          report: true,
+        );
+      }
+      return (
+        result: SignInResult(SignInOutcome.failed, errorMessage: detail),
+        report: true,
+      );
+    }
+    if (isNoAccount(e)) {
+      return (
+        result: const SignInResult(SignInOutcome.noGoogleAccount),
+        report: false,
+      );
+    }
+    return (
+      result: SignInResult(
+        SignInOutcome.failed,
+        errorMessage: detail ?? e.code.name,
+      ),
+      report: true,
+    );
+  }
+
+  /// The message when the person closes the account picker: Credential
+  /// Manager's "activity is cancelled by the user." or Play Services'
+  /// "[16] Cancelled by user." — the same code 16 also carries real failures
+  /// ("[16] Account reauth failed."), so the words decide, not the number.
+  static bool isPickerClosed(String? description) =>
+      description != null && _pickerClosed.hasMatch(description);
+
+  static final RegExp _pickerClosed =
+      RegExp('cancell?ed by (the )?user', caseSensitive: false);
+
+  /// google_sign_in_android's error when Credential Manager finds no Google
+  /// account on the device (`NoCredentialException`).
+  static bool isNoAccount(GoogleSignInException e) =>
+      e.code == GoogleSignInExceptionCode.unknownError &&
+      (e.description?.startsWith('No credential available') ?? false);
 
   /// Whether a `canceled` result on [platform] may be a failure in disguise.
   /// Android's Credential Manager gives configuration problems the same code

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/auth_stream_errors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -37,8 +38,11 @@ class GuestModeService extends ChangeNotifier {
   Future<void> init() async {
     try {
       _authSubscription?.cancel();
-      _authSubscription = Supabase.instance.client.auth.onAuthStateChange
-          .listen((_) => notifyListeners());
+      _authSubscription =
+          Supabase.instance.client.auth.onAuthStateChange.listen(
+        (_) => notifyListeners(),
+        onError: onAuthStreamError('GuestModeService.authState'),
+      );
     } catch (_) {
       // Supabase not yet initialized — [isGuest] safely defaults to true.
     }

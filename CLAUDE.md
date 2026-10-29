@@ -81,6 +81,9 @@ commands, or make text edits with the file tools instead of the shell.
   `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
 - **Report bugs, not user choices** — expected outcomes return a status
   (README → Key services has the one Google sign-in exception).
+- Every `onAuthStateChange` listener passes
+  `onError: onAuthStreamError(...)`, and async code reads what it needs from a
+  `BuildContext` before its first await (README → Key services).
 - No hardcoded user-facing strings: add the key to all three ARB files in
   `lib/l10n/`, then `make l10n`.
 - Gate every Supabase write on `GuestModeService.isGuest` and call

@@ -413,6 +413,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authSignInError => 'Sign-in failed. Please try again.';
 
   @override
+  String get authNoGoogleAccount =>
+      'There\'s no Google account on this phone. Add one in Settings, then try again.';
+
+  @override
+  String get authAppleUnavailable =>
+      'Sign in with Apple couldn\'t finish. Check that this iPhone is signed in to an Apple Account in Settings, then try again.';
+
+  @override
   String get locationChoiceTitle => 'How would you like to find resources?';
 
   @override

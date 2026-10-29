@@ -419,6 +419,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get authSignInError => 'Error al iniciar sesión. Inténtalo de nuevo.';
 
   @override
+  String get authNoGoogleAccount =>
+      'No hay ninguna cuenta de Google en este teléfono. Agrega una en Ajustes y vuelve a intentarlo.';
+
+  @override
+  String get authAppleUnavailable =>
+      'No se pudo completar el inicio de sesión con Apple. Comprueba que este iPhone tenga una cuenta de Apple en Ajustes y vuelve a intentarlo.';
+
+  @override
   String get locationChoiceTitle => '¿Cómo quieres encontrar recursos?';
 
   @override

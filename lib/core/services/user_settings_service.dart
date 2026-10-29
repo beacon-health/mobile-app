@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/auth_stream_errors.dart';
 import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/core/services/error_reporter.dart';
 import 'package:beacon_app/core/services/locale_provider.dart';
@@ -35,7 +36,7 @@ class UserSettingsService {
             state.event == AuthChangeEvent.userUpdated) {
           unawaited(syncOnSignIn());
         }
-      });
+      }, onError: onAuthStreamError('$_logContext.authState'));
     } catch (e, stackTrace) {
       ErrorReporter.instance
           .report(e, stackTrace, context: '$_logContext.init');
@@ -44,7 +45,16 @@ class UserSettingsService {
 
   /// Loads the signed-in user's settings (if any) and applies them locally.
   /// If no row exists, inserts one with the current local values.
-  Future<void> syncOnSignIn() async {
+  ///
+  /// Signing in raises more than one auth event at once (`signedIn`, then
+  /// `initialSession` or `userUpdated`), so overlapping calls share one sync
+  /// rather than racing each other to insert the same row.
+  Future<void> syncOnSignIn() =>
+      _syncing ??= _syncOnSignIn().whenComplete(() => _syncing = null);
+
+  Future<void>? _syncing;
+
+  Future<void> _syncOnSignIn() async {
     final userId = _currentUserId();
     if (userId == null) return;
 
@@ -91,11 +101,16 @@ class UserSettingsService {
     }
   }
 
+  /// Creates the user's first row. Another device or session may have made it
+  /// since the read that found none; theirs stands, so a duplicate is a no-op
+  /// rather than an error.
   Future<void> _insertCurrent(String userId) async {
     try {
-      await Supabase.instance.client
-          .from(_table)
-          .insert(_payload(userId, includeCreatedAt: true));
+      await Supabase.instance.client.from(_table).upsert(
+            _payload(userId, includeCreatedAt: true),
+            onConflict: 'user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, stackTrace) {
       ErrorReporter.instance.report(
         e,

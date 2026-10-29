@@ -64,6 +64,17 @@ post_install do |installer|
       # `inhibit_all_warnings!` only emits the Swift flag; this covers the
       # Objective-C pods (Google Maps, geolocator) too.
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+
+      # Beacon asks for location only while in use. Compiling out geolocator's
+      # "always" request keeps App Store Connect from asking for an
+      # NSLocationAlwaysAndWhenInUseUsageDescription (ITMS-90683) that would
+      # describe access the app never wants.
+      if target.name == 'geolocator_apple'
+        defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || '$(inherited)'
+        defs = defs.split if defs.is_a?(String)
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] =
+          defs + ['BYPASS_PERMISSION_LOCATION_ALWAYS=1']
+      end
       
       # Fix for gRPC/Abseil linking issues
       if target.name.include?('gRPC') || target.name.include?('GRPC') || target.name.include?('abseil')

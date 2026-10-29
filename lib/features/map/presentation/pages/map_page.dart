@@ -27,6 +27,7 @@ import 'package:beacon_app/features/map/presentation/widgets/facility/facility_c
 import 'package:beacon_app/features/map/presentation/widgets/facility/facility_list_panel.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_bar.dart';
 import 'package:beacon_app/features/map/presentation/widgets/filters/components/filter_modal.dart';
+import 'package:beacon_app/features/map/presentation/widgets/markers/marker_icon_factory.dart';
 import 'package:beacon_app/features/map/presentation/widgets/search/facility_search.dart';
 import 'package:beacon_app/features/map/utils/facility_formatting.dart';
 import 'package:beacon_app/features/map/utils/map_geometry.dart';
@@ -1028,7 +1029,7 @@ class MapPageState extends State<MapPage>
 
         final newMarkers = await MarkerManagementService.createMarkersClustered(
           _filteredFacilities,
-          context,
+          MarkerStyle.of(context),
           zoom: zoom,
           showFacilityNames: _showFacilityNames,
           markerIconCache: _markerIconCache,

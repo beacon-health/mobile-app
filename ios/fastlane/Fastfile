@@ -22,12 +22,39 @@ def asc_signing_xcargs
   ].join(" ")
 end
 
+# Puts the team's one App Store distribution certificate (a base64 .p12 from
+# secrets) into the temporary keychain `setup_ci` made. Without it, automatic
+# signing on a fresh runner creates a new certificate every run — they show as
+# "Created by API" in the developer portal — until Apple's limit on
+# distribution certificates fails the build.
+def import_distribution_certificate
+  p12 = ENV.fetch("IOS_DISTRIBUTION_CERT_P12_BASE64", "")
+  if p12.empty?
+    UI.user_error!("IOS_DISTRIBUTION_CERT_P12_BASE64 is not set (README → CI/CD)")
+  end
+
+  path = File.join(Dir.mktmpdir("cert"), "distribution.p12")
+  File.binwrite(path, p12.unpack1("m"))
+  File.chmod(0o600, path)
+  import_certificate(
+    certificate_path: path,
+    certificate_password: ENV.fetch("IOS_DISTRIBUTION_CERT_PASSWORD", ""),
+    keychain_name: ENV.fetch("MATCH_KEYCHAIN_NAME", "fastlane_tmp_keychain"),
+    keychain_password: ENV.fetch("MATCH_KEYCHAIN_PASSWORD", ""),
+  )
+ensure
+  File.delete(path) if path && File.exist?(path)
+end
+
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
-    # Creates a temporary keychain on CI so cloud-managed signing certs can be
-    # installed for this run only.
-    setup_ci if ENV["CI"]
+    # A temporary keychain for this run only, holding the distribution
+    # certificate from secrets.
+    if ENV["CI"]
+      setup_ci
+      import_distribution_certificate
+    end
 
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -36,8 +63,8 @@ platform :ios do
       is_key_content_base64: true,
     )
 
-    # Automatic ("cloud-managed") signing: Xcode fetches/creates the App Store
-    # distribution certificate + provisioning profile via the App Store Connect
+    # Automatic signing: Xcode signs with the imported distribution certificate
+    # and fetches or creates the provisioning profile via the App Store Connect
     # API key, so no certs repo (Match) is required. Needs App Manager access.
     build_app(
       workspace: "Runner.xcworkspace",
@@ -59,7 +86,10 @@ platform :ios do
 
   desc "Build release for App Store submission"
   lane :release do
-    setup_ci if ENV["CI"]
+    if ENV["CI"]
+      setup_ci
+      import_distribution_certificate
+    end
 
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],

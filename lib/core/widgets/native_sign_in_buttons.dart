@@ -1,5 +1,6 @@
 import 'package:beacon_app/core/services/apple_sign_in_service.dart';
 import 'package:beacon_app/core/services/google_sign_in_service.dart';
+import 'package:beacon_app/core/services/sign_in_result.dart';
 import 'package:beacon_app/core/services/zip_code_service.dart';
 import 'package:beacon_app/core/theme/theme.dart';
 import 'package:beacon_app/core/widgets/apple_mark.dart';
@@ -111,8 +112,13 @@ class _NativeSignInButtonsState extends State<NativeSignInButtons> {
 
     if (result.isCancelled) return;
 
-    final msg = result.errorMessage ??
-        AppLocalizations.of(context)?.authSignInError ??
+    final l10n = AppLocalizations.of(context);
+    final msg = switch (result.outcome) {
+          SignInOutcome.noGoogleAccount => l10n?.authNoGoogleAccount,
+          SignInOutcome.appleUnavailable => l10n?.authAppleUnavailable,
+          _ => result.errorMessage,
+        } ??
+        l10n?.authSignInError ??
         'Sign-in failed. Please try again.';
     widget.onFailure?.call(msg);
   }

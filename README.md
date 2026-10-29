@@ -234,10 +234,18 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 **Error handling convention:** never `print` or `debugPrint`. Every catch site
 calls `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
 Report bugs, not user choices: expected outcomes such as a declined location
-prompt return a status instead of reaching Sentry. The deliberate exception is
-`GoogleSignInService`, which on Android reports every Credential Manager
-`canceled` because configuration failures arrive with that same code
-(`GoogleSignInService.cancelMayHideFailure`).
+prompt, a phone with no Google account, or an offline session refresh return
+a status (or are dropped) instead of reaching Sentry. The deliberate exception
+is `GoogleSignInService`, which on Android reports a Credential Manager
+`canceled` because configuration failures arrive with that same code; only
+its own "cancelled by the user" message is let through as a choice
+(`GoogleSignInService.interpret`). Every `onAuthStateChange` listener passes
+`onError: onAuthStreamError(...)`: gotrue puts a failed background refresh on
+that stream, and without a handler it escapes as an uncaught error.
+
+**Nothing async touches a `BuildContext` after an await.** Read what you need
+from it first: marker drawing takes a `MarkerStyle.of(context)` captured before
+the first pin, because signing in or out replaces the whole shell mid-loop.
 
 **Sign-in providers by platform:** Sign in with Apple, then Sign in with
 Google on iOS (Apple first, the option the App Store asks to see beside any
@@ -472,11 +480,25 @@ that depends on how a store build is signed (see "Releasing").
   version is approved, TestFlight rejects further builds on it (ITMS-90186, "the
   pre-release train is closed"), so `ios-build.yml` fails until the bump lands.
 
-TestFlight uses **App Store Connect API-key cloud-managed signing** — no
-Fastlane Match, no certificates repo. The API key must have **App Manager**
-access so Xcode can create the distribution certificate and provisioning profile
-at build time. The build number is `1000 + github.run_number`, so uploads never
+TestFlight uses **automatic signing with an App Store Connect API key** — no
+Fastlane Match, no certificates repo. Every run signs with the team's one
+Apple Distribution certificate, which the `beta` lane imports from the
+`IOS_DISTRIBUTION_CERT_P12_BASE64` / `IOS_DISTRIBUTION_CERT_PASSWORD` secrets
+into a temporary keychain; the API key (**App Manager** access) lets Xcode
+fetch or create the provisioning profile. Without the imported certificate, a
+fresh runner creates a new one every time ("Created by API" in the developer
+portal) until Apple's limit fails the build. To replace the certificate: create
+an Apple Distribution certificate in Xcode (Settings → Accounts → Manage
+Certificates), export it from Keychain Access as a `.p12` with a password,
+store `base64 -i cert.p12` and the password in those two secrets, and delete
+the file. The build number is `1000 + github.run_number`, so uploads never
 collide.
+
+**Location is only ever asked for while in use.** geolocator's request for
+"always" access is compiled out in the `Podfile`
+(`BYPASS_PERMISSION_LOCATION_ALWAYS`), so the binary never references it and
+App Store Connect doesn't ask for an `NSLocationAlwaysAndWhenInUseUsageDescription`
+(ITMS-90683). Don't add that key; `platform_config_test.dart` checks both.
 
 Android releases are signed in CI with the upload key, rebuilt from secrets
 because the keystore and `android/key.properties` are gitignored; the workflow
@@ -513,6 +535,7 @@ Required GitHub secrets:
 | `GOOGLE_MAPS_API_KEY`, `GOOGLE_IOS_CLIENT_ID` | iOS |
 | `GOOGLE_MAPS_API_KEY_ANDROID` | Android |
 | `APP_STORE_CONNECT_API_KEY_ID`, `..._ISSUER_ID`, `..._CONTENT` | iOS / TestFlight |
+| `IOS_DISTRIBUTION_CERT_P12_BASE64`, `IOS_DISTRIBUTION_CERT_PASSWORD` | iOS signing (the one distribution certificate) |
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Android signing |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_PLAY_PUBLISHER_SA` | Play upload (keyless) |
 
@@ -557,6 +580,12 @@ match the signing key of the build you're running.
 Credential Manager reports misconfiguration as a user cancel. Check the Android
 OAuth client's package name and SHA-1 against the build, and that
 `GOOGLE_WEB_CLIENT_ID` is the **Web** client ID, not the Android one.
+
+**TestFlight build fails on the distribution certificate** — "maximum number
+of certificates", or `IOS_DISTRIBUTION_CERT_P12_BASE64 is not set`. The
+imported certificate is missing, expired, or revoked. Revoke the stale
+"Created by API" certificates in the developer portal and replace the secrets
+(see "CI/CD").
 
 **iOS: tapping "Continue with Google" fails or closes the app.**
 `GOOGLE_IOS_CLIENT_ID` is missing from `ios/Flutter/Secrets.xcconfig` (or from
