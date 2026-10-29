@@ -148,6 +148,14 @@
   "authSignInPromptTitle": "Sign in to use this feature",
   "authSignInPromptBody": "Sign in to save favorites, filter by preferences, and rate places.",
   "authSignInError": "Sign-in failed. Please try again.",
+  "authNoGoogleAccount": "There's no Google account on this phone. Add one in Settings, then try again.",
+  "@authNoGoogleAccount": {
+    "description": "Shown when Sign in with Google finds no Google account on the device (Android)."
+  },
+  "authAppleUnavailable": "Sign in with Apple couldn't finish. Check that this iPhone is signed in to an Apple Account in Settings, then try again.",
+  "@authAppleUnavailable": {
+    "description": "Shown when Sign in with Apple fails with Apple's unnamed error 1000, usually no Apple Account on the iPhone."
+  },
   "locationChoiceTitle": "How would you like to find resources?",
   "locationChoiceSubtitle": "We'll use this to show resources near you.",
   "locationChoiceUseLocation": "Use my location",

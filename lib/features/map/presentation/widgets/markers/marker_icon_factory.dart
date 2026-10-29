@@ -8,6 +8,26 @@ import 'package:beacon_app/features/map/constants/facility_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// What a pin bitmap depends on from the screen, read once, before any marker
+/// is drawn. Marker creation awaits between pins, and the screen that asked
+/// can be gone by then (signing in or out replaces the whole shell), so the
+/// factory never touches a [BuildContext] itself.
+@immutable
+class MarkerStyle {
+  const MarkerStyle({required this.onDark, required this.devicePixelRatio});
+
+  /// Reads [context] now, while it is certainly mounted.
+  factory MarkerStyle.of(BuildContext context) => MarkerStyle(
+        onDark: Theme.of(context).brightness == Brightness.dark,
+        devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+      );
+
+  /// Whether names are drawn for the dark map style.
+  final bool onDark;
+
+  final double devicePixelRatio;
+}
+
 /// Utility class for creating custom map markers.
 ///
 /// Creates circular markers with icons based on facility category.
@@ -32,14 +52,14 @@ class MarkerUtils {
     String name,
     bool isFavorite,
     String? primaryCategory,
-    BuildContext context, {
+    MarkerStyle style, {
     required bool showName,
   }) async {
     if (debugDescriptorOverride case final override?) return override;
 
     // A pin's name is drawn for the map style beneath it, and the whole pin
     // at the size the person asked for.
-    final onDark = Theme.of(context).brightness == Brightness.dark;
+    final onDark = style.onDark;
     final scale = AccessibilitySettings().pinScale;
     final cacheKey =
         '${name}_${primaryCategory ?? 'default'}_${showName}_${onDark}_$scale';
@@ -48,7 +68,6 @@ class MarkerUtils {
       return _markerCache[cacheKey]!;
     }
 
-    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     final bytes = await facilityMarkerPng(
       primaryCategory,
       name: showName ? name : '',
@@ -57,7 +76,7 @@ class MarkerUtils {
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
-      imagePixelRatio: devicePixelRatio / scale,
+      imagePixelRatio: style.devicePixelRatio / scale,
     );
 
     _markerCache[cacheKey] = descriptor;
@@ -110,23 +129,22 @@ class MarkerUtils {
   /// zoomed-out point. Cached per exact count.
   static Future<BitmapDescriptor> createClusterMarker(
     int count,
-    BuildContext context,
+    MarkerStyle style,
   ) async {
     if (debugDescriptorOverride case final override?) return override;
 
-    final onDark = Theme.of(context).brightness == Brightness.dark;
+    final onDark = style.onDark;
     final scale = AccessibilitySettings().pinScale;
     final cacheKey = 'cluster_${count}_${onDark}_$scale';
     if (_markerCache.containsKey(cacheKey)) {
       return _markerCache[cacheKey]!;
     }
 
-    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     final bytes = await clusterMarkerPng(count, onDark: onDark);
 
     final descriptor = BitmapDescriptor.bytes(
       bytes,
-      imagePixelRatio: devicePixelRatio / scale,
+      imagePixelRatio: style.devicePixelRatio / scale,
     );
 
     _markerCache[cacheKey] = descriptor;

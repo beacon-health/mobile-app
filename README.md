@@ -234,10 +234,18 @@ All are `ChangeNotifier` singletons in `lib/core/services/`, initialized in
 **Error handling convention:** never `print` or `debugPrint`. Every catch site
 calls `ErrorReporter.instance.report(e, stack, context: 'WhereItHappened')`.
 Report bugs, not user choices: expected outcomes such as a declined location
-prompt return a status instead of reaching Sentry. The deliberate exception is
-`GoogleSignInService`, which on Android reports every Credential Manager
-`canceled` because configuration failures arrive with that same code
-(`GoogleSignInService.cancelMayHideFailure`).
+prompt, a phone with no Google account, or an offline session refresh return
+a status (or are dropped) instead of reaching Sentry. The deliberate exception
+is `GoogleSignInService`, which on Android reports a Credential Manager
+`canceled` because configuration failures arrive with that same code; only
+its own "cancelled by the user" message is let through as a choice
+(`GoogleSignInService.interpret`). Every `onAuthStateChange` listener passes
+`onError: onAuthStreamError(...)`: gotrue puts a failed background refresh on
+that stream, and without a handler it escapes as an uncaught error.
+
+**Nothing async touches a `BuildContext` after an await.** Read what you need
+from it first: marker drawing takes a `MarkerStyle.of(context)` captured before
+the first pin, because signing in or out replaces the whole shell mid-loop.
 
 **Sign-in providers by platform:** Sign in with Apple, then Sign in with
 Google on iOS (Apple first, the option the App Store asks to see beside any

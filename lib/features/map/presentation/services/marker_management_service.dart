@@ -83,7 +83,7 @@ class MarkerManagementService {
   /// bubble, wired to [onClusterTap], per group from [groupForZoom].
   static Future<Set<Marker>> createMarkersClustered(
     List<Facility> facilities,
-    BuildContext context, {
+    MarkerStyle style, {
     required double zoom,
     required bool showFacilityNames,
     required Map<String, BitmapDescriptor> markerIconCache,
@@ -98,7 +98,7 @@ class MarkerManagementService {
           markers.add(
             await _createMarkerForFacility(
               group.single,
-              context,
+              style,
               showFacilityNames,
               markerIconCache,
               onFacilityTap,
@@ -106,7 +106,7 @@ class MarkerManagementService {
             ),
           );
         } else {
-          markers.add(await _createClusterMarker(group, context, onClusterTap));
+          markers.add(await _createClusterMarker(group, style, onClusterTap));
         }
       } catch (e, stackTrace) {
         ErrorReporter.instance.report(
@@ -140,7 +140,7 @@ class MarkerManagementService {
 
   static Future<Marker> _createClusterMarker(
     List<Facility> facilities,
-    BuildContext context,
+    MarkerStyle style,
     void Function(List<Facility>) onClusterTap,
   ) async {
     var lat = 0.0;
@@ -151,7 +151,7 @@ class MarkerManagementService {
     }
     final center = LatLng(lat / facilities.length, lng / facilities.length);
     final count = facilities.length;
-    final icon = await MarkerUtils.createClusterMarker(count, context);
+    final icon = await MarkerUtils.createClusterMarker(count, style);
 
     return Marker(
       markerId:
@@ -194,7 +194,7 @@ class MarkerManagementService {
 
   static Future<Marker> _createMarkerForFacility(
     Facility facility,
-    BuildContext context,
+    MarkerStyle style,
     bool showFacilityNames,
     Map<String, BitmapDescriptor> markerIconCache,
     void Function(Facility) onMarkerTap, {
@@ -217,7 +217,7 @@ class MarkerManagementService {
           facility.name,
           facility.isFavorite,
           primaryCategory,
-          context,
+          style,
           showName: showFacilityNames,
         );
         markerIconCache[cacheKey] = icon;

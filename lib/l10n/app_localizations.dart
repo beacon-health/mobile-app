@@ -862,6 +862,18 @@ abstract class AppLocalizations {
   /// **'Sign-in failed. Please try again.'**
   String get authSignInError;
 
+  /// Shown when Sign in with Google finds no Google account on the device (Android).
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s no Google account on this phone. Add one in Settings, then try again.'**
+  String get authNoGoogleAccount;
+
+  /// Shown when Sign in with Apple fails with Apple's unnamed error 1000, usually no Apple Account on the iPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple couldn\'t finish. Check that this iPhone is signed in to an Apple Account in Settings, then try again.'**
+  String get authAppleUnavailable;
+
   /// No description provided for @locationChoiceTitle.
   ///
   /// In en, this message translates to:

@@ -148,6 +148,8 @@
   "authSignInPromptTitle": "Inicia sesión para usar esta función",
   "authSignInPromptBody": "Inicia sesión para guardar favoritos, filtrar por preferencias y calificar lugares.",
   "authSignInError": "Error al iniciar sesión. Inténtalo de nuevo.",
+  "authNoGoogleAccount": "No hay ninguna cuenta de Google en este teléfono. Agrega una en Ajustes y vuelve a intentarlo.",
+  "authAppleUnavailable": "No se pudo completar el inicio de sesión con Apple. Comprueba que este iPhone tenga una cuenta de Apple en Ajustes y vuelve a intentarlo.",
   "locationChoiceTitle": "¿Cómo quieres encontrar recursos?",
   "locationChoiceSubtitle": "Usaremos esto para mostrarte recursos cercanos.",
   "locationChoiceUseLocation": "Usar mi ubicación",

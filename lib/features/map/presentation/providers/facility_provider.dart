@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beacon_app/core/services/auth_stream_errors.dart';
 import 'package:beacon_app/core/services/user_favorites_service.dart';
 import 'package:beacon_app/features/map/data/facility_repository.dart';
 import 'package:beacon_app/features/map/domain/models/facility_model.dart';
@@ -53,7 +54,7 @@ class FacilityProvider extends ChangeNotifier {
         } else if (state.event == AuthChangeEvent.signedOut) {
           clearFavorites();
         }
-      });
+      }, onError: onAuthStreamError('FacilityProvider.authState'));
     } catch (_) {
       // Supabase not yet initialized — fine for tests/demo paths.
     }

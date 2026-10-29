@@ -136,7 +136,9 @@ class _HomePageState extends State<HomePage>
       facilityProvider.setFacilities(facilities);
 
       // The marker factory yields inside this loop, so `mounted` must be
-      // re-checked before the trailing setState.
+      // re-checked before the trailing setState, and the screen's style is
+      // read once, here, rather than from a context that may be gone.
+      final style = MarkerStyle.of(context);
       final markers = <Marker>{};
       for (final facility in facilities) {
         if (facility.location.latitude == 0.0 &&
@@ -147,7 +149,7 @@ class _HomePageState extends State<HomePage>
           '',
           facility.isFavorite,
           facility.primaryCategory,
-          context,
+          style,
           showName: false,
         );
         markers.add(

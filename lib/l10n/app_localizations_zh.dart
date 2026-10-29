@@ -397,6 +397,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authSignInError => '登录失败，请重试。';
 
   @override
+  String get authNoGoogleAccount => '此手机上没有 Google 账号。请先在“设置”中添加一个，然后重试。';
+
+  @override
+  String get authAppleUnavailable =>
+      '无法完成“通过 Apple 登录”。请确认此 iPhone 已在“设置”中登录 Apple 账户，然后重试。';
+
+  @override
   String get locationChoiceTitle => '您希望如何查找资源？';
 
   @override
