@@ -252,6 +252,26 @@ void main() {
       }
     });
 
+    testWidgets('pins follow a zoom the map never reported moving to',
+        (tester) async {
+      await pumpMap(tester);
+      maps.userMovesCamera(map, const CameraPosition(target: home, zoom: 11));
+      await settle(tester);
+      expect(map.clusterMarkers, isNotEmpty, reason: 'zoom 11 groups pins');
+
+      // On Android a cold first launch ended like this: the camera at street
+      // level, the page still believing zoom 11, and its far-apart count
+      // bubbles left on a map that looked empty until the user moved it.
+      maps.cameraSettlesUnannounced(
+        map,
+        CameraPosition(target: twinA.location, zoom: 18),
+      );
+      await settle(tester);
+
+      expect(map.clusterMarkers, isEmpty, reason: 'zoom 18 draws every pin');
+      expect(map.facilityMarkers, hasLength(5));
+    });
+
     testWidgets('a refresh requested mid-refresh is not lost', (tester) async {
       await pumpMap(tester);
 

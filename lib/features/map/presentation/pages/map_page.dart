@@ -147,7 +147,9 @@ class MapPageState extends State<MapPage>
   bool _loadFailed = false;
   final Set<Marker> _markers = {};
   double _currentZoom = MapConstants.defaultZoom;
-  double _previousZoom = MapConstants.defaultZoom;
+
+  /// The zoom the pins now on the map were drawn for.
+  double _markersZoom = MapConstants.defaultZoom;
   bool get _showFacilityNames => _currentZoom >= MapConstants.detailZoom;
   final Set<String> _selectedCategories = {};
   Map<PreferenceRequirement, bool?> _selectedPreferenceRequirements = {};
@@ -688,10 +690,7 @@ class MapPageState extends State<MapPage>
   /// Runs whenever the camera comes to rest, whoever moved it.
   void _onCameraIdle() {
     _focusInFlight = false;
-    if ((_previousZoom - _currentZoom).abs() > 0.1) {
-      _previousZoom = _currentZoom;
-      _updateMarkers();
-    }
+    unawaited(_redrawMarkersIfZoomChanged());
     _maybeShowSearchAreaButton();
 
     // The list is hidden behind the card; it re-syncs when the card closes.
@@ -706,6 +705,28 @@ class MapPageState extends State<MapPage>
       _forgetFocus();
     }
     unawaited(_syncListToViewport());
+  }
+
+  /// Redraws the pins when the map has come to rest at a zoom other than the
+  /// one they were drawn for. It asks the map rather than trusting the last
+  /// `onCameraMove`: Android can finish a move begun before the tab was first
+  /// shown without reporting any of it, and pins drawn for the old zoom stay
+  /// grouped into a few far-apart count bubbles — a map that looks empty.
+  Future<void> _redrawMarkersIfZoomChanged() async {
+    final controller = _googleMapController;
+    if (controller == null) return;
+    try {
+      final zoom = await controller.getZoomLevel();
+      if (!mounted) return;
+      _currentZoom = zoom;
+      if ((_markersZoom - zoom).abs() > 0.1) unawaited(_updateMarkers());
+    } catch (e, stackTrace) {
+      ErrorReporter.instance.report(
+        e,
+        stackTrace,
+        context: 'MapPage._redrawMarkersIfZoomChanged',
+      );
+    }
   }
 
   /// Reads the map's view and narrows the list to it. With [mustContain], it
@@ -1039,6 +1060,7 @@ class MapPageState extends State<MapPage>
 
         if (mounted) {
           setState(() {
+            _markersZoom = zoom;
             _markers
               ..clear()
               ..addAll(newMarkers);

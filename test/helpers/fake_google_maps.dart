@@ -89,6 +89,13 @@ class FakeGoogleMaps extends GoogleMapsFlutterPlatform {
     _arrive(map, position);
   }
 
+  /// The camera comes to rest at [position] without reporting the move
+  /// itself — as Android does for a move begun before the map was on screen.
+  void cameraSettlesUnannounced(FakeMap map, CameraPosition position) {
+    map.camera = position;
+    _events.add(CameraIdleEvent(map.mapId));
+  }
+
   /// Completes the most recent animation recorded while [holdAnimations].
   void finishAnimation(FakeMap map) => _arrive(map, map.animations.last);
 
