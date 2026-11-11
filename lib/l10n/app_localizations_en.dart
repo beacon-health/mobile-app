@@ -126,13 +126,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eligReferralRequired => 'A doctor\'s referral';
 
   @override
-  String get prefAcceptsWalkIns => 'Take walk-ins';
+  String get prefAcceptsWalkIns => 'Accept walk-ins';
 
   @override
   String get prefAppointmentOnly => 'Require an appointment';
 
   @override
-  String get prefOpenToImmigrants => 'Are open to immigrants';
+  String get prefOpenToImmigrants => 'Serve immigrants';
 
   @override
   String get prefFreeServices => 'Offer free services';
@@ -141,7 +141,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prefSlidingScale => 'Charge on a sliding scale';
 
   @override
-  String get prefOtherLanguages => 'Offer other languages';
+  String get prefOtherLanguages => 'Serve non-English speakers';
 
   @override
   String get prefTelehealth => 'Offer telehealth';
@@ -323,7 +323,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppearance => 'Appearance';
 
   @override
-  String get settingsEligibility => 'What you can provide';
+  String get settingsEligibility => 'What you have access to';
 
   @override
   String get settingsZipCode => 'ZIP code';
@@ -474,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProfile => 'Profile';
 
   @override
-  String get profileApplyEligibility => 'Filter by what I can provide';
+  String get profileApplyEligibility => 'Filter by what I have access to';
 
   @override
   String get profileSignedIn => 'Signed in';
@@ -581,11 +581,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLinkFailed => 'Could not open that link.';
 
   @override
-  String get onboardingEligibilityTitle => 'What can you provide?';
+  String get onboardingEligibilityTitle => 'What do you have access to?';
 
   @override
   String get onboardingEligibilitySubtitle =>
-      'We\'ll hide places you couldn\'t use. You can change this anytime in Profile.';
+      'This information helps us match you to facilities that can serve you. You can update this information at any time in your Profile.';
 
   @override
   String get onboardingContinue => 'Continue';

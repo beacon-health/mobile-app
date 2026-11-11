@@ -325,7 +325,7 @@ abstract class AppLocalizations {
   /// No description provided for @prefAcceptsWalkIns.
   ///
   /// In en, this message translates to:
-  /// **'Take walk-ins'**
+  /// **'Accept walk-ins'**
   String get prefAcceptsWalkIns;
 
   /// No description provided for @prefAppointmentOnly.
@@ -337,7 +337,7 @@ abstract class AppLocalizations {
   /// No description provided for @prefOpenToImmigrants.
   ///
   /// In en, this message translates to:
-  /// **'Are open to immigrants'**
+  /// **'Serve immigrants'**
   String get prefOpenToImmigrants;
 
   /// No description provided for @prefFreeServices.
@@ -355,7 +355,7 @@ abstract class AppLocalizations {
   /// No description provided for @prefOtherLanguages.
   ///
   /// In en, this message translates to:
-  /// **'Offer other languages'**
+  /// **'Serve non-English speakers'**
   String get prefOtherLanguages;
 
   /// No description provided for @prefTelehealth.
@@ -697,7 +697,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsEligibility.
   ///
   /// In en, this message translates to:
-  /// **'What you can provide'**
+  /// **'What you have access to'**
   String get settingsEligibility;
 
   /// No description provided for @settingsZipCode.
@@ -973,7 +973,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileApplyEligibility.
   ///
   /// In en, this message translates to:
-  /// **'Filter by what I can provide'**
+  /// **'Filter by what I have access to'**
   String get profileApplyEligibility;
 
   /// No description provided for @profileSignedIn.
@@ -1183,13 +1183,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingEligibilityTitle.
   ///
   /// In en, this message translates to:
-  /// **'What can you provide?'**
+  /// **'What do you have access to?'**
   String get onboardingEligibilityTitle;
 
   /// No description provided for @onboardingEligibilitySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'We\'ll hide places you couldn\'t use. You can change this anytime in Profile.'**
+  /// **'This information helps us match you to facilities that can serve you. You can update this information at any time in your Profile.'**
   String get onboardingEligibilitySubtitle;
 
   /// No description provided for @onboardingContinue.

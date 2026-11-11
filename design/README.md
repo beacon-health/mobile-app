@@ -71,7 +71,7 @@ Build from these before writing a new widget:
 |---|---|
 | `TagChip` | Tinted label: services, eligibility attributes, request status. Its color is its text color, so pass a `*Text` role |
 | `SectionHeader` | Group label above a card of settings rows, with an optional note |
-| `EligibilityChecklist` | "What can you provide?" — the one wording of it, for onboarding and Profile |
+| `EligibilityChecklist` | "What do you have access to?" — the one wording of it, for onboarding and Profile |
 | `OnboardingScaffold`, `OnboardingHeading` | The frame of an onboarding step: gradient, back, step count |
 | `CategoryIcon` | A category's icon on its tinted tile, in the tone for the current mode |
 | `EmptyState` | Icon + title + message (+ optional action) for an empty page |

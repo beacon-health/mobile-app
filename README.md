@@ -172,7 +172,7 @@ sheet lists the subcategory chips under Home's six groups
 (`FacilityCategories.quickActionGroups`), named by
 `FacilityCategoryIcons.groupLabel` and `FacilityCategoryIcons.tagLabel`.
 
-**"What can you provide?" only ever hides what a person can't use.** It
+**"What do you have access to?" only ever hides what a person can't use.** It
 belongs to an account: the question is asked once, in onboarding after sign-in,
 and stays editable on Profile; both use `EligibilityChecklist`. A guest is
 never asked and never filtered by it. The rule is `FacilityFilterService.eligibilityGates`.

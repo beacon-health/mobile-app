@@ -139,7 +139,7 @@ void main() {
 
       expect(prompts, 2);
       // None of the preference switches can be reached.
-      expect(find.text('Take walk-ins'), findsNothing);
+      expect(find.text('Accept walk-ins'), findsNothing);
     });
 
     testWidgets('leaves Open now and Category usable', (tester) async {
@@ -198,8 +198,8 @@ void main() {
       expect(find.text('Yes'), findsNothing);
       expect(find.text('No'), findsNothing);
 
-      await tapRow(tester, 'Take walk-ins');
-      expect(switchFor(tester, 'Take walk-ins').value, isTrue);
+      await tapRow(tester, 'Accept walk-ins');
+      expect(switchFor(tester, 'Accept walk-ins').value, isTrue);
 
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
@@ -216,7 +216,7 @@ void main() {
         preferences: {PreferenceRequirement.acceptsWalkins: true},
       );
 
-      await tapRow(tester, 'Take walk-ins');
+      await tapRow(tester, 'Accept walk-ins');
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 

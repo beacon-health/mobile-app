@@ -2,7 +2,7 @@ import 'package:beacon_app/core/services/eligibility_preferences_service.dart';
 import 'package:beacon_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// "What can you provide?" — the five things a facility may ask for, as a
+/// "What do you have access to?" — the five things a facility may ask for, as a
 /// checklist. A checked box means the person has it. Shared by onboarding and
 /// Profile so the two can't word the question differently.
 ///
