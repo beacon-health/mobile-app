@@ -159,10 +159,18 @@ load-everything-and-filter-on-device; the table is far too large for it. Home
 and Map read the repository from a `Provider<FacilityRepositoryBase>`, which is
 also how tests hand them a fake.
 
+**The search bar reaches past the loaded area.** Typing filters the loaded
+facilities at once; when typing pauses (`MapConstants.searchDebounce`), the
+`search_facilities` RPC searches every launched state by name, street, city,
+ZIP, or kind of place, nearest the map's center first (50 rows, two characters
+minimum). Those matches join the list, and the map's pins, only while the text
+they were found for is still in the bar.
+
 **The list follows the map.** The list panel shows the loaded facilities that
 are on screen, nearest the middle of the map first, and re-syncs whenever the
-camera comes to rest — client-side, with no query. A text search or the
-Favorites filter lists every match in the loaded area instead. Selecting a
+camera comes to rest — client-side, with no query. A text search lists every
+match, wherever it is ("12 results"), and the Favorites filter every favorite
+in the loaded area. Selecting a
 facility remembers the camera and deselecting returns to it, unless the user
 moved the map in between. Facilities that share an address stay a count bubble
 until the zoom at which their fanned-out pins can be told apart
@@ -172,7 +180,7 @@ sheet lists the subcategory chips under Home's six groups
 (`FacilityCategories.quickActionGroups`), named by
 `FacilityCategoryIcons.groupLabel` and `FacilityCategoryIcons.tagLabel`.
 
-**"What can you provide?" only ever hides what a person can't use.** It
+**"What do you have access to?" only ever hides what a person can't use.** It
 belongs to an account: the question is asked once, in onboarding after sign-in,
 and stays editable on Profile; both use `EligibilityChecklist`. A guest is
 never asked and never filtered by it. The rule is `FacilityFilterService.eligibilityGates`.
@@ -288,6 +296,7 @@ Supabase Postgres with PostGIS. The app talks to:
 | `facility_last_checked` | When each listing was last checked (`last_checked_at`); the view and the RPC both return it |
 | `fct_supabase_full` | View joining the facility, eligibility, and last-checked tables — used for favorites, recently viewed, and single-facility lookups by id |
 | `facilities_near(...)` | PostGIS RPC — bounded, distance-sorted proximity search; enforces the state allow-list. Must return the same facility and eligibility columns as the view |
+| `search_facilities(q, lat, lng, max_results)` | Text search across every launched state (name, street, city, ZIP, `category_detail`), nearest `lat`/`lng` first. Same columns and state allow-list as `facilities_near`, plus `distance_m` |
 | `launched_states` | Allow-list of live states (`ALL` = nationwide). Enforced by the RPC and read by the app |
 | `user_favorites`, `user_settings`, `facility_feedback`, `facility_requests` | Per-user data, all protected by owner-only RLS |
 

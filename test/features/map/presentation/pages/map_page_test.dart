@@ -162,6 +162,49 @@ void main() {
       expect(listed(tester), ['far']);
     });
 
+    testWidgets('a search finds places beyond the loaded area', (tester) async {
+      // The loaded area is a few miles around the ZIP code; people look up
+      // places elsewhere in the state by name and couldn't find them.
+      await pumpMap(tester);
+      repository.elsewhere = [
+        createTestFacility(
+          id: 'downstate',
+          name: 'Springfield Free Clinic',
+          location: const LatLng(39.8000, -89.6500),
+        ),
+      ];
+
+      // Typed a letter at a time: one search once typing pauses, not one
+      // per keystroke.
+      for (final words in ['Sp', 'Spring', 'Springfield']) {
+        await tester.enterText(find.byType(TextField), words);
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await settle(tester);
+
+      expect(repository.searches, ['Springfield']);
+      expect(listed(tester), ['downstate']);
+      expect(find.text('1 result'), findsOneWidget);
+
+      // Opening it takes the map there.
+      FocusManager.instance.primaryFocus?.unfocus();
+      await settle(tester);
+      await tester.tap(find.text('Springfield Free Clinic'));
+      await settle(tester);
+      expect(
+        map.camera.target.longitude,
+        moreOrLessEquals(-89.6500, epsilon: 0.01),
+      );
+      await tester.tap(find.text('Springfield Free Clinic'));
+      await settle(tester);
+
+      // Cleared, the list is the map's view again, without the far place.
+      await tester.enterText(find.byType(TextField), '');
+      await settle(tester);
+      expect(listed(tester), isNot(contains('downstate')));
+      expect(find.text('4 resources in this area'), findsOneWidget);
+    });
+
     testWidgets('"Search this area" queries the map center, not the camera',
         (tester) async {
       await pumpMap(tester);
@@ -250,6 +293,26 @@ void main() {
       for (final member in members) {
         expect(visible.contains(member.location), isTrue, reason: member.id);
       }
+    });
+
+    testWidgets('pins follow a zoom the map never reported moving to',
+        (tester) async {
+      await pumpMap(tester);
+      maps.userMovesCamera(map, const CameraPosition(target: home, zoom: 11));
+      await settle(tester);
+      expect(map.clusterMarkers, isNotEmpty, reason: 'zoom 11 groups pins');
+
+      // On Android a cold first launch ended like this: the camera at street
+      // level, the page still believing zoom 11, and its far-apart count
+      // bubbles left on a map that looked empty until the user moved it.
+      maps.cameraSettlesUnannounced(
+        map,
+        CameraPosition(target: twinA.location, zoom: 18),
+      );
+      await settle(tester);
+
+      expect(map.clusterMarkers, isEmpty, reason: 'zoom 18 draws every pin');
+      expect(map.facilityMarkers, hasLength(5));
     });
 
     testWidgets('a refresh requested mid-refresh is not lost', (tester) async {

@@ -26,7 +26,7 @@ void main() {
       (tester) async {
     await pumpThemed(tester, const EligibilityOnboardingPage());
 
-    expect(find.text('What can you provide?'), findsOneWidget);
+    expect(find.text('What do you have access to?'), findsOneWidget);
     // Things a person has — not "X required", which read as either "I have
     // it" or "show me places that demand it".
     expect(options(tester), [
@@ -78,7 +78,7 @@ void main() {
       locale: const Locale('es'),
     );
 
-    expect(find.text('¿Qué puedes presentar?'), findsOneWidget);
+    expect(find.text('¿A qué tienes acceso?'), findsOneWidget);
     expect(find.text('Comprobante de ingresos'), findsOneWidget);
     expect(find.text('Omitir por ahora'), findsOneWidget);
   });

@@ -151,7 +151,7 @@ class PreferencesState {
   }
 }
 
-/// Stores the "what can you provide" answers and service-preference toggles
+/// Stores the "what do you have access to" answers and service-preference toggles
 /// in SharedPreferences as individual boolean keys, synced to `user_settings`.
 /// Both belong to an account: guests can't set them and are never filtered
 /// by them.

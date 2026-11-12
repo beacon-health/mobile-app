@@ -15,8 +15,11 @@ class SupabaseFacilityService {
     SupabaseClient? client,
     @visibleForTesting
     Future<dynamic> Function(Map<String, dynamic> params)? nearbyQuery,
+    @visibleForTesting
+    Future<dynamic> Function(Map<String, dynamic> params)? searchQuery,
   })  : _injectedClient = client,
-        _nearbyQuery = nearbyQuery;
+        _nearbyQuery = nearbyQuery,
+        _searchQuery = searchQuery;
 
   final SupabaseClient? _injectedClient;
 
@@ -24,11 +27,22 @@ class SupabaseFacilityService {
   /// parsing around it can be exercised without a database.
   final Future<dynamic> Function(Map<String, dynamic> params)? _nearbyQuery;
 
+  /// Replaces the `search_facilities` call in tests.
+  final Future<dynamic> Function(Map<String, dynamic> params)? _searchQuery;
+
   /// Resolved on use, so building the service never needs a live session.
   SupabaseClient get _client => _injectedClient ?? Supabase.instance.client;
 
   /// PostGIS proximity RPC: `facilities_near(lat, lng, radius_m, max_results)`.
   static const String _rpcName = 'facilities_near';
+
+  /// Text search across every launched state, nearest first:
+  /// `search_facilities(q, lat, lng, max_results)`. Same row shape as
+  /// [_rpcName], with the same state gate.
+  static const String _searchRpcName = 'search_facilities';
+
+  /// How many matches a covered-states search returns.
+  static const int _maxSearchResults = 50;
 
   /// View used for single-record lookups (column mapping + eligibility join).
   static const String _viewName = 'fct_supabase_full';
@@ -84,9 +98,12 @@ class SupabaseFacilityService {
     return Facility.fromSupabase(Map<String, dynamic>.from(response));
   }
 
-  /// Searches facilities by name within a region, or — when no location is
-  /// given — across a bounded slice of the view. Distance-scoped search is the
-  /// common path; the unbounded branch is capped to [_maxResults].
+  /// Searches facilities by text:
+  /// - with a location and a radius, within that region (by name and
+  ///   description, over the cached region pool);
+  /// - with a location and no radius, across every launched state, by name,
+  ///   street, city, ZIP, or kind of place, nearest the location first;
+  /// - with neither, across a capped slice of the view.
   Future<List<Facility>> searchFacilities(
     String query, {
     double? latitude,
@@ -110,6 +127,19 @@ class SupabaseFacilityService {
                 f.description.toLowerCase().contains(lower),
           )
           .toList();
+    }
+
+    if (latitude != null && longitude != null) {
+      if (q.length < 2) return const [];
+      final params = <String, dynamic>{
+        'q': q,
+        'lat': latitude,
+        'lng': longitude,
+        'max_results': _maxSearchResults,
+      };
+      final response = await (_searchQuery?.call(params) ??
+          _client.rpc<dynamic>(_searchRpcName, params: params));
+      return _parseRows(response);
     }
 
     final builder = _client.from(_viewName).select();

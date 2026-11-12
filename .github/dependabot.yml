@@ -8,6 +8,12 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - 'dependencies'
+    ignore:
+      # Sentry 10 needs Android 8.0 (minSdk 26; Beacon supports 7.0) and
+      # Swift Package Manager on iOS (Beacon builds with CocoaPods, as the
+      # Google Maps plugin requires). Remove this once both are true.
+      - dependency-name: 'sentry_flutter'
+        update-types: ['version-update:semver-major']
 
   # Keep GitHub Actions up to date
   - package-ecosystem: 'github-actions'

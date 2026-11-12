@@ -44,12 +44,12 @@
   "eligProofOfResidency": "Proof of address",
   "eligInsuranceRequired": "Health insurance",
   "eligReferralRequired": "A doctor's referral",
-  "prefAcceptsWalkIns": "Take walk-ins",
+  "prefAcceptsWalkIns": "Accept walk-ins",
   "prefAppointmentOnly": "Require an appointment",
-  "prefOpenToImmigrants": "Are open to immigrants",
+  "prefOpenToImmigrants": "Serve immigrants",
   "prefFreeServices": "Offer free services",
   "prefSlidingScale": "Charge on a sliding scale",
-  "prefOtherLanguages": "Offer other languages",
+  "prefOtherLanguages": "Serve non-English speakers",
   "prefTelehealth": "Offer telehealth",
   "prefWheelchairAccessible": "Are wheelchair accessible",
   "prefServesOutsideArea": "Serve people outside their area",
@@ -113,7 +113,7 @@
   "settingsApp": "App",
   "settingsLanguage": "Language",
   "settingsAppearance": "Appearance",
-  "settingsEligibility": "What you can provide",
+  "settingsEligibility": "What you have access to",
   "settingsZipCode": "ZIP code",
   "settingsAbout": "About",
   "settingsPrivacyPolicy": "Privacy policy",
@@ -172,7 +172,7 @@
   "settingsSignOutSuccess": "Signed out",
   "commonCancel": "Cancel",
   "navProfile": "Profile",
-  "profileApplyEligibility": "Filter by what I can provide",
+  "profileApplyEligibility": "Filter by what I have access to",
   "profileSignedIn": "Signed in",
   "profileSignedInThrough": "Signed in through {provider}",
   "@profileSignedInThrough": {
@@ -286,8 +286,8 @@
     "description": "Map filter chip for the service tag 'veterans' (beacon-data service_tags.py)."
   },
   "commonLinkFailed": "Could not open that link.",
-  "onboardingEligibilityTitle": "What can you provide?",
-  "onboardingEligibilitySubtitle": "We'll hide places you couldn't use. You can change this anytime in Profile.",
+  "onboardingEligibilityTitle": "What do you have access to?",
+  "onboardingEligibilitySubtitle": "This information helps us match you to facilities that can serve you. You can update this information at any time in your Profile.",
   "onboardingContinue": "Continue",
   "onboardingTagline": "Find free and low-cost resources near you.",
   "zipEntryTitle": "What's your ZIP code?",
@@ -373,6 +373,15 @@
   "listSeparator": ", ",
   "mapResourcesInView": "{count, plural, =1{1 resource in this area} other{{count} resources in this area}}",
   "@mapResourcesInView": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapSearchResults": "{count, plural, =1{1 result} other{{count} results}}",
+  "@mapSearchResults": {
+    "description": "List heading while the search bar has text: matches from anywhere in the covered states, not just on screen.",
     "placeholders": {
       "count": {
         "type": "int"

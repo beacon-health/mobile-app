@@ -135,10 +135,10 @@ void main() {
       // An account feature, like the sign-out it sits beside.
       await pumpProfile(tester, signedIn: false);
 
-      expect(find.text('What you can provide'), findsNothing);
+      expect(find.text('What you have access to'), findsNothing);
       expect(find.text(_filterSwitch), findsNothing);
     });
   });
 }
 
-const _filterSwitch = 'Filter by what I can provide';
+const _filterSwitch = 'Filter by what I have access to';

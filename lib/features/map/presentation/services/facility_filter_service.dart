@@ -106,7 +106,9 @@ class FacilityFilterService {
           ) ||
           (facility.categoryBroad?.toLowerCase().contains(q) ?? false) ||
           (facility.categoryDetail?.toLowerCase().contains(q) ?? false) ||
-          facility.city.toLowerCase().contains(q);
+          facility.city.toLowerCase().contains(q) ||
+          facility.address.toLowerCase().contains(q) ||
+          (facility.postalCode?.startsWith(q) ?? false);
 
       // Favorites filter
       final matchesFavorites = !showFavoritesOnly || facility.isFavorite;

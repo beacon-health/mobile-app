@@ -99,8 +99,9 @@ commands, or make text edits with the file tools instead of the shell.
   route joins the chain in `MapPageState.handleBack()` / `mapBackTarget`, with
   a `pressBack` test (README → Architecture).
 - `FacilityCategories` is the single source of truth for the taxonomy,
-  `FacilityFilterService.eligibilityGates` for what the "what can you provide"
-  answers hide, and `EligibilityChecklist` for how the question is worded.
+  `FacilityFilterService.eligibilityGates` for what the "what do you have
+  access to" answers hide, and `EligibilityChecklist` for how the question is
+  worded.
 - Which sign-in providers a platform offers (Apple then Google on iOS,
   Google on Android) lives only in `nativeSignInProvidersFor`, and every
   sign-in surface uses `NativeSignInButtons`.

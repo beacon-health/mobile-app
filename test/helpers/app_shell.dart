@@ -42,6 +42,13 @@ class FakeFacilityRepository implements FacilityRepositoryBase {
   /// Center of each proximity query, oldest first.
   final List<LatLng> queries = [];
 
+  /// Places only a covered-states text search finds: outside every area a
+  /// proximity query returns.
+  List<Facility> elsewhere = [];
+
+  /// Each covered-states text search, oldest first.
+  final List<String> searches = [];
+
   /// While set, queries wait on it — for holding the app in its loading
   /// state.
   Completer<void>? gate;
@@ -82,11 +89,14 @@ class FakeFacilityRepository implements FacilityRepositoryBase {
     double? latitude,
     double? longitude,
     double? radiusMiles,
-  }) async =>
-      [
-        for (final f in facilities)
-          if (f.name.toLowerCase().contains(query.toLowerCase())) f,
-      ];
+  }) async {
+    final coveredStates = radiusMiles == null && latitude != null;
+    if (coveredStates) searches.add(query);
+    return [
+      for (final f in [...facilities, if (coveredStates) ...elsewhere])
+        if (f.name.toLowerCase().contains(query.toLowerCase())) f,
+    ];
+  }
 
   @override
   Future<List<Facility>> getFacilitiesByIds(List<String> ids) async => [

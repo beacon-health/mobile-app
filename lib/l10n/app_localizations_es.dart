@@ -142,7 +142,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get prefSlidingScale => 'Cobran según tus ingresos';
 
   @override
-  String get prefOtherLanguages => 'Atienden en otros idiomas';
+  String get prefOtherLanguages => 'Atienden a personas que no hablan inglés';
 
   @override
   String get prefTelehealth => 'Ofrecen telemedicina';
@@ -329,7 +329,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAppearance => 'Apariencia';
 
   @override
-  String get settingsEligibility => 'Lo que puedes presentar';
+  String get settingsEligibility => 'A lo que tienes acceso';
 
   @override
   String get settingsZipCode => 'Código postal';
@@ -481,7 +481,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
-  String get profileApplyEligibility => 'Filtrar por lo que puedo presentar';
+  String get profileApplyEligibility => 'Filtrar por lo que tengo disponible';
 
   @override
   String get profileSignedIn => 'Sesión iniciada';
@@ -589,11 +589,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonLinkFailed => 'No se pudo abrir el enlace.';
 
   @override
-  String get onboardingEligibilityTitle => '¿Qué puedes presentar?';
+  String get onboardingEligibilityTitle => '¿A qué tienes acceso?';
 
   @override
   String get onboardingEligibilitySubtitle =>
-      'Ocultaremos los lugares que no podrías usar. Puedes cambiarlo cuando quieras en Perfil.';
+      'Esta información nos ayuda a conectarte con centros que pueden atenderte. Puedes actualizarla cuando quieras en tu Perfil.';
 
   @override
   String get onboardingContinue => 'Continuar';
@@ -766,6 +766,17 @@ class AppLocalizationsEs extends AppLocalizations {
       locale: localeName,
       other: '$count recursos en esta zona',
       one: '1 recurso en esta zona',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapSearchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados',
+      one: '1 resultado',
     );
     return '$_temp0';
   }

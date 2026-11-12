@@ -29,6 +29,49 @@ void main() {
     response = [row('a'), row('b')];
   });
 
+  group('SupabaseFacilityService.searchFacilities', () {
+    test('with a location and no radius, searches every covered state',
+        () async {
+      final searches = <Map<String, dynamic>>[];
+      final service = SupabaseFacilityService(
+        searchQuery: (params) async {
+          searches.add(params);
+          return [row('far')];
+        },
+      );
+
+      final found = await service.searchFacilities(
+        '  Springfield ',
+        latitude: 41.88,
+        longitude: -87.63,
+      );
+
+      expect(found.map((f) => f.id), ['far']);
+      expect(searches.single, {
+        'q': 'Springfield',
+        'lat': 41.88,
+        'lng': -87.63,
+        'max_results': 50,
+      });
+    });
+
+    test('a single letter asks nothing', () async {
+      final searches = <Map<String, dynamic>>[];
+      final service = SupabaseFacilityService(
+        searchQuery: (params) async {
+          searches.add(params);
+          return [row('x')];
+        },
+      );
+
+      expect(
+        await service.searchFacilities('a', latitude: 41.88, longitude: -87.63),
+        isEmpty,
+      );
+      expect(searches, isEmpty);
+    });
+  });
+
   group('SupabaseFacilityService.getFacilitiesNearLocation', () {
     test('asks for a bounded, metric query', () async {
       final facilities = await service().getFacilitiesNearLocation(

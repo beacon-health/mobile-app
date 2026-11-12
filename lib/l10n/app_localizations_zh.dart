@@ -128,7 +128,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prefAppointmentOnly => '需要预约';
 
   @override
-  String get prefOpenToImmigrants => '向移民开放';
+  String get prefOpenToImmigrants => '为移民提供服务';
 
   @override
   String get prefFreeServices => '提供免费服务';
@@ -137,7 +137,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prefSlidingScale => '按收入浮动收费';
 
   @override
-  String get prefOtherLanguages => '提供其他语言服务';
+  String get prefOtherLanguages => '为非英语使用者提供服务';
 
   @override
   String get prefTelehealth => '提供远程医疗';
@@ -310,7 +310,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppearance => '外观';
 
   @override
-  String get settingsEligibility => '您能提供的材料';
+  String get settingsEligibility => '您具备的条件';
 
   @override
   String get settingsZipCode => '邮政编码';
@@ -453,7 +453,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navProfile => '个人资料';
 
   @override
-  String get profileApplyEligibility => '按我能提供的材料筛选';
+  String get profileApplyEligibility => '按我具备的条件筛选';
 
   @override
   String get profileSignedIn => '已登录';
@@ -560,10 +560,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonLinkFailed => '无法打开该链接。';
 
   @override
-  String get onboardingEligibilityTitle => '您能提供哪些材料？';
+  String get onboardingEligibilityTitle => '您具备以下哪些条件？';
 
   @override
-  String get onboardingEligibilitySubtitle => '我们会隐藏您无法使用的机构。您可以随时在个人资料中更改。';
+  String get onboardingEligibilitySubtitle =>
+      '这些信息有助于我们为您匹配能够为您服务的机构。您可以随时在个人资料中更新。';
 
   @override
   String get onboardingContinue => '继续';
@@ -730,6 +731,16 @@ class AppLocalizationsZh extends AppLocalizations {
       count,
       locale: localeName,
       other: '此区域有 $count 个资源',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapSearchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个结果',
     );
     return '$_temp0';
   }
