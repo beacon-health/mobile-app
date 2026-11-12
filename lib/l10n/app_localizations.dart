@@ -1372,6 +1372,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 resource in this area} other{{count} resources in this area}}'**
   String mapResourcesInView(int count);
 
+  /// List heading while the search bar has text: matches from anywhere in the covered states, not just on screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String mapSearchResults(int count);
+
   /// No description provided for @mapNothingInView.
   ///
   /// In en, this message translates to:

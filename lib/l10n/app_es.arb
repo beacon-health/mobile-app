@@ -294,6 +294,7 @@
   },
   "listSeparator": ", ",
   "mapResourcesInView": "{count, plural, =1{1 recurso en esta zona} other{{count} recursos en esta zona}}",
+  "mapSearchResults": "{count, plural, =1{1 resultado} other{{count} resultados}}",
   "@mapResourcesInView": {
     "placeholders": {
       "count": {

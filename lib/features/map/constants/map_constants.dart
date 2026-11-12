@@ -56,6 +56,10 @@ class MapConstants {
   /// or error state, so a hung request can't spin forever.
   static const Duration facilityQueryTimeout = Duration(seconds: 30);
 
+  /// How long typing in the search bar pauses before every covered state is
+  /// searched, so each keystroke doesn't send a query.
+  static const Duration searchDebounce = Duration(milliseconds: 400);
+
   static const Duration animationDuration = AppMotion.medium;
 
   /// Delay before driving the map after a tab switch, so the IndexedStack has

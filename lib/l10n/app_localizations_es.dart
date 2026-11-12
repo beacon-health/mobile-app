@@ -771,6 +771,17 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String mapSearchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados',
+      one: '1 resultado',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get mapNothingInView => 'Nada en esta parte del mapa';
 
   @override

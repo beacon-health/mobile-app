@@ -736,6 +736,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String mapSearchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个结果',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get mapNothingInView => '地图的这一区域没有资源';
 
   @override

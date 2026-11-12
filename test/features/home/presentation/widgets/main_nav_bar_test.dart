@@ -217,8 +217,9 @@ void main() {
     // The list can only be raised once the keyboard is out of the way.
     FocusManager.instance.primaryFocus?.unfocus();
     await settle(tester);
+    // While there's search text the heading counts results, not the view.
     await tester.fling(
-      find.textContaining('in this area'),
+      find.textContaining(RegExp(r'^\d+ results?$')),
       const Offset(0, -200),
       1500,
     );

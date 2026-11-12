@@ -294,6 +294,7 @@
   },
   "listSeparator": "、",
   "mapResourcesInView": "{count, plural, other{此区域有 {count} 个资源}}",
+  "mapSearchResults": "{count, plural, other{{count} 个结果}}",
   "@mapResourcesInView": {
     "placeholders": {
       "count": {

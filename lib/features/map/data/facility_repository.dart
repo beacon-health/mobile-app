@@ -104,7 +104,9 @@ class FacilityRepository implements FacilityRepositoryBase {
   Stream<List<Facility>> getFacilitiesStream() =>
       Stream.fromFuture(loadFacilities());
 
-  /// Searches facilities by name, optionally bounded to a radius.
+  /// Searches facilities by text. With a location and no [radiusMiles], it
+  /// covers every launched state, nearest the location first — how the Map's
+  /// search bar finds places outside the loaded area.
   @override
   Future<List<Facility>> searchFacilities(
     String query, {

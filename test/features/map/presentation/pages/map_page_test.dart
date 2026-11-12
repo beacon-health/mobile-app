@@ -162,6 +162,49 @@ void main() {
       expect(listed(tester), ['far']);
     });
 
+    testWidgets('a search finds places beyond the loaded area', (tester) async {
+      // The loaded area is a few miles around the ZIP code; people look up
+      // places elsewhere in the state by name and couldn't find them.
+      await pumpMap(tester);
+      repository.elsewhere = [
+        createTestFacility(
+          id: 'downstate',
+          name: 'Springfield Free Clinic',
+          location: const LatLng(39.8000, -89.6500),
+        ),
+      ];
+
+      // Typed a letter at a time: one search once typing pauses, not one
+      // per keystroke.
+      for (final words in ['Sp', 'Spring', 'Springfield']) {
+        await tester.enterText(find.byType(TextField), words);
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await settle(tester);
+
+      expect(repository.searches, ['Springfield']);
+      expect(listed(tester), ['downstate']);
+      expect(find.text('1 result'), findsOneWidget);
+
+      // Opening it takes the map there.
+      FocusManager.instance.primaryFocus?.unfocus();
+      await settle(tester);
+      await tester.tap(find.text('Springfield Free Clinic'));
+      await settle(tester);
+      expect(
+        map.camera.target.longitude,
+        moreOrLessEquals(-89.6500, epsilon: 0.01),
+      );
+      await tester.tap(find.text('Springfield Free Clinic'));
+      await settle(tester);
+
+      // Cleared, the list is the map's view again, without the far place.
+      await tester.enterText(find.byType(TextField), '');
+      await settle(tester);
+      expect(listed(tester), isNot(contains('downstate')));
+      expect(find.text('4 resources in this area'), findsOneWidget);
+    });
+
     testWidgets('"Search this area" queries the map center, not the camera',
         (tester) async {
       await pumpMap(tester);

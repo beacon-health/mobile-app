@@ -106,6 +106,12 @@ class MapPageState extends State<MapPage>
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+
+  /// Matches for [_searchExtrasQuery] from every covered state, beyond the
+  /// loaded area — so a place in another ZIP code can be found by name.
+  List<Facility> _searchExtras = const [];
+  String _searchExtrasQuery = '';
+  Timer? _searchDebounce;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _chromeKey = GlobalKey();
   GoogleMapController? _googleMapController;
@@ -418,6 +424,7 @@ class MapPageState extends State<MapPage>
     _searchFocusNode.dispose();
     _scrollController.dispose();
     _keyboardHideDebounce?.cancel();
+    _searchDebounce?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     ZipCodeService().removeListener(_onZipServiceChanged);
     EligibilityPreferencesService().removeListener(_onEligibilityChanged);
@@ -976,6 +983,13 @@ class MapPageState extends State<MapPage>
         changed = true;
       }
     }
+    if (_searchExtras.any((f) => f.isFavorite != favoriteIds.contains(f.id))) {
+      _searchExtras = [
+        for (final f in _searchExtras)
+          f.copyWith(isFavorite: favoriteIds.contains(f.id)),
+      ];
+      changed = true;
+    }
 
     final selected = _selectedFacility;
     if (selected != null &&
@@ -984,6 +998,54 @@ class MapPageState extends State<MapPage>
       changed = true;
     }
     return changed;
+  }
+
+  /// The loaded area, plus — while the search text is the one they were
+  /// found for — matches from the rest of the covered states.
+  List<Facility> _searchPool() {
+    final query = _searchController.text.trim().toLowerCase();
+    if (_searchExtras.isEmpty || query != _searchExtrasQuery) {
+      return _allFacilities;
+    }
+    final loaded = {for (final f in _allFacilities) f.id};
+    return [
+      ..._allFacilities,
+      for (final f in _searchExtras)
+        if (!loaded.contains(f.id)) f,
+    ];
+  }
+
+  /// The text filters the loaded area at once. Once typing pauses, every
+  /// covered state is searched too ([_searchCoveredStates]): the loaded area
+  /// is only a few miles around the ZIP code, and people look up places
+  /// outside it by name.
+  void _onSearchChanged() {
+    _filterFacilities();
+    _searchDebounce?.cancel();
+    final query = _searchController.text.trim();
+    if (query.length < 2) return;
+    _searchDebounce = Timer(
+      MapConstants.searchDebounce,
+      () => unawaited(_searchCoveredStates(query)),
+    );
+  }
+
+  Future<void> _searchCoveredStates(String query) async {
+    final center = _mapCenter ?? LatLng(_currentLatitude, _currentLongitude);
+    final results = await _facilityRepository.searchFacilities(
+      query,
+      latitude: center.latitude,
+      longitude: center.longitude,
+    );
+    // The person kept typing (or cleared it): this answer is for old words.
+    if (!mounted || _searchController.text.trim() != query) return;
+    final favoriteIds = _facilityProvider.favoriteIds;
+    _searchExtrasQuery = query.toLowerCase();
+    _searchExtras = [
+      for (final f in results)
+        f.copyWith(isFavorite: favoriteIds.contains(f.id)),
+    ];
+    _filterFacilities();
   }
 
   void _filterFacilities() {
@@ -1011,7 +1073,7 @@ class MapPageState extends State<MapPage>
   }) {
     final isGuest = context.read<GuestModeService>().isGuest;
     return FacilityFilterService.filterFacilities(
-      _allFacilities,
+      _searchPool(),
       searchText: _searchController.text,
       selectedCategories: categories,
       selectedEligibilityRequirements: isGuest
@@ -1442,8 +1504,8 @@ class MapPageState extends State<MapPage>
       return;
     }
 
-    final facility =
-        _allFacilities.where((f) => f.id == facilityId).firstOrNull;
+    // A search result can be from beyond the loaded area.
+    final facility = _searchPool().where((f) => f.id == facilityId).firstOrNull;
     if (facility != null) {
       context.read<RecentFacilitiesService>().addFacility(facility);
       unawaited(
@@ -1558,8 +1620,8 @@ class MapPageState extends State<MapPage>
                         child: FacilitySearch(
                           controller: _searchController,
                           focusNode: _searchFocusNode,
-                          onChanged: _filterFacilities,
-                          onClear: _filterFacilities,
+                          onChanged: _onSearchChanged,
+                          onClear: _onSearchChanged,
                           onUseMyLocation: _useMyLocation,
                           isLocatingUser: _isLocatingUser,
                         ),
@@ -1582,6 +1644,8 @@ class MapPageState extends State<MapPage>
                         : FacilityListPanel(
                             facilities: _listFacilities,
                             totalMatches: _filteredFacilities.length,
+                            isShowingSearchResults:
+                                _searchController.text.trim().isNotEmpty,
                             scrollController: _scrollController,
                             isLoading: _isLoading,
                             isPanelOpen: _isPanelOpen,

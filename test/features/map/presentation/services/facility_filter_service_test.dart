@@ -37,6 +37,26 @@ void main() {
       ),
     ];
 
+    test('search matches a street address or ZIP code', () {
+      // The covered-states search finds places by street and ZIP, so the
+      // list must not drop them again.
+      final downstate = createTestFacility(
+        id: 'downstate',
+        name: 'Community Clinic',
+        address: '500 W Lake St, Springfield, IL 62701',
+      );
+      for (final query in ['lake st', '62701']) {
+        final result = FacilityFilterService.filterFacilities(
+          [...facilities, downstate],
+          searchText: query,
+          selectedCategories: {},
+          showFavoritesOnly: false,
+          showOpenNowOnly: false,
+        );
+        expect(result.map((f) => f.id), ['downstate'], reason: query);
+      }
+    });
+
     test('returns all when no filters are active', () {
       final result = FacilityFilterService.filterFacilities(
         facilities,

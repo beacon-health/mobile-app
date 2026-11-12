@@ -21,6 +21,10 @@ class FacilityListPanel extends StatelessWidget {
   final bool isPanelOpen;
   final bool isFullyExpanded;
   final bool isSearchActive;
+
+  /// The list holds matches for the search text, from anywhere in the
+  /// covered states, rather than what's on screen.
+  final bool isShowingSearchResults;
   final String? expandedFacilityId;
   final Function(String) onToggleFacilityExpansion;
   final Function(String) onToggleFavorite;
@@ -54,6 +58,7 @@ class FacilityListPanel extends StatelessWidget {
     required this.onLaunchUrl,
     required this.buildCategoryIcon,
     this.totalMatches = 0,
+    this.isShowingSearchResults = false,
     this.onPanelStateChange,
     this.onRequestFacility,
     this.onRateFacility,
@@ -183,8 +188,11 @@ class FacilityListPanel extends StatelessWidget {
                         // on screen.
                         isLoading || facilities.isEmpty
                             ? AppLocalizations.of(context)!.mapResourcesNearYou
-                            : AppLocalizations.of(context)!
-                                .mapResourcesInView(facilities.length),
+                            : isShowingSearchResults
+                                ? AppLocalizations.of(context)!
+                                    .mapSearchResults(facilities.length)
+                                : AppLocalizations.of(context)!
+                                    .mapResourcesInView(facilities.length),
                         maxLines: 1,
                         style: theme.textTheme.titleLarge,
                       ),
