@@ -35,7 +35,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   google_maps_flutter_platform_interface: ^2.17.0
-  sentry_dart_plugin: ^3.4.0
+  sentry_dart_plugin: ^3.6.0
   very_good_analysis: ^11.0.0
 
 flutter:
